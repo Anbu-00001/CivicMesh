@@ -6,3 +6,5 @@ __pycache__/
 .jaseci/
 *.jac.wasm
 .jac/
+**/.jac/
+.claude/
