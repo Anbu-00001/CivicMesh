@@ -170,8 +170,16 @@ def check_eligibility(
 """Generate an ordered ActionPlan from a list of eligible resource names plus the user's profile. Order by urgency and deadline."""
 def generate_action_plan(eligible_resources: list[str], profile: NeedProfile) -> ActionPlan by pool();
 
-"""Compose an empathetic escalation message for dead-end or all-denied scenarios. Surfaces crisis resources when urgency='immediate'."""
-def compose_escalation_message(context: EscalationContext) -> EscalationMessage by pool();
+"""Compose an empathetic escalation message for dead-end or all-denied scenarios.
+
+Uses ReAct-style tool calling to consult the live graph and assess safety risk.
+The on_iteration callback fires between steps so the EscalationWalker can stream
+progress to the WebSocket client and guard against doom-loops."""
+def compose_escalation_message(
+    context: EscalationContext,
+    tools: list = [],
+    on_iteration: any = None
+) -> EscalationMessage by pool();
 
 """Detect the language of the user's first message and translate intent into English for downstream prompts."""
 def detect_language_and_extract(message: str) -> LanguageProfile by pool();
