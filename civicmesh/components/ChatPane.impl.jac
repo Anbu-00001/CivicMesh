@@ -58,9 +58,11 @@ impl ChatPane.sendMessage -> None {
     active_walker = "";
 }
 
-impl ChatPane.renderMessage(msg: dict, idx: int) -> JsxElement {
+impl ChatPane.renderMessage(msg: dict, idx: int, is_last: bool) -> JsxElement {
     is_user = str(msg["role"]) == "user";
     wname = str(msg.get("walker", ""));
+    is_last_bot = is_last and (not is_user);
+    bubble_class = "msg-typewriter" if is_last_bot else "";
     walker_colors = {
         "IntakeWalker": "#FFE500",
         "EligibilityWalker": "#4488FF",
@@ -74,6 +76,7 @@ impl ChatPane.renderMessage(msg: dict, idx: int) -> JsxElement {
     return
         <div
             key={idx}
+            className="msg-enter"
             style={{
                 "display": "flex",
                 "justifyContent": ("flex-end" if is_user else "flex-start")
@@ -121,6 +124,7 @@ impl ChatPane.renderMessage(msg: dict, idx: int) -> JsxElement {
                     {wname}
                 </div>}
                 <div
+                    className={bubble_class}
                     style={{
                         "padding": "10px 14px",
                         "borderRadius": ("16px 16px 4px 16px" if is_user else "4px 16px 16px 16px"),

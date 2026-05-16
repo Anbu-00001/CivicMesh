@@ -36,6 +36,7 @@ def:pub TelemetryPanel(walker_events: list) -> JsxElement {
         return
             <div
                 key={m[2]}
+                className="stat-enter"
                 style={{
                     "padding": "14px",
                     "background": "rgba(255,255,255,0.03)",
@@ -94,6 +95,7 @@ def:pub TelemetryPanel(walker_events: list) -> JsxElement {
                         }}
                     >
                         <div
+                            className="tele-bar-fill"
                             style={{
                                 "height": "100%",
                                 "width": str(int(tlat / max_lat * 100)) + "%",

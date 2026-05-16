@@ -20,6 +20,8 @@ import from walkers.escalation { EscalationWalker }
 
 to cl:
 
+cl import ".assets/index.css";
+
 import from "@jac/runtime" { jacLogin, jacSignup, jacIsLoggedIn }
 import from .components.ChatPane { ChatPane }
 import from .components.GraphViz { GraphViz }
@@ -87,28 +89,9 @@ def:pub app -> JsxElement {
                 "fontFamily": "system-ui, -apple-system, sans-serif"
             }}
         >
-            <div
-                style={{
-                    "position": "absolute",
-                    "top": "-15%",
-                    "left": "-5%",
-                    "width": "50%",
-                    "height": "50%",
-                    "background": "radial-gradient(circle, rgba(255,229,0,0.05) 0%, transparent 70%)",
-                    "pointerEvents": "none"
-                }}
-            />
-            <div
-                style={{
-                    "position": "absolute",
-                    "bottom": "-15%",
-                    "right": "-5%",
-                    "width": "40%",
-                    "height": "40%",
-                    "background": "radial-gradient(circle, rgba(255,229,0,0.03) 0%, transparent 70%)",
-                    "pointerEvents": "none"
-                }}
-            />
+            <div className="aurora-blob aurora-blob-1"/>
+            <div className="aurora-blob aurora-blob-2"/>
+            <div className="aurora-blob aurora-blob-3"/>
             <header
                 style={{
                     "padding": "0 24px",

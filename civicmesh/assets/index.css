@@ -1,0 +1,347 @@
+/* ───────────────────────────────────────────────────────────────
+   CivicMesh — Global Styles & Animations
+   assets/index.css — imported via `cl import` in app.jac
+   ─────────────────────────────────────────────────────────────── */
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,229,0,0.3); }
+
+/* ── Input focus ── */
+input::placeholder { color: rgba(255,255,255,0.2); }
+input:focus {
+  border-color: rgba(255,229,0,0.5) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(255,229,0,0.08) !important;
+}
+
+/* ──────────────────────────────────────────────────────
+   AURORA BACKGROUND
+   ────────────────────────────────────────────────────── */
+
+.aurora-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0;
+  will-change: transform, opacity;
+  pointer-events: none;
+  z-index: 0;
+  animation: auroraFloat 18s ease-in-out infinite alternate;
+}
+
+.aurora-blob-1 {
+  width: 55vw;
+  height: 55vw;
+  top: -20%;
+  left: -15%;
+  background: radial-gradient(circle, rgba(255,229,0,0.18) 0%, transparent 70%);
+  animation-duration: 20s;
+  animation-delay: 0s;
+  opacity: 0.6;
+}
+
+.aurora-blob-2 {
+  width: 40vw;
+  height: 40vw;
+  bottom: -15%;
+  right: -10%;
+  background: radial-gradient(circle, rgba(255,200,50,0.12) 0%, transparent 65%);
+  animation-duration: 25s;
+  animation-delay: -8s;
+  opacity: 0.5;
+}
+
+.aurora-blob-3 {
+  width: 30vw;
+  height: 30vw;
+  top: 30%;
+  left: 55%;
+  background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%);
+  animation-duration: 22s;
+  animation-delay: -14s;
+  opacity: 0.4;
+}
+
+@keyframes auroraFloat {
+  0%   { transform: scale(1)    translate(0px,    0px);    }
+  25%  { transform: scale(1.08) translate(40px,  -30px);   }
+  50%  { transform: scale(0.95) translate(-20px,  50px);   }
+  75%  { transform: scale(1.05) translate(30px,   20px);   }
+  100% { transform: scale(1)    translate(-10px, -40px);   }
+}
+
+/* ──────────────────────────────────────────────────────
+   TYPEWRITER REVEAL
+   ────────────────────────────────────────────────────── */
+
+.msg-typewriter {
+  animation: typewriterReveal 0.8s steps(30, end) forwards;
+  clip-path: inset(0 100% 0 0);
+}
+
+@keyframes typewriterReveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0%   0 0); }
+}
+
+.msg-typewriter::after {
+  content: "▎";
+  color: #FFE500;
+  font-size: 0.9em;
+  margin-left: 2px;
+  animation: caretBlink 0.75s step-end infinite;
+}
+
+.msg-typewriter.reveal-done::after {
+  animation: none;
+  opacity: 0;
+}
+
+@keyframes caretBlink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+/* ──────────────────────────────────────────────────────
+   MESSAGE ENTRANCE STAGGER
+   ────────────────────────────────────────────────────── */
+
+.msg-enter {
+  animation: msgSlideIn 0.3s ease forwards;
+  opacity: 0;
+}
+
+@keyframes msgSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+/* ──────────────────────────────────────────────────────
+   WALKER PULSE ANIMATIONS
+   ────────────────────────────────────────────────────── */
+
+.pulse-dot {
+  animation: pulseDot 1.4s ease infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1;   transform: scale(1);   }
+  50%      { opacity: 0.4; transform: scale(0.8); }
+}
+
+.pulse-ring {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pulse-ring::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(255,229,0,0.35);
+  animation: ringExpand 1.4s ease-out infinite;
+}
+
+@keyframes ringExpand {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  100% { transform: scale(2.4); opacity: 0;   }
+}
+
+/* ──────────────────────────────────────────────────────
+   CARD ENTRANCE
+   ────────────────────────────────────────────────────── */
+
+.card-enter {
+  animation: cardSlideIn 0.35s cubic-bezier(0.16,1,0.3,1) forwards;
+  opacity: 0;
+}
+
+@keyframes cardSlideIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+/* ──────────────────────────────────────────────────────
+   3D CARD TILT — ActionPlan step cards
+   ────────────────────────────────────────────────────── */
+
+.card-3d {
+  perspective: 800px;
+  transform-style: preserve-3d;
+  transition: transform 0.3s cubic-bezier(0.25,0.8,0.25,1),
+              box-shadow 0.3s cubic-bezier(0.25,0.8,0.25,1);
+  cursor: default;
+}
+
+.card-3d:hover {
+  transform: perspective(800px) rotateX(3deg) rotateY(-2deg) translateZ(6px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4),
+              0 0 20px rgba(255,229,0,0.06);
+}
+
+.card-3d:hover .card-3d-inner {
+  transform: translateZ(8px);
+  transition: transform 0.3s ease;
+}
+
+.card-3d.status-approved:hover {
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4),
+              0 0 24px rgba(0,255,136,0.12);
+}
+
+/* ──────────────────────────────────────────────────────
+   GRAPH NODE SHIMMER
+   ────────────────────────────────────────────────────── */
+
+.node-shimmer {
+  animation: nodeShimmer 0.6s ease forwards;
+}
+
+@keyframes nodeShimmer {
+  0%   { filter: brightness(1);   }
+  40%  { filter: brightness(1.8); }
+  100% { filter: brightness(1);   }
+}
+
+@keyframes nodeGlow {
+  from { opacity: 0.2; r: 16; }
+  to   { opacity: 0.7; r: 22; }
+}
+
+/* ──────────────────────────────────────────────────────
+   PROGRESS BAR SPRING
+   ────────────────────────────────────────────────────── */
+
+.progress-spring {
+  transition: width 0.7s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* ──────────────────────────────────────────────────────
+   STAT POP-IN
+   ────────────────────────────────────────────────────── */
+
+.stat-enter {
+  animation: statPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  opacity: 0;
+}
+
+.stat-enter:nth-child(1) { animation-delay: 0.05s; }
+.stat-enter:nth-child(2) { animation-delay: 0.12s; }
+.stat-enter:nth-child(3) { animation-delay: 0.19s; }
+.stat-enter:nth-child(4) { animation-delay: 0.26s; }
+
+@keyframes statPop {
+  from { opacity: 0; transform: translateY(6px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* ──────────────────────────────────────────────────────
+   SESSION BANNER SLIDE DOWN
+   ────────────────────────────────────────────────────── */
+
+.banner-slide {
+  animation: bannerSlideDown 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+  opacity: 0;
+}
+
+@keyframes bannerSlideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0);     }
+}
+
+/* ──────────────────────────────────────────────────────
+   QUIRKY WIDGETS
+   ────────────────────────────────────────────────────── */
+
+.badge-glow {
+  animation: badgeGlow 2s ease infinite alternate;
+}
+
+@keyframes badgeGlow {
+  from { box-shadow: 0 0 6px  rgba(255,229,0,0.2); }
+  to   { box-shadow: 0 0 16px rgba(255,229,0,0.5); }
+}
+
+.step-done {
+  animation: stepBounce 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+
+@keyframes stepBounce {
+  0%   { transform: scale(1);    }
+  40%  { transform: scale(1.04); }
+  100% { transform: scale(1);    }
+}
+
+.status-dot-pending  { animation: pendingPulse 2s ease infinite; }
+.status-dot-approved { animation: none; }
+.status-dot-applied  { animation: none; }
+.status-dot-denied   { animation: none; opacity: 0.5; }
+
+@keyframes pendingPulse {
+  0%, 100% { opacity: 1;   box-shadow: 0 0 0 0 rgba(255,179,68,0.4); }
+  50%      { opacity: 0.7; box-shadow: 0 0 0 5px rgba(255,179,68,0); }
+}
+
+.walker-active-dot {
+  animation: walkerActiveDot 1.2s ease infinite;
+}
+
+@keyframes walkerActiveDot {
+  0%, 100% { opacity: 1;   transform: scale(1);   }
+  50%      { opacity: 0.5; transform: scale(0.7); }
+}
+
+.tele-bar-fill {
+  animation: teleBarGrow 1s cubic-bezier(0.25,0.8,0.25,1) forwards;
+  transform-origin: left;
+}
+
+@keyframes teleBarGrow {
+  from { width: 0%; }
+}
+
+/* ──────────────────────────────────────────────────────
+   TYPING INDICATOR (3 DOTS)
+   ────────────────────────────────────────────────────── */
+
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0);    }
+  30%           { transform: translateY(-5px); }
+}
+
+/* ──────────────────────────────────────────────────────
+   REPLAY BUTTON SPIN
+   ────────────────────────────────────────────────────── */
+
+.replay-spinning {
+  display: inline-block;
+  animation: replaySpin 1s linear infinite;
+}
+
+@keyframes replaySpin {
+  from { transform: rotate(0deg);   }
+  to   { transform: rotate(360deg); }
+}
+
+/* ──────────────────────────────────────────────────────
+   REDUCED MOTION OVERRIDE
+   ────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  .card-3d:hover { transform: none !important; }
+}

@@ -10,14 +10,14 @@ impl ActionPlan.loadPlan -> None {
         data = dict(result.reports[0]) if result.reports else {};
         if data {
             all_steps = [];
-            for name in (data.get("approved", []) or []) {
+            for name in (data.get("approved") or []) {
                 all_steps = all_steps + [{"name": name, "status": "approved"}];
                 done_count = done_count + 1;
             }
-            for name in (data.get("pending", []) or []) {
+            for name in (data.get("pending") or []) {
                 all_steps = all_steps + [{"name": name, "status": "pending"}];
             }
-            for name in (data.get("denied", []) or []) {
+            for name in (data.get("denied") or []) {
                 all_steps = all_steps + [{"name": name, "status": "denied"}];
             }
             steps = all_steps;
