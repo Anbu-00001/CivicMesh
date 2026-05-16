@@ -73,15 +73,15 @@ walker IntakeWalker {
             setattr(person_node, "location_zip", str(profile.location_zip));
         }
 
-        # Step 6: hand off to EligibilityWalker from the NeedNode. The spawn
-        # expression returns the walker instance; its `.reports` list holds
-        # whatever the walker `report`-ed during its run, which is what we
-        # actually want to surface upward.
+        # Step 6: hand off to EligibilityWalker from the NeedNode. `report`
+        # payloads only flow into the outermost walker's `.reports` list, so
+        # child walkers mirror their final payload to `.summary` for us to
+        # read after spawn.
         elig_walker = need_node spawn EligibilityWalker(
             profile=profile,
             person_node=person_node
         );
-        elig_payload: any = elig_walker.reports[0] if elig_walker.reports else {};
+        elig_payload: dict = elig_walker.summary;
 
         report {
             "language": str(lang_profile.detected_language),

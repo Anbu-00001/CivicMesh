@@ -22,6 +22,10 @@ walker NavigationWalker {
     has possible_results: list;
     has profile: NeedProfile;
     has person_node: PersonNode;
+    # Reports emitted via `report` flow upward into the spawning walker's
+    # report stream — child walkers see their own `.reports` as empty. We
+    # mirror the final payload here so callers can read it after spawn.
+    has summary: dict = {};
 
     can plan with PersonNode entry {
         ts = datetime.datetime.utcnow().isoformat();
@@ -102,7 +106,7 @@ walker NavigationWalker {
             });
         }
 
-        report {
+        payload = {
             "action_plan": {
                 "summary": str(action_plan.summary),
                 "steps": step_dicts
@@ -110,5 +114,7 @@ walker NavigationWalker {
             "resource_form_data": resource_form_data,
             "application_nodes_created": len(action_plan.steps)
         };
+        self.summary = payload;
+        report payload;
     }
 }

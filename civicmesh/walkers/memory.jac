@@ -141,7 +141,7 @@ walker MemoryWalker {
                     context=esc_context,
                     person_node=here
                 );
-                esc_payload: any = esc_walker.reports[-1] if esc_walker.reports else {};
+                esc_payload: dict = esc_walker.summary;
                 report {
                     "updated": True,
                     "resource": self.resource_name,

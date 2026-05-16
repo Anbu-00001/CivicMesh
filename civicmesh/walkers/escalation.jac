@@ -26,6 +26,9 @@ walker EscalationWalker {
     has person_node: PersonNode;
     has iteration_count: int = 0;
     has max_iterations: int = 8;
+    # Mirror of the final report so the spawning walker can read it after
+    # spawn — `report` payloads flow only into the outermost walker's stream.
+    has summary: dict = {};
 
     can escalate with PersonNode entry {
         # ReAct loop guard. Streams progress to the WebSocket client and
@@ -106,7 +109,7 @@ walker EscalationWalker {
             on_iteration=iteration_guard
         );
 
-        report {
+        payload = {
             "type": "escalation_complete",
             "trigger": str(self.context.trigger_reason),
             "is_emergency": bool(escalation_msg.is_emergency),
@@ -115,5 +118,7 @@ walker EscalationWalker {
             "personalized_message": str(escalation_msg.personalized_message),
             "iterations_used": int(self.iteration_count)
         };
+        self.summary = payload;
+        report payload;
     }
 }
