@@ -13,7 +13,7 @@ call-site edits required. Default model parameters come from jac.toml.
 import from byllm.lib { Model, ModelPool }
 
 glob pool = ModelPool(
-    models=[Model(model_name="gemini/gemini-2.5-flash")],
+    models=[Model(model_name="nvidia_nim/meta/llama-3.1-8b-instruct")],
     strategy="fallback",
 );
 

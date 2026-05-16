@@ -21,13 +21,13 @@ typescript = "^5.3.3"
 "@types/react-dom" = "^18.2.0"
 
 [plugins.byllm.model]
-default_model = "gemini/gemini-2.5-flash"
+default_model = "nvidia_nim/meta/llama-3.1-8b-instruct"
 temperature = 0.2
 
 [plugins.byllm.fallback]
 strategy = "fallback"
 num_retries = 2
-timeout = 60.0
+timeout = 120.0
 
 [plugins.byllm.compaction]
 enabled = true

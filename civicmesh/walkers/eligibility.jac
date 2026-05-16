@@ -25,7 +25,10 @@ walker EligibilityWalker {
     # Each candidate is one LLM call, so a low default keeps us inside
     # Gemini's free-tier rate window during integration tests. Production
     # callers can raise this when they pass the walker into spawn().
-    has max_candidates: int = 1;
+    has max_candidates: int = 3;
+    # Mirror of the final report so the spawning walker can read it after
+    # spawn — `report` payloads flow only into the outermost walker's stream.
+    has summary: dict = {};
 
     can check with NeedNode entry {
         # Step 1: find candidate ResourceNodes that match this need's category
@@ -111,8 +114,10 @@ walker EligibilityWalker {
                 context=esc_context,
                 person_node=self.person_node
             );
-            esc_payload: any = esc_walker.reports[-1] if esc_walker.reports else {};
-            report {"escalated": True, "escalation": esc_payload};
+            esc_payload: dict = esc_walker.summary;
+            payload = {"escalated": True, "escalation": esc_payload};
+            self.summary = payload;
+            report payload;
             disengage;
         }
 
@@ -122,7 +127,7 @@ walker EligibilityWalker {
             profile=self.profile,
             person_node=self.person_node
         );
-        nav_payload: any = nav_walker.reports[0] if nav_walker.reports else {};
+        nav_payload: dict = nav_walker.summary;
 
         top_matches: list = [];
         for r in eligible[:5] {
@@ -132,12 +137,14 @@ walker EligibilityWalker {
             });
         }
 
-        report {
+        payload = {
             "escalated": False,
             "eligible_count": len(eligible),
             "possible_count": len(possible),
             "top_matches": top_matches,
             "action_plan": nav_payload
         };
+        self.summary = payload;
+        report payload;
     }
 }
