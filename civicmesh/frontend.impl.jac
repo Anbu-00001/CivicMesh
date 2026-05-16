@@ -34,3 +34,28 @@ impl ClientApp.loadSession -> None {
 impl ClientApp.pushWalkerEvent(event: dict) -> None {
     walker_events = walker_events + [event];
 }
+
+impl ClientApp.navTab(tab_id: str, label: str, icon: str) -> JsxElement {
+    is_active = active_tab == tab_id;
+    return
+        <button
+            onClick={lambda _e: MouseEvent { active_tab = tab_id; }}
+            style={{
+                "padding": "7px 16px",
+                "background": ("#FFE500" if is_active else "transparent"),
+                "color": ("#0A0A0A" if is_active else "rgba(255,255,255,0.45)"),
+                "border": "none",
+                "borderRadius": "8px",
+                "fontSize": "13px",
+                "fontWeight": ("600" if is_active else "400"),
+                "cursor": "pointer",
+                "transition": "all 0.2s ease",
+                "display": "flex",
+                "alignItems": "center",
+                "gap": "5px"
+            }}
+        >
+            <span>{icon}</span>
+            {label}
+        </button>;
+}

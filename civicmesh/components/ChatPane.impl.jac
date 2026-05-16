@@ -1,5 +1,18 @@
 """Async logic for ChatPane component."""
 
+impl ChatPane.walkerColor(walker_name: str) -> str {
+    colors = {
+        "IntakeWalker": "#FFE500",
+        "EligibilityWalker": "#4488FF",
+        "NavigationWalker": "#00FF88",
+        "MemoryWalker": "#FFB344",
+        "EscalationWalker": "#FF4444",
+        "system": "#FFE500"
+    };
+    return colors.get(walker_name, "rgba(255,255,255,0.3)");
+}
+
+
 impl ChatPane.sendMessage -> None {
     if (not input_val.strip()) or is_loading {
         return;
@@ -26,54 +39,52 @@ impl ChatPane.sendMessage -> None {
             conversation=conversation,
             user_id=user_id
         );
-        if result.reports {
-            data: Any = result.reports[0];
-            try {
-                lang_str = str(data["language"]);
-            } except Exception as _ex { lang_str = "en"; }
-            try {
-                profile_obj = data["profile"];
-            } except Exception as _ex { profile_obj = None; }
+        # Use a safe-by-default container so missing keys return undefined
+        # rather than throwing JS TypeErrors that bypass Jac except blocks.
+        data: Any = (result.reports[0] if (result.reports and len(result.reports) > 0) else {}) or {};
 
-            active_walker = "NavigationWalker";
-            on_walker_event({"walker": "NavigationWalker", "status": "running", "node": "ActionPlan"});
+        raw_lang = data["language"];
+        if raw_lang { lang_str = str(raw_lang); }
 
-            elig: Any = None;
-            try {
-                elig = data["eligibility_results"];
-            } except Exception as _ex { elig = None; }
+        raw_profile = data["profile"];
+        if raw_profile { profile_obj = raw_profile; }
 
-            escalated = False;
-            try {
-                escalated = bool(elig["escalated"]);
-            } except Exception as _ex { escalated = False; }
+        active_walker = "NavigationWalker";
+        on_walker_event({"walker": "NavigationWalker", "status": "running", "node": "ActionPlan"});
 
-            if escalated {
-                try {
-                    esc: Any = elig["escalation"];
-                    bot_text = str(esc["personalized_message"]);
-                } except Exception as _ex {
-                    bot_text = "I found crisis resources. Let me connect you with immediate help.";
-                }
-                bot_walker = "EscalationWalker";
+        raw_elig = data["eligibility_results"];
+        elig: Any = raw_elig if raw_elig else {};
+
+        escalated = bool(elig["escalated"]);
+        if escalated {
+            esc_raw = elig["escalation"];
+            esc: Any = esc_raw if esc_raw else {};
+            msg_raw = esc["personalized_message"];
+            if msg_raw {
+                bot_text = str(msg_raw);
             } else {
-                step_count = 0;
-                eligible_count = 0;
-                try {
-                    eligible_count = int(elig["eligible_count"]);
-                } except Exception as _ex { eligible_count = 0; }
-                try {
-                    plan_top: Any = elig["action_plan"];
-                    plan_inner: Any = plan_top["action_plan"];
-                    step_list: list = list(plan_inner["steps"]);
-                    step_count = len(step_list);
-                } except Exception as _ex { step_count = 0; }
-                bot_text = f"Found {eligible_count} resources you qualify for. Created a {step_count}-step plan. Go to Action Plan to see your next steps.";
-                bot_walker = "NavigationWalker";
+                bot_text = "I found crisis resources. Let me connect you with immediate help.";
             }
-
-            on_walker_event({"walker": "MemoryWalker", "status": "complete", "node": "ApplicationNode"});
+            bot_walker = "EscalationWalker";
+        } else {
+            step_count = 0;
+            eligible_count = 0;
+            ec_raw = elig["eligible_count"];
+            if ec_raw { eligible_count = int(ec_raw); }
+            plan_top_raw = elig["action_plan"];
+            plan_top: Any = plan_top_raw if plan_top_raw else {};
+            plan_inner_raw = plan_top["action_plan"];
+            plan_inner: Any = plan_inner_raw if plan_inner_raw else {};
+            steps_raw = plan_inner["steps"];
+            if steps_raw {
+                step_list: list = list(steps_raw);
+                step_count = len(step_list);
+            }
+            bot_text = f"Found {eligible_count} resources you qualify for. Created a {step_count}-step plan. Go to Action Plan to see your next steps.";
+            bot_walker = "NavigationWalker";
         }
+
+        on_walker_event({"walker": "MemoryWalker", "status": "complete", "node": "ApplicationNode"});
     } except Exception as _ex {
         bot_text = "Something went wrong. Please try again.";
         bot_walker = "error";
