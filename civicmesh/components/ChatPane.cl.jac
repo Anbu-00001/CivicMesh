@@ -43,7 +43,7 @@ def:pub ChatPane(
     }
 
     async def sendMessage -> None;
-    def renderMessage(msg: dict, idx: int) -> JsxElement;
+    def renderMessage(msg: dict, idx: int, is_last: bool) -> JsxElement;
 
     def walkerColor(walker_name: str) -> str {
         colors = {
@@ -103,6 +103,7 @@ def:pub ChatPane(
                         </div>
                     </div>
                     {active_walker and <div
+                        className="badge-glow"
                         style={{
                             "display": "flex",
                             "alignItems": "center",
@@ -114,14 +115,21 @@ def:pub ChatPane(
                         }}
                     >
                         <span
-                            style={{
-                                "width": "6px",
-                                "height": "6px",
-                                "borderRadius": "50%",
-                                "background": "#FFE500",
-                                "display": "inline-block"
-                            }}
-                        />
+                            className="pulse-ring"
+                            style={{"width": "10px", "height": "10px", "flexShrink": "0", "position": "relative"}}
+                        >
+                            <span
+                                style={{
+                                    "width": "6px",
+                                    "height": "6px",
+                                    "borderRadius": "50%",
+                                    "background": "#FFE500",
+                                    "display": "inline-block",
+                                    "position": "relative",
+                                    "zIndex": "1"
+                                }}
+                            />
+                        </span>
                         <span style={{"fontSize": "11px", "color": "#FFE500"}}>
                             {active_walker}
                         </span>
@@ -137,7 +145,7 @@ def:pub ChatPane(
                         "gap": "10px"
                     }}
                 >
-                    {[renderMessage(messages[i], i) for i in range(len(messages))]}
+                    {[renderMessage(messages[i], i, (i == len(messages) - 1) and (not is_loading)) for i in range(len(messages))]}
                     {is_loading and <div style={{"display": "flex", "alignItems": "center", "gap": "8px"}}>
                         <div
                             style={{
@@ -315,6 +323,7 @@ def:pub ChatPane(
                                 {w[0]}
                             </span>
                             {(active_walker and (w[0] in active_walker)) and <span
+                                className="walker-active-dot"
                                 style={{
                                     "width": "6px",
                                     "height": "6px",

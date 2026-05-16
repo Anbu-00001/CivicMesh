@@ -189,7 +189,10 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
                         "gap": "5px"
                     }}
                 >
-                    {("⏸ Playing..." if is_playing else "▶ Replay")}
+                    <span className={("replay-spinning" if is_playing else "")}>
+                        {("⏸" if is_playing else "▶")}
+                    </span>
+                    {(" Playing..." if is_playing else " Replay")}
                 </button>
             </div>
             <div

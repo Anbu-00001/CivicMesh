@@ -12,14 +12,15 @@ def:pub SessionBanner(session_data: dict) -> JsxElement {
         return <div/>;
     }
 
-    approved = list(session_data.get("approved", []) or []);
-    pending = list(session_data.get("pending", []) or []);
-    denied = list(session_data.get("denied", []) or []);
+    approved = list(session_data.get("approved") or []);
+    pending = list(session_data.get("pending") or []);
+    denied = list(session_data.get("denied") or []);
     summary_obj = session_data.get("session_summary", None);
     next_step = str(dict(summary_obj).get("next_recommended_step", "")) if summary_obj else "";
 
     return
         <div
+            className="banner-slide"
             style={{
                 "margin": "0 0 16px 0",
                 "padding": "12px 16px",

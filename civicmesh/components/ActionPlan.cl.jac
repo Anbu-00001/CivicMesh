@@ -34,9 +34,12 @@ def:pub ActionPlan(user_id: str) -> JsxElement {
         st = str(s["status"]);
         nm = str(s["name"]);
         sc = statusColor(st);
+        card_class = "card-3d card-enter status-" + st;
+        dot_class = "status-dot-" + st + ((" step-done") if (st in ["approved","applied"]) else "");
         return
             <div
                 key={str(i)}
+                className={card_class}
                 style={{
                     "background": "rgba(255,255,255,0.03)",
                     "backdropFilter": "blur(12px)",
@@ -48,6 +51,7 @@ def:pub ActionPlan(user_id: str) -> JsxElement {
                 }}
             >
                 <div
+                    className="card-3d-inner"
                     style={{
                         "padding": "13px 15px",
                         "display": "flex",
@@ -56,6 +60,7 @@ def:pub ActionPlan(user_id: str) -> JsxElement {
                     }}
                 >
                     <div
+                        className={dot_class}
                         style={{
                             "width": "30px",
                             "height": "30px",
@@ -177,12 +182,12 @@ def:pub ActionPlan(user_id: str) -> JsxElement {
                         }}
                     >
                         <div
+                            className="progress-spring"
                             style={{
                                 "height": "100%",
                                 "width": str(pct) + "%",
                                 "background": "#FFE500",
-                                "borderRadius": "3px",
-                                "transition": "width 0.6s cubic-bezier(0.34,1.56,0.64,1)"
+                                "borderRadius": "3px"
                             }}
                         />
                     </div>
