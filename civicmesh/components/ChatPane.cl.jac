@@ -44,18 +44,7 @@ def:pub ChatPane(
 
     async def sendMessage -> None;
     def renderMessage(msg: dict, idx: int, is_last: bool) -> JsxElement;
-
-    def walkerColor(walker_name: str) -> str {
-        colors = {
-            "IntakeWalker": "#FFE500",
-            "EligibilityWalker": "#4488FF",
-            "NavigationWalker": "#00FF88",
-            "MemoryWalker": "#FFB344",
-            "EscalationWalker": "#FF4444",
-            "system": "#FFE500"
-        };
-        return colors.get(walker_name, "rgba(255,255,255,0.3)");
-    }
+    def walkerColor(walker_name: str) -> str;
 
     profile_category = "";
     profile_urgency = "";
