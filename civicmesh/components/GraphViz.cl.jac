@@ -45,8 +45,9 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
 
     can with [walker_events] entry {
         if walker_events {
-            last = dict(walker_events[len(walker_events) - 1]);
-            node_id = str(last.get("node", ""));
+            last: Any = walker_events[len(walker_events) - 1];
+            node_id = "";
+            try { node_id = str(last["node"]); } except Exception as _ex { node_id = ""; }
             node_map = {
                 "root": "root",
                 "NeedNode": "need",
@@ -241,12 +242,12 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
                 }}
             >
                 <span style={{"color": "#FFE500"}}>
-                    {walker_events[len(walker_events)-1].get("walker","")}
+                    {str(walker_events[len(walker_events)-1]["walker"])}
                 </span>
                 <span>→</span>
-                <span>{walker_events[len(walker_events)-1].get("node","")}</span>
+                <span>{str(walker_events[len(walker_events)-1]["node"])}</span>
                 <span style={{"color": "#00FF88", "marginLeft": "4px"}}>
-                    {walker_events[len(walker_events)-1].get("status","")}
+                    {str(walker_events[len(walker_events)-1]["status"])}
                 </span>
             </div>}
         </div>;

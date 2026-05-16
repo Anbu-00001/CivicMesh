@@ -16,42 +16,73 @@ impl ChatPane.sendMessage -> None {
     active_walker = "IntakeWalker → EligibilityWalker";
     on_walker_event({"walker": "EligibilityWalker", "status": "running", "node": "NeedNode"});
 
+    bot_text = "";
+    bot_walker = "";
+    lang_str = "en";
+    profile_obj: Any = None;
+
     try {
-        result = root spawn IntakeWalker(
+        result = await root spawn IntakeWalker(
             conversation=conversation,
             user_id=user_id
         );
-        data = dict(result.reports[0]) if result.reports else {};
-
-        if data {
-            detected_language = str(data.get("language", "en"));
-            profile_extracted = dict(data.get("profile", {}));
+        if result.reports {
+            data: Any = result.reports[0];
+            try {
+                lang_str = str(data["language"]);
+            } except Exception as _ex { lang_str = "en"; }
+            try {
+                profile_obj = data["profile"];
+            } except Exception as _ex { profile_obj = None; }
 
             active_walker = "NavigationWalker";
             on_walker_event({"walker": "NavigationWalker", "status": "running", "node": "ActionPlan"});
 
-            elig = dict(data.get("eligibility_results", {}));
-            bot_text = "";
-            bot_walker = "";
-            if elig.get("escalated", False) {
-                esc = dict(elig.get("escalation", {}));
-                bot_text = str(esc.get("personalized_message", "I found crisis resources. Let me connect you with immediate help."));
+            elig: Any = None;
+            try {
+                elig = data["eligibility_results"];
+            } except Exception as _ex { elig = None; }
+
+            escalated = False;
+            try {
+                escalated = bool(elig["escalated"]);
+            } except Exception as _ex { escalated = False; }
+
+            if escalated {
+                try {
+                    esc: Any = elig["escalation"];
+                    bot_text = str(esc["personalized_message"]);
+                } except Exception as _ex {
+                    bot_text = "I found crisis resources. Let me connect you with immediate help.";
+                }
                 bot_walker = "EscalationWalker";
             } else {
-                outer_plan = dict(elig.get("action_plan", {}));
-                plan_data = dict(outer_plan.get("action_plan", {}));
-                step_list = list(plan_data.get("steps", []));
-                step_count = len(step_list);
-                eligible_count = int(elig.get("eligible_count", 0));
+                step_count = 0;
+                eligible_count = 0;
+                try {
+                    eligible_count = int(elig["eligible_count"]);
+                } except Exception as _ex { eligible_count = 0; }
+                try {
+                    plan_top: Any = elig["action_plan"];
+                    plan_inner: Any = plan_top["action_plan"];
+                    step_list: list = list(plan_inner["steps"]);
+                    step_count = len(step_list);
+                } except Exception as _ex { step_count = 0; }
                 bot_text = f"Found {eligible_count} resources you qualify for. Created a {step_count}-step plan. Go to Action Plan to see your next steps.";
                 bot_walker = "NavigationWalker";
             }
 
             on_walker_event({"walker": "MemoryWalker", "status": "complete", "node": "ApplicationNode"});
-            messages = messages + [{"role": "bot", "text": bot_text, "walker": bot_walker}];
         }
     } except Exception as _ex {
-        messages = messages + [{"role": "bot", "text": "Something went wrong. Please try again.", "walker": "error"}];
+        bot_text = "Something went wrong. Please try again.";
+        bot_walker = "error";
+    }
+
+    detected_language = lang_str;
+    profile_extracted = profile_obj;
+    if bot_text {
+        messages = messages + [{"role": "bot", "text": bot_text, "walker": bot_walker}];
     }
 
     is_loading = False;

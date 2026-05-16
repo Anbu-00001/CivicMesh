@@ -1,22 +1,37 @@
 """Return-visit session memory banner.
-Only renders when session_data.has_history is True.
+Only renders when session_data["has_history"] is True.
 """
 
-def:pub SessionBanner(session_data: dict) -> JsxElement {
+def:pub SessionBanner(session_data: Any) -> JsxElement {
     has is_visible: bool = True;
 
     if not is_visible {
         return <div/>;
     }
-    if not session_data.get("has_history", False) {
+    if not session_data {
         return <div/>;
     }
 
-    approved = list(session_data.get("approved") or []);
-    pending = list(session_data.get("pending") or []);
-    denied = list(session_data.get("denied") or []);
-    summary_obj = session_data.get("session_summary", None);
-    next_step = str(dict(summary_obj).get("next_recommended_step", "")) if summary_obj else "";
+    has_hist = False;
+    try { has_hist = bool(session_data["has_history"]); } except Exception as _ex { has_hist = False; }
+    if not has_hist {
+        return <div/>;
+    }
+
+    approved: list = [];
+    pending: list = [];
+    denied: list = [];
+    try { approved = list(session_data["approved"]); } except Exception as _ex { approved = []; }
+    try { pending = list(session_data["pending"]); } except Exception as _ex { pending = []; }
+    try { denied = list(session_data["denied"]); } except Exception as _ex { denied = []; }
+
+    next_step = "";
+    try {
+        summary_obj: Any = session_data["session_summary"];
+        if summary_obj {
+            next_step = str(summary_obj["next_recommended_step"]);
+        }
+    } except Exception as _ex { next_step = ""; }
 
     return
         <div

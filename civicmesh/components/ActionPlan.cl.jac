@@ -4,7 +4,7 @@ Data sourced entirely from real MemoryWalker calls — no fake steps.
 sv import from walkers.memory { MemoryWalker }
 
 def:pub ActionPlan(user_id: str) -> JsxElement {
-    has steps: list[dict] = [],
+    has steps: list = [],
         loading: bool = True,
         done_count: int = 0;
 
@@ -30,7 +30,7 @@ def:pub ActionPlan(user_id: str) -> JsxElement {
         return icons.get(status, "○");
     }
 
-    def renderStep(s: dict, i: int) -> JsxElement {
+    def renderStep(s: Any, i: int) -> JsxElement {
         st = str(s["status"]);
         nm = str(s["name"]);
         sc = statusColor(st);
