@@ -14,7 +14,7 @@ def:pub ChatPane(
         is_loading: bool = False,
         active_walker: str = "",
         detected_language: str = "",
-        profile_extracted: dict = {};
+        profile_extracted: Any = {};
 
     can with entry {
         seed = [
@@ -55,6 +55,19 @@ def:pub ChatPane(
             "system": "#FFE500"
         };
         return colors.get(walker_name, "rgba(255,255,255,0.3)");
+    }
+
+    profile_category = "";
+    profile_urgency = "";
+    if profile_extracted {
+        try {
+            raw_cat = profile_extracted["category"];
+            if raw_cat { profile_category = str(raw_cat); }
+        } except Exception as _ex { profile_category = ""; }
+        try {
+            raw_urg = profile_extracted["urgency"];
+            if raw_urg { profile_urgency = str(raw_urg); }
+        } except Exception as _ex { profile_urgency = ""; }
     }
 
     walker_chain = [
@@ -262,7 +275,7 @@ def:pub ChatPane(
                     >
                         {detected_language.upper()}
                     </div>) if detected_language else (<div style={{"fontSize": "13px", "color": "rgba(255,255,255,0.2)"}}>Waiting...</div>)}
-                    {profile_extracted.get("category", "") and <div
+                    {profile_category and <div
                         style={{
                             "marginTop": "9px",
                             "display": "flex",
@@ -271,10 +284,10 @@ def:pub ChatPane(
                         }}
                     >
                         <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.5)"}}>
-                            Need: <span style={{"color": "#FFE500"}}>{profile_extracted["category"]}</span>
+                            Need: <span style={{"color": "#FFE500"}}>{profile_category}</span>
                         </div>
                         <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.5)"}}>
-                            Urgency: <span style={{"color": "#FFE500"}}>{profile_extracted.get("urgency", "")}</span>
+                            Urgency: <span style={{"color": "#FFE500"}}>{profile_urgency}</span>
                         </div>
                     </div>}
                 </div>

@@ -3,21 +3,27 @@
 impl ActionPlan.loadPlan -> None {
     loading = True;
     try {
-        result = root spawn MemoryWalker(
+        result = await root spawn MemoryWalker(
             user_id=user_id,
             mode="read_session"
         );
-        data = dict(result.reports[0]) if result.reports else {};
-        if data {
-            all_steps = [];
-            for name in (data.get("approved") or []) {
+        if result.reports {
+            data: Any = result.reports[0];
+            all_steps: list = [];
+            approved_names: list = [];
+            pending_names: list = [];
+            denied_names: list = [];
+            try { approved_names = list(data["approved"]); } except Exception as _ex { approved_names = []; }
+            try { pending_names = list(data["pending"]); } except Exception as _ex { pending_names = []; }
+            try { denied_names = list(data["denied"]); } except Exception as _ex { denied_names = []; }
+            for name in approved_names {
                 all_steps = all_steps + [{"name": name, "status": "approved"}];
                 done_count = done_count + 1;
             }
-            for name in (data.get("pending") or []) {
+            for name in pending_names {
                 all_steps = all_steps + [{"name": name, "status": "pending"}];
             }
-            for name in (data.get("denied") or []) {
+            for name in denied_names {
                 all_steps = all_steps + [{"name": name, "status": "denied"}];
             }
             steps = all_steps;
@@ -30,7 +36,7 @@ impl ActionPlan.loadPlan -> None {
 
 impl ActionPlan.markApplied(resource_name: str, idx: int) -> None {
     try {
-        root spawn MemoryWalker(
+        await root spawn MemoryWalker(
             user_id=user_id,
             mode="update_status",
             resource_name=resource_name,

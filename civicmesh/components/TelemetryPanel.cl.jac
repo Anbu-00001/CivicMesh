@@ -182,7 +182,13 @@ def:pub TelemetryPanel(walker_events: list) -> JsxElement {
             </div>;
     }
 
-    def renderEvent(ev: dict, idx: int) -> JsxElement {
+    def renderEvent(ev: Any, idx: int) -> JsxElement {
+        ev_walker = "";
+        ev_node = "";
+        ev_status = "";
+        try { ev_walker = str(ev["walker"]); } except Exception as _ex { ev_walker = ""; }
+        try { ev_node = str(ev["node"]); } except Exception as _ex { ev_node = ""; }
+        try { ev_status = str(ev["status"]); } except Exception as _ex { ev_status = ""; }
         return
             <div
                 key={str(idx)}
@@ -205,9 +211,9 @@ def:pub TelemetryPanel(walker_events: list) -> JsxElement {
                         "flexShrink": "0"
                     }}
                 />
-                <span style={{"color": "#FFE500"}}>{ev.get("walker", "")}</span>
-                <span>→ {ev.get("node", "")}</span>
-                <span style={{"color": "#00FF88"}}>{ev.get("status", "")}</span>
+                <span style={{"color": "#FFE500"}}>{ev_walker}</span>
+                <span>→ {ev_node}</span>
+                <span style={{"color": "#00FF88"}}>{ev_status}</span>
             </div>;
     }
 
@@ -337,7 +343,7 @@ def:pub TelemetryPanel(walker_events: list) -> JsxElement {
                     >
                         Live events
                     </div>
-                    {[renderEvent(dict(walker_events[j]), j) for j in range(max(0, len(walker_events)-5), len(walker_events))]}
+                    {[renderEvent(walker_events[j], j) for j in range(max(0, len(walker_events)-5), len(walker_events))]}
                 </div>}
             </div>
         </div>;
