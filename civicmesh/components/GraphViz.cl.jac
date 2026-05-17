@@ -94,6 +94,7 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
     def nodeColor(node_type: str) -> str;
     def renderEdge(e: list) -> JsxElement;
     def renderNode(n: dict) -> JsxElement;
+    def renderLastEvent -> JsxElement;
 
     legend = [
         ("PersonNode", "#FFE500"),
@@ -204,25 +205,6 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
                 {[renderEdge(graph_edges[i]) for i in range(len(graph_edges))]}
                 {[renderNode(graph_nodes[i]) for i in range(len(graph_nodes))]}
             </svg>
-            {walker_events and <div
-                style={{
-                    "padding": "8px 18px",
-                    "borderTop": "0.5px solid rgba(255,255,255,0.05)",
-                    "fontSize": "11px",
-                    "color": "rgba(255,255,255,0.35)",
-                    "display": "flex",
-                    "alignItems": "center",
-                    "gap": "6px"
-                }}
-            >
-                <span style={{"color": "#FFE500"}}>
-                    {str(walker_events[len(walker_events)-1]["walker"])}
-                </span>
-                <span>→</span>
-                <span>{str(walker_events[len(walker_events)-1]["node"])}</span>
-                <span style={{"color": "#00FF88", "marginLeft": "4px"}}>
-                    {str(walker_events[len(walker_events)-1]["status"])}
-                </span>
-            </div>}
+            {(len(walker_events) > 0) and renderLastEvent()}
         </div>;
 }

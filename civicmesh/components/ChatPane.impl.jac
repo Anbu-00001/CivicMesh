@@ -491,38 +491,141 @@ impl ChatPane.sendMessage(text_override: str = "") -> None {
     suggestions: list = generateSuggestions(profile_obj, escalated, bot_walker, user_text);
 
     # Translate the bot reply + suggestion chips into the user's detected
-    # language so the UX feels native. The translate stub passes through
-    # unchanged for English; for any other language it makes a single batch
-    # LLM call (one call total for the whole turn, not one per chip).
+    # language so the UX feels native. To stay within the free-tier LLM
+    # budget while still being reliable across many languages we:
+    #   1) check the session-level translation_cache first — repeat
+    #      strings in the same language never hit the LLM twice;
+    #   2) batch all uncached items in ONE LLM call;
+    #   3) detect items the LLM silently skipped (output == input but
+    #      target language isn't English) and retry just those once;
+    #   4) write everything back into the cache so subsequent turns of
+    #      the same chat language pay zero LLM cost for chips.
     lang_lower = lang_str.lower();
-    if bot_text and lang_lower and lang_lower != "en" and lang_lower != "english" {
+    needs_translate = bot_text and lang_lower and lang_lower != "en" and lang_lower != "english";
+    if needs_translate {
         try {
-            payload: list[str] = [bot_text] + [str(suggestions[ti]) for ti in range(len(suggestions))];
-            tr_result = await root spawn TranslateWalker(
-                texts=payload,
-                target_language=lang_str
-            );
-            tr_reports = tr_result.reports;
-            tr_n = len(tr_reports) if tr_reports else 0;
-            if tr_n > 0 {
-                tr_data: Any = tr_reports[tr_n - 1];
-                tr_list_raw = tr_data["translated"] if tr_data else None;
-                if tr_list_raw {
-                    tr_list: list = list(tr_list_raw);
-                    if len(tr_list) == len(payload) {
-                        bot_text = str(tr_list[0]);
-                        new_sugs: list = [];
-                        si = 1;
-                        while si < len(tr_list) {
-                            new_sugs = new_sugs + [str(tr_list[si])];
-                            si = si + 1;
+            # English source strings for this turn, in display order.
+            english_payload: list[str] = [bot_text] + [str(suggestions[ti]) for ti in range(len(suggestions))];
+
+            # Final translated output, prefilled from cache where possible.
+            final_translated: list[str] = [];
+            cache_misses: list[str] = [];
+            miss_indices: list[int] = [];
+            ii = 0;
+            while ii < len(english_payload) {
+                src = str(english_payload[ii]);
+                key = lang_lower + "::" + src;
+                cached = translation_cache[key];
+                if cached {
+                    final_translated = final_translated + [str(cached)];
+                } else {
+                    final_translated = final_translated + [src];
+                    cache_misses = cache_misses + [src];
+                    miss_indices = miss_indices + [ii];
+                }
+                ii = ii + 1;
+            }
+
+            # Translate the cache-miss items in one batch (if any)
+            new_cache_entries: dict = {};
+            if len(cache_misses) > 0 {
+                tr_result = await root spawn TranslateWalker(
+                    texts=cache_misses,
+                    target_language=lang_str
+                );
+                tr_reports = tr_result.reports;
+                tr_n = len(tr_reports) if tr_reports else 0;
+                if tr_n > 0 {
+                    tr_data: Any = tr_reports[tr_n - 1];
+                    tr_list_raw = tr_data["translated"] if tr_data else None;
+                    if tr_list_raw {
+                        tr_list: list = list(tr_list_raw);
+                        if len(tr_list) == len(cache_misses) {
+                            # Pass 1: assign translations + detect untranslated
+                            untranslated_inputs: list[str] = [];
+                            untranslated_local_idx: list[int] = [];
+                            tj = 0;
+                            while tj < len(tr_list) {
+                                t_val = str(tr_list[tj]);
+                                src_val = str(cache_misses[tj]);
+                                if t_val == src_val {
+                                    # LLM silently skipped this one
+                                    untranslated_inputs = untranslated_inputs + [src_val];
+                                    untranslated_local_idx = untranslated_local_idx + [tj];
+                                } else {
+                                    # Persist into cache + final array
+                                    key2 = lang_lower + "::" + src_val;
+                                    new_cache_entries[key2] = t_val;
+                                    final_translated[miss_indices[tj]] = t_val;
+                                }
+                                tj = tj + 1;
+                            }
+                            # Pass 2: retry skipped items in a second batch
+                            if len(untranslated_inputs) > 0 {
+                                try {
+                                    retry_result = await root spawn TranslateWalker(
+                                        texts=untranslated_inputs,
+                                        target_language=lang_str
+                                    );
+                                    retry_reports = retry_result.reports;
+                                    if retry_reports and len(retry_reports) > 0 {
+                                        retry_data: Any = retry_reports[len(retry_reports) - 1];
+                                        retry_tr_raw = retry_data["translated"] if retry_data else None;
+                                        if retry_tr_raw {
+                                            retry_tr: list = list(retry_tr_raw);
+                                            if len(retry_tr) == len(untranslated_inputs) {
+                                                rj = 0;
+                                                while rj < len(retry_tr) {
+                                                    rt = str(retry_tr[rj]);
+                                                    src_rt = str(untranslated_inputs[rj]);
+                                                    if rt != src_rt {
+                                                        key3 = lang_lower + "::" + src_rt;
+                                                        new_cache_entries[key3] = rt;
+                                                        final_translated[miss_indices[untranslated_local_idx[rj]]] = rt;
+                                                    }
+                                                    rj = rj + 1;
+                                                }
+                                            }
+                                        }
+                                    }
+                                } except Exception as _ex_retry {
+                                    # Retry failed — leave the skipped items in English
+                                }
+                            }
                         }
-                        suggestions = new_sugs;
                     }
                 }
             }
+
+            # Commit new entries directly into the session cache. Mutating
+            # the existing dict in place is safe here — we don't need a
+            # re-render for the cache, only readability on the next chat
+            # turn (which gets a fresh closure on the updated state).
+            # Avoids the Jac→JS `dict(x)` → `Object.fromEntries(plainObj)`
+            # iterator trap that bit us in GraphViz.
+            if len(new_cache_entries) > 0 {
+                ck_list: list = list(new_cache_entries.keys());
+                ck_i = 0;
+                while ck_i < len(ck_list) {
+                    ck = str(ck_list[ck_i]);
+                    translation_cache[ck] = new_cache_entries[ck];
+                    ck_i = ck_i + 1;
+                }
+            }
+
+            # Apply the translations
+            if len(final_translated) == len(english_payload) {
+                bot_text = str(final_translated[0]);
+                new_sugs: list = [];
+                fi = 1;
+                while fi < len(final_translated) {
+                    new_sugs = new_sugs + [str(final_translated[fi])];
+                    fi = fi + 1;
+                }
+                suggestions = new_sugs;
+            }
         } except Exception as _ex {
-            # Translation failed — keep English. Better than no reply.
+            # Translation flow failed — fall back to English. Better than nothing.
         }
     }
 
