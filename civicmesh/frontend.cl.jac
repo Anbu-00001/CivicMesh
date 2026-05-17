@@ -38,7 +38,7 @@ def:pub ClientApp -> JsxElement {
 
     async def initAuth -> None;
     async def loadSession -> None;
-    def pushWalkerEvent(event: dict) -> None;
+    def pushWalkerEvent(events: list) -> None;
     def navTab(tab_id: str, label: str, icon: str) -> JsxElement;
 
     # Build has_history defensively without using .get (Any-typed value doesn't expose .get to the checker)
@@ -134,8 +134,8 @@ def:pub ClientApp -> JsxElement {
             {has_history and <SessionBanner session_data={session_data}/>}
             <main
                 style={{
-                    "padding": "20px 24px",
-                    "maxWidth": "1200px",
+                    "padding": "16px 24px",
+                    "maxWidth": "1100px",
                     "margin": "0 auto",
                     "position": "relative",
                     "zIndex": "1"
@@ -145,6 +145,7 @@ def:pub ClientApp -> JsxElement {
                     user_id={user_id}
                     on_walker_event={pushWalkerEvent}
                     session_data={session_data}
+                    walker_events={walker_events}
                 />) if active_tab == "chat" else None}
                 {(<GraphViz walker_events={walker_events}/>) if active_tab == "graph" else None}
                 {(<ActionPlan user_id={user_id}/>) if active_tab == "plan" else None}

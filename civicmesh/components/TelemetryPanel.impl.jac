@@ -1,56 +1,33 @@
-"""Render helpers for TelemetryPanel."""
+"""Render helpers for TelemetryPanel — all data is derived from walker_events."""
 
-impl TelemetryPanel.renderMetric(m: tuple) -> JsxElement {
+impl TelemetryPanel.renderWalkerRow(name: str) -> JsxElement {
+    meta: Any = walker_meta[name];
+    icon = str(meta["icon"]) if meta else "";
+    color = str(meta["color"]) if meta else "#666";
+    count = int(counts[name]) if name in counts else 0;
+    is_active = bool(triggered[name]) if name in triggered else False;
+    pct = (int(count / total_events * 100) if total_events > 0 else 0);
     return
         <div
-            key={m[2]}
-            className="stat-enter"
-            style={{
-                "padding": "14px",
-                "background": "rgba(255,255,255,0.03)",
-                "backdropFilter": "blur(12px)",
-                "border": "0.5px solid rgba(255,255,255,0.07)",
-                "borderRadius": "12px",
-                "textAlign": "center"
-            }}
-        >
-            <div style={{"fontSize": "20px", "marginBottom": "5px"}}>{m[0]}</div>
-            <div style={{"fontSize": "20px", "fontWeight": "600", "color": "#FFE500"}}>{m[1]}</div>
-            <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.35)", "marginTop": "3px"}}>
-                {m[2]}
-            </div>
-        </div>;
-}
-
-impl TelemetryPanel.renderTelemRow(t: dict) -> JsxElement {
-    tname = str(t["walker"]);
-    ticon = str(t["icon"]);
-    tcolor = str(t["color"]);
-    tcalls = int(t["calls"]);
-    ttokens = int(t["tokens"]);
-    tcost = float(str(t["cost"]));
-    tlat = int(t["latency"]);
-    return
-        <div
-            key={tname}
+            key={name}
             style={{
                 "display": "grid",
-                "gridTemplateColumns": "190px 1fr 55px 80px 65px",
+                "gridTemplateColumns": "190px 1fr 80px",
                 "padding": "11px 16px",
                 "borderBottom": "0.5px solid rgba(255,255,255,0.04)",
                 "alignItems": "center"
             }}
         >
             <div style={{"display": "flex", "alignItems": "center", "gap": "7px"}}>
-                <span>{ticon}</span>
+                <span>{icon}</span>
                 <span
                     style={{
                         "fontSize": "12px",
                         "fontWeight": "500",
-                        "color": (tcolor if tcalls > 0 else "rgba(255,255,255,0.25)")
+                        "color": (color if is_active else "rgba(255,255,255,0.25)")
                     }}
                 >
-                    {tname}
+                    {name}
                 </span>
             </div>
             <div>
@@ -66,50 +43,45 @@ impl TelemetryPanel.renderTelemRow(t: dict) -> JsxElement {
                         className="tele-bar-fill"
                         style={{
                             "height": "100%",
-                            "width": str(int(tlat / max_lat * 100)) + "%",
-                            "background": tcolor,
+                            "width": (str(pct) + "%"),
+                            "background": color,
                             "borderRadius": "2px",
-                            "opacity": ("1" if tcalls > 0 else "0.2")
+                            "opacity": ("1" if is_active else "0.2")
                         }}
                     />
                 </div>
                 <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.35)", "marginTop": "3px"}}>
-                    {((str(tlat) + "ms") if tlat > 0 else "—")}
+                    {(str(pct) + "% of session activity" if is_active else "not triggered this session")}
                 </div>
             </div>
             <div
                 style={{
-                    "fontSize": "12px",
-                    "color": ("rgba(255,255,255,0.8)" if tcalls > 0 else "rgba(255,255,255,0.25)")
+                    "fontSize": "13px",
+                    "fontWeight": "600",
+                    "textAlign": "right",
+                    "color": (color if is_active else "rgba(255,255,255,0.25)")
                 }}
             >
-                {(str(tcalls) if tcalls > 0 else "—")}
-            </div>
-            <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.45)"}}>
-                {(str(ttokens) if ttokens > 0 else "—")}
-            </div>
-            <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.45)"}}>
-                {(("$" + str(tcost)) if tcost > 0 else "—")}
+                {(str(count) + (" event" if count == 1 else " events"))}
             </div>
         </div>;
 }
 
-impl TelemetryPanel.renderChainNode(w: dict) -> JsxElement {
-    wname = str(w["walker"]);
-    wicon = str(w["icon"]);
-    wcolor = str(w["color"]);
-    wcalls = str(w["calls"]);
-    wtime = str(w["time"]);
+impl TelemetryPanel.renderChainNode(name: str, is_triggered: bool, count: int) -> JsxElement {
+    meta: Any = walker_meta[name];
+    icon = str(meta["icon"]) if meta else "";
+    color = str(meta["color"]) if meta else "#666";
+    is_last = name == "EscalationWalker";
     return
-        <div key={wname} style={{"display": "flex", "alignItems": "center"}}>
-            <div style={{"textAlign": "center", "minWidth": "105px"}}>
+        <div key={name} style={{"display": "flex", "alignItems": "center"}}>
+            <div style={{"textAlign": "center", "minWidth": "105px", "opacity": ("1" if is_triggered else "0.35")}}>
                 <div
                     style={{
                         "width": "38px",
                         "height": "38px",
                         "borderRadius": "50%",
-                        "background": wcolor + "15",
-                        "border": "1px solid " + wcolor + "45",
+                        "background": color + "15",
+                        "border": "1px solid " + color + ("88" if is_triggered else "30"),
                         "display": "flex",
                         "alignItems": "center",
                         "justifyContent": "center",
@@ -117,16 +89,16 @@ impl TelemetryPanel.renderChainNode(w: dict) -> JsxElement {
                         "margin": "0 auto 5px"
                     }}
                 >
-                    {wicon}
+                    {icon}
                 </div>
-                <div style={{"fontSize": "10px", "fontWeight": "600", "color": wcolor}}>
-                    {wname}
+                <div style={{"fontSize": "10px", "fontWeight": "600", "color": color}}>
+                    {name}
                 </div>
-                <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.3)", "marginTop": "2px"}}>
-                    {wcalls} · {wtime}
+                <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.35)", "marginTop": "2px"}}>
+                    {((str(count) + (" event" if count == 1 else " events")) if is_triggered else "not triggered")}
                 </div>
             </div>
-            <div
+            {(not is_last) and <div
                 style={{
                     "width": "24px",
                     "height": "1px",
@@ -146,7 +118,7 @@ impl TelemetryPanel.renderChainNode(w: dict) -> JsxElement {
                 >
                     ▸
                 </span>
-            </div>
+            </div>}
         </div>;
 }
 
@@ -162,30 +134,25 @@ impl TelemetryPanel.renderEvent(ev: Any, idx: int) -> JsxElement {
         if ev_node_raw { ev_node = str(ev_node_raw); }
         if ev_status_raw { ev_status = str(ev_status_raw); }
     }
+    status_color = "#00FF88" if ev_status == "complete" else "#FFB344";
     return
         <div
             key={str(idx)}
             style={{
                 "fontSize": "11px",
-                "color": "rgba(255,255,255,0.45)",
-                "padding": "3px 0",
+                "color": "rgba(255,255,255,0.55)",
+                "padding": "4px 0",
                 "display": "flex",
                 "alignItems": "center",
-                "gap": "6px"
+                "gap": "8px"
             }}
         >
-            <span
-                style={{
-                    "width": "4px",
-                    "height": "4px",
-                    "borderRadius": "50%",
-                    "background": "#FFE500",
-                    "display": "inline-block",
-                    "flexShrink": "0"
-                }}
-            />
-            <span style={{"color": "#FFE500"}}>{ev_walker}</span>
-            <span>→ {ev_node}</span>
-            <span style={{"color": "#00FF88"}}>{ev_status}</span>
+            <span style={{"fontSize": "10px", "color": "rgba(255,255,255,0.3)", "minWidth": "20px"}}>
+                {"#" + str(idx + 1)}
+            </span>
+            <span style={{"color": "#FFE500", "minWidth": "150px"}}>{ev_walker}</span>
+            <span style={{"color": "rgba(255,255,255,0.35)"}}>→</span>
+            <span style={{"minWidth": "140px"}}>{ev_node}</span>
+            <span style={{"color": status_color, "fontWeight": "500"}}>{ev_status}</span>
         </div>;
 }

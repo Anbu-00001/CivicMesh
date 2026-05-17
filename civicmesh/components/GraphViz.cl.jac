@@ -63,7 +63,7 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
     }
 
     async def startReplay -> None;
-    async def stepReplay -> None;
+    async def stepReplay(idx: int) -> None;
     def nodeColor(node_type: str) -> str;
     def renderEdge(e: list) -> JsxElement;
     def renderNode(n: dict) -> JsxElement;
@@ -157,7 +157,7 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
             <svg
                 width="100%"
                 viewBox="0 0 680 570"
-                style={{"display": "block", "height": "400px"}}
+                style={{"display": "block", "height": "510px"}}
             >
                 {[renderEdge(graph_edges[i]) for i in range(len(graph_edges))]}
                 {[renderNode(graph_nodes[i]) for i in range(len(graph_nodes))]}

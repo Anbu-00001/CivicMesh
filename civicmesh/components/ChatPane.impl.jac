@@ -19,15 +19,30 @@ impl ChatPane.sendMessage -> None {
     }
     user_text = input_val;
     input_val = "";
-    messages = messages + [{"role": "user", "text": user_text, "walker": ""}];
+    # Accumulate locally so the final setMessages() call carries both the user
+    # message and the bot reply. Without this, React closure staleness causes
+    # the second setMessages() to overwrite the first (user msg disappears).
+    new_messages = messages + [{"role": "user", "text": user_text, "walker": ""}];
+    messages = new_messages;
     is_loading = True;
     active_walker = "IntakeWalker";
-    on_walker_event({"walker": "IntakeWalker", "status": "running", "node": "root"});
 
-    conversation = " ".join([str(m["text"]) for m in messages if str(m["role"]) in ["user", "bot"]]);
+    # Accumulate walker events locally and ALWAYS pass the full list to the
+    # parent. ClientApp.pushWalkerEvent does a full replace (not append) so
+    # this avoids the closure-staleness problem when many events fire
+    # synchronously in one chat turn.
+    local_events: list = list(walker_events) if walker_events else [];
+    local_events = local_events + [{"walker": "IntakeWalker", "status": "running", "node": "root"}];
+    on_walker_event(local_events);
+
+    # Send only the latest user prompt to IntakeWalker. The walker is a
+    # stateless intent extractor — joining the whole transcript pollutes
+    # context with previous bot replies and makes follow-up answers repeat.
+    conversation = user_text;
 
     active_walker = "IntakeWalker → EligibilityWalker";
-    on_walker_event({"walker": "EligibilityWalker", "status": "running", "node": "NeedNode"});
+    local_events = local_events + [{"walker": "EligibilityWalker", "status": "running", "node": "NeedNode"}];
+    on_walker_event(local_events);
 
     bot_text = "";
     bot_walker = "";
@@ -39,9 +54,13 @@ impl ChatPane.sendMessage -> None {
             conversation=conversation,
             user_id=user_id
         );
-        # Use a safe-by-default container so missing keys return undefined
-        # rather than throwing JS TypeErrors that bypass Jac except blocks.
-        data: Any = (result.reports[0] if (result.reports and len(result.reports) > 0) else {}) or {};
+        # Walker chain emits reports inner-first; the outermost IntakeWalker
+        # payload (which carries `language`, `profile`, `eligibility_results`)
+        # is the LAST entry in `reports`. Safe-by-default container so missing
+        # keys return undefined instead of throwing JS TypeErrors that bypass
+        # Jac except blocks.
+        report_count = len(result.reports) if result.reports else 0;
+        data: Any = (result.reports[report_count - 1] if report_count > 0 else {}) or {};
 
         raw_lang = data["language"];
         if raw_lang { lang_str = str(raw_lang); }
@@ -50,7 +69,8 @@ impl ChatPane.sendMessage -> None {
         if raw_profile { profile_obj = raw_profile; }
 
         active_walker = "NavigationWalker";
-        on_walker_event({"walker": "NavigationWalker", "status": "running", "node": "ActionPlan"});
+        local_events = local_events + [{"walker": "NavigationWalker", "status": "running", "node": "ActionPlan"}];
+        on_walker_event(local_events);
 
         raw_elig = data["eligibility_results"];
         elig: Any = raw_elig if raw_elig else {};
@@ -84,7 +104,12 @@ impl ChatPane.sendMessage -> None {
             bot_walker = "NavigationWalker";
         }
 
-        on_walker_event({"walker": "MemoryWalker", "status": "complete", "node": "ApplicationNode"});
+        # Final event for the chain — bot_walker tells us which walker
+        # actually produced the user-visible reply (EscalationWalker or
+        # NavigationWalker), so record that as the terminal step.
+        final_walker = bot_walker if bot_walker else "MemoryWalker";
+        local_events = local_events + [{"walker": final_walker, "status": "complete", "node": "ApplicationNode"}];
+        on_walker_event(local_events);
     } except Exception as _ex {
         bot_text = "Something went wrong. Please try again.";
         bot_walker = "error";
@@ -93,7 +118,10 @@ impl ChatPane.sendMessage -> None {
     detected_language = lang_str;
     profile_extracted = profile_obj;
     if bot_text {
-        messages = messages + [{"role": "bot", "text": bot_text, "walker": bot_walker}];
+        # Use the local accumulator (new_messages) instead of the stale
+        # closure `messages` so the user's prompt isn't dropped.
+        new_messages = new_messages + [{"role": "bot", "text": bot_text, "walker": bot_walker}];
+        messages = new_messages;
     }
 
     is_loading = False;

@@ -31,8 +31,12 @@ impl ClientApp.loadSession -> None {
     }
 }
 
-impl ClientApp.pushWalkerEvent(event: dict) -> None {
-    walker_events = walker_events + [event];
+impl ClientApp.pushWalkerEvent(events: list) -> None {
+    # Receives the FULL accumulated events list each call (not a delta).
+    # This sidesteps React closure staleness when sendMessage fires many
+    # updates in one synchronous burst — each call sets walker_events to
+    # the full known list, so the last winner contains everything.
+    walker_events = events;
 }
 
 impl ClientApp.navTab(tab_id: str, label: str, icon: str) -> JsxElement {
