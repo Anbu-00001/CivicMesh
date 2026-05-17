@@ -17,7 +17,8 @@ def:pub ChatPane(
         active_walker: str = "",
         detected_language: str = "",
         profile_extracted: Any = {},
-        open_trace_idx: int = -1;
+        open_trace_idx: int = -1,
+        translation_cache: dict = {};
 
     can with entry {
         seed = [

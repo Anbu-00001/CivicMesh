@@ -71,6 +71,45 @@ impl GraphViz.renderNode(n: dict) -> JsxElement {
         </g>;
 }
 
+impl GraphViz.renderLastEvent -> JsxElement {
+    # Guarded inside the call site by `len(walker_events) > 0`, but we still
+    # defensively check the entry. Critically we do NOT cast with `dict(...)`
+    # because Jac compiles that to `Object.fromEntries(obj)`, which throws
+    # on plain JS objects — the entry comes back from React state already as
+    # an object, not as a list of [key, value] tuples.
+    n = len(walker_events);
+    if n == 0 {
+        return <span/>;
+    }
+    last: Any = walker_events[n - 1];
+    if not last {
+        return <span/>;
+    }
+    w_raw = last["walker"];
+    nd_raw = last["node"];
+    st_raw = last["status"];
+    w = str(w_raw) if w_raw else "";
+    nd = str(nd_raw) if nd_raw else "";
+    st = str(st_raw) if st_raw else "";
+    return
+        <div
+            style={{
+                "padding": "8px 18px",
+                "borderTop": "0.5px solid rgba(255,255,255,0.05)",
+                "fontSize": "11px",
+                "color": "rgba(255,255,255,0.35)",
+                "display": "flex",
+                "alignItems": "center",
+                "gap": "6px"
+            }}
+        >
+            <span style={{"color": "#FFE500"}}>{w}</span>
+            <span>→</span>
+            <span>{nd}</span>
+            <span style={{"color": "#00FF88", "marginLeft": "4px"}}>{st}</span>
+        </div>;
+}
+
 impl GraphViz.startReplay -> None {
     # Build the real traversal path from walker_events if we have any —
     # otherwise fall back to the demo path so first-time viewers still see
