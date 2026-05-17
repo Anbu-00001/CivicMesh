@@ -3,6 +3,7 @@ Left: conversation thread.
 Right: detected language + walker chain status sidebar.
 """
 sv import from walkers.intake { IntakeWalker }
+sv import from walkers.translate { TranslateWalker }
 
 def:pub ChatPane(
     user_id: str,
@@ -15,7 +16,8 @@ def:pub ChatPane(
         is_loading: bool = False,
         active_walker: str = "",
         detected_language: str = "",
-        profile_extracted: Any = {};
+        profile_extracted: Any = {},
+        open_trace_idx: int = -1;
 
     can with entry {
         seed = [
@@ -43,9 +45,14 @@ def:pub ChatPane(
         messages = seed;
     }
 
-    async def sendMessage -> None;
+    async def sendMessage(text_override: str = "") -> None;
     def renderMessage(msg: dict, idx: int, is_last: bool) -> JsxElement;
+    def renderTraceStep(step: Any, idx: int) -> JsxElement;
+    def renderSuggestionChip(text: str) -> JsxElement;
     def walkerColor(walker_name: str) -> str;
+    def isLowSignal(text: str) -> bool;
+    def generateSuggestions(profile: Any, escalated: bool, bot_walker: str, user_text: str) -> list;
+    def detectIntent(text: str) -> str;
 
     profile_category = "";
     profile_urgency = "";
@@ -74,8 +81,7 @@ def:pub ChatPane(
                 "display": "grid",
                 "gridTemplateColumns": "1fr 240px",
                 "gap": "12px",
-                "height": "calc(100vh - 120px)",
-                "maxHeight": "640px"
+                "height": "calc(100vh - 96px)"
             }}
         >
             <div

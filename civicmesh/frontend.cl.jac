@@ -55,6 +55,8 @@ def:pub ClientApp -> JsxElement {
         <div
             style={{
                 "minHeight": "100vh",
+                "display": "flex",
+                "flexDirection": "column",
                 "background": "#0A0A0A",
                 "color": "#FFFFFF",
                 "fontFamily": "system-ui, -apple-system, sans-serif"
@@ -134,22 +136,54 @@ def:pub ClientApp -> JsxElement {
             {has_history and <SessionBanner session_data={session_data}/>}
             <main
                 style={{
-                    "padding": "16px 24px",
-                    "maxWidth": "1100px",
+                    "padding": "12px 28px 20px 28px",
+                    "maxWidth": "1400px",
+                    "width": "100%",
                     "margin": "0 auto",
                     "position": "relative",
-                    "zIndex": "1"
+                    "zIndex": "1",
+                    "flex": "1"
                 }}
             >
-                {(<ChatPane
-                    user_id={user_id}
-                    on_walker_event={pushWalkerEvent}
-                    session_data={session_data}
-                    walker_events={walker_events}
-                />) if active_tab == "chat" else None}
-                {(<GraphViz walker_events={walker_events}/>) if active_tab == "graph" else None}
-                {(<ActionPlan user_id={user_id}/>) if active_tab == "plan" else None}
-                {(<TelemetryPanel walker_events={walker_events}/>) if active_tab == "telemetry" else None}
+                <div style={{"display": ("block" if active_tab == "chat" else "none")}}>
+                    <ChatPane
+                        user_id={user_id}
+                        on_walker_event={pushWalkerEvent}
+                        session_data={session_data}
+                        walker_events={walker_events}
+                    />
+                </div>
+                <div style={{"display": ("block" if active_tab == "graph" else "none")}}>
+                    <GraphViz walker_events={walker_events}/>
+                </div>
+                <div style={{"display": ("block" if active_tab == "plan" else "none")}}>
+                    <ActionPlan user_id={user_id} walker_events={walker_events}/>
+                </div>
+                <div style={{"display": ("block" if active_tab == "telemetry" else "none")}}>
+                    <TelemetryPanel walker_events={walker_events}/>
+                </div>
             </main>
+            <footer
+                style={{
+                    "padding": "12px 28px",
+                    "borderTop": "0.5px solid rgba(255,255,255,0.05)",
+                    "display": "flex",
+                    "alignItems": "center",
+                    "justifyContent": "space-between",
+                    "fontSize": "11px",
+                    "color": "rgba(255,255,255,0.3)",
+                    "maxWidth": "1400px",
+                    "margin": "0 auto"
+                }}
+            >
+                <div style={{"display": "flex", "alignItems": "center", "gap": "10px"}}>
+                    <span>CivicMesh · Agentic AI Navigator</span>
+                    <span style={{"opacity": "0.5"}}>·</span>
+                    <span>5 walkers · {str(len(walker_events))} events captured this session</span>
+                </div>
+                <div style={{"display": "flex", "alignItems": "center", "gap": "10px"}}>
+                    <span>Powered by Jac · jac-scale · byllm</span>
+                </div>
+            </footer>
         </div>;
 }
