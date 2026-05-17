@@ -7,7 +7,8 @@ sv import from walkers.intake { IntakeWalker }
 def:pub ChatPane(
     user_id: str,
     on_walker_event: Any,
-    session_data: dict
+    session_data: dict,
+    walker_events: list = []
 ) -> JsxElement {
     has messages: list[dict] = [],
         input_val: str = "",
@@ -71,9 +72,10 @@ def:pub ChatPane(
         <div
             style={{
                 "display": "grid",
-                "gridTemplateColumns": "1fr 280px",
-                "gap": "14px",
-                "height": "calc(100vh - 160px)"
+                "gridTemplateColumns": "1fr 240px",
+                "gap": "12px",
+                "height": "calc(100vh - 120px)",
+                "maxHeight": "640px"
             }}
         >
             <div

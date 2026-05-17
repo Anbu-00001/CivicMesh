@@ -76,16 +76,25 @@ impl GraphViz.startReplay -> None {
     visited = [];
     current = "";
     replay_idx = 0;
-    stepReplay();
+    stepReplay(0);
 }
 
-impl GraphViz.stepReplay -> None {
-    if replay_idx >= len(walk_path) {
+impl GraphViz.stepReplay(idx: int) -> None {
+    # The idx is passed as a parameter (not read from React state) so that
+    # each setTimeout-scheduled recursive call advances correctly even when
+    # the function closure was captured from an older render. React state
+    # setters still work from stale closures — they update the latest state.
+    if idx >= len(walk_path) {
         is_playing = False;
         current = "";
         return;
     }
-    current = walk_path[replay_idx];
-    visited = walk_path[:replay_idx + 1];
-    replay_idx = replay_idx + 1;
+    current = walk_path[idx];
+    visited = walk_path[:idx + 1];
+    replay_idx = idx + 1;
+    if (idx + 1) < len(walk_path) {
+        setTimeout(lambda { stepReplay(idx + 1); }, 500);
+    } else {
+        setTimeout(lambda { is_playing = False; current = ""; }, 500);
+    }
 }

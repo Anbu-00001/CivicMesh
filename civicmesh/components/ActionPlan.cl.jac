@@ -28,24 +28,46 @@ def:pub ActionPlan(user_id: str) -> JsxElement {
             </div>;
     }
 
-    if not steps {
+    # Jac `not []` compiles to JS `![]` which is `false` (arrays are
+    # always truthy in JS). Use len() == 0 instead so the empty-state
+    # branch actually fires when there are no apps.
+    if len(steps) == 0 {
         return
             <div
                 style={{
-                    "padding": "60px 40px",
+                    "padding": "48px 32px",
                     "textAlign": "center",
                     "background": "rgba(255,255,255,0.03)",
                     "backdropFilter": "blur(12px)",
                     "border": "0.5px solid rgba(255,255,255,0.08)",
-                    "borderRadius": "16px"
+                    "borderRadius": "16px",
+                    "maxWidth": "600px",
+                    "margin": "0 auto"
                 }}
             >
-                <div style={{"fontSize": "36px", "marginBottom": "12px"}}>💬</div>
-                <div style={{"fontSize": "15px", "fontWeight": "600", "marginBottom": "8px"}}>
-                    No plan yet
+                <div style={{"fontSize": "32px", "marginBottom": "10px"}}>📋</div>
+                <div style={{"fontSize": "16px", "fontWeight": "600", "marginBottom": "8px", "color": "#FFE500"}}>
+                    No applications yet
                 </div>
-                <div style={{"fontSize": "13px", "color": "rgba(255,255,255,0.35)"}}>
-                    Start a conversation in the Chat tab to generate your personalized action plan.
+                <div style={{"fontSize": "13px", "color": "rgba(255,255,255,0.55)", "lineHeight": "1.6", "marginBottom": "18px"}}>
+                    When the eligibility walker finds resources that fit your situation, the navigation walker writes one ApplicationNode per recommended step into your graph. You'll see those steps appear here with status badges (pending → applied → approved/denied).
+                </div>
+                <div style={{
+                    "padding": "12px 16px",
+                    "background": "rgba(255,229,0,0.06)",
+                    "border": "0.5px solid rgba(255,229,0,0.2)",
+                    "borderRadius": "10px",
+                    "fontSize": "12px",
+                    "color": "rgba(255,255,255,0.65)",
+                    "textAlign": "left",
+                    "lineHeight": "1.55"
+                }}>
+                    <div style={{"color": "#FFE500", "fontWeight": "600", "marginBottom": "6px"}}>
+                        Try a chat prompt like:
+                    </div>
+                    <div>"I'm a single mother with 2 kids and need housing help. I earn $1800/month in Houston."</div>
+                    <div style={{"marginTop": "5px"}}>"I need food assistance for my family."</div>
+                    <div style={{"marginTop": "5px"}}>"I lost my job and need legal help to avoid eviction."</div>
                 </div>
             </div>;
     }
