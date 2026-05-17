@@ -43,27 +43,54 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
         "app1","app2"
     ];
 
+    # Map each walker name to the graph nodes it visits when it fires.
+    # This is how we derive the REAL traversal path from the live event
+    # stream — not a hardcoded replay animation.
+    walker_to_nodes: dict = {
+        "IntakeWalker":      ["root", "person", "need"],
+        "EligibilityWalker": ["r1", "r2", "r3", "r4", "r5"],
+        "NavigationWalker":  ["e1", "e2", "e3", "f1"],
+        "MemoryWalker":      ["app1", "app2"],
+        "EscalationWalker":  []
+    };
+
     can with [walker_events] entry {
         if walker_events {
-            last: Any = walker_events[len(walker_events) - 1];
-            node_id = "";
-            try { node_id = str(last["node"]); } except Exception as _ex { node_id = ""; }
-            node_map = {
-                "root": "root",
-                "NeedNode": "need",
-                "ActionPlan": "app1",
-                "ApplicationNode": "app1"
-            };
-            mapped = str(node_map.get(node_id, ""));
-            if mapped and (mapped not in visited) {
-                visited = visited + [mapped];
-                current = mapped;
+            # Recompute the visited set from the full event stream so the
+            # graph shows the actual walker chain that ran for this session.
+            fired: list = [];
+            ev_count = len(walker_events);
+            i = 0;
+            while i < ev_count {
+                ev: Any = walker_events[i];
+                w_raw = ev["walker"] if ev else "";
+                w = str(w_raw) if w_raw else "";
+                if w and (w not in fired) {
+                    fired = fired + [w];
+                }
+                i = i + 1;
             }
+            real_path: list = [];
+            for w in fired {
+                node_list = walker_to_nodes[w] if w in walker_to_nodes else [];
+                if node_list {
+                    for n in node_list {
+                        if n not in real_path {
+                            real_path = real_path + [n];
+                        }
+                    }
+                }
+            }
+            visited = real_path;
+            current = str(real_path[len(real_path) - 1]) if len(real_path) > 0 else "";
+        } else {
+            visited = [];
+            current = "";
         }
     }
 
     async def startReplay -> None;
-    async def stepReplay(idx: int) -> None;
+    async def stepReplay(idx: int, path: list) -> None;
     def nodeColor(node_type: str) -> str;
     def renderEdge(e: list) -> JsxElement;
     def renderNode(n: dict) -> JsxElement;
@@ -97,9 +124,24 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
                 }}
             >
                 <div style={{"flex": "1"}}>
-                    <div style={{"fontSize": "14px", "fontWeight": "600"}}>Live graph traversal</div>
+                    <div style={{"fontSize": "14px", "fontWeight": "600", "display": "flex", "alignItems": "center", "gap": "8px"}}>
+                        Live graph traversal
+                        {(len(walker_events) > 0) and <span
+                            style={{
+                                "fontSize": "10px",
+                                "padding": "1px 7px",
+                                "borderRadius": "10px",
+                                "background": "rgba(0,255,136,0.1)",
+                                "color": "#00FF88",
+                                "border": "0.5px solid rgba(0,255,136,0.3)",
+                                "fontWeight": "500"
+                            }}
+                        >
+                            LIVE · {str(len(visited))}/{str(len(graph_nodes))}
+                        </span>}
+                    </div>
                     <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.4)", "marginTop": "2px"}}>
-                        Watch walkers traverse the community resource graph
+                        {((str(len(walker_events)) + " walker events from current session — Replay re-animates the actual traversal.") if (len(walker_events) > 0) else "Send a chat message to populate the graph with real walker activity. Replay shows the demo path until then.")}
                     </div>
                 </div>
                 <button
@@ -157,7 +199,7 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
             <svg
                 width="100%"
                 viewBox="0 0 680 570"
-                style={{"display": "block", "height": "510px"}}
+                style={{"display": "block", "height": "calc(100vh - 240px)", "minHeight": "440px", "maxHeight": "640px"}}
             >
                 {[renderEdge(graph_edges[i]) for i in range(len(graph_edges))]}
                 {[renderNode(graph_nodes[i]) for i in range(len(graph_nodes))]}

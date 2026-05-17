@@ -13,3 +13,4 @@ import from walkers.eligibility { EligibilityWalker }
 import from walkers.navigation { NavigationWalker }
 import from walkers.memory { MemoryWalker }
 import from walkers.escalation { EscalationWalker }
+import from walkers.translate { TranslateWalker }

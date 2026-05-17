@@ -194,3 +194,6 @@ def summarize_session(
     denied: list[str],
     profile: NeedProfile
 ) -> SessionSummary by pool();
+
+"""Translate a batch of English strings into the target language. CRITICAL: translate EVERY SINGLE string in the input list — do not skip any, do not leave any in English. Return a list of the SAME LENGTH as the input, in the SAME ORDER, with each entry being the translation of the corresponding input entry. Preserve meaning, tone, punctuation, emoji, and rhetorical question marks. If target_language is empty, 'en', or 'english', return the input unchanged. Target language may be an ISO code or natural-language name like 'hi', 'es', 'Hindi', 'Spanish', 'German', 'fr', 'French'. Even if a single string already appears to be in the target language, still include it in the output at the same index."""
+def translate_batch(texts: list[str], target_language: str) -> list[str] by pool();

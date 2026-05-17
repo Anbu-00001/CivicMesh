@@ -72,28 +72,61 @@ impl GraphViz.renderNode(n: dict) -> JsxElement {
 }
 
 impl GraphViz.startReplay -> None {
+    # Build the real traversal path from walker_events if we have any —
+    # otherwise fall back to the demo path so first-time viewers still see
+    # the graph come alive.
     is_playing = True;
     visited = [];
     current = "";
     replay_idx = 0;
-    stepReplay(0);
+
+    real_path: list = [];
+    if walker_events and len(walker_events) > 0 {
+        fired: list = [];
+        ev_count = len(walker_events);
+        i = 0;
+        while i < ev_count {
+            ev: Any = walker_events[i];
+            w_raw = ev["walker"] if ev else "";
+            w = str(w_raw) if w_raw else "";
+            if w and (w not in fired) {
+                fired = fired + [w];
+            }
+            i = i + 1;
+        }
+        for w in fired {
+            node_list = walker_to_nodes[w] if w in walker_to_nodes else [];
+            if node_list {
+                for n in node_list {
+                    if n not in real_path {
+                        real_path = real_path + [n];
+                    }
+                }
+            }
+        }
+    }
+
+    # active_path is what stepReplay walks through — real when we have
+    # session activity, demo path otherwise.
+    active_path: list = real_path if len(real_path) > 0 else list(walk_path);
+    stepReplay(0, active_path);
 }
 
-impl GraphViz.stepReplay(idx: int) -> None {
-    # The idx is passed as a parameter (not read from React state) so that
+impl GraphViz.stepReplay(idx: int, path: list) -> None {
+    # idx + path are passed as parameters (not read from React state) so
     # each setTimeout-scheduled recursive call advances correctly even when
-    # the function closure was captured from an older render. React state
-    # setters still work from stale closures — they update the latest state.
-    if idx >= len(walk_path) {
+    # the function closure was captured from an older render.
+    n = len(path);
+    if idx >= n {
         is_playing = False;
         current = "";
         return;
     }
-    current = walk_path[idx];
-    visited = walk_path[:idx + 1];
+    current = str(path[idx]);
+    visited = list(path[:idx + 1]);
     replay_idx = idx + 1;
-    if (idx + 1) < len(walk_path) {
-        setTimeout(lambda { stepReplay(idx + 1); }, 500);
+    if (idx + 1) < n {
+        setTimeout(lambda { stepReplay(idx + 1, path); }, 500);
     } else {
         setTimeout(lambda { is_playing = False; current = ""; }, 500);
     }
