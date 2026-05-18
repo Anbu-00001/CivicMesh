@@ -51,14 +51,12 @@ walker IntakeWalker {
         setattr(person_node, "language", str(lang_profile.detected_language));
 
         # Step 3: extract structured NeedProfile from the conversation.
-        # incl_info ships the PersonNode into the byllm prompt so the LLM
-        # can read the user's prior demographic context (language, zip,
-        # income bracket, family_size) when lifting the profile — instead
-        # of having to infer every field from the message alone.
-        profile = extract_need_profile(
-            conversation=self.conversation,
-            incl_info={"person_node": person_node}
-        );
+        # NOTE: byllm 0.6.7 doesn't accept `incl_info` as a regular kwarg
+        # on stub functions — it has to flow through a different call
+        # surface that's not wired up in this version. We rely on the
+        # `sem` strings on the conversation parameter + NeedProfile
+        # fields instead to ground the LLM's structured extraction.
+        profile = extract_need_profile(conversation=self.conversation);
 
         # Step 4: attach the NeedNode via the typed has_need edge
         attached = person_node +>: has_need() :+> NeedNode(
