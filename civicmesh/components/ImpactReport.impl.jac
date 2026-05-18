@@ -138,3 +138,50 @@ impl ImpactReport.renderLanguageChip(lang: str, count: int) -> JsxElement {
             </span>
         </div>;
 }
+
+impl ImpactReport.renderTopNeedCard(cat_lookup: Any) -> JsxElement {
+    # Data-driven replacement for the previous hardcoded "Maria" persona
+    # quote. We receive the cat_count_by_key lookup from the component body
+    # (impls can't reach body locals directly, only `has` state) and pick
+    # the highest count. If no data yet, fall back to a quiet hint pointing
+    # the user back to the Chat tab so the card never sits empty.
+    top_cat = "";
+    top_n = 0;
+    cat_order: list = ["housing", "food", "healthcare", "legal"];
+    for k in cat_order {
+        if k in cat_lookup {
+            v = int(cat_lookup[k]);
+            if v > top_n {
+                top_n = v;
+                top_cat = k;
+            }
+        }
+    }
+    # Capitalize first letter manually — Jac doesn't expose a built-in here.
+    top_cat_label = top_cat;
+    if top_cat {
+        top_cat_label = top_cat[0].upper() + top_cat[1:];
+    }
+    return
+        <div style={{"display": "flex", "flexDirection": "column"}}>
+            <div style={{"fontSize": "10px", "color": "rgba(255,229,0,0.85)", "textTransform": "uppercase", "letterSpacing": "0.06em", "marginBottom": "10px"}}>
+                Most-asked need this session
+            </div>
+            {(top_n > 0) and <div>
+                <div style={{"display": "flex", "alignItems": "baseline", "gap": "12px"}}>
+                    <span style={{"fontSize": "32px", "fontWeight": "800", "letterSpacing": "-0.03em", "color": "#FFE500"}}>
+                        {top_cat_label}
+                    </span>
+                    <span style={{"fontSize": "16px", "fontWeight": "600", "color": "rgba(255,255,255,0.5)"}}>
+                        {str(top_n) + " NeedNode" + ("s" if top_n != 1 else "")}
+                    </span>
+                </div>
+                <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.45)", "marginTop": "10px", "lineHeight": "1.55"}}>
+                    Aggregated live from NeedNode.category across every PersonNode in the graph. ImpactWalker reads each PersonNode → has_need → NeedNode chain on every dashboard mount.
+                </div>
+            </div>}
+            {(top_n == 0) and <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.4)", "fontStyle": "italic", "lineHeight": "1.5"}}>
+                No NeedNodes yet — send a prompt in the Chat tab and IntakeWalker will write the first one. This card updates live.
+            </div>}
+        </div>;
+}

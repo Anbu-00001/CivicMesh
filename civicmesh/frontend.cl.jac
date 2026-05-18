@@ -16,6 +16,7 @@ import from .components.LandingPage { LandingPage }
 import from .components.ImpactReport { ImpactReport }
 
 sv import from walkers.memory { MemoryWalker }
+sv import from walkers.seed { SeedWalker }
 
 def:pub ClientApp -> JsxElement {
     has active_tab: str = "chat",
@@ -44,8 +45,8 @@ def:pub ClientApp -> JsxElement {
 
     def startApp -> None;
     def togglePalette -> None;
-    def runPaletteAction(action: dict) -> None;
-    def renderPaletteItem(action: dict, idx: int, sel: int) -> JsxElement;
+    def runPaletteAction(action: Any) -> None;
+    def renderPaletteItem(action: Any, idx: int, sel: int) -> JsxElement;
     def renderPalette -> JsxElement;
 
     can with entry {
@@ -74,8 +75,8 @@ def:pub ClientApp -> JsxElement {
             });
         } except Exception as _ex {
             # Document-level listener unavailable — palette is still
-            # reachable via the nav button.
-            pass;
+            # reachable via the nav button. Swallow silently; nothing to do.
+            palette_open = palette_open;
         }
     }
 

@@ -24,6 +24,15 @@ typescript = "^5.3.3"
 default_model = "nvidia_nim/meta/llama-3.1-8b-instruct"
 temperature = 0.2
 
+# Featherless.AI fallback. Featherless gives us flat-rate access to 30k+
+# open-source models under a single API key, so if NVIDIA NIM rate-limits
+# or drops, byllm transparently retries against meta-llama/Llama-3.1-8B
+# on Featherless. Set FEATHERLESS_API_KEY in .env to enable. JacHacks
+# "Best Use of Featherless.AI" sponsor prize incentivized the integration.
+[[plugins.byllm.fallback_models]]
+model = "featherless_ai/meta-llama/Llama-3.1-8B-Instruct"
+temperature = 0.2
+
 [plugins.byllm.fallback]
 strategy = "fallback"
 num_retries = 2

@@ -15,3 +15,5 @@ import from walkers.memory { MemoryWalker }
 import from walkers.escalation { EscalationWalker }
 import from walkers.translate { TranslateWalker }
 import from walkers.impact { ImpactWalker }
+import from walkers.seed { SeedWalker }
+import from walkers.live_telemetry { LiveTelemetryWalker }

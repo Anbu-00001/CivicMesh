@@ -126,3 +126,10 @@ walker EscalationWalker {
         report payload;
     }
 }
+
+sem EscalationWalker is "Crisis-routing walker. Spawned on a PersonNode when no resources match the user's NeedProfile or every ApplicationNode is denied. Composes a personalized escalation message via a byllm ReAct loop with three civic-resource tools, streamed over a WebSocket so the client gets each reasoning step as it happens.";
+sem EscalationWalker.context is "Snapshot of the triggering scenario — NeedProfile + denial reasons + urgency. Fed to compose_escalation_message() as a single typed object so the LLM reasons over one structured input.";
+sem EscalationWalker.person_node is "The PersonNode this escalation is for. The walker reads here.language and here.location_zip to localize the crisis reply.";
+sem EscalationWalker.iteration_count is "ReAct loop counter incremented inside iteration_guard. Triggers ABORT_WITH_SUMMARY once max_iterations is exceeded.";
+sem EscalationWalker.max_iterations is "Hard ceiling on ReAct iterations. Prevents a misbehaving model from looping indefinitely. Eight covers crisis composition with three tools.";
+sem EscalationWalker.summary is "Mirror of the final report payload. Sibling walkers spawning this one read it via .summary because `report` only bubbles to the outermost walker's stream.";

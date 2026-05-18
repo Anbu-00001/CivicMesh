@@ -22,10 +22,12 @@ walker EligibilityWalker {
     has person_node: PersonNode;
     has results: list = [];
     # Hard cap on how many ResourceNodes we feed to check_eligibility().
-    # Each candidate is one LLM call, so a low default keeps us inside
-    # Gemini's free-tier rate window during integration tests. Production
-    # callers can raise this when they pass the walker into spawn().
-    has max_candidates: int = 3;
+    # Each candidate is one LLM call, so this trades latency for coverage.
+    # 3 was too tight — under LLM stochasticity, a "housing" need could
+    # easily get 3 borderline candidates scored under threshold and
+    # escalate when 35 other resources existed. 8 covers the top of each
+    # category bucket while staying inside NVIDIA NIM's rate window.
+    has max_candidates: int = 8;
     # Mirror of the final report so the spawning walker can read it after
     # spawn — `report` payloads flow only into the outermost walker's stream.
     has summary: dict = {};
@@ -65,6 +67,12 @@ walker EligibilityWalker {
             }
             rule: EligibilityRuleNode = rule_nodes[0];
 
+            # `incl_info` ships live graph context into the byllm prompt.
+            # The LLM gets to read the actual NeedNode (`here`), the
+            # PersonNode it came from, the ResourceNode under evaluation,
+            # and its governing rule — all with their `sem` strings —
+            # rather than just the flat parameter primitives. Idiomatic
+            # Jac pattern for graph-aware prompting.
             result: EligibilityResult = check_eligibility(
                 profile=self.profile,
                 criteria_summary=str(rule.criteria_summary),
@@ -73,7 +81,13 @@ walker EligibilityWalker {
                 residency_req=str(rule.residency_requirement),
                 age_min=int(rule.age_min),
                 age_max=int(rule.age_max),
-                exceptions=str(rule.exceptions)
+                exceptions=str(rule.exceptions),
+                incl_info={
+                    "need_node": here,
+                    "person_node": self.person_node,
+                    "resource_node": resource,
+                    "rule_node": rule
+                }
             );
 
             self.results.append({
@@ -90,10 +104,14 @@ walker EligibilityWalker {
             });
         }
 
-        # Step 3: rank by match_score descending, split into tiers
+        # Step 3: rank by match_score descending, split into tiers.
+        # Thresholds: eligible >= 30 (was 40 — too strict given LLM noise on
+        # borderline fits), possible 15..30. The "possible" tier still gets
+        # surfaced to NavigationWalker so the user sees fallback options
+        # instead of an immediate escalation.
         self.results.sort(key=lambda r : -int(r["match_score"]));
-        eligible = [r for r in self.results if int(r["match_score"]) >= 40];
-        possible = [r for r in self.results if 20 <= int(r["match_score"]) < 40];
+        eligible = [r for r in self.results if int(r["match_score"]) >= 30];
+        possible = [r for r in self.results if 15 <= int(r["match_score"]) < 30];
 
         # Step 4: dead end -> escalate; otherwise plan a path forward
         if not eligible and not possible {
