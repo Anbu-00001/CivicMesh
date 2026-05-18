@@ -188,14 +188,22 @@ sem generate_action_plan.profile is "The user's NeedProfile. Drives ordering: 'i
 
 Uses ReAct-style tool calling to consult the live graph and assess safety risk.
 The on_iteration callback fires between steps so the EscalationWalker can stream
-progress to the WebSocket client and guard against doom-loops."""
+progress to the WebSocket client and guard against doom-loops.
+
+CRITICAL — language handling: write personalized_message AND appeal_options
+ENTIRELY in `context.profile.language` (ISO 639-1 code). Do NOT mix English
+and the target language in any single string — a long message that's half
+English looks broken in the chat UI. If context.profile.language is empty,
+'en', or 'english', write in English. crisis_resources hotline names and
+phone numbers stay canonical (e.g. "988 Suicide and Crisis Lifeline") since
+those are recognized search strings users would google."""
 def compose_escalation_message(
     context: EscalationContext,
     tools: list = [],
     on_iteration: any = None
 ) -> EscalationMessage by pool();
 
-sem compose_escalation_message.context is "EscalationContext bundle describing why escalation fired plus the user's NeedProfile. The primary input the model reasons over.";
+sem compose_escalation_message.context is "EscalationContext bundle describing why escalation fired plus the user's NeedProfile. The primary input the model reasons over. context.profile.language dictates the language of personalized_message and appeal_options — do not translate after.";
 sem compose_escalation_message.tools is "List of ReAct tool callables the model may invoke to consult the live graph (emergency resources, appeal orgs, safety risk). Order is not meaningful.";
 sem compose_escalation_message.on_iteration is "Callback fired between ReAct iterations. Returns IterationAction.CONTINUE or ABORT_WITH_SUMMARY so the host walker can stream progress and cap runaway loops.";
 

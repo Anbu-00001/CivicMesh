@@ -1,7 +1,13 @@
 """Live graph traversal visualization.
 Node types match Phase 1 schema exactly.
 Replay animates the walker path step by step.
+
+Subscribes to LiveTelemetryWalker on every walker_events change so the
+header strip shows real, live counts pulled from the user's graph rather
+than just the static demo layout.
 """
+
+sv import from walkers.live_telemetry { LiveTelemetryWalker }
 
 def:pub GraphViz(walker_events: list) -> JsxElement {
     has visited: list[str] = [],
@@ -9,7 +15,12 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
         is_playing: bool = False,
         replay_idx: int = 0,
         hovered_node: str = "",
-        show_why_path: bool = False;
+        show_why_path: bool = False,
+        # LiveTelemetryWalker payload. Updated whenever walker_events
+        # grows — gives the header strip real per-class counts (e.g.
+        # "1 Person · 3 Needs · 40 Resources · 4 Applications") instead
+        # of relying on the static demo node layout.
+        live_counts: Any = None;
 
     # Node definitions — match Phase 1 schema exactly. Each node also carries
     # a `tooltip` line explaining what the walker discovered at this node;
@@ -113,6 +124,10 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
             }
             visited = real_path;
             current = str(real_path[len(real_path) - 1]) if len(real_path) > 0 else "";
+            # Every time walker_events grows, refresh the live counts so
+            # the header strip shows what's actually in the user's graph
+            # right now (Persons / Needs / Resources / Apps).
+            loadLiveCounts();
         } else {
             visited = [];
             current = "";
@@ -121,6 +136,7 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
 
     async def startReplay -> None;
     async def stepReplay(idx: int, path: list) -> None;
+    async def loadLiveCounts -> None;
     def nodeColor(node_type: str) -> str;
     def edgeWalkerColor(e0: str, e1: str) -> str;
     def renderEdge(e: dict) -> JsxElement;
@@ -160,7 +176,7 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
                 }}
             >
                 <div style={{"flex": "1"}}>
-                    <div style={{"fontSize": "14px", "fontWeight": "600", "display": "flex", "alignItems": "center", "gap": "8px"}}>
+                    <div style={{"fontSize": "14px", "fontWeight": "600", "display": "flex", "alignItems": "center", "gap": "8px", "flexWrap": "wrap"}}>
                         Live graph traversal
                         {(len(walker_events) > 0) and <span
                             style={{
@@ -174,6 +190,24 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
                             }}
                         >
                             LIVE · {str(len(visited))}/{str(len(graph_nodes))}
+                        </span>}
+                        {live_counts and <span
+                            style={{
+                                "fontSize": "10px",
+                                "padding": "1px 7px",
+                                "borderRadius": "10px",
+                                "background": "rgba(68,136,255,0.08)",
+                                "color": "#4488FF",
+                                "border": "0.5px solid rgba(68,136,255,0.3)",
+                                "fontFamily": "ui-monospace, monospace",
+                                "letterSpacing": "0.02em"
+                            }}
+                            title="Live counts via LiveTelemetryWalker — a read-only WS walker that traverses the user's root and emits per-class totals."
+                        >
+                            P·{str(live_counts["PersonNode"]) if live_counts["PersonNode"] else "0"}
+                            ·N·{str(live_counts["NeedNode"]) if live_counts["NeedNode"] else "0"}
+                            ·R·{str(live_counts["ResourceNode"]) if live_counts["ResourceNode"] else "0"}
+                            ·A·{str(live_counts["ApplicationNode"]) if live_counts["ApplicationNode"] else "0"}
                         </span>}
                     </div>
                     <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.4)", "marginTop": "2px"}}>

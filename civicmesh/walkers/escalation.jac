@@ -107,6 +107,21 @@ walker EscalationWalker {
             return False;
         }
 
+        # The user's language flows through context.profile.language. The
+        # compose_escalation_message stub's docstring + the sem string on
+        # NeedProfile.language together tell the model to write
+        # personalized_message + appeal_options directly in that language,
+        # eliminating the lossy post-translation hop.
+        target_lang = "en";
+        try {
+            if self.context.profile.language {
+                target_lang = str(self.context.profile.language);
+            }
+        } except Exception as _ex {}
+        if not target_lang {
+            target_lang = str(here.language) if here.language else "en";
+        }
+
         escalation_msg: EscalationMessage = compose_escalation_message(
             context=self.context,
             tools=[check_emergency_resources, find_appeal_orgs, assess_safety_risk],
@@ -120,6 +135,7 @@ walker EscalationWalker {
             "crisis_resources": list(escalation_msg.crisis_resources),
             "appeal_options": list(escalation_msg.appeal_options),
             "personalized_message": str(escalation_msg.personalized_message),
+            "language": target_lang,
             "iterations_used": int(self.iteration_count)
         };
         self.summary = payload;
