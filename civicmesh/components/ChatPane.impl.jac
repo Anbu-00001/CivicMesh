@@ -343,7 +343,8 @@ impl ChatPane.sendMessage(text_override: str = "") -> None {
             "walker": "IntakeWalker",
             "title": "Detected language",
             "value": lang_str.upper(),
-            "detail": "Routing the rest of the chain through " + lang_str.upper() + "-language prompts."
+            "detail": "Routing the rest of the chain through " + lang_str.upper() + "-language prompts.",
+            "reasoning": "Language detection runs as the first LLM call on every turn. Anything other than English triggers the TranslateWalker on the bot reply + suggestion chips so the entire surface stays in the user's language."
         }];
 
         # Trace step 2: profile extraction
@@ -362,7 +363,8 @@ impl ChatPane.sendMessage(text_override: str = "") -> None {
             "walker": "IntakeWalker",
             "title": "Extracted NeedProfile",
             "value": (pc + " · " + pu) if pc else "no profile",
-            "detail": pd if pd else "No additional details extracted."
+            "detail": pd if pd else "No additional details extracted.",
+            "reasoning": "The LLM produces a structured NeedProfile{category, urgency, details} so downstream walkers can filter ResourceNodes on .category and rank by .urgency without re-reading the raw user message."
         }];
 
         active_walker = "NavigationWalker";
@@ -398,7 +400,8 @@ impl ChatPane.sendMessage(text_override: str = "") -> None {
             "walker": "EligibilityWalker",
             "title": "Scored resources via check_eligibility()",
             "value": str(elig_count) + " eligible · " + str(poss_count) + " possible",
-            "detail": top_match_summary if top_match_summary else "No resources scored above the eligibility threshold for this profile."
+            "detail": top_match_summary if top_match_summary else "No resources scored above the eligibility threshold for this profile.",
+            "reasoning": "Each of the 40 seeded ResourceNodes is scored against the profile's income bracket, family size, location, and citizenship status. Anything above the 60-point threshold becomes 'eligible'; 'possible' covers borderline matches the LLM flagged for human review."
         }];
 
         escalated = bool(elig["escalated"]);
@@ -440,7 +443,8 @@ impl ChatPane.sendMessage(text_override: str = "") -> None {
                 "walker": "EscalationWalker",
                 "title": "Composed escalation via ReAct loop (" + str(iter_count) + " iterations)",
                 "value": "is_emergency: " + ("true" if is_emerg else "false"),
-                "detail": tool_detail
+                "detail": tool_detail,
+                "reasoning": "When zero resources match, the pipeline routes here instead of NavigationWalker. EscalationWalker runs a byllm ReAct loop with three tools — check_emergency_resources, find_appeal_orgs, assess_safety_risk — and composes a personalized message in the user's language."
             }];
         } else {
             step_count = 0;
@@ -467,7 +471,8 @@ impl ChatPane.sendMessage(text_override: str = "") -> None {
                 "walker": "NavigationWalker",
                 "title": "Generated ActionPlan via generate_action_plan()",
                 "value": str(step_count) + "-step plan",
-                "detail": plan_summary if plan_summary else "Sequenced eligible resources into ordered ApplicationNodes persisted on applied_to edges."
+                "detail": plan_summary if plan_summary else "Sequenced eligible resources into ordered ApplicationNodes persisted on applied_to edges.",
+                "reasoning": "The walker takes the ranked eligible resources, prompts the LLM to sequence them into a realistic action plan (urgency-first, prerequisites considered), then writes one ApplicationNode per step into the graph. Status defaults to 'pending' until the user marks Applied in the Action Plan tab."
             }];
         }
 
@@ -744,32 +749,48 @@ impl ChatPane.renderMessage(msg: dict, idx: int, is_last: bool) -> JsxElement {
                         }}
                         style={{
                             "marginTop": "6px",
-                            "padding": "4px 10px",
-                            "fontSize": "10px",
-                            "background": "rgba(255,229,0,0.06)",
-                            "border": "0.5px solid rgba(255,229,0,0.25)",
+                            "padding": "5px 11px",
+                            "fontSize": "10.5px",
+                            "background": "rgba(255,229,0,0.07)",
+                            "border": "0.5px solid rgba(255,229,0,0.3)",
                             "color": "#FFE500",
-                            "borderRadius": "6px",
+                            "borderRadius": "7px",
                             "cursor": "pointer",
                             "display": "inline-flex",
                             "alignItems": "center",
-                            "gap": "4px"
+                            "gap": "5px",
+                            "fontWeight": "500"
                         }}
                     >
-                        {("▾ Hide agent reasoning" if trace_open else "▸ Show agent reasoning (" + str(trace_n) + " steps)")}
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style={{"transform": ("rotate(90deg)" if trace_open else "rotate(0deg)"), "transition": "transform 0.2s ease"}}>
+                            <path d="M9 6 L 15 12 L 9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        {(("Hide agent reasoning · " + str(trace_n) + " steps") if trace_open else ("Show agent reasoning · " + str(trace_n) + " steps"))}
                     </button>}
 
                     {(has_trace and trace_open) and <div
                         style={{
-                            "marginTop": "8px",
-                            "padding": "10px 12px",
-                            "background": "rgba(0,0,0,0.35)",
-                            "border": "0.5px solid rgba(255,255,255,0.08)",
-                            "borderRadius": "10px",
+                            "marginTop": "10px",
+                            "padding": "12px 14px",
+                            "background": "rgba(0,0,0,0.4)",
+                            "border": "0.5px solid rgba(255,255,255,0.1)",
+                            "borderRadius": "12px",
                             "fontSize": "11px",
                             "lineHeight": "1.55"
                         }}
                     >
+                        <div style={{
+                            "fontSize": "9.5px",
+                            "color": "rgba(255,229,0,0.75)",
+                            "textTransform": "uppercase",
+                            "letterSpacing": "0.08em",
+                            "fontWeight": "600",
+                            "marginBottom": "8px",
+                            "paddingBottom": "8px",
+                            "borderBottom": "0.5px solid rgba(255,255,255,0.07)"
+                        }}>
+                            Agent reasoning · step-by-step
+                        </div>
                         {[renderTraceStep(trace_raw[ti], ti) for ti in range(trace_n)]}
                     </div>}
 
@@ -803,34 +824,206 @@ impl ChatPane.renderTraceStep(step: Any, idx: int) -> JsxElement {
     title = str(step["title"]) if step["title"] else "";
     value = str(step["value"]) if step["value"] else "";
     detail = str(step["detail"]) if step["detail"] else "";
+    reasoning = str(step["reasoning"]) if step["reasoning"] else "";
     swk = str(step["walker"]) if step["walker"] else "";
     swc = walkerColor(swk);
     return
         <div
             key={str(idx)}
             style={{
-                "padding": "6px 0",
-                "borderBottom": ("0.5px solid rgba(255,255,255,0.05)" if idx < 99 else "none"),
+                "padding": "10px 0",
+                "borderBottom": "0.5px solid rgba(255,255,255,0.05)",
                 "display": "flex",
-                "gap": "10px"
+                "gap": "12px",
+                "alignItems": "flex-start"
             }}
         >
-            <div style={{"minWidth": "20px", "color": "rgba(255,255,255,0.3)", "fontSize": "10px"}}>
-                {str(idx + 1) + "."}
+            <div style={{"display": "flex", "flexDirection": "column", "alignItems": "center", "minWidth": "22px"}}>
+                <div style={{
+                    "width": "22px",
+                    "height": "22px",
+                    "borderRadius": "50%",
+                    "background": swc + "18",
+                    "border": "1px solid " + swc + "60",
+                    "color": swc,
+                    "fontSize": "10px",
+                    "fontWeight": "700",
+                    "display": "flex",
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "flexShrink": "0",
+                    "fontFamily": "ui-monospace, monospace"
+                }}>
+                    {str(idx + 1)}
+                </div>
             </div>
-            <div style={{"flex": "1"}}>
-                <div style={{"display": "flex", "alignItems": "center", "gap": "6px", "flexWrap": "wrap"}}>
+            <div style={{"flex": "1", "minWidth": "0"}}>
+                <div style={{"display": "flex", "alignItems": "center", "gap": "6px", "flexWrap": "wrap", "marginBottom": "3px"}}>
                     <span style={{"fontSize": "9px", "padding": "1px 6px", "borderRadius": "8px", "background": swc + "15", "color": swc, "border": "0.5px solid " + swc + "40", "fontWeight": "600", "letterSpacing": "0.02em"}}>
                         {swk}
                     </span>
-                    <span style={{"color": "rgba(255,255,255,0.85)", "fontWeight": "500"}}>{title}</span>
+                    <span style={{"color": "rgba(255,255,255,0.92)", "fontWeight": "600", "fontSize": "11.5px"}}>{title}</span>
                 </div>
-                <div style={{"color": "#FFE500", "fontSize": "11px", "marginTop": "2px", "fontFamily": "ui-monospace, monospace"}}>
+                <div style={{
+                    "color": "#FFE500",
+                    "fontSize": "11px",
+                    "fontFamily": "ui-monospace, monospace",
+                    "padding": "3px 8px",
+                    "background": "rgba(255,229,0,0.04)",
+                    "border": "0.5px solid rgba(255,229,0,0.15)",
+                    "borderRadius": "5px",
+                    "display": "inline-block",
+                    "marginBottom": "5px",
+                    "wordBreak": "break-word"
+                }}>
                     {value}
                 </div>
-                <div style={{"color": "rgba(255,255,255,0.5)", "fontSize": "11px", "marginTop": "2px"}}>
+                <div style={{"color": "rgba(255,255,255,0.65)", "fontSize": "11px", "lineHeight": "1.5", "marginBottom": ("5px" if reasoning else "0")}}>
                     {detail}
                 </div>
+                {reasoning and <div style={{
+                    "color": "rgba(255,255,255,0.42)",
+                    "fontSize": "10.5px",
+                    "lineHeight": "1.5",
+                    "fontStyle": "italic",
+                    "paddingLeft": "8px",
+                    "borderLeft": "1px solid " + swc + "55"
+                }}>
+                    {reasoning}
+                </div>}
+            </div>
+        </div>;
+}
+
+impl ChatPane.walkerState(name: str) -> str {
+    # Determine the "currently active" walker. The active_walker string can
+    # be "Foo" (single) or "Foo → Bar" (transitioning). When transitioning,
+    # only the rightmost name is actually active — the leftmost has already
+    # completed but the UI hasn't cleared it yet. Splitting on the arrow
+    # avoids the bug where Intake stays "active" the entire chain.
+    current_active = "";
+    if active_walker {
+        a_str = str(active_walker);
+        if "→" in a_str {
+            parts = a_str.split("→");
+            current_active = str(parts[len(parts) - 1]).strip();
+        } else {
+            current_active = a_str.strip();
+        }
+    }
+
+    if current_active and current_active == name {
+        return "active";
+    }
+
+    # A walker counts as "complete" once any event with its name has been
+    # recorded in walker_events. That covers both "running" (it started and
+    # something downstream is now active) and the terminal "complete" event.
+    seen = False;
+    if walker_events {
+        ev_list: list = list(walker_events);
+        ei = 0;
+        while ei < len(ev_list) {
+            try {
+                if str(ev_list[ei]["walker"]) == name {
+                    seen = True;
+                    break;
+                }
+            } except Exception as _ex {}
+            ei = ei + 1;
+        }
+    }
+    if seen { return "complete"; }
+    return "idle";
+}
+
+impl ChatPane.renderWalkerNode(w: dict, is_last: bool) -> JsxElement {
+    name = str(w["name"]);
+    color = str(w["color"]);
+    role = str(w["role"]);
+    live = str(w["live"]);
+    state = walkerState(name);
+    is_active = state == "active";
+    is_complete = state == "complete";
+
+    ind_bg = color if (is_active or is_complete) else "rgba(255,255,255,0.04)";
+    ind_border = color if (is_active or is_complete) else "rgba(255,255,255,0.15)";
+    text_color = color if is_active else ("rgba(255,255,255,0.85)" if is_complete else "rgba(255,255,255,0.45)");
+    connector_bg = (color + "55") if is_complete else "rgba(255,255,255,0.08)";
+
+    return
+        <div
+            key={name}
+            style={{
+                "display": "flex",
+                "gap": "10px",
+                "alignItems": "stretch"
+            }}
+        >
+            <div style={{"display": "flex", "flexDirection": "column", "alignItems": "center", "width": "14px", "flexShrink": "0"}}>
+                <div
+                    className={("walker-active-dot" if is_active else "")}
+                    style={{
+                        "width": "14px",
+                        "height": "14px",
+                        "borderRadius": "50%",
+                        "background": ind_bg,
+                        "border": "1px solid " + ind_border,
+                        "display": "flex",
+                        "alignItems": "center",
+                        "justifyContent": "center",
+                        "flexShrink": "0",
+                        "transition": "all 0.3s ease",
+                        "boxShadow": (("0 0 8px " + color + "80") if is_active else "none")
+                    }}
+                >
+                    {is_complete and <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
+                        <path
+                            d="M5 12 L 10 17 L 19 7"
+                            stroke="#0A0A0A"
+                            strokeWidth="3.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        />
+                    </svg>}
+                </div>
+                {(not is_last) and <div style={{
+                    "width": "1.5px",
+                    "flex": "1",
+                    "minHeight": "16px",
+                    "background": connector_bg,
+                    "marginTop": "2px",
+                    "marginBottom": "2px",
+                    "transition": "background 0.3s ease"
+                }}/>}
+            </div>
+            <div style={{"flex": "1", "paddingBottom": ("4px" if is_last else "14px"), "minWidth": "0"}}>
+                <div style={{
+                    "fontSize": "12px",
+                    "fontWeight": ("600" if (is_active or is_complete) else "500"),
+                    "color": text_color,
+                    "transition": "color 0.3s ease",
+                    "lineHeight": "1.2"
+                }}>
+                    {name}
+                </div>
+                <div style={{
+                    "fontSize": "10px",
+                    "color": "rgba(255,255,255,0.4)",
+                    "marginTop": "3px",
+                    "lineHeight": "1.4"
+                }}>
+                    {role}
+                </div>
+                {is_active and <div style={{
+                    "fontSize": "10px",
+                    "color": color,
+                    "marginTop": "4px",
+                    "fontStyle": "italic",
+                    "lineHeight": "1.4"
+                }}>
+                    {live}
+                </div>}
             </div>
         </div>;
 }

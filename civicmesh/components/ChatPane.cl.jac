@@ -68,13 +68,21 @@ def:pub ChatPane(
         } except Exception as _ex { profile_urgency = ""; }
     }
 
-    walker_chain = [
-        ("IntakeWalker", "🚪"),
-        ("EligibilityWalker", "🔍"),
-        ("NavigationWalker", "🗺"),
-        ("MemoryWalker", "🧠"),
-        ("EscalationWalker", "⚡")
+    # Each walker: name, color accent, one-line role, live status text
+    walker_pipeline: list[dict] = [
+        {"name": "IntakeWalker",      "color": "#FFE500", "role": "Extracts your need + language", "live": "Parsing your message..."},
+        {"name": "EligibilityWalker", "color": "#4488FF", "role": "Scores 40 resources against your profile", "live": "Scoring eligibility..."},
+        {"name": "NavigationWalker",  "color": "#00FF88", "role": "Builds the ordered action plan",     "live": "Building action plan..."},
+        {"name": "MemoryWalker",      "color": "#FFB344", "role": "Persists your session for return visits", "live": "Saving session state..."},
+        {"name": "EscalationWalker",  "color": "#FF4444", "role": "Routes to crisis lines if no match",     "live": "Composing escalation..."}
     ];
+
+    # Map walker name -> what state this walker is in for the current turn:
+    #   "complete" (already seen a "complete" event)
+    #   "active"   (has a "running" event but no "complete")
+    #   "idle"     (not seen yet this session)
+    def walkerState(name: str) -> str;
+    def renderWalkerNode(w: dict, is_last: bool) -> JsxElement;
 
     return
         <div
@@ -308,44 +316,11 @@ def:pub ChatPane(
                             "marginBottom": "12px"
                         }}
                     >
-                        Walker chain
+                        Walker pipeline
                     </div>
-                    {[
-                        <div
-                            key={w[0]}
-                            style={{
-                                "display": "flex",
-                                "alignItems": "center",
-                                "gap": "8px",
-                                "padding": "7px 0",
-                                "borderBottom": "0.5px solid rgba(255,255,255,0.04)"
-                            }}
-                        >
-                            <span style={{"fontSize": "14px"}}>{w[1]}</span>
-                            <span
-                                style={{
-                                    "fontSize": "12px",
-                                    "color": (walkerColor(w[0]) if (active_walker and (w[0] in active_walker)) else "rgba(255,255,255,0.3)"),
-                                    "fontWeight": ("600" if (active_walker and (w[0] in active_walker)) else "400"),
-                                    "transition": "all 0.3s ease",
-                                    "flex": "1"
-                                }}
-                            >
-                                {w[0]}
-                            </span>
-                            {(active_walker and (w[0] in active_walker)) and <span
-                                className="walker-active-dot"
-                                style={{
-                                    "width": "6px",
-                                    "height": "6px",
-                                    "borderRadius": "50%",
-                                    "background": walkerColor(w[0]),
-                                    "display": "inline-block"
-                                }}
-                            />}
-                        </div>
-                        for w in walker_chain
-                    ]}
+                    <div style={{"display": "flex", "flexDirection": "column", "gap": "0"}}>
+                        {[renderWalkerNode(walker_pipeline[i], i == len(walker_pipeline) - 1) for i in range(len(walker_pipeline))]}
+                    </div>
                 </div>
             </div>
         </div>;

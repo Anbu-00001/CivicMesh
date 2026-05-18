@@ -118,3 +118,10 @@ walker NavigationWalker {
         report payload;
     }
 }
+
+sem NavigationWalker is "Builds the user-facing ActionPlan. For every eligible ResourceNode it walks Resource -> EligibilityRuleNode -> FormNode to gather form metadata, calls generate_action_plan() to sequence steps, and persists one ApplicationNode per step.";
+sem NavigationWalker.eligible_results is "List of EligibilityResult dicts that passed the >= 40 match-score threshold. Source of the eligible_names fed into generate_action_plan().";
+sem NavigationWalker.possible_results is "List of EligibilityResult dicts in the 20-40 borderline tier. Surfaced to the user as fallback options but not yet planned for application.";
+sem NavigationWalker.profile is "The user's NeedProfile. Drives ActionStep ordering by urgency and shapes language / contact preferences.";
+sem NavigationWalker.person_node is "Root PersonNode of the session. The applied_to edges land on this node so returning users see their history.";
+sem NavigationWalker.summary is "Mirror of the walker's final report payload so the spawning EligibilityWalker can read the plan back without going through .reports.";

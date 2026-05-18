@@ -44,6 +44,45 @@ def:pub TelemetryPanel(walker_events: list) -> JsxElement {
     def renderWalkerRow(name: str) -> JsxElement;
     def renderChainNode(name: str, is_triggered: bool, count: int) -> JsxElement;
     def renderEvent(ev: Any, idx: int) -> JsxElement;
+    def renderCallCard(name: str) -> JsxElement;
+
+    # Per-walker architectural breakdown — what the LLM was asked, what
+    # structured type it returned, and whether the walker invoked any
+    # tools mid-flight. This metadata is static (mirrors how the walkers
+    # are defined in walkers/*.jac and llm/stubs.jac) so we don't need
+    # the chat pipeline to round-trip prompt strings.
+    walker_calls: dict = {
+        "IntakeWalker": {
+            "input": "Raw user message · last-turn prompt",
+            "output": "NeedProfile{category, urgency, details}",
+            "stub": "extract_need_profile()",
+            "tools": False
+        },
+        "EligibilityWalker": {
+            "input": "NeedProfile + 40 seeded ResourceNodes",
+            "output": "EligibilityResult{eligible_count, top_matches[], action_plan}",
+            "stub": "check_eligibility() · score_match()",
+            "tools": True
+        },
+        "NavigationWalker": {
+            "input": "Eligible resources ranked by score",
+            "output": "ActionPlan{steps[], summary, next_action}",
+            "stub": "generate_action_plan()",
+            "tools": True
+        },
+        "MemoryWalker": {
+            "input": "user_id + mode (read_session | write | update_status)",
+            "output": "SessionSnapshot{has_history, next_step, applied[], pending[]}",
+            "stub": "summarize_session()",
+            "tools": False
+        },
+        "EscalationWalker": {
+            "input": "NeedProfile when no resource matched",
+            "output": "EscalationMessage{is_emergency, crisis_resources[], appeal_options[], personalized_message}",
+            "stub": "ReAct loop · 3 tools",
+            "tools": True
+        }
+    };
 
     # Empty state — no chat session has run yet.
     if total_events == 0 {
@@ -221,6 +260,42 @@ def:pub TelemetryPanel(walker_events: list) -> JsxElement {
                         Recent events
                     </div>
                     {[renderEvent(walker_events[j], j) for j in range(max(0, total_events - 8), total_events)]}
+                </div>
+            </div>
+
+            <div
+                style={{
+                    "marginTop": "14px",
+                    "background": "rgba(255,255,255,0.03)",
+                    "backdropFilter": "blur(12px)",
+                    "border": "0.5px solid rgba(255,255,255,0.07)",
+                    "borderRadius": "14px",
+                    "padding": "16px 18px"
+                }}
+            >
+                <div
+                    style={{
+                        "fontSize": "10px",
+                        "color": "rgba(255,255,255,0.35)",
+                        "textTransform": "uppercase",
+                        "letterSpacing": "0.06em",
+                        "marginBottom": "4px"
+                    }}
+                >
+                    Agent reasoning transparency
+                </div>
+                <div
+                    style={{
+                        "fontSize": "11px",
+                        "color": "rgba(255,255,255,0.45)",
+                        "marginBottom": "14px",
+                        "lineHeight": "1.45"
+                    }}
+                >
+                    For each walker that ran this session: the input the LLM saw, the structured output type it produced, and whether it dispatched any tools mid-execution.
+                </div>
+                <div style={{"display": "flex", "flexDirection": "column", "gap": "10px"}}>
+                    {[renderCallCard(walker_order[i]) for i in range(len(walker_order)) if triggered[walker_order[i]]]}
                 </div>
             </div>
         </div>;

@@ -122,6 +122,86 @@ impl TelemetryPanel.renderChainNode(name: str, is_triggered: bool, count: int) -
         </div>;
 }
 
+impl TelemetryPanel.renderCallCard(name: str) -> JsxElement {
+    meta: Any = walker_meta[name];
+    color = str(meta["color"]) if meta else "#666";
+    call: Any = walker_calls[name];
+    in_str = str(call["input"]) if call else "";
+    out_str = str(call["output"]) if call else "";
+    stub_str = str(call["stub"]) if call else "";
+    uses_tools = bool(call["tools"]) if call else False;
+    count = int(counts[name]) if name in counts else 0;
+    return
+        <div
+            key={"call-" + name}
+            style={{
+                "padding": "12px 14px",
+                "background": "rgba(255,255,255,0.02)",
+                "border": "0.5px solid " + color + "30",
+                "borderLeft": "2px solid " + color,
+                "borderRadius": "10px",
+                "display": "flex",
+                "flexDirection": "column",
+                "gap": "6px"
+            }}
+        >
+            <div style={{"display": "flex", "alignItems": "center", "gap": "8px", "flexWrap": "wrap"}}>
+                <span style={{
+                    "fontSize": "12px",
+                    "fontWeight": "600",
+                    "color": color,
+                    "letterSpacing": "-0.01em"
+                }}>
+                    {name}
+                </span>
+                <span style={{
+                    "fontSize": "9px",
+                    "padding": "1px 6px",
+                    "borderRadius": "8px",
+                    "background": color + "15",
+                    "color": color,
+                    "border": "0.5px solid " + color + "40",
+                    "letterSpacing": "0.02em",
+                    "fontFamily": "ui-monospace, monospace"
+                }}>
+                    {stub_str}
+                </span>
+                <span style={{"flex": "1"}}/>
+                <span style={{
+                    "fontSize": "10px",
+                    "padding": "1px 7px",
+                    "borderRadius": "8px",
+                    "background": ("rgba(0,255,136,0.08)" if uses_tools else "rgba(255,255,255,0.04)"),
+                    "color": ("#00FF88" if uses_tools else "rgba(255,255,255,0.4)"),
+                    "border": ("0.5px solid rgba(0,255,136,0.3)" if uses_tools else "0.5px solid rgba(255,255,255,0.08)")
+                }}>
+                    {("tools: yes" if uses_tools else "tools: no")}
+                </span>
+                <span style={{
+                    "fontSize": "10px",
+                    "color": "rgba(255,255,255,0.4)",
+                    "fontFamily": "ui-monospace, monospace"
+                }}>
+                    {str(count) + (" event" if count == 1 else " events")}
+                </span>
+            </div>
+            <div style={{
+                "display": "grid",
+                "gridTemplateColumns": "70px 1fr",
+                "gap": "4px 10px",
+                "fontSize": "11px",
+                "color": "rgba(255,255,255,0.55)",
+                "lineHeight": "1.45",
+                "marginTop": "2px"
+            }}>
+                <div style={{"color": "rgba(255,255,255,0.35)", "textTransform": "uppercase", "fontSize": "9px", "letterSpacing": "0.06em", "paddingTop": "2px"}}>Input</div>
+                <div style={{"fontFamily": "ui-monospace, monospace", "color": "rgba(255,255,255,0.7)"}}>{in_str}</div>
+                <div style={{"color": "rgba(255,255,255,0.35)", "textTransform": "uppercase", "fontSize": "9px", "letterSpacing": "0.06em", "paddingTop": "2px"}}>Output</div>
+                <div style={{"fontFamily": "ui-monospace, monospace", "color": color}}>{out_str}</div>
+            </div>
+        </div>;
+}
+
 impl TelemetryPanel.renderEvent(ev: Any, idx: int) -> JsxElement {
     ev_walker = "";
     ev_node = "";
