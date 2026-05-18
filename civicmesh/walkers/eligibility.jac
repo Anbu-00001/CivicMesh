@@ -67,12 +67,12 @@ walker EligibilityWalker {
             }
             rule: EligibilityRuleNode = rule_nodes[0];
 
-            # `incl_info` ships live graph context into the byllm prompt.
-            # The LLM gets to read the actual NeedNode (`here`), the
-            # PersonNode it came from, the ResourceNode under evaluation,
-            # and its governing rule — all with their `sem` strings —
-            # rather than just the flat parameter primitives. Idiomatic
-            # Jac pattern for graph-aware prompting.
+            # NOTE: byllm 0.6.7 doesn't accept `incl_info` as a regular
+            # stub kwarg, so we pass the primitives explicitly and rely
+            # on `sem` strings (on every parameter + return field) to
+            # ground the model. The graph context is still richer than
+            # a hand-written prompt because every `sem` annotation flows
+            # into the system instructions byllm builds.
             result: EligibilityResult = check_eligibility(
                 profile=self.profile,
                 criteria_summary=str(rule.criteria_summary),
@@ -81,13 +81,7 @@ walker EligibilityWalker {
                 residency_req=str(rule.residency_requirement),
                 age_min=int(rule.age_min),
                 age_max=int(rule.age_max),
-                exceptions=str(rule.exceptions),
-                incl_info={
-                    "need_node": here,
-                    "person_node": self.person_node,
-                    "resource_node": resource,
-                    "rule_node": rule
-                }
+                exceptions=str(rule.exceptions)
             );
 
             self.results.append({
