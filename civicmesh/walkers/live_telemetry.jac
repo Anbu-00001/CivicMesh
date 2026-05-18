@@ -23,10 +23,15 @@ import from graph.nodes {
     FormNode,
     ApplicationNode
 }
-import from jaclang.runtimelib.builtin { restspec, APIProtocol }
 
+# NOTE: jac-scale auto-registers every walker as a REST endpoint at
+# /walker/{name}. We previously decorated this with @restspec(WEBSOCKET)
+# but that disables HTTP POST — the client's `await root spawn` returned
+# 405 Method Not Allowed. Dropping the decorator keeps the standard
+# POST surface available for the GraphViz subscribe hook; jac-scale
+# still exposes /ws/LiveTelemetryWalker alongside it if a future client
+# wants the streaming variant.
 
-@restspec(protocol=APIProtocol.WEBSOCKET)
 walker LiveTelemetryWalker {
     # Stream frame counter so the client can deduplicate / detect drops.
     has frame_count: int = 0;

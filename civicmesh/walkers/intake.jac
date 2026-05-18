@@ -58,6 +58,17 @@ walker IntakeWalker {
         # fields instead to ground the LLM's structured extraction.
         profile = extract_need_profile(conversation=self.conversation);
 
+        # Force NeedProfile.language to the upstream language detection
+        # result. The LLM left to its own devices sometimes returns "en"
+        # even when the user typed Spanish/Hindi, because the second
+        # extraction call doesn't see the explicit language tag from
+        # step 1. Locking it here means downstream byllm calls
+        # (compose_escalation_message, generate_action_plan) reliably
+        # see the right target language inside context.profile.language.
+        try {
+            setattr(profile, "language", str(lang_profile.detected_language));
+        } except Exception as _ex {}
+
         # Step 4: attach the NeedNode via the typed has_need edge
         attached = person_node +>: has_need() :+> NeedNode(
             category=str(profile.category),

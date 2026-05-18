@@ -390,3 +390,22 @@ impl GraphViz.stepReplay(idx: int, path: list) -> None {
         setTimeout(lambda { is_playing = False; current = ""; }, 500);
     }
 }
+
+impl GraphViz.loadLiveCounts -> None {
+    # Subscribe to the LiveTelemetryWalker over the standard REST surface
+    # (jac-scale exposes the same walker at both /walker and /ws; we use
+    # the spawn path here because the component already runs inside a
+    # React render cycle — no need to manage a long-lived WS connection
+    # just to poll one frame). The walker is read-only and bounded by
+    # max_frames=1 so this is a cheap O(n) graph scan per chat turn.
+    try {
+        result = await root spawn LiveTelemetryWalker();
+        reports = result.reports if result.reports else [];
+        if len(reports) > 0 {
+            live_counts = reports[0];
+        }
+    } except Exception as _ex {
+        # Telemetry is a nice-to-have — failure here doesn't break the
+        # rest of the graph view. Quietly skip and leave the strip empty.
+    }
+}

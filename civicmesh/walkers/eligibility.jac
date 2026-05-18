@@ -22,12 +22,12 @@ walker EligibilityWalker {
     has person_node: PersonNode;
     has results: list = [];
     # Hard cap on how many ResourceNodes we feed to check_eligibility().
-    # Each candidate is one LLM call, so this trades latency for coverage.
-    # 3 was too tight — under LLM stochasticity, a "housing" need could
-    # easily get 3 borderline candidates scored under threshold and
-    # escalate when 35 other resources existed. 8 covers the top of each
-    # category bucket while staying inside NVIDIA NIM's rate window.
-    has max_candidates: int = 8;
+    # Each candidate is one LLM call. 10 is the empirically tuned demo
+    # value: it gives every category bucket (housing has ~10 entries in
+    # seed data) enough headroom that at least one resource per turn
+    # almost always clears the eligibility threshold, while still
+    # completing in <25s on NVIDIA NIM's free tier.
+    has max_candidates: int = 10;
     # Mirror of the final report so the spawning walker can read it after
     # spawn — `report` payloads flow only into the outermost walker's stream.
     has summary: dict = {};
@@ -99,13 +99,16 @@ walker EligibilityWalker {
         }
 
         # Step 3: rank by match_score descending, split into tiers.
-        # Thresholds: eligible >= 30 (was 40 — too strict given LLM noise on
-        # borderline fits), possible 15..30. The "possible" tier still gets
-        # surfaced to NavigationWalker so the user sees fallback options
-        # instead of an immediate escalation.
+        # Thresholds lowered to favor green-path Action Plans over crisis
+        # escalation. LLM scoring on borderline civic-aid eligibility is
+        # genuinely noisy — a real Section 8 candidate can score anywhere
+        # from 25 to 60 depending on phrasing of the rule criteria_summary.
+        # eligible >= 25 catches most real fits; possible 10..25 keeps
+        # fallback options visible so the chain rarely escalates when
+        # there ARE viable matches.
         self.results.sort(key=lambda r : -int(r["match_score"]));
-        eligible = [r for r in self.results if int(r["match_score"]) >= 30];
-        possible = [r for r in self.results if 15 <= int(r["match_score"]) < 30];
+        eligible = [r for r in self.results if int(r["match_score"]) >= 25];
+        possible = [r for r in self.results if 10 <= int(r["match_score"]) < 25];
 
         # Step 4: dead end -> escalate; otherwise plan a path forward
         if not eligible and not possible {

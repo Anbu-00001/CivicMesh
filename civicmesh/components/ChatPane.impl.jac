@@ -507,10 +507,23 @@ impl ChatPane.sendMessage(text_override: str = "") -> None {
     #      the same chat language pay zero LLM cost for chips.
     lang_lower = lang_str.lower();
     needs_translate = bot_text and lang_lower and lang_lower != "en" and lang_lower != "english";
+    # When the escalation path fires, EscalationWalker now generates the
+    # `personalized_message` directly in target_language. Re-running it
+    # through TranslateWalker would burn an LLM call and risk leaving
+    # English fragments mid-sentence on long messages. Skip bot_text in
+    # the batch — but still translate suggestion chips, which are produced
+    # by generateSuggestions() in English.
+    bot_already_localized = escalated;
     if needs_translate {
         try {
             # English source strings for this turn, in display order.
-            english_payload: list[str] = [bot_text] + [str(suggestions[ti]) for ti in range(len(suggestions))];
+            # If bot_text is already in target language, leave it out of the
+            # batch entirely so a partial translation can't corrupt it.
+            english_payload: list[str] = [];
+            if not bot_already_localized {
+                english_payload = [bot_text];
+            }
+            english_payload = english_payload + [str(suggestions[ti]) for ti in range(len(suggestions))];
 
             # Final translated output, prefilled from cache where possible.
             final_translated: list[str] = [];
@@ -618,11 +631,18 @@ impl ChatPane.sendMessage(text_override: str = "") -> None {
                 }
             }
 
-            # Apply the translations
+            # Apply the translations. Read-back layout depends on whether
+            # we put bot_text in the batch: if bot_already_localized then
+            # final_translated[i] == suggestion[i]; otherwise [0] = bot_text
+            # and [1..] = suggestions.
             if len(final_translated) == len(english_payload) {
-                bot_text = str(final_translated[0]);
+                sug_start = 0;
+                if not bot_already_localized {
+                    bot_text = str(final_translated[0]);
+                    sug_start = 1;
+                }
                 new_sugs: list = [];
-                fi = 1;
+                fi = sug_start;
                 while fi < len(final_translated) {
                     new_sugs = new_sugs + [str(final_translated[fi])];
                     fi = fi + 1;
