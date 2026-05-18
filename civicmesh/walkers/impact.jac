@@ -136,3 +136,6 @@ walker ImpactWalker {
         report payload;
     }
 }
+
+sem ImpactWalker is "Aggregates outcome metrics across every PersonNode + ApplicationNode reachable from root. Pure graph traversal — no LLM call — so the Impact dashboard tab refreshes cheaply on every mount.";
+sem ImpactWalker.summary is "Mirror of the final report payload. Sibling walkers spawning this one read it via .summary because `report` only bubbles to the outermost walker.";

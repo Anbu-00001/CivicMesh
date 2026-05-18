@@ -52,3 +52,8 @@ walker TranslateWalker {
         report payload;
     }
 }
+
+sem TranslateWalker is "Batch-translates UI strings (bot reply + suggestion chips) into the user's detected language. Thin wrapper around the translate_batch LLM stub so the client can call it as a standard /walker/ REST endpoint.";
+sem TranslateWalker.texts is "Flat list of English source strings to translate, in display order. The walker returns translations in the same order so the client can re-zip with UI slots.";
+sem TranslateWalker.target_language is "Detected language to translate INTO. ISO 639-1 code preferred ('es', 'ta', 'hi'); 'en' or empty short-circuits the LLM call and returns texts unchanged.";
+sem TranslateWalker.summary is "Mirror of the final report payload so callers spawning this walker from inside another can read .summary directly.";

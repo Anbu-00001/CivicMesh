@@ -727,6 +727,46 @@ impl ChatPane.renderMessage(msg: dict, idx: int, is_last: bool) -> JsxElement {
                         />
                         {wname}
                     </div>}
+                    {has_trace and <div
+                        style={{
+                            "display": "flex",
+                            "flexWrap": "wrap",
+                            "gap": "4px",
+                            "marginBottom": "6px",
+                            "alignItems": "center"
+                        }}
+                    >
+                        {[
+                            <span
+                                key={"pill-" + str(idx) + "-" + str(pi)}
+                                style={{
+                                    "fontSize": "9px",
+                                    "padding": "2px 8px",
+                                    "borderRadius": "10px",
+                                    "background": walkerColor(str(trace_raw[pi]["walker"])) + "12",
+                                    "border": "0.5px solid " + walkerColor(str(trace_raw[pi]["walker"])) + "45",
+                                    "color": walkerColor(str(trace_raw[pi]["walker"])),
+                                    "fontWeight": "600",
+                                    "letterSpacing": "0.04em",
+                                    "textTransform": "uppercase",
+                                    "fontFamily": "ui-monospace, monospace",
+                                    "display": "inline-flex",
+                                    "alignItems": "center",
+                                    "gap": "5px"
+                                }}
+                            >
+                                <span style={{
+                                    "fontSize": "8px",
+                                    "color": walkerColor(str(trace_raw[pi]["walker"])),
+                                    "opacity": "0.6"
+                                }}>
+                                    {str(pi + 1)}
+                                </span>
+                                {str(trace_raw[pi]["walker"]).replace("Walker", "")}
+                            </span>
+                            for pi in range(trace_n)
+                        ]}
+                    </div>}
                     <div
                         className={bubble_class}
                         style={{

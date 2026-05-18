@@ -16,6 +16,19 @@ impl ClientApp.initAuth -> None {
     if ok {
         is_authed = True;
         user_id = DEMO_USER_ID;
+        # Bootstrap the user's per-root resource catalog. jac-scale gives
+        # every authenticated user their own root, so we must seed the 40
+        # ResourceNodes into THIS user's graph before EligibilityWalker
+        # has anything to score against. The walker is idempotent — second
+        # run just reports skipped == 40.
+        try {
+            await root spawn SeedWalker();
+        } except Exception as _ex {
+            # Seed failure is non-fatal — the chat will still load, just
+            # with zero matches until the server is restarted with the data
+            # file in a reachable location.
+            is_authed = is_authed;
+        }
     } else {
         is_authed = False;
     }
@@ -136,4 +149,203 @@ impl ClientApp.tabIcon(tab_id: str, is_active: bool) -> JsxElement {
             </svg>;
     }
     return <span/>;
+}
+
+impl ClientApp.togglePalette -> None {
+    palette_open = (not palette_open);
+    palette_query = "";
+    palette_idx = 0;
+}
+
+impl ClientApp.runPaletteAction(action: Any) -> None {
+    # Single dispatch site so the keyboard handler and the mouse click both
+    # route through one place. Closes the palette after every action so the
+    # user gets back to the work surface immediately.
+    kind = str(action["kind"]);
+    payload = str(action["payload"]);
+    if kind == "tab" {
+        active_tab = payload;
+    } elif kind == "replay" {
+        # Cheap "replay" — toggle the active tab to graph; the GraphViz
+        # component's own Replay button is the canonical trigger and is
+        # right there once you land.
+        active_tab = "graph";
+    } elif kind == "docs" {
+        # Open the jac-scale auto-generated OpenAPI page in a new tab.
+        # `window.open` is a JS builtin; jac compiles the bare name through.
+        try {
+            window.open("http://localhost:8001/docs", "_blank");
+        } except Exception as _ex {}
+    } elif kind == "reset" {
+        # Reset the live walker_events buffer so the graph + telemetry
+        # tabs show a clean slate without forcing a full page reload.
+        walker_events = [];
+    }
+    palette_open = False;
+    palette_query = "";
+    palette_idx = 0;
+}
+
+impl ClientApp.renderPaletteItem(action: Any, idx: int, sel: int) -> JsxElement {
+    label = str(action["label"]);
+    is_selected = idx == sel;
+    return
+        <div
+            key={label}
+            onClick={lambda _e: MouseEvent { runPaletteAction(action); }}
+            onMouseEnter={lambda _e: MouseEvent { palette_idx = idx; }}
+            style={{
+                "padding": "10px 14px",
+                "borderRadius": "8px",
+                "background": ("rgba(255,229,0,0.1)" if is_selected else "transparent"),
+                "border": ("0.5px solid rgba(255,229,0,0.35)" if is_selected else "0.5px solid transparent"),
+                "color": ("#FFE500" if is_selected else "rgba(255,255,255,0.8)"),
+                "fontSize": "13px",
+                "cursor": "pointer",
+                "display": "flex",
+                "alignItems": "center",
+                "gap": "10px",
+                "transition": "all 0.12s ease"
+            }}
+        >
+            <span style={{
+                "fontFamily": "ui-monospace, monospace",
+                "fontSize": "10px",
+                "color": ("#FFE500" if is_selected else "rgba(255,255,255,0.3)"),
+                "minWidth": "16px"
+            }}>
+                {"›"}
+            </span>
+            <span style={{"flex": "1"}}>{label}</span>
+            {is_selected and <span style={{
+                "fontSize": "9px",
+                "fontFamily": "ui-monospace, monospace",
+                "padding": "2px 6px",
+                "background": "rgba(255,229,0,0.15)",
+                "border": "0.5px solid rgba(255,229,0,0.3)",
+                "borderRadius": "4px",
+                "color": "#FFE500",
+                "letterSpacing": "0.04em"
+            }}>
+                ENTER
+            </span>}
+        </div>;
+}
+
+impl ClientApp.renderPalette -> JsxElement {
+    # Fuzzy substring filter — case-insensitive, no scoring beyond "contains".
+    # Keeps the implementation tiny and predictable; the action list is short
+    # enough that a fancier ranking would be lost on the user.
+    q = palette_query.lower().strip();
+    filtered: list = [];
+    for a in palette_actions {
+        lbl_lower = str(a["label"]).lower();
+        if (not q) or (q in lbl_lower) {
+            filtered = filtered + [a];
+        }
+    }
+    sel = palette_idx;
+    if sel >= len(filtered) and len(filtered) > 0 {
+        sel = 0;
+    }
+
+    return
+        <div
+            onClick={lambda _e: MouseEvent { togglePalette(); }}
+            style={{
+                "position": "fixed",
+                "inset": "0",
+                "zIndex": "1000",
+                "background": "rgba(5,5,8,0.65)",
+                "backdropFilter": "blur(8px)",
+                "display": "flex",
+                "alignItems": "flex-start",
+                "justifyContent": "center",
+                "paddingTop": "14vh"
+            }}
+        >
+            <div
+                onClick={lambda e: MouseEvent { e.stopPropagation(); }}
+                style={{
+                    "width": "560px",
+                    "maxWidth": "92vw",
+                    "background": "linear-gradient(180deg, rgba(20,20,24,0.95), rgba(12,12,16,0.95))",
+                    "border": "0.5px solid rgba(255,255,255,0.12)",
+                    "borderRadius": "14px",
+                    "boxShadow": "0 32px 72px -20px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,229,0,0.06)",
+                    "overflow": "hidden"
+                }}
+            >
+                <div style={{"padding": "14px 16px 10px", "borderBottom": "0.5px solid rgba(255,255,255,0.06)", "display": "flex", "alignItems": "center", "gap": "10px"}}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{"flexShrink": "0"}}>
+                        <circle cx="11" cy="11" r="6.5" stroke="rgba(255,229,0,0.6)" strokeWidth="1.6"/>
+                        <path d="M16 16 L 20 20" stroke="rgba(255,229,0,0.6)" strokeWidth="1.6" strokeLinecap="round"/>
+                    </svg>
+                    <input
+                        value={palette_query}
+                        onChange={lambda e: ChangeEvent { palette_query = e.target.value; palette_idx = 0; }}
+                        onKeyDown={lambda e: KeyboardEvent {
+                            if e.key == "ArrowDown" {
+                                e.preventDefault();
+                                if palette_idx + 1 < len(filtered) { palette_idx = palette_idx + 1; }
+                            } elif e.key == "ArrowUp" {
+                                e.preventDefault();
+                                if palette_idx > 0 { palette_idx = palette_idx - 1; }
+                            } elif e.key == "Enter" {
+                                e.preventDefault();
+                                if len(filtered) > 0 {
+                                    runPaletteAction(filtered[sel]);
+                                }
+                            } elif e.key == "Escape" {
+                                togglePalette();
+                            }
+                        }}
+                        placeholder="Type a command — tabs, replay, docs, reset..."
+                        autoFocus={True}
+                        style={{
+                            "flex": "1",
+                            "background": "transparent",
+                            "border": "none",
+                            "outline": "none",
+                            "color": "#FFFFFF",
+                            "fontSize": "14px",
+                            "fontFamily": "system-ui, sans-serif"
+                        }}
+                    />
+                    <span style={{
+                        "fontSize": "10px",
+                        "color": "rgba(255,255,255,0.35)",
+                        "fontFamily": "ui-monospace, monospace",
+                        "padding": "3px 7px",
+                        "background": "rgba(255,255,255,0.04)",
+                        "border": "0.5px solid rgba(255,255,255,0.1)",
+                        "borderRadius": "5px"
+                    }}>
+                        ESC
+                    </span>
+                </div>
+                <div style={{"padding": "8px", "maxHeight": "50vh", "overflowY": "auto", "display": "flex", "flexDirection": "column", "gap": "2px"}}>
+                    {(len(filtered) == 0) and <div style={{"padding": "20px", "textAlign": "center", "fontSize": "12px", "color": "rgba(255,255,255,0.4)"}}>
+                        No matching commands.
+                    </div>}
+                    {[renderPaletteItem(filtered[i], i, sel) for i in range(len(filtered))]}
+                </div>
+                <div style={{
+                    "padding": "8px 16px",
+                    "borderTop": "0.5px solid rgba(255,255,255,0.06)",
+                    "display": "flex",
+                    "alignItems": "center",
+                    "gap": "12px",
+                    "fontSize": "10px",
+                    "color": "rgba(255,255,255,0.4)",
+                    "fontFamily": "ui-monospace, monospace"
+                }}>
+                    <span>↑↓ navigate</span>
+                    <span>↵ run</span>
+                    <span>esc close</span>
+                    <span style={{"flex": "1"}}/>
+                    <span>{str(len(filtered)) + " action" + ("" if len(filtered) == 1 else "s")}</span>
+                </div>
+            </div>
+        </div>;
 }

@@ -21,6 +21,25 @@ paint fast on 4G.
 
 def:pub LandingPage(on_start: Any) -> JsxElement {
 
+    # Auto-typing chat preview state. The hero's "live session" glass card
+    # advances bubble-by-bubble on a 1.4s cadence so judges see the agent
+    # working before they scroll. preview_step ∈ [0..4]; 0 = nothing shown,
+    # 4 = all four bubbles visible. Cycles back to 1 every ~9s so a judge
+    # watching the page idle still sees motion.
+    has preview_step: int = 0;
+
+    can with entry {
+        def advance(n: int) -> None {
+            preview_step = n;
+            if n < 4 {
+                setTimeout(lambda { advance(n + 1); }, 1400);
+            } else {
+                setTimeout(lambda { advance(1); }, 4500);
+            }
+        }
+        setTimeout(lambda { advance(1); }, 600);
+    }
+
     def renderPersonaPill(label: str, color: str) -> JsxElement;
     def renderStatTile(value: str, label: str, sub: str, accent: str) -> JsxElement;
     def renderWalkerCard(idx: int, name: str, role: str, color: str, tilt: str) -> JsxElement;
@@ -205,11 +224,16 @@ def:pub LandingPage(on_start: Any) -> JsxElement {
                             EligibilityWalker
                         </div>
                     </div>
-                    <div style={{"display": "flex", "flexDirection": "column", "gap": "10px"}}>
-                        {renderPreviewBubble("user", "",                  "Single mom · 2 kids · $1800/mo in Houston. Need help.", "#FFE500")}
-                        {renderPreviewBubble("bot",  "IntakeWalker",       "Detected: housing + food · urgency: immediate · ES/EN.", "#FFE500")}
-                        {renderPreviewBubble("bot",  "EligibilityWalker",  "Scored 40 resources. 12 eligible. Top: Section 8 (94), SNAP (89), WIC (82).", "#4488FF")}
-                        {renderPreviewBubble("bot",  "NavigationWalker",   "Built 4-step plan. Estimated $11,880/yr unlocked if approved.", "#00FF88")}
+                    <div style={{"display": "flex", "flexDirection": "column", "gap": "10px", "minHeight": "180px"}}>
+                        {(preview_step >= 1) and renderPreviewBubble("user", "",                  "Single mom · 2 kids · $1800/mo in Houston. Need help.", "#FFE500")}
+                        {(preview_step >= 2) and renderPreviewBubble("bot",  "IntakeWalker",       "Detected: housing + food · urgency: immediate · ES/EN.", "#FFE500")}
+                        {(preview_step >= 3) and renderPreviewBubble("bot",  "EligibilityWalker",  "Scored 40 resources. 12 eligible. Top: Section 8 (94), SNAP (89), WIC (82).", "#4488FF")}
+                        {(preview_step >= 4) and renderPreviewBubble("bot",  "NavigationWalker",   "Built 4-step plan. Estimated $11,880/yr unlocked if approved.", "#00FF88")}
+                        {(preview_step > 0 and preview_step < 4) and <div style={{"display": "flex", "alignItems": "center", "gap": "6px", "color": "rgba(255,255,255,0.35)", "fontSize": "11px", "fontStyle": "italic", "paddingLeft": "34px"}}>
+                            <span className="lp-typing-dot"/>
+                            <span className="lp-typing-dot"/>
+                            <span className="lp-typing-dot"/>
+                        </div>}
                     </div>
                 </div>
             </section>

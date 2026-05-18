@@ -21,11 +21,22 @@ def:pub ChatPane(
         translation_cache: dict = {};
 
     can with entry {
+        # Cold-start welcome with three click-to-send sample prompts.
+        # On a hackathon demo the judge launches the app, reads the welcome,
+        # then has no idea what to type — the prompt chips remove that
+        # friction. They cover the three top categories (housing/food/legal)
+        # and explicitly mention income + family size so EligibilityWalker
+        # has enough to score against in one turn.
         seed = [
             {
                 "role": "bot",
-                "text": "Hi! I'm CivicMesh — I help people find housing, food, healthcare, and legal aid. Talk to me in any language. What's going on?",
-                "walker": "system"
+                "text": "Hi! I'm CivicMesh — I help people find housing, food, healthcare, and legal aid. Talk to me in any language. Pick a prompt below or describe your situation in your own words.",
+                "walker": "system",
+                "suggestions": [
+                    "I'm a single mother with 2 kids in Houston. I earn $1,800/month and need housing help.",
+                    "Mi familia y yo no hemos comido en 2 días. Estamos en Texas.",
+                    "I'm 72, on $1200/month Social Security, my landlord is trying to evict me illegally."
+                ]
             }
         ];
         if session_data.get("has_history", False) {

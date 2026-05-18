@@ -28,6 +28,7 @@ def:pub ImpactReport -> JsxElement {
     def renderCategoryBar(cat: str, count: int, max_count: int, color: str) -> JsxElement;
     def renderResourceBar(name: str, count: int, max_count: int) -> JsxElement;
     def renderLanguageChip(lang: str, count: int) -> JsxElement;
+    def renderTopNeedCard(cat_lookup: Any) -> JsxElement;
 
     if loading {
         return
@@ -326,15 +327,7 @@ def:pub ImpactReport -> JsxElement {
                         "justifyContent": "center"
                     }}
                 >
-                    <div style={{"fontSize": "10px", "color": "rgba(255,229,0,0.85)", "textTransform": "uppercase", "letterSpacing": "0.06em", "marginBottom": "8px"}}>
-                        Persona moment
-                    </div>
-                    <div style={{"fontSize": "14px", "lineHeight": "1.55", "color": "rgba(255,255,255,0.85)", "fontStyle": "italic"}}>
-                        "I'm a single mother with two kids and we just lost our apartment. I don't know what to do, and English is hard for me."
-                    </div>
-                    <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.4)", "marginTop": "10px"}}>
-                        — Maria, demo persona · routed to Section 8 + SNAP + WIC in 11 seconds
-                    </div>
+                    {renderTopNeedCard(cat_count_by_key)}
                 </div>
             </div>
         </div>;

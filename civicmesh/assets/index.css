@@ -77,36 +77,30 @@ input:focus {
 }
 
 /* ──────────────────────────────────────────────────────
-   TYPEWRITER REVEAL
+   STREAMING REVEAL — token fade-in (replaces typewriter)
    ────────────────────────────────────────────────────── */
+/* Old behaviour clipped the bubble text from left-to-right (steps(30,end))
+   which created visible "punching" at every step and shifted line wraps
+   mid-animation. Linear's chat ships a token-fade approach instead: the
+   whole bubble fades + lifts in once, settling to its final layout. No
+   reflow, no caret artifacts, reads more like the message arrived already
+   "written" rather than typed-on-screen. We keep the .msg-typewriter
+   class name so call sites don't need updating. */
 
 .msg-typewriter {
-  animation: typewriterReveal 0.8s steps(30, end) forwards;
-  clip-path: inset(0 100% 0 0);
-}
-
-@keyframes typewriterReveal {
-  from { clip-path: inset(0 100% 0 0); }
-  to   { clip-path: inset(0 0%   0 0); }
-}
-
-.msg-typewriter::after {
-  content: "▎";
-  color: #FFE500;
-  font-size: 0.9em;
-  margin-left: 2px;
-  animation: caretBlink 0.75s step-end infinite;
-}
-
-.msg-typewriter.reveal-done::after {
-  animation: none;
+  animation: msgFadeReveal 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
   opacity: 0;
+  transform: translateY(4px);
 }
 
-@keyframes caretBlink {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0; }
+@keyframes msgFadeReveal {
+  from { opacity: 0; transform: translateY(4px); filter: blur(2px); }
+  to   { opacity: 1; transform: translateY(0);   filter: blur(0);   }
 }
+
+/* reveal-done is no longer needed but kept as a no-op so any HMR-cached
+   markup that still adds the class won't break layout. */
+.msg-typewriter.reveal-done { animation: none; opacity: 1; transform: none; }
 
 /* ──────────────────────────────────────────────────────
    MESSAGE ENTRANCE STAGGER
@@ -376,26 +370,27 @@ input:focus {
 /* Animated mesh gradient living behind the hero. Six color stops floating
    at different durations/positions create a slow, organic shimmer the
    user reads as "alive" without burning a Spline scene's 2MB JS budget. */
+/* Replaces the previous rainbow conic-gradient mesh. 2026 research (Linear,
+   Arc, Vercel) shipped duotone washes with grain instead — rainbow gradient
+   AI heroes started reading as "ChatGPT wrapper" tells. We keep ONE warm
+   spot (off-center) plus one cool counterpoint, both drifting slowly. The
+   grain layer on top breaks any visible banding on OLED displays. */
 .lp-mesh {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 18% 12%, rgba(255,229,0,0.20) 0%, transparent 38%),
-    radial-gradient(circle at 82% 22%, rgba(68,136,255,0.18) 0%, transparent 42%),
-    radial-gradient(circle at 12% 78%, rgba(255,136,170,0.16) 0%, transparent 45%),
-    radial-gradient(circle at 88% 84%, rgba(0,255,136,0.14) 0%, transparent 42%),
-    radial-gradient(circle at 48% 48%, rgba(255,179,68,0.10) 0%, transparent 55%);
-  filter: blur(40px);
-  opacity: 0.85;
-  animation: lpMeshDrift 28s ease-in-out infinite alternate;
+    radial-gradient(ellipse 70% 50% at 22% 20%, rgba(255,229,0,0.22) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 50% at 78% 80%, rgba(60,40,90,0.45) 0%, transparent 70%),
+    linear-gradient(180deg, #07070a 0%, #08060c 45%, #060509 100%);
+  opacity: 1;
+  animation: lpMeshDrift 32s ease-in-out infinite alternate;
 }
 
 @keyframes lpMeshDrift {
-  0%   { transform: scale(1)    translate(0,    0);    }
-  50%  { transform: scale(1.05) translate(-20px, 30px); }
-  100% { transform: scale(1)    translate(20px, -20px); }
+  0%   { background-position: 0%   50%, 100% 50%, 0 0; }
+  100% { background-position: 6%   54%,  94% 46%, 0 0; }
 }
 
 /* Subtle noise texture that lives above the mesh — kills the banding that
@@ -627,3 +622,37 @@ input:focus {
   to { opacity: 1; transform: translateY(0); }
 }
 
+
+/* ──────────────────────────────────────────────────────
+   LANDING — Auto-typing chat preview
+   ────────────────────────────────────────────────────── */
+
+/* Each preview bubble fades + slides in as it becomes the next preview_step.
+   The hero card has a min-height so layout doesn't shift while bubbles
+   accumulate. */
+.lp-bubble-fade-in {
+  animation: lpBubbleFade 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+@keyframes lpBubbleFade {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+/* Typing-dot indicator shown between bubbles while the next walker is "thinking". */
+.lp-typing-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255,229,0,0.7);
+  display: inline-block;
+  animation: lpTypingPulse 1.2s ease-in-out infinite;
+}
+.lp-typing-dot:nth-child(2) { animation-delay: 0.18s; }
+.lp-typing-dot:nth-child(3) { animation-delay: 0.36s; }
+
+@keyframes lpTypingPulse {
+  0%, 80%, 100% { opacity: 0.25; transform: scale(0.8); }
+  40%           { opacity: 1;    transform: scale(1.1); }
+}
