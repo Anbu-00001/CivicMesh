@@ -51,8 +51,12 @@ walker EscalationWalker {
         # location, with 211 prepended as a universal fallback. Capped at five
         # entries so the LLM prompt stays bounded.
         def check_emergency_resources(category: str, location_zip: str) -> list[str] {
+            # Capture the local parameter under a distinct name so the edge-filter
+            # predicate below doesn't compare the node's `category` attribute
+            # against itself (which would always be True and pull every resource).
+            target_category = category;
             emergency: list[str] = [];
-            for r in [root --> [?:ResourceNode, category == category]] {
+            for r in [root --> [?:ResourceNode, category == target_category]] {
                 if str(r.capacity) == "closed" {
                     continue;
                 }

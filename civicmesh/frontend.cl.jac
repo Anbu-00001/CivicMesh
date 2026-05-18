@@ -12,6 +12,8 @@ import from .components.GraphViz { GraphViz }
 import from .components.ActionPlan { ActionPlan }
 import from .components.SessionBanner { SessionBanner }
 import from .components.TelemetryPanel { TelemetryPanel }
+import from .components.LandingPage { LandingPage }
+import from .components.ImpactReport { ImpactReport }
 
 sv import from walkers.memory { MemoryWalker }
 
@@ -20,13 +22,60 @@ def:pub ClientApp -> JsxElement {
         is_authed: bool = False,
         user_id: str = "demo_user",
         session_data: Any = {},
-        walker_events: list = [];
+        walker_events: list = [],
+        show_landing: bool = True,
+        palette_open: bool = False,
+        palette_query: str = "",
+        palette_idx: int = 0;
+
+    # Master action list for the Cmd+K command palette. Each entry is a
+    # (label, kind, payload) triple so navigate actions and side effects
+    # share a single dispatch path in runPaletteAction.
+    palette_actions: list[dict] = [
+        {"label": "Switch to Chat tab",        "kind": "tab",    "payload": "chat"},
+        {"label": "Switch to Graph tab",       "kind": "tab",    "payload": "graph"},
+        {"label": "Switch to Action Plan tab", "kind": "tab",    "payload": "plan"},
+        {"label": "Switch to Telemetry tab",   "kind": "tab",    "payload": "telemetry"},
+        {"label": "Switch to Impact tab",      "kind": "tab",    "payload": "impact"},
+        {"label": "Replay walker chain",       "kind": "replay", "payload": ""},
+        {"label": "Show /docs OpenAPI",        "kind": "docs",   "payload": ""},
+        {"label": "Reset session",             "kind": "reset",  "payload": ""}
+    ];
+
+    def startApp -> None;
+    def togglePalette -> None;
+    def runPaletteAction(action: dict) -> None;
+    def renderPaletteItem(action: dict, idx: int, sel: int) -> JsxElement;
+    def renderPalette -> JsxElement;
 
     can with entry {
         authed_now = jacIsLoggedIn();
         is_authed = authed_now;
         if not authed_now {
             initAuth();
+        }
+        # Global Cmd/Ctrl+K listener wired at the document level so the
+        # palette is reachable from any tab without per-component plumbing.
+        try {
+            document.addEventListener("keydown", lambda e: KeyboardEvent {
+                k_raw = e.key;
+                k = str(k_raw) if k_raw else "";
+                is_k = k == "k" or k == "K";
+                meta_flag = bool(e.metaKey);
+                ctrl_flag = bool(e.ctrlKey);
+                if is_k and (meta_flag or ctrl_flag) {
+                    e.preventDefault();
+                    palette_open = (not palette_open);
+                    palette_query = "";
+                    palette_idx = 0;
+                } elif palette_open and k == "Escape" {
+                    palette_open = False;
+                }
+            });
+        } except Exception as _ex {
+            # Document-level listener unavailable — palette is still
+            # reachable via the nav button.
+            pass;
         }
     }
 
@@ -39,7 +88,8 @@ def:pub ClientApp -> JsxElement {
     async def initAuth -> None;
     async def loadSession -> None;
     def pushWalkerEvent(events: list) -> None;
-    def navTab(tab_id: str, label: str, icon: str) -> JsxElement;
+    def navTab(tab_id: str, label: str) -> JsxElement;
+    def tabIcon(tab_id: str, is_active: bool) -> JsxElement;
 
     # Build has_history defensively without using .get (Any-typed value doesn't expose .get to the checker)
     has_history = False;
@@ -49,6 +99,10 @@ def:pub ClientApp -> JsxElement {
         } except Exception as _ex {
             has_history = False;
         }
+    }
+
+    if show_landing {
+        return <LandingPage on_start={startApp}/>;
     }
 
     return
@@ -113,12 +167,36 @@ def:pub ClientApp -> JsxElement {
                         "border": "0.5px solid rgba(255,255,255,0.07)"
                     }}
                 >
-                    {navTab("chat", "Chat", "💬")}
-                    {navTab("graph", "Graph", "🕸")}
-                    {navTab("plan", "Action Plan", "✅")}
-                    {navTab("telemetry", "Telemetry", "📊")}
+                    {navTab("chat", "Chat")}
+                    {navTab("graph", "Graph")}
+                    {navTab("plan", "Action Plan")}
+                    {navTab("telemetry", "Telemetry")}
+                    {navTab("impact", "Impact")}
                 </nav>
-                <div style={{"display": "flex", "alignItems": "center", "gap": "7px"}}>
+                <div style={{"display": "flex", "alignItems": "center", "gap": "10px"}}>
+                    <button
+                        onClick={lambda _e: MouseEvent { togglePalette(); }}
+                        title="Open command palette (⌘K)"
+                        style={{
+                            "display": "flex",
+                            "alignItems": "center",
+                            "gap": "6px",
+                            "padding": "5px 9px 5px 10px",
+                            "background": "rgba(255,255,255,0.04)",
+                            "border": "0.5px solid rgba(255,255,255,0.1)",
+                            "borderRadius": "8px",
+                            "color": "rgba(255,255,255,0.55)",
+                            "fontSize": "11px",
+                            "cursor": "pointer",
+                            "fontFamily": "ui-monospace, monospace"
+                        }}
+                    >
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                            <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.8"/>
+                            <path d="M16 16 L 20 20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                        </svg>
+                        <span style={{"letterSpacing": "0.04em"}}>⌘K</span>
+                    </button>
                     <span
                         style={{
                             "width": "6px",
@@ -162,6 +240,9 @@ def:pub ClientApp -> JsxElement {
                 <div style={{"display": ("block" if active_tab == "telemetry" else "none")}}>
                     <TelemetryPanel walker_events={walker_events}/>
                 </div>
+                <div style={{"display": ("block" if active_tab == "impact" else "none")}}>
+                    <ImpactReport/>
+                </div>
             </main>
             <footer
                 style={{
@@ -185,5 +266,6 @@ def:pub ClientApp -> JsxElement {
                     <span>Powered by Jac · jac-scale · byllm</span>
                 </div>
             </footer>
+            {palette_open and renderPalette()}
         </div>;
 }

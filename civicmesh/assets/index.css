@@ -320,6 +320,21 @@ input:focus {
 }
 
 /* ──────────────────────────────────────────────────────
+   GRAPH BEAM SWEEP — Magic UI style animated SVG edges
+   The dashed line slides via stroke-dashoffset so the
+   "beam" reads as a wave traveling along the visited edge.
+   ────────────────────────────────────────────────────── */
+
+.lp-beam-sweep {
+  animation: lpBeamSweep 1.5s linear infinite;
+}
+
+@keyframes lpBeamSweep {
+  from { stroke-dashoffset: 100; }
+  to   { stroke-dashoffset: 0;   }
+}
+
+/* ──────────────────────────────────────────────────────
    REPLAY BUTTON SPIN
    ────────────────────────────────────────────────────── */
 
@@ -345,3 +360,270 @@ input:focus {
   }
   .card-3d:hover { transform: none !important; }
 }
+
+/* ──────────────────────────────────────────────────────
+   LANDING — Mesh background, glass cards, 3D tilt
+   ────────────────────────────────────────────────────── */
+
+.lp-root {
+  --lp-yellow: #FFE500;
+  --lp-blue:   #4488FF;
+  --lp-green:  #00FF88;
+  --lp-pink:   #FF88AA;
+  --lp-orange: #FFB344;
+}
+
+/* Animated mesh gradient living behind the hero. Six color stops floating
+   at different durations/positions create a slow, organic shimmer the
+   user reads as "alive" without burning a Spline scene's 2MB JS budget. */
+.lp-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255,229,0,0.20) 0%, transparent 38%),
+    radial-gradient(circle at 82% 22%, rgba(68,136,255,0.18) 0%, transparent 42%),
+    radial-gradient(circle at 12% 78%, rgba(255,136,170,0.16) 0%, transparent 45%),
+    radial-gradient(circle at 88% 84%, rgba(0,255,136,0.14) 0%, transparent 42%),
+    radial-gradient(circle at 48% 48%, rgba(255,179,68,0.10) 0%, transparent 55%);
+  filter: blur(40px);
+  opacity: 0.85;
+  animation: lpMeshDrift 28s ease-in-out infinite alternate;
+}
+
+@keyframes lpMeshDrift {
+  0%   { transform: scale(1)    translate(0,    0);    }
+  50%  { transform: scale(1.05) translate(-20px, 30px); }
+  100% { transform: scale(1)    translate(20px, -20px); }
+}
+
+/* Subtle noise texture that lives above the mesh — kills the banding that
+   pure radial gradients produce on OLED displays. */
+.lp-noise {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='3'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.5'/></svg>");
+  mix-blend-mode: overlay;
+}
+
+/* Grid overlay that fades out toward the bottom — anchors the page to a
+   spatial coordinate system without screaming "blueprint template". */
+.lp-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, #000 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, #000 30%, transparent 80%);
+}
+
+/* Single glass surface primitive. Everywhere we want frosted glass we add
+   this class — keeps tokens consistent: same blur, same border, same alpha. */
+.lp-glass {
+  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 0.5px solid rgba(255,255,255,0.12);
+  border-radius: 18px;
+  box-shadow:
+    inset 0 1px 0 0 rgba(255,255,255,0.08),
+    0 12px 32px -16px rgba(0,0,0,0.6);
+}
+
+/* Heavier glass for the hero focus card — more depth, more glow. */
+.lp-glass-strong {
+  background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.025) 100%);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border: 0.5px solid rgba(255,255,255,0.15);
+  border-radius: 22px;
+  box-shadow:
+    inset 0 1px 0 0 rgba(255,255,255,0.1),
+    0 24px 64px -24px rgba(0,0,0,0.75),
+    0 0 0 1px rgba(255,255,255,0.03);
+}
+
+/* The headline gets a horizontal gradient mask so the "CivicMesh finds it."
+   accent doesn't read flat — it shimmers across yellow→orange→pink. */
+.lp-gradient-text {
+  background: linear-gradient(92deg, #FFE500 0%, #FFB344 45%, #FF88AA 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  background-size: 200% 100%;
+  animation: lpGradientShift 8s ease-in-out infinite alternate;
+}
+
+@keyframes lpGradientShift {
+  0%   { background-position:   0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+/* CTA button — multi-layer shadow + animated sheen so it doesn't look
+   like a flat tab. The sheen sweeps once on entry then lives only on
+   hover so it doesn't become a distraction. */
+.lp-cta {
+  position: relative;
+  overflow: hidden;
+  padding: 17px 38px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  background: linear-gradient(180deg, #FFE500 0%, #FFC700 100%);
+  color: #0A0A0A;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.5) inset,
+    0 -1px 0 rgba(0,0,0,0.15) inset,
+    0 14px 32px -10px rgba(255,229,0,0.55),
+    0 4px 10px -4px rgba(255,229,0,0.35);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.lp-cta::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.7), transparent);
+  transition: left 0.7s ease;
+}
+.lp-cta:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.6) inset,
+    0 -1px 0 rgba(0,0,0,0.2) inset,
+    0 22px 40px -10px rgba(255,229,0,0.7),
+    0 6px 14px -4px rgba(255,229,0,0.45);
+}
+.lp-cta:hover::after { left: 130%; }
+.lp-cta:active { transform: translateY(0); }
+
+/* The walker pipeline blocks tilt slightly when at rest, then snap level
+   on hover and rise. Looks like a stacked deck of cards the user can fan
+   through. The CSS variable --tilt is set inline per-card. */
+.lp-walker-card {
+  position: relative;
+  transform: perspective(900px) rotateY(var(--tilt, 0deg)) rotateX(2deg) translateZ(0);
+  transition: transform 0.35s cubic-bezier(.2,.7,.3,1), box-shadow 0.35s ease, border-color 0.35s ease;
+  will-change: transform;
+}
+.lp-walker-card:hover {
+  transform: perspective(900px) rotateY(0deg) rotateX(0deg) translateY(-6px);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255,255,255,0.12),
+    0 24px 48px -12px rgba(0,0,0,0.55);
+}
+
+/* Subtle drift on the hero preview card. Keeps the surface alive without
+   the user noticing the motion until they sit on the page for a moment. */
+.lp-float {
+  animation: lpFloat 7s ease-in-out infinite alternate;
+}
+@keyframes lpFloat {
+  0%   { transform: translateY(0)    rotate(0deg);   }
+  100% { transform: translateY(-8px) rotate(-0.4deg); }
+}
+
+/* Floating orb — sits behind feature cards as a colored glow. The blur
+   gives it depth that flat fills can't fake. */
+.lp-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(45px);
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Status pulse for the live indicator in the nav and the hero preview. */
+.lp-pulse-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--lp-green);
+  box-shadow: 0 0 8px var(--lp-green);
+}
+.lp-pulse-dot::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: var(--lp-green);
+  opacity: 0.4;
+  animation: lpPulseRing 1.6s ease-out infinite;
+}
+@keyframes lpPulseRing {
+  0%   { transform: scale(0.6); opacity: 0.6; }
+  100% { transform: scale(2.2); opacity: 0;   }
+}
+
+/* Persona chip with hover lift. */
+.lp-persona {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.lp-persona:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px -8px rgba(0,0,0,0.6);
+}
+
+/* Bento stat tile — slight 3D tilt on hover, glow ring follows accent. */
+.lp-stat {
+  transition: transform 0.3s cubic-bezier(.2,.7,.3,1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.lp-stat:hover {
+  transform: translateY(-4px) rotateX(2deg);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255,255,255,0.12),
+    0 28px 48px -16px rgba(0,0,0,0.55);
+}
+
+/* Animated dashed connector under the walker cards — gives the row a
+   "pipeline" reading without needing extra SVG markup. */
+.lp-pipeline-rail {
+  height: 1px;
+  width: 100%;
+  background: repeating-linear-gradient(90deg,
+    rgba(255,229,0,0.5) 0,
+    rgba(255,229,0,0.5) 6px,
+    transparent 6px,
+    transparent 14px
+  );
+  background-size: 28px 1px;
+  animation: lpRailScroll 4s linear infinite;
+}
+@keyframes lpRailScroll {
+  from { background-position: 0   0; }
+  to   { background-position: 28px 0; }
+}
+
+/* Reveal-on-load: every direct child of .lp-reveal staggers in. Uses
+   :nth-child to delay each successive element. */
+.lp-reveal > * {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: lpRevealIn 0.7s cubic-bezier(.2,.7,.3,1) forwards;
+}
+.lp-reveal > *:nth-child(1) { animation-delay: 0.05s; }
+.lp-reveal > *:nth-child(2) { animation-delay: 0.15s; }
+.lp-reveal > *:nth-child(3) { animation-delay: 0.25s; }
+.lp-reveal > *:nth-child(4) { animation-delay: 0.35s; }
+.lp-reveal > *:nth-child(5) { animation-delay: 0.45s; }
+.lp-reveal > *:nth-child(6) { animation-delay: 0.55s; }
+@keyframes lpRevealIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+

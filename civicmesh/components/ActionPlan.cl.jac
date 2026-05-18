@@ -33,11 +33,38 @@ def:pub ActionPlan(user_id: str, walker_events: list = []) -> JsxElement {
     async def loadPlan -> None;
     async def markApplied(resource_name: str, idx: int) -> None;
     def statusColor(status: str) -> str;
-    def statusIcon(status: str) -> str;
+    def statusIcon(status: str, color: str) -> JsxElement;
+    def impactValue(resource_name: str) -> int;
     def renderStep(s: Any, i: int) -> JsxElement;
 
     total = len(steps);
     pct = (int(done_count / total * 100) if total > 0 else 0);
+
+    # Aggregate annual benefit value across every step whose status is not
+    # "denied". This is a rule-based rough estimate (no LLM call) — anchored
+    # to publicly published 2024 program averages so the headline number
+    # passes a basic sanity check. We also count how many resources
+    # contribute to the total for the explanatory subtitle.
+    impact_total = 0;
+    impact_n = 0;
+    if total > 0 {
+        si = 0;
+        while si < total {
+            sx: Any = steps[si];
+            sx_status = str(sx["status"]) if sx["status"] else "";
+            sx_name = str(sx["name"]) if sx["name"] else "";
+            if sx_status != "denied" {
+                v = impactValue(sx_name);
+                if v > 0 {
+                    impact_total = impact_total + v;
+                    impact_n = impact_n + 1;
+                }
+            }
+            si = si + 1;
+        }
+    }
+    # Format with commas. Python-style format spec works fine here.
+    impact_str = f"{impact_total:,}";
 
     if loading {
         return
@@ -90,7 +117,11 @@ def:pub ActionPlan(user_id: str, walker_events: list = []) -> JsxElement {
                         }}
                     >
                         <div style={{"display": "flex", "alignItems": "center", "gap": "12px", "marginBottom": "12px"}}>
-                            <div style={{"fontSize": "28px"}}>⚡</div>
+                            <div style={{"width": "32px", "height": "32px", "borderRadius": "50%", "background": "rgba(255,68,68,0.12)", "border": "1px solid rgba(255,68,68,0.45)", "display": "flex", "alignItems": "center", "justifyContent": "center", "flexShrink": "0"}}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                    <path d="M13 2 L 4 14 L 11 14 L 10 22 L 20 9 L 13 9 Z" stroke="#FF4444" strokeWidth="1.8" strokeLinejoin="round" fill="rgba(255,68,68,0.2)"/>
+                                </svg>
+                            </div>
                             <div>
                                 <div style={{"fontSize": "16px", "fontWeight": "600", "color": "#FF4444"}}>
                                     Escalation triggered this session
@@ -134,7 +165,13 @@ def:pub ActionPlan(user_id: str, walker_events: list = []) -> JsxElement {
                         "borderRadius": "16px"
                     }}
                 >
-                <div style={{"fontSize": "32px", "marginBottom": "10px"}}>📋</div>
+                <div style={{"width": "48px", "height": "48px", "borderRadius": "12px", "background": "rgba(255,229,0,0.08)", "border": "1px solid rgba(255,229,0,0.3)", "display": "flex", "alignItems": "center", "justifyContent": "center", "marginBottom": "12px"}}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                        <rect x="4" y="3" width="16" height="18" rx="2" stroke="#FFE500" strokeWidth="1.8"/>
+                        <path d="M8 8 L 10 10 L 13 7" stroke="#FFE500" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M8 14 L 16 14 M 8 17.5 L 14 17.5" stroke="#FFE500" strokeWidth="1.6" strokeLinecap="round"/>
+                    </svg>
+                </div>
                 <div style={{"fontSize": "16px", "fontWeight": "600", "marginBottom": "8px", "color": "#FFE500"}}>
                     No applications yet
                 </div>
@@ -165,6 +202,53 @@ def:pub ActionPlan(user_id: str, walker_events: list = []) -> JsxElement {
 
     return
         <div>
+            {(impact_total > 0) and <div
+                style={{
+                    "padding": "20px 22px",
+                    "background": "linear-gradient(135deg, rgba(0,255,136,0.08), rgba(255,229,0,0.05))",
+                    "backdropFilter": "blur(12px)",
+                    "border": "0.5px solid rgba(0,255,136,0.3)",
+                    "borderLeft": "3px solid #00FF88",
+                    "borderRadius": "14px",
+                    "marginBottom": "12px",
+                    "display": "flex",
+                    "alignItems": "center",
+                    "gap": "18px"
+                }}
+            >
+                <div style={{
+                    "width": "48px",
+                    "height": "48px",
+                    "borderRadius": "50%",
+                    "background": "rgba(0,255,136,0.12)",
+                    "border": "1px solid rgba(0,255,136,0.45)",
+                    "display": "flex",
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "flexShrink": "0"
+                }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                        <path
+                            d="M12 3 L 14 9 L 20 9 L 15 13 L 17 19 L 12 15.5 L 7 19 L 9 13 L 4 9 L 10 9 Z"
+                            stroke="#00FF88"
+                            strokeWidth="1.6"
+                            strokeLinejoin="round"
+                            fill="rgba(0,255,136,0.18)"
+                        />
+                    </svg>
+                </div>
+                <div style={{"flex": "1"}}>
+                    <div style={{"fontSize": "10px", "color": "rgba(0,255,136,0.8)", "textTransform": "uppercase", "letterSpacing": "0.08em", "fontWeight": "600", "marginBottom": "3px"}}>
+                        Estimated impact
+                    </div>
+                    <div style={{"fontSize": "22px", "fontWeight": "700", "letterSpacing": "-0.02em", "color": "#FFFFFF", "lineHeight": "1.15"}}>
+                        ${impact_str}/year unlocked
+                    </div>
+                    <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.45)", "marginTop": "3px", "lineHeight": "1.4"}}>
+                        {("If approved for all " + str(impact_n) + " resources on this plan · based on 2024 program averages")}
+                    </div>
+                </div>
+            </div>}
             <div
                 style={{
                     "padding": "16px 18px",

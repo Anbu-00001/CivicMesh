@@ -155,6 +155,8 @@ sem SessionSummary.next_recommended_step is "Single sentence advising the user w
 """Extract a structured NeedProfile from a free-form, possibly multilingual conversation transcript."""
 def extract_need_profile(conversation: str) -> NeedProfile by pool();
 
+sem extract_need_profile.conversation is "Full transcript of the user's chat turns so far, in whatever language they typed. May contain mixed scripts and informal phrasing; the model must lift a structured NeedProfile from it without losing nuance.";
+
 """Score how well a profile satisfies one resource's eligibility rule. Return matched and missing criteria plus a 0-100 score."""
 def check_eligibility(
     profile: NeedProfile,
@@ -167,8 +169,20 @@ def check_eligibility(
     exceptions: str
 ) -> EligibilityResult by pool();
 
+sem check_eligibility.profile is "The user's NeedProfile snapshot. Provides demographic context used to evaluate every criterion.";
+sem check_eligibility.criteria_summary is "Human-readable summary of the resource's EligibilityRuleNode.criteria_summary. Primary surface the model reads when reasoning about the match.";
+sem check_eligibility.income_limit is "EligibilityRuleNode.income_limit_annual in USD. 0 means no income limit and any bracket should match on income.";
+sem check_eligibility.citizenship_required is "True if the resource legally requires US citizenship. Drives whether undocumented users should be excluded.";
+sem check_eligibility.residency_req is "Residency scope required by the resource. One of: 'state', 'county', 'city', 'none'. Matched against profile.location_zip.";
+sem check_eligibility.age_min is "Minimum applicant age accepted by the resource. 0 means no minimum.";
+sem check_eligibility.age_max is "Maximum applicant age accepted by the resource. 0 means no maximum.";
+sem check_eligibility.exceptions is "Free-form description of waivers and edge cases the resource grants. Consult before declaring ineligibility on a borderline match.";
+
 """Generate an ordered ActionPlan from a list of eligible resource names plus the user's profile. Order by urgency and deadline."""
 def generate_action_plan(eligible_resources: list[str], profile: NeedProfile) -> ActionPlan by pool();
+
+sem generate_action_plan.eligible_resources is "List of ResourceNode.agency_name strings that passed eligibility scoring. Order does not matter; the model is expected to re-sequence by urgency and deadline.";
+sem generate_action_plan.profile is "The user's NeedProfile. Drives ordering: 'immediate' urgency comes first, language and preferred_contact shape the action_description tone.";
 
 """Compose an empathetic escalation message for dead-end or all-denied scenarios.
 
@@ -181,11 +195,21 @@ def compose_escalation_message(
     on_iteration: any = None
 ) -> EscalationMessage by pool();
 
+sem compose_escalation_message.context is "EscalationContext bundle describing why escalation fired plus the user's NeedProfile. The primary input the model reasons over.";
+sem compose_escalation_message.tools is "List of ReAct tool callables the model may invoke to consult the live graph (emergency resources, appeal orgs, safety risk). Order is not meaningful.";
+sem compose_escalation_message.on_iteration is "Callback fired between ReAct iterations. Returns IterationAction.CONTINUE or ABORT_WITH_SUMMARY so the host walker can stream progress and cap runaway loops.";
+
 """Detect the language of the user's first message and translate intent into English for downstream prompts."""
 def detect_language_and_extract(message: str) -> LanguageProfile by pool();
 
+sem detect_language_and_extract.message is "The user's first chat message, exactly as typed. May be in any language and any script; the model must detect language and translate intent into English.";
+
 """Produce a short, empathetic next-step hint after a denial, given the agency, the denial reason, and the user's profile."""
 def generate_denial_next_step(resource_name: str, denial_reason: str, profile: NeedProfile) -> str by pool();
+
+sem generate_denial_next_step.resource_name is "ResourceNode.agency_name that denied the application. Surfaced verbatim in the hint.";
+sem generate_denial_next_step.denial_reason is "Free-form ApplicationNode.denial_reason text. The model maps this to a concrete next-step action.";
+sem generate_denial_next_step.profile is "The user's NeedProfile. Drives tone, language, and whether to suggest appeal vs alternative.";
 
 """Summarize a returning user's prior session: approved, pending, denied applications, plus one recommended next action."""
 def summarize_session(
@@ -195,5 +219,13 @@ def summarize_session(
     profile: NeedProfile
 ) -> SessionSummary by pool();
 
+sem summarize_session.approved is "Agency names where ApplicationNode.status='approved'. The model frames these as wins in the welcome message.";
+sem summarize_session.pending is "Agency names where status is 'pending' or 'applied'. Pair with a 'check status' prompt.";
+sem summarize_session.denied is "Agency names where status='denied'. Pair with next_recommended_step to keep momentum.";
+sem summarize_session.profile is "The user's NeedProfile. Drives language and tone of the summary.";
+
 """Translate a batch of English strings into the target language. CRITICAL: translate EVERY SINGLE string in the input list — do not skip any, do not leave any in English. Return a list of the SAME LENGTH as the input, in the SAME ORDER, with each entry being the translation of the corresponding input entry. Preserve meaning, tone, punctuation, emoji, and rhetorical question marks. If target_language is empty, 'en', or 'english', return the input unchanged. Target language may be an ISO code or natural-language name like 'hi', 'es', 'Hindi', 'Spanish', 'German', 'fr', 'French'. Even if a single string already appears to be in the target language, still include it in the output at the same index."""
 def translate_batch(texts: list[str], target_language: str) -> list[str] by pool();
+
+sem translate_batch.texts is "Ordered list of UI / bot strings in English. The model must return exactly this many entries in exactly this order, each translated.";
+sem translate_batch.target_language is "ISO 639-1 code or natural-language name of the user's language (e.g. 'es', 'hi', 'Hindi'). Empty / 'en' / 'english' means pass through unchanged.";

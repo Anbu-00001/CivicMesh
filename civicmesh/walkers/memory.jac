@@ -161,3 +161,10 @@ walker MemoryWalker {
         };
     }
 }
+
+sem MemoryWalker is "Read or update a returning user's session state. In read_session mode summarizes ApplicationNodes for the welcome screen; in update_status mode mutates one ApplicationNode and auto-escalates when every application has been denied.";
+sem MemoryWalker.user_id is "Stable identifier used to locate the existing PersonNode under root. The walker disengages with is_new_user=True if no match is found.";
+sem MemoryWalker.mode is "Operating mode. One of: 'read_session' (return a SessionSummary), 'update_status' (mutate one ApplicationNode). Branched on inside the PersonNode entry ability.";
+sem MemoryWalker.resource_name is "ApplicationNode.resource_name to mutate when mode='update_status'. Ignored in read_session mode.";
+sem MemoryWalker.new_status is "Target ApplicationNode.status when mode='update_status'. One of: 'pending', 'applied', 'approved', 'denied', 'withdrawn'.";
+sem MemoryWalker.denial_reason is "Free-form denial reason text. Populated only when new_status='denied'; drives generate_denial_next_step() to refresh next_step_hint.";

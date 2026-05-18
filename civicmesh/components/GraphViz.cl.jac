@@ -7,31 +7,61 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
     has visited: list[str] = [],
         current: str = "",
         is_playing: bool = False,
-        replay_idx: int = 0;
+        replay_idx: int = 0,
+        hovered_node: str = "",
+        show_why_path: bool = False;
 
-    # Node definitions — match Phase 1 schema exactly
+    # Node definitions — match Phase 1 schema exactly. Each node also carries
+    # a `tooltip` line explaining what the walker discovered at this node;
+    # this is what hover surfaces so the graph stops being decorative.
     has graph_nodes: list[dict] = [
-        {"id": "root",    "type": "Root",                 "label": "root",      "x": 340, "y": 40},
-        {"id": "person",  "type": "PersonNode",            "label": "Person",    "x": 340, "y": 130},
-        {"id": "need",    "type": "NeedNode",              "label": "Need",      "x": 340, "y": 220},
-        {"id": "r1",      "type": "ResourceNode",          "label": "Section 8", "x": 100, "y": 330},
-        {"id": "r2",      "type": "ResourceNode",          "label": "SNAP",      "x": 210, "y": 330},
-        {"id": "r3",      "type": "ResourceNode",          "label": "WIC",       "x": 340, "y": 330},
-        {"id": "r4",      "type": "ResourceNode",          "label": "LIHEAP",    "x": 460, "y": 330},
-        {"id": "r5",      "type": "ResourceNode",          "label": "HCH",       "x": 570, "y": 330},
-        {"id": "e1",      "type": "EligibilityRuleNode",   "label": "Rule §8",   "x": 100, "y": 430},
-        {"id": "e2",      "type": "EligibilityRuleNode",   "label": "Rule SNAP", "x": 210, "y": 430},
-        {"id": "e3",      "type": "EligibilityRuleNode",   "label": "Rule WIC",  "x": 340, "y": 430},
-        {"id": "f1",      "type": "FormNode",              "label": "Form §8",   "x": 100, "y": 520},
-        {"id": "app1",    "type": "ApplicationNode",       "label": "Applied",   "x": 220, "y": 520},
-        {"id": "app2",    "type": "ApplicationNode",       "label": "Pending",   "x": 340, "y": 520}
+        {"id": "root",    "type": "Root",                  "label": "root",      "x": 340, "y": 40,
+         "walker": "—",                "tooltip": "Graph entry point — every walker spawns from here."},
+        {"id": "person",  "type": "PersonNode",            "label": "Person",    "x": 340, "y": 130,
+         "walker": "MemoryWalker",     "tooltip": "Session-persistent identity — user_id, language, history."},
+        {"id": "need",    "type": "NeedNode",              "label": "Need",      "x": 340, "y": 220,
+         "walker": "IntakeWalker",     "tooltip": "Extracted NeedProfile · category + urgency from free-form text."},
+        {"id": "r1",      "type": "ResourceNode",          "label": "Section 8", "x": 100, "y": 330,
+         "walker": "EligibilityWalker","tooltip": "Section 8 housing voucher · scored vs. profile."},
+        {"id": "r2",      "type": "ResourceNode",          "label": "SNAP",      "x": 210, "y": 330,
+         "walker": "EligibilityWalker","tooltip": "SNAP food benefits · ~$240/mo if eligible."},
+        {"id": "r3",      "type": "ResourceNode",          "label": "WIC",       "x": 340, "y": 330,
+         "walker": "EligibilityWalker","tooltip": "WIC nutrition for women + children under 5."},
+        {"id": "r4",      "type": "ResourceNode",          "label": "LIHEAP",    "x": 460, "y": 330,
+         "walker": "EligibilityWalker","tooltip": "Low-income heating + cooling utility assistance."},
+        {"id": "r5",      "type": "ResourceNode",          "label": "HCH",       "x": 570, "y": 330,
+         "walker": "EligibilityWalker","tooltip": "Health Care for the Homeless · free clinic."},
+        {"id": "e1",      "type": "EligibilityRuleNode",   "label": "Rule §8",   "x": 100, "y": 430,
+         "walker": "EligibilityWalker","tooltip": "Rule: income < 50% AMI · family size ≥ 1 · check_eligibility() match."},
+        {"id": "e2",      "type": "EligibilityRuleNode",   "label": "Rule SNAP", "x": 210, "y": 430,
+         "walker": "EligibilityWalker","tooltip": "Rule: gross income ≤ 130% FPL · resource limit applies."},
+        {"id": "e3",      "type": "EligibilityRuleNode",   "label": "Rule WIC",  "x": 340, "y": 430,
+         "walker": "EligibilityWalker","tooltip": "Rule: pregnant/postpartum/child under 5 · income ≤ 185% FPL."},
+        {"id": "f1",      "type": "FormNode",              "label": "Form §8",   "x": 100, "y": 520,
+         "walker": "NavigationWalker", "tooltip": "Form template · prefilled from PersonNode session fields."},
+        {"id": "app1",    "type": "ApplicationNode",       "label": "Applied",   "x": 220, "y": 520,
+         "walker": "NavigationWalker", "tooltip": "ApplicationNode · status='applied' · persisted via applied_to edge."},
+        {"id": "app2",    "type": "ApplicationNode",       "label": "Pending",   "x": 340, "y": 520,
+         "walker": "NavigationWalker", "tooltip": "ApplicationNode · status='pending' · awaiting review."}
     ];
 
-    has graph_edges: list[list] = [
-        ["root","person"], ["person","need"],
-        ["need","r1"], ["need","r2"], ["need","r3"], ["need","r4"], ["need","r5"],
-        ["r1","e1"], ["r2","e2"], ["r3","e3"],
-        ["e1","f1"], ["person","app1"], ["person","app2"]
+    # Each edge carries a semantic relation label that becomes visible when
+    # the user toggles "Why this path?". Labels mirror the schema's actual
+    # edge types so the graph reads as a real knowledge graph, not decor.
+    has graph_edges: list[dict] = [
+        {"src": "root",    "tgt": "person", "label": "owns"},
+        {"src": "person",  "tgt": "need",   "label": "has_need"},
+        {"src": "need",    "tgt": "r1",     "label": "qualifies_for"},
+        {"src": "need",    "tgt": "r2",     "label": "qualifies_for"},
+        {"src": "need",    "tgt": "r3",     "label": "qualifies_for"},
+        {"src": "need",    "tgt": "r4",     "label": "qualifies_for"},
+        {"src": "need",    "tgt": "r5",     "label": "qualifies_for"},
+        {"src": "r1",      "tgt": "e1",     "label": "governed_by"},
+        {"src": "r2",      "tgt": "e2",     "label": "governed_by"},
+        {"src": "r3",      "tgt": "e3",     "label": "governed_by"},
+        {"src": "e1",      "tgt": "f1",     "label": "requires_form"},
+        {"src": "person",  "tgt": "app1",   "label": "applied_to"},
+        {"src": "person",  "tgt": "app2",   "label": "applied_to"}
     ];
 
     has walk_path: list[str] = [
@@ -92,8 +122,13 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
     async def startReplay -> None;
     async def stepReplay(idx: int, path: list) -> None;
     def nodeColor(node_type: str) -> str;
-    def renderEdge(e: list) -> JsxElement;
+    def edgeWalkerColor(e0: str, e1: str) -> str;
+    def renderEdge(e: dict) -> JsxElement;
+    def renderEdgeLabel(e: dict) -> JsxElement;
+    def renderEdgeDot(e: dict) -> JsxElement;
+    def renderEdgeBeam(e: dict) -> JsxElement;
     def renderNode(n: dict) -> JsxElement;
+    def renderTooltip -> JsxElement;
     def renderLastEvent -> JsxElement;
 
     legend = [
@@ -146,6 +181,28 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
                     </div>
                 </div>
                 <button
+                    onClick={lambda _e: MouseEvent { show_why_path = (not show_why_path); }}
+                    style={{
+                        "padding": "7px 14px",
+                        "background": ("rgba(68,136,255,0.15)" if show_why_path else "rgba(255,255,255,0.05)"),
+                        "border": ("0.5px solid rgba(68,136,255,0.5)" if show_why_path else "0.5px solid rgba(255,255,255,0.1)"),
+                        "borderRadius": "8px",
+                        "color": ("#4488FF" if show_why_path else "rgba(255,255,255,0.7)"),
+                        "fontSize": "12px",
+                        "cursor": "pointer",
+                        "display": "flex",
+                        "alignItems": "center",
+                        "gap": "6px"
+                    }}
+                >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8"/>
+                        <path d="M12 8.5 L 12 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                        <circle cx="12" cy="16" r="0.9" fill="currentColor"/>
+                    </svg>
+                    {("Hide path labels" if show_why_path else "Why this path?")}
+                </button>
+                <button
                     onClick={lambda _e: MouseEvent {
                         visited = [];
                         current = "";
@@ -197,14 +254,20 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
                     for item in legend
                 ]}
             </div>
-            <svg
-                width="100%"
-                viewBox="0 0 680 570"
-                style={{"display": "block", "height": "calc(100vh - 240px)", "minHeight": "440px", "maxHeight": "640px"}}
-            >
-                {[renderEdge(graph_edges[i]) for i in range(len(graph_edges))]}
-                {[renderNode(graph_nodes[i]) for i in range(len(graph_nodes))]}
-            </svg>
+            <div style={{"position": "relative"}}>
+                <svg
+                    width="100%"
+                    viewBox="0 0 680 570"
+                    style={{"display": "block", "height": "calc(100vh - 240px)", "minHeight": "440px", "maxHeight": "640px"}}
+                >
+                    {[renderEdge(graph_edges[i]) for i in range(len(graph_edges))]}
+                    {[renderEdgeBeam(graph_edges[i]) for i in range(len(graph_edges))]}
+                    {[renderEdgeDot(graph_edges[i]) for i in range(len(graph_edges))]}
+                    {show_why_path and [renderEdgeLabel(graph_edges[i]) for i in range(len(graph_edges))]}
+                    {[renderNode(graph_nodes[i]) for i in range(len(graph_nodes))]}
+                </svg>
+                {hovered_node and renderTooltip()}
+            </div>
             {(len(walker_events) > 0) and renderLastEvent()}
         </div>;
 }

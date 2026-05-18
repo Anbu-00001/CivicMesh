@@ -148,3 +148,10 @@ walker EligibilityWalker {
         report payload;
     }
 }
+
+sem EligibilityWalker is "Joins a NeedNode's category to ResourceNodes, scores each via check_eligibility(), and either escalates (no viable match) or hands off to NavigationWalker. Spawned by IntakeWalker on the NeedNode.";
+sem EligibilityWalker.profile is "The user's NeedProfile snapshot. Passed into every check_eligibility() call as the demographic context to score against.";
+sem EligibilityWalker.person_node is "Root PersonNode of the session subgraph. Used as the spawn target for NavigationWalker and EscalationWalker.";
+sem EligibilityWalker.results is "Accumulator of per-resource EligibilityResult dicts. Sorted by match_score descending before tier-splitting.";
+sem EligibilityWalker.max_candidates is "Hard cap on how many ResourceNodes are fed into check_eligibility(). Each candidate is one LLM call, so a low default protects the free-tier rate window.";
+sem EligibilityWalker.summary is "Mirror of the walker's final report payload. Lets the spawning walker read the result after spawn returns; .reports only flows into the outermost walker's stream.";

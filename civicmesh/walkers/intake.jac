@@ -95,3 +95,7 @@ walker IntakeWalker {
         };
     }
 }
+
+sem IntakeWalker is "Entry-point walker for every chat turn. Detects language, finds-or-creates a PersonNode under root, lifts a NeedProfile from the transcript, attaches a NeedNode, then spawns EligibilityWalker against that NeedNode.";
+sem IntakeWalker.conversation is "Full free-form chat transcript so far, in whatever language the user typed. Passed verbatim into detect_language_and_extract() and extract_need_profile().";
+sem IntakeWalker.user_id is "Stable session identifier. Used to look up an existing PersonNode (returning user) or to seed PersonNode.user_id for a new one.";
