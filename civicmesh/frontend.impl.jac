@@ -61,7 +61,19 @@ impl ClientApp.loadSession -> None {
 }
 
 impl ClientApp.startApp -> None {
-    # CTA from the landing page hides it and routes the user to the chat tab.
+    # CTA from the landing page. Ensure auth is complete before switching
+    # views — in HF Spaces the iframe context can block cookies so the
+    # mount-time initAuth() may have failed silently. Re-trying inline
+    # here guarantees we don't render the main app without a valid session.
+    if not is_authed {
+        try {
+            await initAuth();
+        } except Exception as _ex {
+            # Auth failed even on retry — stay on landing page so the user
+            # doesn't see a blank crash screen.
+            is_authed = is_authed;
+        }
+    }
     show_landing = False;
     active_tab = "chat";
 }
