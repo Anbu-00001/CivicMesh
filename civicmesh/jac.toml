@@ -44,7 +44,7 @@ threshold_ratio = 0.8
 keep_recent_iterations = 3
 
 [plugins.scale.server]
-port = 8000
+port = 7860
 host = "0.0.0.0"
 
 [plugins.scale.metrics]

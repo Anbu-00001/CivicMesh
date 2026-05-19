@@ -1,8 +1,8 @@
 # Render Blueprint for CivicMesh.
 #
 # Single Docker web service, free plan. Render injects PORT into the
-# container at boot; the Dockerfile CMD reads ${PORT:-8000} so the same
-# image runs locally on 8000 and on Render at whatever port they pick.
+# container at boot; the Dockerfile CMD reads ${PORT:-7860} so the same
+# image runs on HF Spaces (7860), on Render ($PORT), and locally.
 #
 # Free-tier caveats baked into this config:
 #   - Service sleeps after 15 min of no traffic. First request after
