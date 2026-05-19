@@ -33,7 +33,9 @@ walker MemoryWalker {
 
     can locate with `Root entry {
         matches = [root --> [?:PersonNode, user_id == self.user_id]];
-        if not matches {
+        # Explicit length check; `not matches` is unreliable on JS empty
+        # arrays (always truthy regardless of length).
+        if len(matches) == 0 {
             report {"error": "No session found", "is_new_user": True};
             disengage;
         }
@@ -55,7 +57,7 @@ walker MemoryWalker {
         );
 
         if self.mode == "read_session" {
-            apps = [here ->:applied_to:-> [?:ApplicationNode]];
+            apps = [here ->:applied_to:-> [?:ApplicationNode, status != "archived"]];
 
             approved: list = [];
             pending: list = [];
@@ -96,7 +98,7 @@ walker MemoryWalker {
 
         # mode == "update_status"
         ts = datetime.datetime.utcnow().isoformat();
-        apps = [here ->:applied_to:-> [?:ApplicationNode]];
+        apps = [here ->:applied_to:-> [?:ApplicationNode, status != "archived"]];
         updated = False;
 
         for app in apps {
@@ -117,6 +119,44 @@ walker MemoryWalker {
             if self.new_status == "applied" {
                 setattr(app, "applied_at", ts);
             }
+
+            # Outcome-learning: when an application reaches a terminal
+            # decision (approved / denied), walk back to the
+            # EligibilityRuleNode that gated the underlying ResourceNode
+            # and update its Bayesian-style success prior. EligibilityWalker
+            # weights LLM match_scores by this prior on subsequent turns,
+            # so the graph genuinely learns from real outcomes. This is
+            # the "graph that gets smarter every time someone uses it"
+            # moment — pure Jac OSP, no external ML library.
+            is_terminal = self.new_status == "approved" or self.new_status == "denied";
+            if is_terminal {
+                # Find the ResourceNode by name to walk to its rule.
+                res_matches = [root --> [?:ResourceNode, agency_name == self.resource_name]];
+                if res_matches {
+                    rule_nodes = [res_matches[0] ->:governed_by:-> [?:EligibilityRuleNode]];
+                    if rule_nodes {
+                        rule_node: Any = rule_nodes[0];
+                        # Increment attempts, conditionally increment approvals.
+                        old_attempts = 0;
+                        old_approvals = 0;
+                        try { old_attempts = int(rule_node.prior_attempts); } except Exception as _ex {}
+                        try { old_approvals = int(rule_node.prior_approvals); } except Exception as _ex {}
+                        new_attempts = old_attempts + 1;
+                        new_approvals = old_approvals;
+                        if self.new_status == "approved" {
+                            new_approvals = old_approvals + 1;
+                        }
+                        # Laplace-smoothed success rate to avoid 0/1 extremes
+                        # on the first few datapoints — gives every rule a
+                        # graceful warm-up before its prior moves significantly.
+                        new_rate = (float(new_approvals) + 1.0) / (float(new_attempts) + 2.0);
+                        setattr(rule_node, "prior_attempts", new_attempts);
+                        setattr(rule_node, "prior_approvals", new_approvals);
+                        setattr(rule_node, "prior_success_rate", new_rate);
+                    }
+                }
+            }
+
             updated = True;
             break;
         }

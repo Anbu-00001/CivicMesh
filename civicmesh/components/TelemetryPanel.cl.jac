@@ -5,7 +5,29 @@ chat pipeline. No demo defaults. When no chat session has run yet, the
 panel shows an empty-state explanation.
 """
 
+sv import from walkers.critique { ReflectionReadWalker }
+
 def:pub TelemetryPanel(walker_events: list) -> JsxElement {
+    # Reflexion-style self-reflection panel state. Populated by
+    # ReflectionReadWalker on mount and whenever walker_events grows
+    # (i.e. when a new chat turn writes a fresh SessionInsight).
+    has reflections: list = [],
+        reflections_loading: bool = False;
+
+    async def loadReflections -> None;
+    def renderReflectionTimeline -> JsxElement;
+    def renderReflectionRow(ins: Any, idx: int) -> JsxElement;
+
+    can with entry {
+        loadReflections();
+    }
+
+    can with [walker_events] entry {
+        if walker_events and len(walker_events) > 0 {
+            loadReflections();
+        }
+    }
+
     walker_meta: dict = {
         "IntakeWalker":      {"icon": "🚪", "color": "#FFE500"},
         "EligibilityWalker": {"icon": "🔍", "color": "#4488FF"},
@@ -298,5 +320,7 @@ def:pub TelemetryPanel(walker_events: list) -> JsxElement {
                     {[renderCallCard(walker_order[i]) for i in range(len(walker_order)) if triggered[walker_order[i]]]}
                 </div>
             </div>
+
+            {renderReflectionTimeline()}
         </div>;
 }

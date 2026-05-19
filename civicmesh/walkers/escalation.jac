@@ -128,13 +128,96 @@ walker EscalationWalker {
             on_iteration=iteration_guard
         );
 
+        # Deterministic lead-line construction. The LLM was producing
+        # category cross-talk (food prompts getting 988, housing prompts
+        # getting food-bank leads, etc.) so we build the lead in walker
+        # code based on context.profile.category plus simple keyword
+        # checks for self-harm and domestic violence. The LLM only
+        # contributes the empathetic tail in `personalized_message`.
+        cat_raw = "";
+        details_raw = "";
+        try { cat_raw = str(self.context.profile.category).lower(); } except Exception as _ex {}
+        try { details_raw = str(self.context.profile.details).lower(); } except Exception as _ex {}
+        denial_blob = "";
+        try {
+            if self.context.denial_reasons {
+                denial_blob = " ".join([str(x) for x in self.context.denial_reasons]).lower();
+            }
+        } except Exception as _ex {}
+        scan_text = details_raw + " " + denial_blob;
+
+        dv_kw = ["domestic violence", "domestic-violence", "safe house", "safe-house",
+                 "safehouse", "abuse", "abused", "abusive", "battered", "stalker", "stalking"];
+        selfharm_kw = ["suicide", "suicidal", "kill myself", "end my life",
+                       "self harm", "self-harm", "want to die", "hurt myself"];
+
+        is_dv = False;
+        for k in dv_kw {
+            if k in scan_text { is_dv = True; break; }
+        }
+        is_sh = False;
+        for k in selfharm_kw {
+            if k in scan_text { is_sh = True; break; }
+        }
+
+        lead_line = "";
+        if is_sh {
+            lead_line = "Call 988 Suicide and Crisis Lifeline: 988 — free, 24/7, confidential crisis counseling.";
+        } elif is_dv {
+            lead_line = "Call the National Domestic Violence Hotline: 1-800-799-7233 — 24/7 safe-house placement, free and confidential.";
+        } elif cat_raw == "food" {
+            lead_line = "Call 2-1-1: dial 2-1-1 — free 24/7 referral to your nearest food bank, SNAP office, and emergency food pantry.";
+        } elif cat_raw == "housing" {
+            lead_line = "Call 2-1-1: dial 2-1-1 — same-night emergency shelter placement and rapid re-housing referrals.";
+        } elif cat_raw == "healthcare" {
+            lead_line = "Call 2-1-1: dial 2-1-1 — sliding-scale clinic and Medicaid enrollment referrals in your area.";
+        } elif cat_raw == "legal" {
+            lead_line = "Call Legal Services Corporation: 1-800-815-9614 — free civil legal aid for eviction, immigration, and benefits appeals.";
+        } else {
+            lead_line = "Call 2-1-1: dial 2-1-1 — free 24/7 referral line for any social-services need.";
+        }
+
+        # Strip any phone-number / "Call X:" intro the LLM produced anyway,
+        # then prepend our deterministic lead line. We split on blank lines
+        # and drop leading paragraphs that look like a phone-number lead so
+        # the LLM's "Call 988: 988 ..." attempt doesn't show up before our
+        # category-correct lead.
+        llm_tail = str(escalation_msg.personalized_message);
+        # Normalize literal "\n" sequences the LLM sometimes emits as text
+        try { llm_tail = llm_tail.replace("\\n\\n", "\n\n").replace("\\n", "\n"); } except Exception as _ex {}
+        paragraphs: list = llm_tail.split("\n\n");
+        cleaned: list = [];
+        for p in paragraphs {
+            ps = str(p).strip();
+            if not ps { continue; }
+            ps_lower = ps.lower();
+            # Drop paragraphs that start with a "Call ..." or "Llama ..."
+            # phone-number lead — those are the LLM's failed lead attempt.
+            looks_like_lead = (ps_lower.startswith("call ")
+                               or ps_lower.startswith("llama ")
+                               or ps_lower.startswith("dial ")
+                               or ps_lower.startswith("2-1-1")
+                               or ps_lower.startswith("211")
+                               or ps_lower.startswith("988")
+                               or ps_lower.startswith("1-800"));
+            if looks_like_lead and len(cleaned) == 0 {
+                continue;
+            }
+            cleaned.append(ps);
+        }
+        tail_clean = "\n\n".join(cleaned);
+        composed_message = lead_line;
+        if tail_clean {
+            composed_message = lead_line + "\n\n" + tail_clean;
+        }
+
         payload = {
             "type": "escalation_complete",
             "trigger": str(self.context.trigger_reason),
             "is_emergency": bool(escalation_msg.is_emergency),
             "crisis_resources": list(escalation_msg.crisis_resources),
             "appeal_options": list(escalation_msg.appeal_options),
-            "personalized_message": str(escalation_msg.personalized_message),
+            "personalized_message": composed_message,
             "language": target_lang,
             "iterations_used": int(self.iteration_count)
         };

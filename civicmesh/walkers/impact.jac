@@ -54,7 +54,7 @@ walker ImpactWalker {
                 }
             }
 
-            apps = [p ->:applied_to:-> [?:ApplicationNode]];
+            apps = [p ->:applied_to:-> [?:ApplicationNode, status != "archived"]];
             for a in apps {
                 total_applications = total_applications + 1;
                 status = str(a.status) if a.status else "pending";

@@ -288,11 +288,11 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
                     for item in legend
                 ]}
             </div>
-            <div style={{"position": "relative"}}>
+            <div style={{"position": "relative", "overflow": "visible"}}>
                 <svg
                     width="100%"
                     viewBox="0 0 680 570"
-                    style={{"display": "block", "height": "calc(100vh - 240px)", "minHeight": "440px", "maxHeight": "640px"}}
+                    style={{"display": "block", "height": "calc(100vh - 240px)", "minHeight": "440px", "maxHeight": "640px", "overflow": "visible"}}
                 >
                     {[renderEdge(graph_edges[i]) for i in range(len(graph_edges))]}
                     {[renderEdgeBeam(graph_edges[i]) for i in range(len(graph_edges))]}
@@ -302,6 +302,8 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
                 </svg>
                 {hovered_node and renderTooltip()}
             </div>
-            {(len(walker_events) > 0) and renderLastEvent()}
+            {(len(walker_events) > 0) and <div style={{"marginTop": "8px"}}>
+                {renderLastEvent()}
+            </div>}
         </div>;
 }

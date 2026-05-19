@@ -39,7 +39,14 @@ walker NavigationWalker {
         resource_form_data: list = [];
         eligible_names: list = [];
 
-        for result in self.eligible_results {
+        # Combine eligible + possible into one ranked pool. The previous
+        # code only iterated eligible_results; when EligibilityWalker's
+        # rescue tier promoted everything into `possible` we'd silently
+        # produce an empty action plan. Both tiers carry the same shape
+        # so a single loop handles them.
+        combined_results: list = list(self.eligible_results) + list(self.possible_results);
+
+        for result in combined_results {
             name = str(result["resource_name"]);
             eligible_names.append(name);
             resource_matches = [root --> [?:ResourceNode, agency_name == name]];

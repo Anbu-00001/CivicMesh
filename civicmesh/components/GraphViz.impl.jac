@@ -216,33 +216,98 @@ impl GraphViz.renderTooltip -> JsxElement {
     color = nodeColor(str(n["type"]));
     walker_name = str(n["walker"]) if n["walker"] else "—";
     tip = str(n["tooltip"]) if n["tooltip"] else "";
-    # Position relative to the SVG viewBox (680 wide / 570 tall). The
-    # parent div is `position: relative`, so left/top are percent of the
-    # rendered SVG box.
-    left_pct = (nx * 100.0) / 680.0;
-    top_pct = ((ny + 36) * 100.0) / 570.0;
+
+    # Edge-aware positioning. The SVG viewBox is 680x570 and is rendered
+    # at 100% width inside a position:relative wrapper. A tooltip pinned
+    # below a node near y=520 (Form/Application row) used to overflow the
+    # container and collide with the renderLastEvent strip beneath. We
+    # now:
+    #   - Flip the tooltip ABOVE nodes that sit in the bottom third
+    #     (ny > 360) so it never falls outside the SVG box.
+    #   - Anchor horizontally to the left edge for nodes with nx < 130,
+    #     and to the right edge for nodes with nx > 550 — keeps the
+    #     full 240px tooltip on-canvas without truncation.
+    #   - Use translate() to handle the directional anchor change.
+    flip_up = ny > 360;
+    near_left = nx < 130;
+    near_right = nx > 550;
+
+    # Declare top_pct + left_pct as floats up front so both if/else
+    # branches mutate the SAME binding. Without this hoist, Jac→JS
+    # compiles each branch's `top_pct =` as a fresh `let` and the
+    # variable becomes undefined at the use site outside the block.
+    top_pct: float = 0.0;
+    left_pct: float = (nx * 100.0) / 680.0;
+    if flip_up {
+        # Anchor at the node's TOP edge, push tooltip up by 100% of its
+        # own height + a small gap.
+        top_pct = ((ny - 24) * 100.0) / 570.0;
+    } else {
+        top_pct = ((ny + 36) * 100.0) / 570.0;
+    }
+
+    # Horizontal anchor strategy. Default centers under the node; edge
+    # nodes anchor to the closest side so the 240px max-width tooltip
+    # stays fully on-canvas.
+    h_transform = "translate(-50%, 0)";
+    if near_left {
+        # Anchor to the left edge of the tooltip; nudge a few px in.
+        left_pct = ((nx - 18) * 100.0) / 680.0;
+        h_transform = "translate(0, 0)";
+    } elif near_right {
+        # Anchor to the right edge of the tooltip.
+        left_pct = ((nx + 18) * 100.0) / 680.0;
+        h_transform = "translate(-100%, 0)";
+    }
+
+    # Compose the full transform. When flipping up, also translate by
+    # -100% of the tooltip's own height so its bottom edge sits just
+    # above the node, not its top edge at the node.
+    full_transform = h_transform;
+    if flip_up {
+        if near_left {
+            full_transform = "translate(0, -100%)";
+        } elif near_right {
+            full_transform = "translate(-100%, -100%)";
+        } else {
+            full_transform = "translate(-50%, -100%)";
+        }
+    }
+
     return
         <div
             style={{
                 "position": "absolute",
                 "left": str(left_pct) + "%",
                 "top": str(top_pct) + "%",
-                "transform": "translate(-50%, 0)",
+                "transform": full_transform,
                 "maxWidth": "240px",
-                "padding": "8px 10px",
+                "padding": "9px 11px",
                 "background": "rgba(10,10,10,0.96)",
                 "border": "0.5px solid " + color + "55",
                 "borderLeft": "2px solid " + color,
                 "borderRadius": "8px",
                 "fontSize": "11px",
                 "color": "rgba(255,255,255,0.85)",
-                "lineHeight": "1.45",
+                "lineHeight": "1.5",
                 "pointerEvents": "none",
                 "zIndex": "20",
-                "boxShadow": "0 6px 18px rgba(0,0,0,0.4)"
+                "boxShadow": "0 8px 22px rgba(0,0,0,0.55)",
+                "whiteSpace": "normal",
+                "wordBreak": "break-word"
             }}
         >
-            <div style={{"fontSize": "9px", "color": color, "textTransform": "uppercase", "letterSpacing": "0.08em", "fontWeight": "600", "marginBottom": "3px"}}>
+            <div style={{
+                "fontSize": "9px",
+                "color": color,
+                "textTransform": "uppercase",
+                "letterSpacing": "0.08em",
+                "fontWeight": "600",
+                "marginBottom": "4px",
+                "whiteSpace": "nowrap",
+                "overflow": "hidden",
+                "textOverflow": "ellipsis"
+            }}>
                 {str(n["type"]) + " · " + walker_name}
             </div>
             <div>{tip}</div>

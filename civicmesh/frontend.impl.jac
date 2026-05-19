@@ -22,7 +22,7 @@ impl ClientApp.initAuth -> None {
         # has anything to score against. The walker is idempotent — second
         # run just reports skipped == 40.
         try {
-            await root spawn SeedWalker();
+            await root spawn SeedWalker(user_id=DEMO_USER_ID);
         } except Exception as _ex {
             # Seed failure is non-fatal — the chat will still load, just
             # with zero matches until the server is restarted with the data
@@ -35,6 +35,15 @@ impl ClientApp.initAuth -> None {
 }
 
 impl ClientApp.loadSession -> None {
+    # Always re-run SeedWalker on session load so an already-authed user
+    # whose root predates the demo-apps feature still picks them up on
+    # next refresh. SeedWalker is idempotent — duplicate resource and
+    # leads_to insertion is guarded; demo apps only seed when the
+    # PersonNode has zero existing ApplicationNodes attached.
+    try {
+        await root spawn SeedWalker(user_id=user_id);
+    } except Exception as _ex {}
+
     try {
         result = await root spawn MemoryWalker(
             user_id=user_id,

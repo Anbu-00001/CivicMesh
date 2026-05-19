@@ -17,3 +17,5 @@ import from walkers.translate { TranslateWalker }
 import from walkers.impact { ImpactWalker }
 import from walkers.seed { SeedWalker }
 import from walkers.live_telemetry { LiveTelemetryWalker }
+import from walkers.pathfinder { PathfinderWalker }
+import from walkers.critique { CritiqueWalker, ReflectionReadWalker }

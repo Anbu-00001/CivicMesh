@@ -184,16 +184,45 @@ def generate_action_plan(eligible_resources: list[str], profile: NeedProfile) ->
 sem generate_action_plan.eligible_resources is "List of ResourceNode.agency_name strings that passed eligibility scoring. Order does not matter; the model is expected to re-sequence by urgency and deadline.";
 sem generate_action_plan.profile is "The user's NeedProfile. Drives ordering: 'immediate' urgency comes first, language and preferred_contact shape the action_description tone.";
 
-"""Compose an empathetic escalation message for dead-end or all-denied scenarios.
+"""Compose a SHORT supporting message for a dead-end / all-denied scenario.
 
-Uses ReAct-style tool calling to consult the live graph and assess safety risk.
-The on_iteration callback fires between steps so the EscalationWalker can stream
-progress to the WebSocket client and guard against doom-loops.
+The walker prepends a deterministic lead line ("Call <agency>: <phone> — ...")
+based on context.profile.category BEFORE showing this to the user, so you
+DO NOT need to include a phone number or agency name in your response. Your
+job is to write only the supporting context that follows the lead line.
 
-CRITICAL — language handling: write personalized_message AND appeal_options
-ENTIRELY in `context.profile.language` (ISO 639-1 code). Do NOT mix English
-and the target language in any single string — a long message that's half
-English looks broken in the chat UI. If context.profile.language is empty,
+REQUIRED SHAPE for personalized_message (1-2 sentences total, max ~40 words):
+  Sentence 1: ONE concrete sentence telling the user what to say when they
+              call. Tailor to their stated need from context.profile.details
+              (e.g. "Tell the counselor you're a single mother in Houston
+              earning $1,800/month and need help with rent this month.").
+              NO generic "explain your situation."
+  Sentence 2 (optional): ONE short empathetic line. NO "I'm so sorry to
+              hear" or "I understand this is hard" boilerplate — those
+              phrases are the failure mode this prompt exists to prevent.
+
+DO NOT START with "Call ..." or any phone number — the walker handles that.
+DO NOT mention 988, 211, 1-800 numbers, or any agency name — the walker
+handles those too. Write only the human, contextual continuation.
+
+REQUIRED for crisis_resources: 1-3 entries formatted as
+"Name: phone — what they do". Choose entries RELEVANT to
+context.profile.category (food → food banks / SNAP offices;
+housing → shelters / rental assistance; legal → legal aid; healthcare →
+clinics). Do NOT include 988 unless context.denial_reasons or
+context.profile.details mention self-harm or suicide.
+
+REQUIRED for appeal_options: list 2-4 concrete next-step actions, each
+starting with an imperative verb ("Call 211 and ask for...", "Walk in to
+the nearest shelter at..."). No generic "consider exploring" phrasing.
+
+Uses ReAct-style tool calling to consult the live graph and assess safety
+risk. The on_iteration callback fires between steps so the EscalationWalker
+can stream progress and guard against doom-loops.
+
+LANGUAGE: write personalized_message AND appeal_options ENTIRELY in
+`context.profile.language` (ISO 639-1 code). Do NOT mix English and the
+target language in any single string. If context.profile.language is empty,
 'en', or 'english', write in English. crisis_resources hotline names and
 phone numbers stay canonical (e.g. "988 Suicide and Crisis Lifeline") since
 those are recognized search strings users would google."""
