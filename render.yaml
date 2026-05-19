@@ -24,7 +24,10 @@ services:
     branch: main
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    healthCheckPath: /docs   # OpenAPI page — exists once jac-scale boots
+    # No healthCheckPath — Render defaults to TCP port scan, which gives
+    # the deploy up to 15 min to bind the port. Jac takes ~60-90s on
+    # cold boot (model init + graph seed), so the TCP scan is more
+    # forgiving than an HTTP check against /docs.
     autoDeploy: true
 
     envVars:
