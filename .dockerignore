@@ -1,0 +1,53 @@
+# Local Python virtualenvs
+venv/
+.venv/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Jac caches — regenerated at image build time
+**/.jac/
+**/.jac/data/
+**/.jac/cache/
+**/.jac/client/
+**/.jac/bin/
+
+# Node — only present if someone ran a dev install outside the Jac toolchain
+**/node_modules/
+**/.parcel-cache/
+
+# Git + IDE noise
+.git/
+.gitignore
+.gitattributes
+.github/
+.vscode/
+.idea/
+*.swp
+
+# Local env files — never bake secrets into the image
+.env
+.env.*
+!.env.example
+
+# Build artifacts / logs
+dist/
+build/
+*.log
+/tmp/
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Tests / docs not needed at runtime (docs still ship — only excluding test caches)
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+
+# Local SQLite snapshots that should not bake into the image — the volume
+# mount supplies these at runtime.
+**/anchor_store.db
+**/anchor_store.db-shm
+**/anchor_store.db-wal
+**/users.db
