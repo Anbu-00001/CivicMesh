@@ -6,6 +6,11 @@ sv-side walker imports (in app.jac) never collide with the client-side
 
 cl import ".assets/index.css";
 
+# Stable demo identity — must be in .cl.jac so the production client
+# bundle (jac build --client web) can resolve them at compile time.
+glob DEMO_USER_ID: str = "demo_user";
+glob DEMO_USER_PASSWORD: str = "civicmesh2026";
+
 import from "@jac/runtime" { jacLogin, jacSignup, jacIsLoggedIn }
 import from .components.ChatPane { ChatPane }
 import from .components.GraphViz { GraphViz }
