@@ -14,7 +14,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # build-essential for native wheels (litellm has a few).
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-       curl ca-certificates git unzip build-essential \
+    curl ca-certificates git unzip build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 # Bun is required for the Jac client toolchain (vite-on-bun under the hood).
@@ -52,4 +52,4 @@ EXPOSE 8000
 # runtime — Render injects PORT into the container; locally with
 # `docker run` (no PORT) we fall back to 8000 which also matches the
 # [plugins.scale.server] entry in jac.toml.
-CMD ["sh", "-c", "jac start app.jac --no-dev -p ${PORT:-8000} --host 0.0.0.0"]
+CMD ["sh", "-c", "jac start app.jac --no-dev --port ${PORT:-8000} --host 0.0.0.0"]
