@@ -43,7 +43,7 @@ def:pub ClientApp -> JsxElement {
         {"label": "Reset session",             "kind": "reset",  "payload": ""}
     ];
 
-    async def startApp -> None;
+    def startApp -> None;
     def togglePalette -> None;
     def runPaletteAction(action: Any) -> None;
     def renderPaletteItem(action: Any, idx: int, sel: int) -> JsxElement;
