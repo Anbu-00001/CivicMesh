@@ -1,11 +1,7 @@
 """Async implementations for the ClientApp root component."""
 
-# Stable demo identity. The hackathon submission deliberately uses a single
-# shared seed account so judges can refresh the browser and watch the same
-# graph reload — that's Jac's auto-persistence demo. In production this
-# would be replaced by the real auth flow (OAuth, magic links, etc.).
-glob DEMO_USER_ID: str = "demo_user";
-glob DEMO_USER_PASSWORD: str = "civicmesh2026";
+# DEMO_USER_ID and DEMO_USER_PASSWORD are defined as globs in
+# frontend.cl.jac so the production client bundle resolves them.
 
 impl ClientApp.initAuth -> None {
     ok = await jacLogin(DEMO_USER_ID, DEMO_USER_PASSWORD);
