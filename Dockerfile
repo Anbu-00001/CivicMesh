@@ -48,8 +48,15 @@ EXPOSE 8000
 
 # Production startup: --no-dev disables HMR/Vite dev server so the React
 # client is served from the pre-built bundle and the REST + WebSocket API
-# bind to the same port. We use shell form so ${PORT:-8000} resolves at
-# runtime — Render injects PORT into the container; locally with
-# `docker run` (no PORT) we fall back to 8000 which also matches the
-# [plugins.scale.server] entry in jac.toml.
-CMD ["sh", "-c", "jac start app.jac --no-dev --port ${PORT:-8000} --host 0.0.0.0"]
+# bind to the same port.
+#
+# Render injects PORT (usually 10000) into the container; locally with
+# `docker run` (no PORT) we fall back to 8000. We patch jac.toml at
+# runtime so jac's internal config matches the actual port — this avoids
+# a mismatch where the CLI flag says one port but jac.toml says another.
+CMD ["sh", "-c", "\
+  P=${PORT:-8000} && \
+  sed -i \"s/^port = .*/port = $P/\" jac.toml && \
+  sed -i \"s/^host = .*/host = \\\"0.0.0.0\\\"/\" jac.toml && \
+  exec jac start app.jac --no-dev --port $P --host 0.0.0.0\
+"]
