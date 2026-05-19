@@ -224,26 +224,16 @@ def:pub ClientApp -> JsxElement {
                     "flex": "1"
                 }}
             >
-                <div style={{"display": ("block" if active_tab == "chat" else "none")}}>
-                    <ChatPane
-                        user_id={user_id}
-                        on_walker_event={pushWalkerEvent}
-                        session_data={session_data}
-                        walker_events={walker_events}
-                    />
-                </div>
-                <div style={{"display": ("block" if active_tab == "graph" else "none")}}>
-                    <GraphViz walker_events={walker_events}/>
-                </div>
-                <div style={{"display": ("block" if active_tab == "plan" else "none")}}>
-                    <ActionPlan user_id={user_id} walker_events={walker_events}/>
-                </div>
-                <div style={{"display": ("block" if active_tab == "telemetry" else "none")}}>
-                    <TelemetryPanel walker_events={walker_events}/>
-                </div>
-                <div style={{"display": ("block" if active_tab == "impact" else "none")}}>
-                    <ImpactReport/>
-                </div>
+                {active_tab == "chat" and <ChatPane
+                    user_id={user_id}
+                    on_walker_event={pushWalkerEvent}
+                    session_data={session_data}
+                    walker_events={walker_events}
+                />}
+                {active_tab == "graph" and <GraphViz walker_events={walker_events}/>}
+                {active_tab == "plan" and <ActionPlan user_id={user_id} walker_events={walker_events}/>}
+                {active_tab == "telemetry" and <TelemetryPanel walker_events={walker_events}/>}
+                {active_tab == "impact" and <ImpactReport/>}
             </main>
             <footer
                 style={{
