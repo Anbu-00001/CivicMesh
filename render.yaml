@@ -1,0 +1,39 @@
+# Render Blueprint for CivicMesh.
+#
+# Single Docker web service, free plan. Render injects PORT into the
+# container at boot; the Dockerfile CMD reads ${PORT:-8000} so the same
+# image runs locally on 8000 and on Render at whatever port they pick.
+#
+# Free-tier caveats baked into this config:
+#   - Service sleeps after 15 min of no traffic. First request after
+#     wake takes ~30s. The SQLite anchor store survives sleep/wake
+#     because the container filesystem is preserved across that cycle.
+#   - No persistent disk on free plan, so a `Manual Deploy → Clear
+#     build cache & deploy` wipes the graph. SeedWalker is idempotent
+#     and re-runs on first request, so the demo data comes back.
+#
+# To deploy: push to GitHub, then on Render: New → Blueprint → connect
+# this repo. Render reads this file and creates the service.
+
+services:
+  - type: web
+    name: civicmesh
+    env: docker
+    plan: free
+    region: oregon         # change to your nearest: oregon | virginia | frankfurt | singapore
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /docs   # OpenAPI page — exists once jac-scale boots
+    autoDeploy: true
+
+    envVars:
+      - key: NVIDIA_NIM_API_KEY
+        sync: false          # set in the Render dashboard — NEVER commit
+      - key: FEATHERLESS_API_KEY
+        sync: false          # optional fallback; set if you have one
+      - key: CIVICMESH_LOG_LEVEL
+        value: info
+      # PYTHONUNBUFFERED keeps `flyctl logs`-style streaming sane.
+      - key: PYTHONUNBUFFERED
+        value: "1"
