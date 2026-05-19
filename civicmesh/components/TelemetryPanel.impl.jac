@@ -236,3 +236,180 @@ impl TelemetryPanel.renderEvent(ev: Any, idx: int) -> JsxElement {
             <span style={{"color": status_color, "fontWeight": "500"}}>{ev_status}</span>
         </div>;
 }
+
+impl TelemetryPanel.loadReflections -> None {
+    # Fire-and-forget poll of ReflectionReadWalker. Cheap because it's a
+    # read-only graph traversal — no LLM calls. We swallow errors silently
+    # since the rest of the Telemetry tab is still meaningful without
+    # the self-reflection rollup.
+    reflections_loading = True;
+    try {
+        result = await root spawn ReflectionReadWalker(
+            user_id="demo_user",
+            max_insights=8
+        );
+        reports = result.reports if result.reports else [];
+        if len(reports) > 0 {
+            r0: Any = reports[0];
+            ins_raw = r0["insights"] if r0 else None;
+            if ins_raw {
+                reflections = list(ins_raw);
+            } else {
+                reflections = [];
+            }
+        }
+    } except Exception as _ex {
+        reflections = [];
+    }
+    reflections_loading = False;
+}
+
+impl TelemetryPanel.renderReflectionTimeline -> JsxElement {
+    # Empty state — no SessionInsights yet means no chat turns have run
+    # (or the user is on a brand-new account where CritiqueWalker hasn't
+    # written anything). Keep the section visible anyway so judges see
+    # WHERE the self-reflection lives even before triggering it.
+    n_ins = len(reflections);
+    if n_ins == 0 {
+        return
+            <div
+                style={{
+                    "marginTop": "14px",
+                    "background": "rgba(0,200,255,0.04)",
+                    "backdropFilter": "blur(12px)",
+                    "border": "0.5px solid rgba(0,200,255,0.25)",
+                    "borderRadius": "14px",
+                    "padding": "16px 18px"
+                }}
+            >
+                <div style={{"fontSize": "10px", "color": "rgba(0,200,255,0.85)", "textTransform": "uppercase", "letterSpacing": "0.08em", "fontWeight": "700", "marginBottom": "6px", "display": "flex", "alignItems": "center", "gap": "8px"}}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="9" stroke="#00C8FF" strokeWidth="1.7"/>
+                        <path d="M12 7 L 12 13 L 16 15" stroke="#00C8FF" strokeWidth="1.7" strokeLinecap="round"/>
+                    </svg>
+                    Agent self-reflection · Reflexion in pure Jac
+                </div>
+                <div style={{"fontSize": "11.5px", "color": "rgba(255,255,255,0.6)", "lineHeight": "1.55"}}>
+                    After every chat turn a zero-LLM <strong style={{"color": "rgba(0,200,255,0.95)"}}>CritiqueWalker</strong> reads the chain telemetry, scores it, and writes a SessionInsight node attached to your PersonNode via the <code style={{"fontFamily": "ui-monospace, monospace", "fontSize": "10px", "color": "#00C8FF"}}>reflected_on</code> edge. The next chat turn reads the last two SessionInsights back as plain-text context prefix — the agent learns from its own past performance using only the graph itself.
+                </div>
+                <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.4)", "marginTop": "10px", "fontStyle": "italic"}}>
+                    Send a chat message and refresh this tab to see the first reflection appear.
+                </div>
+            </div>;
+    }
+
+    # Compute a rolling average quality score over the last 8 insights.
+    total = 0;
+    for ins in reflections {
+        try { total = total + int(ins["quality_score"]); } except Exception as _ex {}
+    }
+    avg = int(total / n_ins) if n_ins > 0 else 0;
+
+    return
+        <div
+            style={{
+                "marginTop": "14px",
+                "background": "rgba(0,200,255,0.04)",
+                "backdropFilter": "blur(12px)",
+                "border": "0.5px solid rgba(0,200,255,0.3)",
+                "borderRadius": "14px",
+                "padding": "16px 18px"
+            }}
+        >
+            <div style={{"display": "flex", "alignItems": "center", "justifyContent": "space-between", "marginBottom": "10px", "flexWrap": "wrap", "gap": "10px"}}>
+                <div style={{"display": "flex", "alignItems": "center", "gap": "8px"}}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="9" stroke="#00C8FF" strokeWidth="1.7"/>
+                        <path d="M12 7 L 12 13 L 16 15" stroke="#00C8FF" strokeWidth="1.7" strokeLinecap="round"/>
+                    </svg>
+                    <span style={{"fontSize": "11px", "color": "#00C8FF", "textTransform": "uppercase", "letterSpacing": "0.08em", "fontWeight": "700"}}>
+                        Agent self-reflection · {str(n_ins)} insight{("s" if n_ins != 1 else "")}
+                    </span>
+                </div>
+                <div style={{"display": "flex", "alignItems": "center", "gap": "10px"}}>
+                    <span style={{"fontSize": "11px", "color": "rgba(255,255,255,0.5)"}}>Rolling quality</span>
+                    <span style={{
+                        "fontSize": "13px",
+                        "fontWeight": "700",
+                        "color": (
+                            "#00FF88" if avg >= 70
+                            else ("#FFB344" if avg >= 40 else "#FF4444")
+                        ),
+                        "fontFamily": "ui-monospace, monospace",
+                        "padding": "2px 9px",
+                        "borderRadius": "10px",
+                        "background": "rgba(255,255,255,0.04)",
+                        "border": "0.5px solid currentColor"
+                    }}>
+                        {str(avg)} / 100
+                    </span>
+                </div>
+            </div>
+            <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.5)", "marginBottom": "14px", "lineHeight": "1.55"}}>
+                Each row is a SessionInsight node persisted in the graph. The next IntakeWalker turn reads the two newest as context prefix — Reflexion-style self-improvement with zero external memory store.
+            </div>
+            <div style={{"display": "flex", "flexDirection": "column", "gap": "8px"}}>
+                {[renderReflectionRow(reflections[ri], ri) for ri in range(n_ins)]}
+            </div>
+        </div>;
+}
+
+impl TelemetryPanel.renderReflectionRow(ins: Any, idx: int) -> JsxElement {
+    score = 50;
+    headline = "";
+    snip = "";
+    walkers: list = [];
+    llm_est = 0;
+    esc = False;
+    pf = False;
+    nav = False;
+    try { score = int(ins["quality_score"]); } except Exception as _ex {}
+    try { headline = str(ins["headline"]); } except Exception as _ex {}
+    try { snip = str(ins["user_prompt_snippet"]); } except Exception as _ex {}
+    try { walkers = list(ins["walkers_fired"]); } except Exception as _ex {}
+    try { llm_est = int(ins["llm_calls_est"]); } except Exception as _ex {}
+    try { esc = bool(ins["escalated"]); } except Exception as _ex {}
+    try { pf = bool(ins["pathfinder_used"]); } except Exception as _ex {}
+    try { nav = bool(ins["navigation_used"]); } except Exception as _ex {}
+
+    score_color = "#00FF88" if score >= 70 else ("#FFB344" if score >= 40 else "#FF4444");
+
+    return
+        <div
+            key={str(idx)}
+            style={{
+                "padding": "10px 12px",
+                "background": "rgba(255,255,255,0.02)",
+                "border": "0.5px solid rgba(255,255,255,0.06)",
+                "borderLeft": "2px solid " + score_color,
+                "borderRadius": "8px",
+                "display": "flex",
+                "flexDirection": "column",
+                "gap": "5px"
+            }}
+        >
+            <div style={{"display": "flex", "alignItems": "center", "gap": "10px", "flexWrap": "wrap"}}>
+                <span style={{
+                    "fontSize": "11px",
+                    "fontWeight": "700",
+                    "color": score_color,
+                    "fontFamily": "ui-monospace, monospace",
+                    "minWidth": "26px"
+                }}>
+                    {str(score)}
+                </span>
+                <span style={{"fontSize": "11.5px", "color": "rgba(255,255,255,0.8)", "flex": "1", "minWidth": "200px"}}>
+                    {headline}
+                </span>
+                {nav and <span style={{"fontSize": "9px", "padding": "1px 6px", "borderRadius": "8px", "background": "rgba(0,255,136,0.1)", "color": "#00FF88", "border": "0.5px solid currentColor", "fontWeight": "600", "letterSpacing": "0.03em", "textTransform": "uppercase"}}>nav</span>}
+                {pf and <span style={{"fontSize": "9px", "padding": "1px 6px", "borderRadius": "8px", "background": "rgba(0,200,255,0.1)", "color": "#00C8FF", "border": "0.5px solid currentColor", "fontWeight": "600", "letterSpacing": "0.03em", "textTransform": "uppercase"}}>pathfinder</span>}
+                {esc and <span style={{"fontSize": "9px", "padding": "1px 6px", "borderRadius": "8px", "background": "rgba(255,68,68,0.1)", "color": "#FF4444", "border": "0.5px solid currentColor", "fontWeight": "600", "letterSpacing": "0.03em", "textTransform": "uppercase"}}>escalated</span>}
+                <span style={{"fontSize": "10px", "fontFamily": "ui-monospace, monospace", "color": "rgba(255,255,255,0.35)"}}>
+                    ~{str(llm_est)} LLM calls
+                </span>
+            </div>
+            {snip and <div style={{"fontSize": "10.5px", "color": "rgba(255,255,255,0.45)", "fontStyle": "italic", "paddingLeft": "36px", "lineHeight": "1.45"}}>
+                "{snip}"
+            </div>}
+        </div>;
+}

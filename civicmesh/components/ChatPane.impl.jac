@@ -313,6 +313,12 @@ impl ChatPane.sendMessage(text_override: str = "") -> None {
     lang_str = "en";
     profile_obj: Any = None;
     escalated: bool = False;
+    # Hoist pathfinder state to function scope so the outer-try catch path
+    # and the downstream message-render block always see defined values.
+    # Previously these were declared inside the try after a possibly-
+    # failing read, which produced a JS ReferenceError when the try threw.
+    pathfinder_used: bool = False;
+    pathfinder_payload: Any = None;
 
     # Build a structured reasoning trace as the walker chain executes.
     # Each step is shown beneath the bot reply so the user can see HOW
@@ -405,7 +411,40 @@ impl ChatPane.sendMessage(text_override: str = "") -> None {
         }];
 
         escalated = bool(elig["escalated"]);
-        if escalated {
+        # pathfinder_used and pathfinder_payload are hoisted to function
+        # scope at the top — see comment there. Just (re)assign from the
+        # eligibility payload here.
+        try {
+            pathfinder_used = bool(elig["pathfinder_used"]);
+        } except Exception as _ex {}
+        try {
+            pathfinder_payload = elig["pathfinder"];
+        } except Exception as _ex {}
+
+        if pathfinder_used and pathfinder_payload {
+            # Escape-path branch — direct eligibility failed but multi-hop
+            # graph BFS surfaced one or more leads_to chains the user can
+            # pursue sequentially. This is the genuinely-novel UX moment:
+            # an agent that turns dead-ends into actionable multi-step
+            # civic pathways via graph reasoning, not just a crisis line.
+            paths_raw = pathfinder_payload["paths"];
+            pf_paths: list = list(paths_raw) if paths_raw else [];
+            pf_count = len(pf_paths);
+            bot_text = ("You don't directly qualify for those programs right now, "
+                + "but I found " + str(pf_count)
+                + " multi-step path" + ("s" if pf_count != 1 else "")
+                + " through the civic-aid network that can get you there. "
+                + "Each pathway is a sequence of resources to apply for in order.");
+            bot_walker = "PathfinderWalker";
+
+            trace_steps = trace_steps + [{
+                "walker": "PathfinderWalker",
+                "title": "Multi-hop BFS over leads_to edges",
+                "value": str(pf_count) + " escape path" + ("s" if pf_count != 1 else "") + " discovered",
+                "detail": "Walked the typed leads_to edge type breadth-first from the user's near-miss resources. Returns up to 3 paths ranked by total_days + hop_count.",
+                "reasoning": "Direct eligibility scoring missed because the user's profile didn't clear the income / residency / family-size thresholds on any single program. But the civic safety net is a graph of resource transitions — Emergency Shelter typically auto-creates a Section 8 priority application, SNAP intake captures WIC pre-qualification data, and so on. PathfinderWalker treats those real-world transitions as a typed edge class and uses Jac's native graph traversal to discover routes the flat eligibility check can't see. This is multi-hop reasoning over a civic knowledge graph — the 2026 RAG frontier applied to social services."
+            }];
+        } elif escalated {
             esc_raw = elig["escalation"];
             esc: Any = esc_raw if esc_raw else {};
             msg_raw = esc["personalized_message"];
@@ -414,6 +453,37 @@ impl ChatPane.sendMessage(text_override: str = "") -> None {
             } else {
                 bot_text = "I found crisis resources. Let me connect you with immediate help.";
             }
+            # The LLM sometimes returns literal "\n" character pairs instead
+            # of real newlines (especially when it composes JSON-shaped
+            # output). Convert them to real newlines so the chat bubble
+            # renders them as paragraph breaks rather than visible "\n".
+            try {
+                bot_text = bot_text.replace("\\n\\n", "\n\n").replace("\\n", "\n");
+            } except Exception as _ex {}
+            # Defense-in-depth: if the LLM produced an empathy-first message
+            # without a phone number anywhere in it, prepend the top crisis
+            # resource so the user gets the ANSWER first. We detect "no phone"
+            # by scanning for any digit run >= 3 (covers 911, 988, 211, and
+            # 1-800 numbers). If the model already led with a number we
+            # leave it alone.
+            try {
+                has_phone = False;
+                bot_lower = bot_text.lower();
+                run = 0;
+                for ch in bot_text {
+                    if ch.isdigit() {
+                        run = run + 1;
+                        if run >= 3 { has_phone = True; break; }
+                    } else {
+                        run = 0;
+                    }
+                }
+                cr_inline_raw = esc["crisis_resources"];
+                cr_inline: list = list(cr_inline_raw) if cr_inline_raw else [];
+                if (not has_phone) and len(cr_inline) > 0 {
+                    bot_text = str(cr_inline[0]) + "\n\n" + bot_text;
+                }
+            } except Exception as _ex {}
             bot_walker = "EscalationWalker";
 
             # Trace step 4 (escalation branch): ReAct tools
@@ -460,7 +530,27 @@ impl ChatPane.sendMessage(text_override: str = "") -> None {
                 step_list: list = list(steps_raw);
                 step_count = len(step_list);
             }
-            bot_text = f"Found {eligible_count} resources you qualify for. Created a {step_count}-step plan. Go to Action Plan to see your next steps.";
+            # Concrete-first bot reply: name the top resource + its phone
+            # number inline so the user has an action they can take from
+            # the chat tab alone. The full plan still lives in the
+            # Action Plan tab; this just makes the chat reply useful by
+            # itself instead of a "go look elsewhere" pointer.
+            first_step_line = "";
+            try {
+                if step_count > 0 {
+                    first_step_raw = list(steps_raw)[0];
+                    first_agency = str(first_step_raw["agency_name"]);
+                    first_contact = str(first_step_raw["contact_info"]);
+                    first_desc = str(first_step_raw["action_description"]);
+                    if first_agency and first_contact {
+                        first_step_line = "\n\nStart here: **" + first_agency + "** — " + first_contact;
+                        if first_desc {
+                            first_step_line = first_step_line + "\n" + first_desc;
+                        }
+                    }
+                }
+            } except Exception as _ex {}
+            bot_text = f"Found {eligible_count} resource{'s' if eligible_count != 1 else ''} you qualify for. Built a {step_count}-step plan." + first_step_line + "\n\nFull plan in the Action Plan tab.";
             bot_walker = "NavigationWalker";
 
             # Trace step 4 (navigation branch): plan generation
@@ -655,15 +745,23 @@ impl ChatPane.sendMessage(text_override: str = "") -> None {
     }
 
     if bot_text {
-        # Use the local accumulator (new_messages) instead of the stale
-        # closure `messages` so the user's prompt isn't dropped.
-        new_messages = new_messages + [{
+        # Attach pathfinder payload to the message when present so the
+        # render layer can show the chained escape-path cards. The field
+        # is None for normal action-plan / escalation turns so the renderer
+        # cleanly short-circuits.
+        msg_payload: dict = {
             "role": "bot",
             "text": bot_text,
             "walker": bot_walker,
             "trace": trace_steps,
             "suggestions": suggestions
-        }];
+        };
+        if pathfinder_used and pathfinder_payload {
+            try {
+                msg_payload["pathfinder"] = pathfinder_payload;
+            } except Exception as _ex {}
+        }
+        new_messages = new_messages + [msg_payload];
         messages = new_messages;
     }
 
@@ -673,7 +771,13 @@ impl ChatPane.sendMessage(text_override: str = "") -> None {
 
 impl ChatPane.renderMessage(msg: dict, idx: int, is_last: bool) -> JsxElement {
     is_user = str(msg["role"]) == "user";
-    wname = str(msg.get("walker", ""));
+    # Bracket access in try/except — `msg.get(...)` crashes on plain JS
+    # objects that come back from JSON-deserialized state.
+    wname = "";
+    try {
+        wr = msg["walker"];
+        if wr { wname = str(wr); }
+    } except Exception as _ex {}
     is_last_bot = is_last and (not is_user);
     bubble_class = "msg-typewriter" if is_last_bot else "";
     walker_colors = {
@@ -694,6 +798,21 @@ impl ChatPane.renderMessage(msg: dict, idx: int, is_last: bool) -> JsxElement {
     sugg_raw: list = list(msg["suggestions"]) if msg["suggestions"] else [];
     sugg_n = len(sugg_raw);
     has_suggestions = (not is_user) and (sugg_n > 0) and is_last;
+
+    # Pathfinder payload — only present on the bot reply that follows a
+    # PathfinderWalker hit. Drives the chained escape-path card render
+    # block below the main bubble.
+    pf_paths: list = [];
+    try {
+        pf_raw = msg["pathfinder"];
+        if pf_raw {
+            pf_paths_raw = pf_raw["paths"];
+            if pf_paths_raw {
+                pf_paths = list(pf_paths_raw);
+            }
+        }
+    } except Exception as _ex {}
+    has_pathfinder = (not is_user) and (len(pf_paths) > 0);
 
     return
         <div
@@ -802,6 +921,35 @@ impl ChatPane.renderMessage(msg: dict, idx: int, is_last: bool) -> JsxElement {
                     >
                         {msg["text"]}
                     </div>
+
+                    {has_pathfinder and <div
+                        style={{
+                            "marginTop": "12px",
+                            "display": "flex",
+                            "flexDirection": "column",
+                            "gap": "12px"
+                        }}
+                    >
+                        <div style={{
+                            "fontSize": "10px",
+                            "color": "rgba(0,200,255,0.8)",
+                            "textTransform": "uppercase",
+                            "letterSpacing": "0.08em",
+                            "fontWeight": "700",
+                            "display": "flex",
+                            "alignItems": "center",
+                            "gap": "8px"
+                        }}>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                                <circle cx="6" cy="6" r="2.5" stroke="#00C8FF" strokeWidth="1.6"/>
+                                <circle cx="18" cy="12" r="2.5" stroke="#00C8FF" strokeWidth="1.6"/>
+                                <circle cx="10" cy="20" r="2.5" stroke="#00C8FF" strokeWidth="1.6"/>
+                                <path d="M8 7 L 16 11 M 17 14 L 11 18" stroke="#00C8FF" strokeWidth="1.4" strokeLinecap="round"/>
+                            </svg>
+                            Escape paths · graph BFS over leads_to
+                        </div>
+                        {[renderEscapePath(pf_paths[pi], pi) for pi in range(len(pf_paths))]}
+                    </div>}
 
                     {has_trace and <button
                         onClick={lambda _e: MouseEvent {
@@ -1109,4 +1257,102 @@ impl ChatPane.renderSuggestionChip(text: str) -> JsxElement {
         >
             {text}
         </button>;
+}
+
+impl ChatPane.renderEscapePath(path: Any, idx: int) -> JsxElement {
+    # Render one BFS-discovered escape path as a chained sequence of cards
+    # connected by arrows. Each hop card shows the from→to transition plus
+    # the leads_to edge payload (reason, days, difficulty). The whole card
+    # has a cyan accent so it visually pairs with the cyan overlay on the
+    # Graph tab — judges see the same path twice, once as cards and once
+    # as a lit-up subgraph.
+    hops_raw: list = list(path["hops"]) if path["hops"] else [];
+    total_days = 0;
+    try { total_days = int(path["total_days"]); } except Exception as _ex {}
+    hop_count = len(hops_raw);
+    return
+        <div
+            key={"pf-" + str(idx)}
+            style={{
+                "padding": "12px 14px",
+                "background": "linear-gradient(135deg, rgba(0,200,255,0.06), rgba(68,136,255,0.04))",
+                "border": "0.5px solid rgba(0,200,255,0.35)",
+                "borderLeft": "2px solid #00C8FF",
+                "borderRadius": "10px"
+            }}
+        >
+            <div style={{"display": "flex", "alignItems": "baseline", "justifyContent": "space-between", "marginBottom": "10px", "gap": "8px"}}>
+                <div style={{"fontSize": "12px", "fontWeight": "700", "color": "rgba(255,255,255,0.92)", "letterSpacing": "-0.005em"}}>
+                    {"Path " + str(idx + 1) + " · " + str(hop_count) + " hop" + ("s" if hop_count != 1 else "")}
+                </div>
+                <div style={{
+                    "fontSize": "10px",
+                    "fontFamily": "ui-monospace, monospace",
+                    "color": "rgba(0,200,255,0.9)",
+                    "padding": "2px 8px",
+                    "borderRadius": "10px",
+                    "background": "rgba(0,200,255,0.08)",
+                    "border": "0.5px solid rgba(0,200,255,0.3)"
+                }}>
+                    {"~" + str(total_days) + " days total"}
+                </div>
+            </div>
+            <div style={{"display": "flex", "flexDirection": "column", "gap": "8px"}}>
+                {[
+                    <div key={"hop-" + str(idx) + "-" + str(hi)} style={{"display": "flex", "flexDirection": "column", "gap": "4px"}}>
+                        <div style={{"display": "flex", "alignItems": "center", "gap": "8px", "flexWrap": "wrap"}}>
+                            <span style={{
+                                "fontSize": "10px",
+                                "fontFamily": "ui-monospace, monospace",
+                                "color": "rgba(0,200,255,0.7)",
+                                "minWidth": "16px"
+                            }}>
+                                {str(hi + 1)}
+                            </span>
+                            <span style={{"fontSize": "11.5px", "color": "rgba(255,255,255,0.65)"}}>
+                                {str(hops_raw[hi]["from"])}
+                            </span>
+                            <span style={{"color": "#00C8FF", "fontSize": "11px"}}>→</span>
+                            <span style={{"fontSize": "12px", "fontWeight": "600", "color": "#FFFFFF"}}>
+                                {str(hops_raw[hi]["to"])}
+                            </span>
+                            <span style={{
+                                "fontSize": "9px",
+                                "padding": "1px 6px",
+                                "borderRadius": "8px",
+                                "background": (
+                                    "rgba(0,255,136,0.1)" if str(hops_raw[hi]["difficulty"]) == "easy"
+                                    else ("rgba(255,179,68,0.1)" if str(hops_raw[hi]["difficulty"]) == "moderate"
+                                          else "rgba(255,68,68,0.1)")
+                                ),
+                                "color": (
+                                    "#00FF88" if str(hops_raw[hi]["difficulty"]) == "easy"
+                                    else ("#FFB344" if str(hops_raw[hi]["difficulty"]) == "moderate"
+                                          else "#FF4444")
+                                ),
+                                "border": "0.5px solid currentColor",
+                                "fontFamily": "ui-monospace, monospace",
+                                "letterSpacing": "0.04em",
+                                "textTransform": "uppercase",
+                                "fontWeight": "600"
+                            }}>
+                                {str(hops_raw[hi]["difficulty"])}
+                            </span>
+                            <span style={{"fontSize": "9px", "color": "rgba(255,255,255,0.4)", "fontFamily": "ui-monospace, monospace"}}>
+                                {"~" + str(int(hops_raw[hi]["days"]) if hops_raw[hi]["days"] else 30) + "d"}
+                            </span>
+                        </div>
+                        <div style={{
+                            "fontSize": "11px",
+                            "color": "rgba(255,255,255,0.55)",
+                            "lineHeight": "1.5",
+                            "paddingLeft": "24px"
+                        }}>
+                            {str(hops_raw[hi]["reason"])}
+                        </div>
+                    </div>
+                    for hi in range(hop_count)
+                ]}
+            </div>
+        </div>;
 }

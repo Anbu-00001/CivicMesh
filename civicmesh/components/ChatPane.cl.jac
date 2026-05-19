@@ -18,7 +18,18 @@ def:pub ChatPane(
         detected_language: str = "",
         profile_extracted: Any = {},
         open_trace_idx: int = -1,
-        translation_cache: dict = {};
+        translation_cache: dict = {},
+        # Voice-intake state. The Web Speech API is browser-native, free,
+        # and runs entirely client-side — no upload to AssemblyAI / OpenAI
+        # Realtime, no per-minute charge, no new LLM tokens consumed. A
+        # user in crisis who can't type effectively (limited literacy,
+        # disability, panic) can press a mic button and dictate in any
+        # supported language. The transcribed text flows through the same
+        # IntakeWalker as keyboard input — one walker chain handles every
+        # input modality.
+        voice_listening: bool = False,
+        voice_supported: bool = True,
+        voice_interim: str = "";
 
     can with entry {
         # Cold-start welcome with three click-to-send sample prompts.
@@ -39,10 +50,26 @@ def:pub ChatPane(
                 ]
             }
         ];
-        if session_data.get("has_history", False) {
-            summary = session_data.get("session_summary", None);
+        # session_data comes back from MemoryWalker as a plain JSON object,
+        # not a real Jac dict — `.get()` is undefined on plain objects in
+        # JS, so calling it crashes the render with "summary.get is not a
+        # function". Use bracket access in try/except instead so a missing
+        # field returns None without exploding.
+        has_history_flag = False;
+        try {
+            has_history_flag = bool(session_data["has_history"]);
+        } except Exception as _ex {}
+        if has_history_flag {
+            summary: Any = None;
+            try {
+                summary = session_data["session_summary"];
+            } except Exception as _ex {}
             if summary {
-                next_step = summary.get("next_recommended_step", "");
+                next_step = "";
+                try {
+                    nrs = summary["next_recommended_step"];
+                    if nrs { next_step = str(nrs); }
+                } except Exception as _ex {}
                 if next_step {
                     seed = seed + [
                         {
@@ -61,6 +88,7 @@ def:pub ChatPane(
     def renderMessage(msg: dict, idx: int, is_last: bool) -> JsxElement;
     def renderTraceStep(step: Any, idx: int) -> JsxElement;
     def renderSuggestionChip(text: str) -> JsxElement;
+    def renderEscapePath(path: Any, idx: int) -> JsxElement;
     def walkerColor(walker_name: str) -> str;
     def isLowSignal(text: str) -> bool;
     def generateSuggestions(profile: Any, escalated: bool, bot_walker: str, user_text: str) -> list;

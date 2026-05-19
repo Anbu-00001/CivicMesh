@@ -69,7 +69,15 @@ node EligibilityRuleNode {
         age_min: int = 0,
         age_max: int = 0,
         exceptions: str = "",
-        criteria_summary: str = "";
+        criteria_summary: str = "",
+        # Outcome-learning fields. MemoryWalker updates these whenever
+        # an ApplicationNode this rule gated transitions to approved or
+        # denied. EligibilityWalker reads prior_success_rate as a
+        # prior on the LLM's match_score so the graph genuinely learns
+        # from real outcomes.
+        prior_success_rate: float = 0.5,
+        prior_attempts: int = 0,
+        prior_approvals: int = 0;
 }
 
 sem EligibilityRuleNode is "The structured eligibility criteria for a ResourceNode. Read by check_eligibility() to score how well a PersonNode's profile matches.";
@@ -82,6 +90,41 @@ sem EligibilityRuleNode.age_min is "Minimum applicant age in years. 0 means no m
 sem EligibilityRuleNode.age_max is "Maximum applicant age in years. 0 means no maximum. Used by youth-only programs.";
 sem EligibilityRuleNode.exceptions is "Free-form description of edge cases, waivers, and special populations the rule treats differently. The LLM consults this for borderline matches before declaring ineligibility.";
 sem EligibilityRuleNode.criteria_summary is "Human-readable one-sentence summary of the rule, suitable for LLM prompts and user-facing explanations. The primary surface check_eligibility() reads.";
+sem EligibilityRuleNode.prior_success_rate is "Bayesian-style success prior in [0, 1]. Starts at 0.5 (uninformative). MemoryWalker updates it whenever an ApplicationNode this rule gated transitions to approved or denied. EligibilityWalker weights LLM match_scores by this prior so the system tracks real-world outcomes over time, not just static rules.";
+sem EligibilityRuleNode.prior_attempts is "Total count of ApplicationNodes that reached approved/denied status against this rule. Used as the denominator for prior_success_rate.";
+sem EligibilityRuleNode.prior_approvals is "Count of those attempts that ended in approved. Numerator for prior_success_rate. Persists across sessions because the graph itself persists.";
+
+# SessionInsight — Reflexion-style self-reflection persisted in the graph.
+# After every chat turn, CritiqueWalker computes a quality score from the
+# walker chain telemetry (no LLM call) and writes one of these. Future
+# IntakeWalker turns read the last few back as context-prefix so the agent
+# literally learns from its own past performance.
+node SessionInsight {
+    has session_id: str = "",
+        ts: str = "",
+        walkers_fired: list[str] = [],
+        llm_calls_est: int = 0,
+        escalated: bool = False,
+        pathfinder_used: bool = False,
+        navigation_used: bool = False,
+        eligible_count: int = 0,
+        quality_score: int = 50,
+        headline: str = "",
+        user_prompt_snippet: str = "";
+}
+
+sem SessionInsight is "Agent self-reflection record. Written by CritiqueWalker after each chat turn — pure graph mutation, no LLM call. Future IntakeWalker turns read the last few to prepend as context so the agent learns from its own past sessions without external memory infrastructure. Reflexion in pure Jac.";
+sem SessionInsight.session_id is "Stable identifier for the chat turn. Timestamp-based; lets the client deduplicate when multiple insights for the same turn would otherwise stack.";
+sem SessionInsight.ts is "ISO 8601 timestamp the insight was written. Used by Telemetry's rolling-trend chart and by IntakeWalker's recency-weighted lookback.";
+sem SessionInsight.walkers_fired is "Distinct list of walker names that produced events during this turn. Drives the quality_score formula and surfaces in the Telemetry self-reflection panel.";
+sem SessionInsight.llm_calls_est is "Estimated number of byllm calls this turn made. Heuristic: 1 intake + N eligibility candidates + (1 navigation OR 1 escalation) + translation. Lets the Telemetry tab compute rolling free-tier budget burn.";
+sem SessionInsight.escalated is "True if the chain routed through EscalationWalker — a session-quality penalty. Demo loop: if escalation keeps firing on the same user, the agent should improve its NeedProfile extraction next turn.";
+sem SessionInsight.pathfinder_used is "True if PathfinderWalker found a multi-hop escape path. Counts as a positive outcome — the system found a route the flat eligibility check couldn't see.";
+sem SessionInsight.navigation_used is "True if NavigationWalker produced a non-empty ActionPlan. The cleanest signal of a successful turn.";
+sem SessionInsight.eligible_count is "Number of eligible resources scored above threshold this turn. Feeds into quality_score and lets Telemetry chart per-turn eligibility yield.";
+sem SessionInsight.quality_score is "Integer in [0, 100]. Heuristic formula: navigation=+30, pathfinder=+25, eligible_count<=4=+5 each, escalated=-15, baseline=50. Surfaces in Telemetry as the rolling-quality chart so users can see the agent self-improving across turns.";
+sem SessionInsight.headline is "One-line plain-language summary suitable for prefixing future conversations. Example: 'Prior turn matched 3 housing resources via Pathfinder, no escalation.' IntakeWalker reads the last 2 of these.";
+sem SessionInsight.user_prompt_snippet is "First 80 chars of the user's prompt that triggered this turn. Used in the Telemetry timeline so users can scroll back through their session quality.";
 
 node FormNode {
     has form_id: str = "",

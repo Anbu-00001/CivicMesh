@@ -16,18 +16,22 @@ import from llm.stubs {
 }
 import from walkers.navigation { NavigationWalker }
 import from walkers.escalation { EscalationWalker }
+import from walkers.pathfinder { PathfinderWalker }
 
 walker EligibilityWalker {
     has profile: NeedProfile;
     has person_node: PersonNode;
     has results: list = [];
     # Hard cap on how many ResourceNodes we feed to check_eligibility().
-    # Each candidate is one LLM call. 10 is the empirically tuned demo
-    # value: it gives every category bucket (housing has ~10 entries in
-    # seed data) enough headroom that at least one resource per turn
-    # almost always clears the eligibility threshold, while still
-    # completing in <25s on NVIDIA NIM's free tier.
-    has max_candidates: int = 10;
+    # Each candidate is one LLM call. 6 is the cost-disciplined demo value
+    # — it covers each category bucket's top open-capacity entries while
+    # keeping a single chat turn under ~10 total LLM calls (intake +
+    # eligibility×6 + navigation + translation), well inside NVIDIA NIM's
+    # free-tier 40 RPM rate window. The PathfinderWalker fallback covers
+    # the edge case where 6 candidates all score under threshold by
+    # walking the leads_to graph to find multi-hop escape paths instead
+    # of issuing more expensive LLM scoring calls.
+    has max_candidates: int = 6;
     # Mirror of the final report so the spawning walker can read it after
     # spawn — `report` payloads flow only into the outermost walker's stream.
     has summary: dict = {};
@@ -63,6 +67,27 @@ walker EligibilityWalker {
         for resource in candidates {
             rule_nodes = [resource ->:governed_by:-> [?:EligibilityRuleNode]];
             if not rule_nodes {
+                # Resource exists but its EligibilityRuleNode is missing
+                # (schema drift, partial seed, etc.). Skip the LLM call but
+                # still surface the resource with a neutral score so
+                # NavigationWalker is reachable instead of escalation. The
+                # user gets the real phone number from the seeded resource;
+                # documentation gaps are flagged so they know to confirm.
+                self.results.append({
+                    "resource_name": str(resource.agency_name),
+                    "match_score": 20,
+                    "raw_llm_score": 0,
+                    "prior_success_rate": 0.5,
+                    "prior_attempts": 0,
+                    "is_eligible": False,
+                    "matched_criteria": [],
+                    "missing_criteria": ["Eligibility not scored — call the agency to confirm"],
+                    "contact_phone": str(resource.contact_phone),
+                    "contact_email": str(resource.contact_email),
+                    "address": str(resource.address),
+                    "online_url": str(resource.online_url),
+                    "description": str(resource.description)
+                });
                 continue;
             }
             rule: EligibilityRuleNode = rule_nodes[0];
@@ -84,9 +109,31 @@ walker EligibilityWalker {
                 exceptions=str(rule.exceptions)
             );
 
+            # Outcome-learning weight: blend the LLM's raw match_score with
+            # the EligibilityRuleNode's prior_success_rate so the graph
+            # learns from real ApplicationNode outcomes over time. With no
+            # historical data the prior is 0.5 and the blend resolves to
+            # the raw score; as the rule sees real approvals/denials it
+            # gradually shifts the rankings. Pure Jac OSP — no PyTorch.
+            raw_score = int(result.match_score);
+            prior_rate = 0.5;
+            attempts = 0;
+            try { prior_rate = float(rule.prior_success_rate); } except Exception as _ex {}
+            try { attempts = int(rule.prior_attempts); } except Exception as _ex {}
+            # Blend weight grows with attempts: at 0 attempts we trust the
+            # LLM entirely; at 20+ attempts we let the prior have ~50%
+            # influence. Keeps the cold-start demo responsive.
+            blend = float(attempts) / (float(attempts) + 20.0);
+            adjusted_score = int(
+                (1.0 - blend) * float(raw_score) + blend * prior_rate * 100.0
+            );
+
             self.results.append({
                 "resource_name": str(resource.agency_name),
-                "match_score": int(result.match_score),
+                "match_score": adjusted_score,
+                "raw_llm_score": raw_score,
+                "prior_success_rate": prior_rate,
+                "prior_attempts": attempts,
                 "is_eligible": bool(result.is_eligible),
                 "matched_criteria": list(result.matched_criteria),
                 "missing_criteria": list(result.missing_criteria),
@@ -99,19 +146,67 @@ walker EligibilityWalker {
         }
 
         # Step 3: rank by match_score descending, split into tiers.
-        # Thresholds lowered to favor green-path Action Plans over crisis
-        # escalation. LLM scoring on borderline civic-aid eligibility is
-        # genuinely noisy — a real Section 8 candidate can score anywhere
-        # from 25 to 60 depending on phrasing of the rule criteria_summary.
-        # eligible >= 25 catches most real fits; possible 10..25 keeps
-        # fallback options visible so the chain rarely escalates when
-        # there ARE viable matches.
+        # Thresholds tuned permissively because LLM scoring on civic-aid
+        # eligibility is genuinely noisy and conservative — Section 8
+        # often scores 10-25 even for a textbook candidate. Eligible
+        # >= 15, Possible 5..15. If both tiers are empty BUT results
+        # exist (i.e. the LLM produced *something*), we promote the top
+        # 3 scored resources into a "rescue tier" treated as Possible so
+        # NavigationWalker still gets called and the user sees an
+        # actionable plan instead of dropping straight to crisis.
         self.results.sort(key=lambda r : -int(r["match_score"]));
-        eligible = [r for r in self.results if int(r["match_score"]) >= 25];
-        possible = [r for r in self.results if 10 <= int(r["match_score"]) < 25];
+        eligible = [r for r in self.results if int(r["match_score"]) >= 15];
+        possible = [r for r in self.results if 5 <= int(r["match_score"]) < 15];
+        if len(eligible) == 0 and len(possible) == 0 and len(self.results) > 0 {
+            # Rescue tier: take whatever the LLM ranked, regardless of
+            # threshold. Better to surface "here are the closest matches,
+            # apply with documentation gaps" than to escalate when real
+            # options exist in the graph.
+            possible = list(self.results[:3]);
+        }
+        # Last-resort rescue: if EVEN self.results is empty (e.g. zero
+        # candidates had governed_by edges, or the LLM returned malformed
+        # output on every scoring call), synthesize a results list directly
+        # from the category's open-capacity resources. We give them a
+        # default score of 25 so NavigationWalker treats them as possible
+        # matches. Concrete phone numbers in the user's hand >
+        # generic escalation language any day.
+        if len(eligible) == 0 and len(possible) == 0 and len(self.results) == 0 {
+            synth: list = [];
+            for r in candidates[:3] {
+                synth.append({
+                    "resource_name": str(r.agency_name),
+                    "match_score": 25,
+                    "raw_llm_score": 0,
+                    "prior_success_rate": 0.5,
+                    "prior_attempts": 0,
+                    "is_eligible": False,
+                    "matched_criteria": [],
+                    "missing_criteria": ["Eligibility could not be scored — call the agency to confirm"],
+                    "contact_phone": str(r.contact_phone),
+                    "contact_email": str(r.contact_email),
+                    "address": str(r.address),
+                    "online_url": str(r.online_url),
+                    "description": str(r.description)
+                });
+            }
+            if synth {
+                possible = synth;
+                self.results = synth;
+            }
+        }
 
-        # Step 4: dead end -> escalate; otherwise plan a path forward
-        if not eligible and not possible {
+        # Step 4: dead-end handling. BEFORE escalating to a crisis message,
+        # try PathfinderWalker — multi-hop BFS over the `leads_to` edge
+        # type looking for a 2-3 step escape route. The seed_resource_names
+        # we pass are the borderline near-misses the LLM already scored;
+        # they become preferred BFS roots because they're the closest
+        # almost-fits.
+        # NOTE: `not eligible` compiles to `![]` in JS which is always
+        # False because arrays are truthy. Use the explicit length check
+        # so the dead-end branch (pathfinder/escalation) actually fires
+        # when both tiers are empty.
+        if len(eligible) == 0 and len(possible) == 0 {
             denial_reasons: list = [];
             for r in self.results {
                 missing = list(r["missing_criteria"]);
@@ -119,18 +214,53 @@ walker EligibilityWalker {
                     denial_reasons.append(", ".join([str(m) for m in missing]));
                 }
             }
-            esc_context = EscalationContext(
-                trigger_reason="zero_eligible_resources",
-                profile=self.profile,
-                denial_reasons=denial_reasons,
-                urgency_level=str(self.profile.urgency)
+
+            # Take up to 4 near-misses as Pathfinder seeds. results was
+            # already sorted descending by match_score, so [:4] are the
+            # closest-fit programs the LLM evaluated.
+            near_miss_names: list[str] = [];
+            for r in self.results[:4] {
+                near_miss_names.append(str(r["resource_name"]));
+            }
+            pf_walker = root spawn PathfinderWalker(
+                start_category=str(self.profile.category),
+                max_hops=3,
+                max_paths=3,
+                seed_resource_names=near_miss_names
             );
-            esc_walker = self.person_node spawn EscalationWalker(
-                context=esc_context,
-                person_node=self.person_node
-            );
-            esc_payload: dict = esc_walker.summary;
-            payload = {"escalated": True, "escalation": esc_payload};
+            pf_payload: dict = pf_walker.summary;
+            pf_path_count = int(pf_payload["path_count"]) if pf_payload and pf_payload["path_count"] else 0;
+
+            # Only escalate if Pathfinder ALSO found nothing. Otherwise
+            # the chat surfaces the discovered escape paths and skips the
+            # crisis message — a much better user experience.
+            if pf_path_count == 0 {
+                esc_context = EscalationContext(
+                    trigger_reason="zero_eligible_resources",
+                    profile=self.profile,
+                    denial_reasons=denial_reasons,
+                    urgency_level=str(self.profile.urgency)
+                );
+                esc_walker = self.person_node spawn EscalationWalker(
+                    context=esc_context,
+                    person_node=self.person_node
+                );
+                esc_payload: dict = esc_walker.summary;
+                payload = {"escalated": True, "escalation": esc_payload};
+                self.summary = payload;
+                report payload;
+                disengage;
+            }
+
+            # Pathfinder hit — surface escape paths as the agent's reply.
+            payload = {
+                "escalated": False,
+                "pathfinder_used": True,
+                "eligible_count": 0,
+                "possible_count": 0,
+                "top_matches": [],
+                "pathfinder": pf_payload
+            };
             self.summary = payload;
             report payload;
             disengage;
