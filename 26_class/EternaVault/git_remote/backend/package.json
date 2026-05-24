@@ -1,0 +1,22 @@
+{
+  "name": "memcap-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.47.10",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "ethers": "^6.13.5",
+    "express": "^4.21.2",
+    "multer": "^2.0.2",
+    "node-cron": "^4.2.1"
+  },
+  "overrides": {
+    "ws": "^8.20.1"
+  }
+}
