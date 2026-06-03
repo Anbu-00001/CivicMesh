@@ -4,11 +4,18 @@
 # frontend.cl.jac so the production client bundle resolves them.
 
 impl ClientApp.initAuth -> None {
-    ok = await jacLogin(DEMO_USER_ID, DEMO_USER_PASSWORD);
-    if not ok {
+    # Signup-first, login-second. On every fresh HF container (Factory
+    # rebuild wipes users.db on free tier), demo_user doesn't exist yet.
+    # The old "login first, signup on failure" pattern broke because
+    # `jacLogin` returns an object `{ok: false, ...}` on failure — and
+    # JS objects are truthy, so `if not ok` was always False and the
+    # signup branch never fired. Calling signup first is safe because
+    # it 409s harmlessly if the user already exists; we wrap it in try
+    # so a "user exists" response doesn't break the login that follows.
+    try {
         await jacSignup(DEMO_USER_ID, DEMO_USER_PASSWORD);
-        ok = await jacLogin(DEMO_USER_ID, DEMO_USER_PASSWORD);
-    }
+    } except Exception as _ex {}
+    ok = await jacLogin(DEMO_USER_ID, DEMO_USER_PASSWORD);
     if ok {
         is_authed = True;
         user_id = DEMO_USER_ID;
