@@ -14,14 +14,25 @@ pinned: false
 
 ### A multi-agent AI navigator that routes people in crisis to the housing, food, healthcare, and legal aid they qualify for — in any language, in under a minute.
 
+[![Winner – Agentic AI](https://img.shields.io/badge/JacHacks%20Spring%202026-%F0%9F%8F%86%201st%20Place%20Agentic%20AI-FFD700?style=for-the-badge)](https://devpost.com/software/civicmesh-0ctxl5)
+[![Winner – Best Startup Idea](https://img.shields.io/badge/JacHacks%20Spring%202026-%F0%9F%8F%86%20Best%20Startup%20Idea-FFD700?style=for-the-badge)](https://devpost.com/software/civicmesh-0ctxl5)
+
+[![Live Demo on HF Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Live%20Demo-Hugging%20Face%20Spaces-yellow?style=flat-square)](https://huggingface.co/spaces/Anbu-00001/CivicMesh)
+[![Devpost](https://img.shields.io/badge/Devpost-CivicMesh-003e54?style=flat-square)](https://devpost.com/software/civicmesh-0ctxl5)
 [![Jac](https://img.shields.io/badge/Jac-0.15-7c3aed?style=flat-square)](https://github.com/Jaseci-Labs/jaclang)
 [![Jaseci](https://img.shields.io/badge/Jaseci-runtime-1f6feb?style=flat-square)](https://jaseci.org)
 [![byllm](https://img.shields.io/badge/byllm-0.6.7-22c55e?style=flat-square)](https://github.com/Jaseci-Labs/byllm)
 [![NVIDIA NIM](https://img.shields.io/badge/NVIDIA%20NIM-llama--3.1--8b-76b900?style=flat-square)](https://build.nvidia.com)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](./LICENSE)
-[![JacHacks](https://img.shields.io/badge/JacHacks-Spring%202026-ff6b6b?style=flat-square)](https://jaseci.org)
 
 </div>
+
+> ## 🏆 JacHacks Spring 2026 — Double Winner
+>
+> - **🥇 1st Place — Agentic AI Track**
+> - **🏆 Best Startup Idea**
+>
+> [View the Devpost submission →](https://devpost.com/software/civicmesh-0ctxl5) · [Try the live demo →](https://huggingface.co/spaces/Anbu-00001/CivicMesh)
 
 ---
 
