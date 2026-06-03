@@ -4,44 +4,75 @@
 # frontend.cl.jac so the production client bundle resolves them.
 
 impl ClientApp.initAuth -> None {
-    # Auth bootstrap that survives Factory rebuilds on free HF Spaces.
+    # Auth bootstrap via direct fetch — we deliberately bypass the
+    # @jac/runtime jacLogin/jacSignup helpers because their argument
+    # shape was silently mismatched against the server's auto-generated
+    # /user/register and /user/login schemas, causing the calls to no-op
+    # without ever hitting the network (no POST /user/* lines in the HF
+    # logs, only POST /walker/* with 500 "User not found").
     #
-    # We cannot trust the return value of `jacLogin` / `jacSignup` — both
-    # return an object on failure that JS treats as truthy, so `if ok`
-    # passes even when the call failed (this was the source of the
-    # repeated "User not found" walker errors). The source of truth is
-    # `jacIsLoggedIn()`, which checks the stored token directly.
-    #
-    # Strategy: short-circuit if already authed; otherwise signup-then-
-    # login (signup 409s harmlessly if the user already exists); then
-    # gate the SeedWalker spawn on `jacIsLoggedIn()`.
+    # The schemas below were lifted verbatim from /openapi.json on a
+    # running server:
+    #   /user/register  ← {identities: [{type, username|email: {value}}], credential: {type, password}}
+    #   /user/login     ← {identity: {...same}, credential: {...same}}
+    # Login returns {data: {token}} on success. The runtime reads
+    # localStorage["jac_token"] to gate `jacIsLoggedIn()`.
+
     is_authed = False;
+
     if jacIsLoggedIn() {
         is_authed = True;
     } else {
+        # Step 1 — register the demo user. 200 == created, 409 / 422 ==
+        # already exists; both are fine. We catch all exceptions because
+        # network hiccups here are non-fatal — login will retry the
+        # state-of-the-world on its own.
+        identity_payload = {
+            "type": "username",
+            "username": {"value": DEMO_USER_ID}
+        };
+        credential_payload = {
+            "type": "password",
+            "password": DEMO_USER_PASSWORD
+        };
         try {
-            await jacSignup(DEMO_USER_ID, DEMO_USER_PASSWORD);
+            await fetch("/user/register", {
+                "method": "POST",
+                "headers": {"Content-Type": "application/json"},
+                "body": JSON.stringify({
+                    "identities": [identity_payload],
+                    "credential": credential_payload
+                })
+            });
         } except Exception as _ex {}
+
+        # Step 2 — log in. The token comes back in resp.data.token; stash
+        # it where the runtime expects to read it.
         try {
-            await jacLogin(DEMO_USER_ID, DEMO_USER_PASSWORD);
+            login_resp = await fetch("/user/login", {
+                "method": "POST",
+                "headers": {"Content-Type": "application/json"},
+                "body": JSON.stringify({
+                    "identity": identity_payload,
+                    "credential": credential_payload
+                })
+            });
+            login_json = await login_resp.json();
+            token = "";
+            try { token = str(login_json["data"]["token"]); } except Exception as _ex {}
+            if not token {
+                try { token = str(login_json["token"]); } except Exception as _ex {}
+            }
+            if token {
+                localStorage.setItem("jac_token", token);
+            }
         } except Exception as _ex {}
-        # A second login attempt buys us nothing on success but covers the
-        # rare race where signup hasn't fully persisted before the first
-        # login attempt fires on a slow cold container.
-        if not jacIsLoggedIn() {
-            try {
-                await jacLogin(DEMO_USER_ID, DEMO_USER_PASSWORD);
-            } except Exception as _ex {}
-        }
+
         is_authed = jacIsLoggedIn();
     }
 
     if is_authed {
         user_id = DEMO_USER_ID;
-        # Bootstrap the user's per-root resource catalog. jac-scale gives
-        # every authenticated user their own root, so we must seed the 40
-        # ResourceNodes into THIS user's graph before EligibilityWalker
-        # has anything to score against. The walker is idempotent.
         try {
             await root spawn SeedWalker(user_id=DEMO_USER_ID);
         } except Exception as _ex {}
@@ -53,15 +84,48 @@ impl ClientApp.loadSession -> None {
     # confirmed jacIsLoggedIn(). On a stale browser session whose token
     # has been revoked by a Factory rebuild, the cached app state will
     # still think we're authed; spawning walkers without a fresh login
-    # gives the same "User not found" 500s we hit before. If the token
-    # is gone, re-run initAuth's signup+login flow instead of charging
-    # blindly into walker spawns.
+    # gives the same "User not found" 500s. We re-run the same direct-
+    # fetch auth flow as initAuth (see comments above) rather than the
+    # @jac/runtime helpers, which silently no-op on shape mismatch.
     if not jacIsLoggedIn() {
-        try { await jacSignup(DEMO_USER_ID, DEMO_USER_PASSWORD); } except Exception as _ex {}
-        try { await jacLogin(DEMO_USER_ID, DEMO_USER_PASSWORD); } except Exception as _ex {}
+        identity_payload = {
+            "type": "username",
+            "username": {"value": DEMO_USER_ID}
+        };
+        credential_payload = {
+            "type": "password",
+            "password": DEMO_USER_PASSWORD
+        };
+        try {
+            await fetch("/user/register", {
+                "method": "POST",
+                "headers": {"Content-Type": "application/json"},
+                "body": JSON.stringify({
+                    "identities": [identity_payload],
+                    "credential": credential_payload
+                })
+            });
+        } except Exception as _ex {}
+        try {
+            r = await fetch("/user/login", {
+                "method": "POST",
+                "headers": {"Content-Type": "application/json"},
+                "body": JSON.stringify({
+                    "identity": identity_payload,
+                    "credential": credential_payload
+                })
+            });
+            j = await r.json();
+            t = "";
+            try { t = str(j["data"]["token"]); } except Exception as _ex {}
+            if not t {
+                try { t = str(j["token"]); } except Exception as _ex {}
+            }
+            if t {
+                localStorage.setItem("jac_token", t);
+            }
+        } except Exception as _ex {}
         if not jacIsLoggedIn() {
-            # Auth genuinely broken — bail. The user will see the empty
-            # chat state instead of a wall of 500 errors in the console.
             session_data = {};
             return;
         }
