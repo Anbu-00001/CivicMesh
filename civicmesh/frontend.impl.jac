@@ -4,40 +4,70 @@
 # frontend.cl.jac so the production client bundle resolves them.
 
 impl ClientApp.initAuth -> None {
-    # Signup-first, login-second. On every fresh HF container (Factory
-    # rebuild wipes users.db on free tier), demo_user doesn't exist yet.
-    # The old "login first, signup on failure" pattern broke because
-    # `jacLogin` returns an object `{ok: false, ...}` on failure — and
-    # JS objects are truthy, so `if not ok` was always False and the
-    # signup branch never fired. Calling signup first is safe because
-    # it 409s harmlessly if the user already exists; we wrap it in try
-    # so a "user exists" response doesn't break the login that follows.
-    try {
-        await jacSignup(DEMO_USER_ID, DEMO_USER_PASSWORD);
-    } except Exception as _ex {}
-    ok = await jacLogin(DEMO_USER_ID, DEMO_USER_PASSWORD);
-    if ok {
+    # Auth bootstrap that survives Factory rebuilds on free HF Spaces.
+    #
+    # We cannot trust the return value of `jacLogin` / `jacSignup` — both
+    # return an object on failure that JS treats as truthy, so `if ok`
+    # passes even when the call failed (this was the source of the
+    # repeated "User not found" walker errors). The source of truth is
+    # `jacIsLoggedIn()`, which checks the stored token directly.
+    #
+    # Strategy: short-circuit if already authed; otherwise signup-then-
+    # login (signup 409s harmlessly if the user already exists); then
+    # gate the SeedWalker spawn on `jacIsLoggedIn()`.
+    is_authed = False;
+    if jacIsLoggedIn() {
         is_authed = True;
+    } else {
+        try {
+            await jacSignup(DEMO_USER_ID, DEMO_USER_PASSWORD);
+        } except Exception as _ex {}
+        try {
+            await jacLogin(DEMO_USER_ID, DEMO_USER_PASSWORD);
+        } except Exception as _ex {}
+        # A second login attempt buys us nothing on success but covers the
+        # rare race where signup hasn't fully persisted before the first
+        # login attempt fires on a slow cold container.
+        if not jacIsLoggedIn() {
+            try {
+                await jacLogin(DEMO_USER_ID, DEMO_USER_PASSWORD);
+            } except Exception as _ex {}
+        }
+        is_authed = jacIsLoggedIn();
+    }
+
+    if is_authed {
         user_id = DEMO_USER_ID;
         # Bootstrap the user's per-root resource catalog. jac-scale gives
         # every authenticated user their own root, so we must seed the 40
         # ResourceNodes into THIS user's graph before EligibilityWalker
-        # has anything to score against. The walker is idempotent — second
-        # run just reports skipped == 40.
+        # has anything to score against. The walker is idempotent.
         try {
             await root spawn SeedWalker(user_id=DEMO_USER_ID);
-        } except Exception as _ex {
-            # Seed failure is non-fatal — the chat will still load, just
-            # with zero matches until the server is restarted with the data
-            # file in a reachable location.
-            is_authed = is_authed;
-        }
-    } else {
-        is_authed = False;
+        } except Exception as _ex {}
     }
 }
 
 impl ClientApp.loadSession -> None {
+    # Defensive gate — loadSession should only run after initAuth has
+    # confirmed jacIsLoggedIn(). On a stale browser session whose token
+    # has been revoked by a Factory rebuild, the cached app state will
+    # still think we're authed; spawning walkers without a fresh login
+    # gives the same "User not found" 500s we hit before. If the token
+    # is gone, re-run initAuth's signup+login flow instead of charging
+    # blindly into walker spawns.
+    if not jacIsLoggedIn() {
+        try { await jacSignup(DEMO_USER_ID, DEMO_USER_PASSWORD); } except Exception as _ex {}
+        try { await jacLogin(DEMO_USER_ID, DEMO_USER_PASSWORD); } except Exception as _ex {}
+        if not jacIsLoggedIn() {
+            # Auth genuinely broken — bail. The user will see the empty
+            # chat state instead of a wall of 500 errors in the console.
+            session_data = {};
+            return;
+        }
+        user_id = DEMO_USER_ID;
+    }
+
     # Always re-run SeedWalker on session load so an already-authed user
     # whose root predates the demo-apps feature still picks them up on
     # next refresh. SeedWalker is idempotent — duplicate resource and
