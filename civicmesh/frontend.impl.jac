@@ -23,49 +23,29 @@ impl ClientApp.initAuth -> None {
     if jacIsLoggedIn() {
         is_authed = True;
     } else {
-        # Step 1 — register the demo user. 200 == created, 409 / 422 ==
-        # already exists; both are fine. We catch all exceptions because
-        # network hiccups here are non-fatal — login will retry the
-        # state-of-the-world on its own.
-        identity_payload = {
+        # Pre-normalized identity object — the runtime's
+        # __normalizeIdentity() only wraps STRINGS into the legacy flat
+        # `{type, value}` shape (which the server rejects with 422);
+        # passing a plain object bypasses normalization and the fetch
+        # goes out with the correct shape:
+        #     {type: "username", username: {value: "..."}}
+        # The credential stays a plain string — __normalizeCredential
+        # wraps it correctly as `{type: "password", password: "..."}`.
+        identity_obj = {
             "type": "username",
             "username": {"value": DEMO_USER_ID}
         };
-        credential_payload = {
-            "type": "password",
-            "password": DEMO_USER_PASSWORD
-        };
+
+        # jacSignup expects an ARRAY for identities when bypassing the
+        # auto-wrap path. The runtime checks `Array.isArray(arg)`
+        # and uses our array as-is.
         try {
-            await fetch("/user/register", {
-                "method": "POST",
-                "headers": {"Content-Type": "application/json"},
-                "body": JSON.stringify({
-                    "identities": [identity_payload],
-                    "credential": credential_payload
-                })
-            });
+            await jacSignup([identity_obj], DEMO_USER_PASSWORD);
         } except Exception as _ex {}
 
-        # Step 2 — log in. The token comes back in resp.data.token; stash
-        # it where the runtime expects to read it.
+        # jacLogin takes a single identity object. Same bypass logic.
         try {
-            login_resp = await fetch("/user/login", {
-                "method": "POST",
-                "headers": {"Content-Type": "application/json"},
-                "body": JSON.stringify({
-                    "identity": identity_payload,
-                    "credential": credential_payload
-                })
-            });
-            login_json = await login_resp.json();
-            token = "";
-            try { token = str(login_json["data"]["token"]); } except Exception as _ex {}
-            if not token {
-                try { token = str(login_json["token"]); } except Exception as _ex {}
-            }
-            if token {
-                localStorage.setItem("jac_token", token);
-            }
+            await jacLogin(identity_obj, DEMO_USER_PASSWORD);
         } except Exception as _ex {}
 
         is_authed = jacIsLoggedIn();
@@ -88,43 +68,15 @@ impl ClientApp.loadSession -> None {
     # fetch auth flow as initAuth (see comments above) rather than the
     # @jac/runtime helpers, which silently no-op on shape mismatch.
     if not jacIsLoggedIn() {
-        identity_payload = {
+        # Same bypass pattern as initAuth — feed jacSignup/jacLogin a
+        # pre-normalized identity object so they make the fetch with
+        # the correct wire shape instead of the legacy flat one.
+        identity_obj = {
             "type": "username",
             "username": {"value": DEMO_USER_ID}
         };
-        credential_payload = {
-            "type": "password",
-            "password": DEMO_USER_PASSWORD
-        };
-        try {
-            await fetch("/user/register", {
-                "method": "POST",
-                "headers": {"Content-Type": "application/json"},
-                "body": JSON.stringify({
-                    "identities": [identity_payload],
-                    "credential": credential_payload
-                })
-            });
-        } except Exception as _ex {}
-        try {
-            r = await fetch("/user/login", {
-                "method": "POST",
-                "headers": {"Content-Type": "application/json"},
-                "body": JSON.stringify({
-                    "identity": identity_payload,
-                    "credential": credential_payload
-                })
-            });
-            j = await r.json();
-            t = "";
-            try { t = str(j["data"]["token"]); } except Exception as _ex {}
-            if not t {
-                try { t = str(j["token"]); } except Exception as _ex {}
-            }
-            if t {
-                localStorage.setItem("jac_token", t);
-            }
-        } except Exception as _ex {}
+        try { await jacSignup([identity_obj], DEMO_USER_PASSWORD); } except Exception as _ex {}
+        try { await jacLogin(identity_obj, DEMO_USER_PASSWORD); } except Exception as _ex {}
         if not jacIsLoggedIn() {
             session_data = {};
             return;
