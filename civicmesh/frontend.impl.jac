@@ -4,50 +4,55 @@
 # frontend.cl.jac so the production client bundle resolves them.
 
 impl ClientApp.initAuth -> None {
-    # Auth bootstrap via direct fetch — we deliberately bypass the
-    # @jac/runtime jacLogin/jacSignup helpers because their argument
-    # shape was silently mismatched against the server's auto-generated
-    # /user/register and /user/login schemas, causing the calls to no-op
-    # without ever hitting the network (no POST /user/* lines in the HF
-    # logs, only POST /walker/* with 500 "User not found").
+    # Auth bootstrap that survives Factory rebuilds on free HF Spaces.
     #
-    # The schemas below were lifted verbatim from /openapi.json on a
-    # running server:
-    #   /user/register  ← {identities: [{type, username|email: {value}}], credential: {type, password}}
-    #   /user/login     ← {identity: {...same}, credential: {...same}}
-    # Login returns {data: {token}} on success. The runtime reads
-    # localStorage["jac_token"] to gate `jacIsLoggedIn()`.
+    # Two compounding failure modes we have to handle:
+    #
+    # 1) On a fresh container, demo_user does not exist yet. The old
+    #    code did login-first / signup-on-failure, but
+    #    `ok = await jacLogin(...)` returns an object `{success: false, ...}`
+    #    on failure — and `if not ok` is `false` for a truthy object,
+    #    so the signup branch never fired. Fix: signup first (idempotent
+    #    — 409 if user exists, fine), then login, then verify with
+    #    `jacIsLoggedIn()` (the only reliable truthiness signal because
+    #    it checks the actual stored token).
+    #
+    # 2) When the container restarts but the browser keeps the old token
+    #    in localStorage, jacIsLoggedIn() returns true but the token
+    #    references a user that no longer exists. Walker calls then 500
+    #    with "User not found". Fix: probe /user/me with the stored
+    #    token; if it 401s, clear it so the signup+login below runs.
+    #
+    # The runtime's __normalizeIdentity wraps the username string into
+    # the correct flat {type, value} shape the server expects, so plain
+    # string args to jacSignup/jacLogin are correct — verified via curl
+    # against the deployed openapi.json schema.
 
     is_authed = False;
+
+    # Stale-token check
+    if jacIsLoggedIn() {
+        try {
+            probe = await fetch("/user/me", {
+                "headers": {"Authorization": "Bearer " + localStorage.getItem("jac_token")}
+            });
+            if probe.status >= 400 {
+                localStorage.removeItem("jac_token");
+            }
+        } except Exception as _ex {
+            localStorage.removeItem("jac_token");
+        }
+    }
 
     if jacIsLoggedIn() {
         is_authed = True;
     } else {
-        # Pre-normalized identity object — the runtime's
-        # __normalizeIdentity() only wraps STRINGS into the legacy flat
-        # `{type, value}` shape (which the server rejects with 422);
-        # passing a plain object bypasses normalization and the fetch
-        # goes out with the correct shape:
-        #     {type: "username", username: {value: "..."}}
-        # The credential stays a plain string — __normalizeCredential
-        # wraps it correctly as `{type: "password", password: "..."}`.
-        identity_obj = {
-            "type": "username",
-            "username": {"value": DEMO_USER_ID}
-        };
-
-        # jacSignup expects an ARRAY for identities when bypassing the
-        # auto-wrap path. The runtime checks `Array.isArray(arg)`
-        # and uses our array as-is.
         try {
-            await jacSignup([identity_obj], DEMO_USER_PASSWORD);
+            await jacSignup(DEMO_USER_ID, DEMO_USER_PASSWORD);
         } except Exception as _ex {}
-
-        # jacLogin takes a single identity object. Same bypass logic.
         try {
-            await jacLogin(identity_obj, DEMO_USER_PASSWORD);
+            await jacLogin(DEMO_USER_ID, DEMO_USER_PASSWORD);
         } except Exception as _ex {}
-
         is_authed = jacIsLoggedIn();
     }
 
@@ -67,16 +72,26 @@ impl ClientApp.loadSession -> None {
     # gives the same "User not found" 500s. We re-run the same direct-
     # fetch auth flow as initAuth (see comments above) rather than the
     # @jac/runtime helpers, which silently no-op on shape mismatch.
+    # Same stale-token probe as initAuth — guards against the case where
+    # a Factory rebuild deleted the user but the browser still has the
+    # old token. Without this, walker spawns below 500 with "User not
+    # found" and we never recover.
+    if jacIsLoggedIn() {
+        try {
+            probe = await fetch("/user/me", {
+                "headers": {"Authorization": "Bearer " + localStorage.getItem("jac_token")}
+            });
+            if probe.status >= 400 {
+                localStorage.removeItem("jac_token");
+            }
+        } except Exception as _ex {
+            localStorage.removeItem("jac_token");
+        }
+    }
+
     if not jacIsLoggedIn() {
-        # Same bypass pattern as initAuth — feed jacSignup/jacLogin a
-        # pre-normalized identity object so they make the fetch with
-        # the correct wire shape instead of the legacy flat one.
-        identity_obj = {
-            "type": "username",
-            "username": {"value": DEMO_USER_ID}
-        };
-        try { await jacSignup([identity_obj], DEMO_USER_PASSWORD); } except Exception as _ex {}
-        try { await jacLogin(identity_obj, DEMO_USER_PASSWORD); } except Exception as _ex {}
+        try { await jacSignup(DEMO_USER_ID, DEMO_USER_PASSWORD); } except Exception as _ex {}
+        try { await jacLogin(DEMO_USER_ID, DEMO_USER_PASSWORD); } except Exception as _ex {}
         if not jacIsLoggedIn() {
             session_data = {};
             return;
