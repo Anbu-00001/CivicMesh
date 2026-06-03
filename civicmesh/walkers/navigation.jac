@@ -8,6 +8,7 @@ step via the applied_to edge so returning users see their state.
 """
 
 import datetime;
+import os;
 import from graph.nodes { PersonNode, ResourceNode, EligibilityRuleNode, FormNode, ApplicationNode }
 import from graph.edges { governed_by, requires_form, applied_to }
 import from llm.stubs {
@@ -85,10 +86,65 @@ walker NavigationWalker {
         }
 
         # Step 2: ask the LLM to sequence the eligible resources into a plan.
-        action_plan: ActionPlan = generate_action_plan(
-            eligible_resources=eligible_names,
-            profile=self.profile
-        );
+        # DEMO_MODE or LLM failure → synthesize a deterministic plan from
+        # resource_form_data. This means NavigationWalker always produces
+        # a usable plan even when NVIDIA NIM is unreachable.
+        demo_mode = False;
+        try {
+            demo_mode = (str(os.environ.get("CIVICMESH_DEMO_MODE", "0")) == "1");
+        } except Exception as _ex {}
+
+        action_plan: ActionPlan;
+        if demo_mode {
+            synth_steps: list = [];
+            i = 0;
+            for rfd in resource_form_data {
+                i = i + 1;
+                synth_steps.append(ActionStep(
+                    step_number=i,
+                    agency_name=str(rfd["agency_name"]),
+                    action_description="Contact " + str(rfd["agency_name"]) + " to apply.",
+                    documents_needed=list(rfd["required_documents"]),
+                    deadline_label=str(rfd["deadline_type"]),
+                    contact_info=str(rfd["contact_phone"]),
+                    estimated_minutes=int(rfd["estimated_minutes"]),
+                    online_url=str(rfd["online_url"])
+                ));
+            }
+            action_plan = ActionPlan(
+                steps=synth_steps,
+                summary="Here are the programs you likely qualify for. Call each one to confirm eligibility and start an application."
+            );
+        } else {
+            try {
+                action_plan = generate_action_plan(
+                    eligible_resources=eligible_names,
+                    profile=self.profile
+                );
+            } except Exception as _ex {
+                # LLM hung or errored. Synthesize the plan from the form
+                # metadata we already gathered — every field is real.
+                synth_steps: list = [];
+                i = 0;
+                for rfd in resource_form_data {
+                    i = i + 1;
+                    synth_steps.append(ActionStep(
+                        step_number=i,
+                        agency_name=str(rfd["agency_name"]),
+                        action_description="Contact " + str(rfd["agency_name"]) + " to apply.",
+                        documents_needed=list(rfd["required_documents"]),
+                        deadline_label=str(rfd["deadline_type"]),
+                        contact_info=str(rfd["contact_phone"]),
+                        estimated_minutes=int(rfd["estimated_minutes"]),
+                        online_url=str(rfd["online_url"])
+                    ));
+                }
+                action_plan = ActionPlan(
+                    steps=synth_steps,
+                    summary="Here are the programs that match your situation. Call each one to confirm eligibility and start an application."
+                );
+            }
+        }
 
         # Step 3: persist one ApplicationNode per planned step via applied_to.
         for step in action_plan.steps {

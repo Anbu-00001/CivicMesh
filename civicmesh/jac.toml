@@ -35,8 +35,12 @@ temperature = 0.2
 
 [plugins.byllm.fallback]
 strategy = "fallback"
-num_retries = 2
-timeout = 120.0
+# Fail fast on launch day. With num_retries=1 + timeout=25, a hung LLM
+# triggers our walker-level try/except within ~25 s instead of the old
+# ~360 s (120s × 3 attempts). The walker fallback then synthesizes a
+# deterministic result so the user always gets a response.
+num_retries = 1
+timeout = 25.0
 
 [plugins.byllm.compaction]
 enabled = true

@@ -4,8 +4,17 @@ Spawned by IntakeWalker from a NeedNode. For every ResourceNode whose category
 matches the profile, it walks the governed_by edge to the EligibilityRuleNode
 and asks check_eligibility() for a per-resource match score. Results are
 ranked, then we either escalate (nothing viable) or hand off to NavigationWalker.
+
+DEMO_MODE / LLM resilience: when the env var CIVICMESH_DEMO_MODE=1 is set
+(or when check_eligibility raises — timeout, 429, network error), the
+walker skips the LLM and synthesizes a deterministic per-candidate score
+from the EligibilityRuleNode's prior_success_rate (Laplace-smoothed) plus
+a category-match bonus. This means the chat ALWAYS completes within ~2
+seconds, even if NVIDIA NIM is dead. Set CIVICMESH_DEMO_MODE=1 in the HF
+Space secrets for launch-day reliability.
 """
 
+import os;
 import from graph.nodes { PersonNode, NeedNode, ResourceNode, EligibilityRuleNode }
 import from graph.edges { governed_by }
 import from llm.stubs {
@@ -31,7 +40,7 @@ walker EligibilityWalker {
     # the edge case where 6 candidates all score under threshold by
     # walking the leads_to graph to find multi-hop escape paths instead
     # of issuing more expensive LLM scoring calls.
-    has max_candidates: int = 6;
+    has max_candidates: int = 3;
     # Mirror of the final report so the spawning walker can read it after
     # spawn — `report` payloads flow only into the outermost walker's stream.
     has summary: dict = {};
@@ -63,6 +72,16 @@ walker EligibilityWalker {
         }
         candidates = ranked[:self.max_candidates];
 
+        # DEMO_MODE — skip every LLM call in the scoring loop and use a
+        # deterministic score based on the EligibilityRuleNode's
+        # prior_success_rate plus a capacity bonus. Always completes in
+        # under 2 seconds even when NVIDIA NIM is unreachable. Set
+        # CIVICMESH_DEMO_MODE=1 in HF Space secrets for launch reliability.
+        demo_mode = False;
+        try {
+            demo_mode = (str(os.environ.get("CIVICMESH_DEMO_MODE", "0")) == "1");
+        } except Exception as _ex {}
+
         # Step 2: score each candidate by destructuring its EligibilityRuleNode
         for resource in candidates {
             rule_nodes = [resource ->:governed_by:-> [?:EligibilityRuleNode]];
@@ -92,37 +111,68 @@ walker EligibilityWalker {
             }
             rule: EligibilityRuleNode = rule_nodes[0];
 
-            # NOTE: byllm 0.6.7 doesn't accept `incl_info` as a regular
-            # stub kwarg, so we pass the primitives explicitly and rely
-            # on `sem` strings (on every parameter + return field) to
-            # ground the model. The graph context is still richer than
-            # a hand-written prompt because every `sem` annotation flows
-            # into the system instructions byllm builds.
-            result: EligibilityResult = check_eligibility(
-                profile=self.profile,
-                criteria_summary=str(rule.criteria_summary),
-                income_limit=int(rule.income_limit_annual),
-                citizenship_required=bool(rule.citizenship_required),
-                residency_req=str(rule.residency_requirement),
-                age_min=int(rule.age_min),
-                age_max=int(rule.age_max),
-                exceptions=str(rule.exceptions)
-            );
-
-            # Outcome-learning weight: blend the LLM's raw match_score with
-            # the EligibilityRuleNode's prior_success_rate so the graph
-            # learns from real ApplicationNode outcomes over time. With no
-            # historical data the prior is 0.5 and the blend resolves to
-            # the raw score; as the rule sees real approvals/denials it
-            # gradually shifts the rankings. Pure Jac OSP — no PyTorch.
-            raw_score = int(result.match_score);
+            # Read the prior up front — needed for both LLM and deterministic paths.
             prior_rate = 0.5;
             attempts = 0;
             try { prior_rate = float(rule.prior_success_rate); } except Exception as _ex {}
             try { attempts = int(rule.prior_attempts); } except Exception as _ex {}
-            # Blend weight grows with attempts: at 0 attempts we trust the
-            # LLM entirely; at 20+ attempts we let the prior have ~50%
-            # influence. Keeps the cold-start demo responsive.
+
+            raw_score = 0;
+            is_elig_flag = False;
+            matched: list = [];
+            missing: list = [];
+            llm_used = False;
+
+            # Demo mode OR the LLM call fails / times out → synthesize a
+            # deterministic score. The walker MUST complete even if NIM
+            # is unreachable. Score formula: prior_rate × 70 (so a
+            # neutral 0.5 prior maps to 35) + capacity bonus of +20 for
+            # "open" and +10 for "waitlist". Net result: open-capacity
+            # programs land in the eligible tier (>= 15), waitlist in
+            # possible, closed in rescue.
+            if demo_mode {
+                cap_bonus = 0;
+                cap_str = str(resource.capacity);
+                if cap_str == "open" { cap_bonus = 20; }
+                elif cap_str == "waitlist" { cap_bonus = 10; }
+                raw_score = int(prior_rate * 70.0) + cap_bonus;
+                is_elig_flag = (raw_score >= 30);
+                matched = ["Category match (" + str(resource.category) + ")"];
+                missing = ["Confirm full eligibility when you call"];
+            } else {
+                try {
+                    result: EligibilityResult = check_eligibility(
+                        profile=self.profile,
+                        criteria_summary=str(rule.criteria_summary),
+                        income_limit=int(rule.income_limit_annual),
+                        citizenship_required=bool(rule.citizenship_required),
+                        residency_req=str(rule.residency_requirement),
+                        age_min=int(rule.age_min),
+                        age_max=int(rule.age_max),
+                        exceptions=str(rule.exceptions)
+                    );
+                    raw_score = int(result.match_score);
+                    is_elig_flag = bool(result.is_eligible);
+                    matched = list(result.matched_criteria);
+                    missing = list(result.missing_criteria);
+                    llm_used = True;
+                } except Exception as _ex {
+                    # LLM timeout / 429 / connection error. Fall back to
+                    # the deterministic score so the walker still produces
+                    # a useful result instead of hanging.
+                    cap_bonus = 0;
+                    cap_str = str(resource.capacity);
+                    if cap_str == "open" { cap_bonus = 20; }
+                    elif cap_str == "waitlist" { cap_bonus = 10; }
+                    raw_score = int(prior_rate * 70.0) + cap_bonus;
+                    is_elig_flag = (raw_score >= 30);
+                    matched = ["Category match (" + str(resource.category) + ")"];
+                    missing = ["LLM scoring unavailable — call the agency to confirm"];
+                }
+            }
+
+            # Blend with Outcome-Learning prior. Same formula as before but
+            # applied uniformly to LLM and deterministic scores.
             blend = float(attempts) / (float(attempts) + 20.0);
             adjusted_score = int(
                 (1.0 - blend) * float(raw_score) + blend * prior_rate * 100.0
@@ -134,9 +184,9 @@ walker EligibilityWalker {
                 "raw_llm_score": raw_score,
                 "prior_success_rate": prior_rate,
                 "prior_attempts": attempts,
-                "is_eligible": bool(result.is_eligible),
-                "matched_criteria": list(result.matched_criteria),
-                "missing_criteria": list(result.missing_criteria),
+                "is_eligible": is_elig_flag,
+                "matched_criteria": matched,
+                "missing_criteria": missing,
                 "contact_phone": str(resource.contact_phone),
                 "contact_email": str(resource.contact_email),
                 "address": str(resource.address),

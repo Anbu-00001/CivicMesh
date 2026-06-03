@@ -170,8 +170,23 @@ walker IntakeWalker {
         # Step 3: extract structured NeedProfile from the RAW user prompt.
         # We deliberately do NOT prepend the Reflexion prefix here — see
         # the comment above. Past-session headlines were polluting category
-        # extraction.
-        profile = extract_need_profile(conversation=self.conversation);
+        # extraction. Wrapped in try/except so a NIM timeout doesn't hang
+        # the chain — the keyword-category step below provides a real
+        # category anyway, so a degraded NeedProfile is still useful.
+        profile: NeedProfile;
+        try {
+            profile = extract_need_profile(conversation=self.conversation);
+        } except Exception as _ex {
+            profile = NeedProfile(
+                category="",
+                urgency="immediate",
+                family_size=1,
+                income_bracket="",
+                location_zip="",
+                language=detected_lang_str,
+                details=str(self.conversation)
+            );
+        }
 
         # Step 3b — keyword-based category override. The LLM's category
         # extraction is the single biggest failure mode in the chain: a
