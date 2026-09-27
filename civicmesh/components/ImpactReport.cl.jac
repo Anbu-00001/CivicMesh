@@ -57,7 +57,11 @@ def:pub ImpactReport -> JsxElement {
     top_resources: list = [];
     status_counts: Any = {};
 
+    plat: Any = summary["platform"] if (summary and summary["platform"]) else {};
+    plat_turns = Number(plat["turns"]) if plat["turns"] else 0;
+    decided = 0;
     if summary {
+        try { decided = int(summary["decided"]); } except Exception as _ex { decided = 0; }
         try { total_users = int(summary["total_users"]); } except Exception as _ex { total_users = 0; }
         try { total_apps = int(summary["total_applications"]); } except Exception as _ex { total_apps = 0; }
         try { approval_rate = int(summary["approval_rate"]); } except Exception as _ex { approval_rate = 0; }
@@ -79,6 +83,8 @@ def:pub ImpactReport -> JsxElement {
         } except Exception as _ex { status_counts = {}; }
     }
 
+    # Categories: platform-wide when available (each visitor's own graph is small).
+    if plat["categories"] { category_pairs_raw = list(plat["categories"]); }
     # Fold the server's category list into a lookup keyed by category name
     # so the bar-chart loop can fetch each canonical category's count by
     # key without re-scanning the list.
@@ -119,6 +125,8 @@ def:pub ImpactReport -> JsxElement {
     }
     if max_res == 0 { max_res = 1; }
 
+    # Languages: the platform-wide view (a single visitor's graph has one).
+    if plat["languages"] { lang_pairs = list(plat["languages"]); }
     # Sort languages descending by count so the most common one renders first.
     ln = len(lang_pairs);
     li = 0;
@@ -138,7 +146,7 @@ def:pub ImpactReport -> JsxElement {
     approved_count = 0;
     pending_count = 0;
     denied_count = 0;
-    try { approved_count = int(status_counts["approved"]) + int(status_counts["applied"]); } except Exception as _ex { approved_count = 0; }
+    try { approved_count = int(status_counts["approved"]); } except Exception as _ex { approved_count = 0; }
     try { pending_count = int(status_counts["pending"]); } except Exception as _ex { pending_count = 0; }
     try { denied_count = int(status_counts["denied"]); } except Exception as _ex { denied_count = 0; }
 
@@ -148,7 +156,7 @@ def:pub ImpactReport -> JsxElement {
     # broken rather than honest. Surface a guided empty state instead so
     # judges immediately understand WHY the dashboard is empty and what to
     # do (run a chat turn) to populate it.
-    if total_users == 0 and total_apps == 0 {
+    if total_users == 0 and total_apps == 0 and plat_turns == 0 {
         return
             <div
                 style={{
@@ -192,7 +200,7 @@ def:pub ImpactReport -> JsxElement {
                     <div style={{"color": "#00FF88", "fontWeight": "600", "marginBottom": "5px", "textTransform": "uppercase", "letterSpacing": "0.06em", "fontSize": "10px"}}>
                         What this tab will show once populated
                     </div>
-                    People helped (PersonNodes) · applications filed · approval rate · category mix bar chart · top resources · languages detected · persona quote. All aggregated live from the graph — no mocks.
+                    Platform counters since the last restart (turns, languages, engine latency, how often an LLM was needed) and your own case: open applications, outcomes you recorded, need mix.
                 </div>
             </div>;
     }
@@ -212,18 +220,24 @@ def:pub ImpactReport -> JsxElement {
                     CivicMesh · Impact Report
                 </div>
                 <div style={{"fontSize": "22px", "fontWeight": "700", "letterSpacing": "-0.02em", "marginTop": "4px"}}>
-                    {str(total_users) + " people · " + str(total_apps) + " applications · " + str(approval_rate) + "% approval"}
+                    {str(plat_turns) + " turns served · " + str(plat["visitors"] if plat["visitors"] else 0) + " visitors · " + str(len(plat["languages"]) if plat["languages"] else 0) + " languages"}
                 </div>
                 <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.5)", "marginTop": "4px", "lineHeight": "1.5"}}>
-                    Live aggregate across every PersonNode and ApplicationNode persisted in the graph. Pulled from ImpactWalker · no mocks.
+                    {"Platform: anonymous in-process counters across all visitors since the last restart (" + str(plat["since"] if plat["since"] else "").replace("T", " ").slice(0, 16) + " UTC). Your case: read from your own private graph."}
+                </div>
+                <div className="cm-counts-row">
+                    <span className="cm-fact">{"engine p50 " + str(plat["engine_ms_p50"] if plat["engine_ms_p50"] else 0) + " ms · p95 " + str(plat["engine_ms_p95"] if plat["engine_ms_p95"] else 0) + " ms"}</span>
+                    <span className="cm-fact">{str(Math.round(Number(plat["zero_llm_share"] if plat["zero_llm_share"] else 1) * 100)) + "% of turns answered with 0 LLM calls"}</span>
+                    <span className="cm-fact">{str(plat["narrations"] if plat["narrations"] else 0) + " narrations · " + str(Math.round(Number(plat["narration_ok_share"] if plat["narration_ok_share"] else 0) * 100)) + "% ok · median " + str(Math.round(Number(plat["narration_ms_p50"] if plat["narration_ms_p50"] else 0) / 100) / 10) + " s"}</span>
+                    {Number(plat["deadline_hits"]) > 0 and <span className="cm-fact">{str(plat["deadline_hits"]) + " routing calls cut at the 3.5 s deadline"}</span>}
                 </div>
             </div>
 
             <div style={{"display": "grid", "gridTemplateColumns": "repeat(4, 1fr)", "gap": "12px"}}>
-                {renderStatCard("People helped",        str(total_users),     "PersonNodes",                                              "#FFE500")}
-                {renderStatCard("Applications filed",   str(total_apps),      "ApplicationNodes",                                         "#4488FF")}
-                {renderStatCard("Approval rate",        str(approval_rate) + "%", "Approved + applied / decided",                          "#00FF88")}
-                {renderStatCard("Languages detected",   str(len(lang_pairs)), str(len(lang_pairs)) + " distinct ISO-639 codes",            "#FF88AA")}
+                {renderStatCard("Turns served",          str(plat_turns),      "all visitors, since last restart",                          "#FFE500")}
+                {renderStatCard("Your open applications", str(total_apps),     "ApplicationNodes in your graph",                            "#4488FF")}
+                {renderStatCard("Your recorded approvals", (str(approval_rate) + "%") if approval_rate >= 0 else "—", (str(approved_count) + " of " + str(decided) + " outcomes you marked") if decided > 0 else "mark Approved / Denied in Action Plan", "#00FF88")}
+                {renderStatCard("Languages seen",        str(len(plat["languages"]) if plat["languages"] else 0), "platform-wide, detected per turn", "#FF88AA")}
             </div>
 
             <div style={{"display": "grid", "gridTemplateColumns": "1fr 1fr", "gap": "12px"}}>
@@ -237,7 +251,7 @@ def:pub ImpactReport -> JsxElement {
                     }}
                 >
                     <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.35)", "textTransform": "uppercase", "letterSpacing": "0.06em", "marginBottom": "12px"}}>
-                        Need categories
+                        Need mix · all visitors
                     </div>
                     {[renderCategoryBar(
                         str(category_order[ci]["key"]),
@@ -261,7 +275,7 @@ def:pub ImpactReport -> JsxElement {
                     <div style={{"display": "flex", "gap": "10px", "alignItems": "stretch"}}>
                         <div style={{"flex": "1", "padding": "12px", "background": "rgba(0,255,136,0.06)", "border": "0.5px solid rgba(0,255,136,0.3)", "borderRadius": "10px"}}>
                             <div style={{"fontSize": "22px", "fontWeight": "700", "color": "#00FF88"}}>{str(approved_count)}</div>
-                            <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.5)", "marginTop": "4px"}}>Approved · Applied</div>
+                            <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.5)", "marginTop": "4px"}}>Approved (you marked)</div>
                         </div>
                         <div style={{"flex": "1", "padding": "12px", "background": "rgba(255,179,68,0.06)", "border": "0.5px solid rgba(255,179,68,0.3)", "borderRadius": "10px"}}>
                             <div style={{"fontSize": "22px", "fontWeight": "700", "color": "#FFB344"}}>{str(pending_count)}</div>

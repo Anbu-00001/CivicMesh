@@ -245,7 +245,7 @@ impl TelemetryPanel.loadReflections -> None {
     reflections_loading = True;
     try {
         result = await root spawn ReflectionReadWalker(
-            user_id="demo_user",
+            user_id=user_id,
             max_insights=8
         );
         reports = result.reports if result.reports else [];
@@ -290,7 +290,7 @@ impl TelemetryPanel.renderReflectionTimeline -> JsxElement {
                     Agent self-reflection · Reflexion in pure Jac
                 </div>
                 <div style={{"fontSize": "11.5px", "color": "rgba(255,255,255,0.6)", "lineHeight": "1.55"}}>
-                    After every chat turn a zero-LLM <strong style={{"color": "rgba(0,200,255,0.95)"}}>CritiqueWalker</strong> reads the chain telemetry, scores it, and writes a SessionInsight node attached to your PersonNode via the <code style={{"fontFamily": "ui-monospace, monospace", "fontSize": "10px", "color": "#00C8FF"}}>reflected_on</code> edge. The next chat turn reads the last two SessionInsights back as plain-text context prefix — the agent learns from its own past performance using only the graph itself.
+                    After every chat turn a zero-LLM <strong style={{"color": "rgba(0,200,255,0.95)"}}>CritiqueWalker</strong> reads the turn's trace (which walkers ran, how many LLM calls were made), scores the outcome, and writes a SessionInsight node on your PersonNode via the <code style={{"fontFamily": "ui-monospace, monospace", "fontSize": "10px", "color": "#00C8FF"}}>reflected_on</code> edge. They are charted here, not fed back into routing.
                 </div>
                 <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.4)", "marginTop": "10px", "fontStyle": "italic"}}>
                     Send a chat message and refresh this tab to see the first reflection appear.
@@ -346,7 +346,7 @@ impl TelemetryPanel.renderReflectionTimeline -> JsxElement {
                 </div>
             </div>
             <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.5)", "marginBottom": "14px", "lineHeight": "1.55"}}>
-                Each row is a SessionInsight node persisted in the graph. The next IntakeWalker turn reads the two newest as context prefix — Reflexion-style self-improvement with zero external memory store.
+                Each row is a SessionInsight node persisted in your graph: the turn's quality score, the walkers that actually ran and the LLM calls actually made.
             </div>
             <div style={{"display": "flex", "flexDirection": "column", "gap": "8px"}}>
                 {[renderReflectionRow(reflections[ri], ri) for ri in range(n_ins)]}
@@ -405,7 +405,7 @@ impl TelemetryPanel.renderReflectionRow(ins: Any, idx: int) -> JsxElement {
                 {pf and <span style={{"fontSize": "9px", "padding": "1px 6px", "borderRadius": "8px", "background": "rgba(0,200,255,0.1)", "color": "#00C8FF", "border": "0.5px solid currentColor", "fontWeight": "600", "letterSpacing": "0.03em", "textTransform": "uppercase"}}>pathfinder</span>}
                 {esc and <span style={{"fontSize": "9px", "padding": "1px 6px", "borderRadius": "8px", "background": "rgba(255,68,68,0.1)", "color": "#FF4444", "border": "0.5px solid currentColor", "fontWeight": "600", "letterSpacing": "0.03em", "textTransform": "uppercase"}}>escalated</span>}
                 <span style={{"fontSize": "10px", "fontFamily": "ui-monospace, monospace", "color": "rgba(255,255,255,0.35)"}}>
-                    ~{str(llm_est)} LLM calls
+                    {str(llm_est) + " LLM call" + ("" if llm_est == 1 else "s")}
                 </span>
             </div>
             {snip and <div style={{"fontSize": "10.5px", "color": "rgba(255,255,255,0.45)", "fontStyle": "italic", "paddingLeft": "36px", "lineHeight": "1.45"}}>

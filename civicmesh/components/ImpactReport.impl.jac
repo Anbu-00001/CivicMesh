@@ -115,6 +115,7 @@ impl ImpactReport.renderResourceBar(name: str, count: int, max_count: int) -> Js
 }
 
 impl ImpactReport.renderLanguageChip(lang: str, count: int) -> JsxElement {
+    lang = "unknown" if (lang == "?" or not lang) else lang;
     return
         <div
             key={lang}
@@ -165,7 +166,7 @@ impl ImpactReport.renderTopNeedCard(cat_lookup: Any) -> JsxElement {
     return
         <div style={{"display": "flex", "flexDirection": "column"}}>
             <div style={{"fontSize": "10px", "color": "rgba(255,229,0,0.85)", "textTransform": "uppercase", "letterSpacing": "0.06em", "marginBottom": "10px"}}>
-                Most-asked need this session
+                Most-asked need · since last restart
             </div>
             {(top_n > 0) and <div>
                 <div style={{"display": "flex", "alignItems": "baseline", "gap": "12px"}}>
@@ -173,11 +174,11 @@ impl ImpactReport.renderTopNeedCard(cat_lookup: Any) -> JsxElement {
                         {top_cat_label}
                     </span>
                     <span style={{"fontSize": "16px", "fontWeight": "600", "color": "rgba(255,255,255,0.5)"}}>
-                        {str(top_n) + " NeedNode" + ("s" if top_n != 1 else "")}
+                        {str(top_n) + " turn" + ("s" if top_n != 1 else "")}
                     </span>
                 </div>
                 <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.45)", "marginTop": "10px", "lineHeight": "1.55"}}>
-                    Aggregated live from NeedNode.category across every PersonNode in the graph. ImpactWalker reads each PersonNode → has_need → NeedNode chain on every dashboard mount.
+                    Counted per chat turn across all visitors (anonymous, in-process, resets on restart).
                 </div>
             </div>}
             {(top_n == 0) and <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.4)", "fontStyle": "italic", "lineHeight": "1.5"}}>

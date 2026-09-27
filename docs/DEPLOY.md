@@ -37,21 +37,22 @@ First deploy takes ~6–8 minutes (Render pulls Python 3.12, installs the byllm/
 
 ## Verify
 
-Once Render shows **Live**, open `https://civicmesh.onrender.com/cl/app` (substitute your service name). Log in with `demo_user / civicmesh2026` and try:
+Once Render shows **Live**, open `https://civicmesh.onrender.com/cl/app` (substitute your service name). There is no shared login: each browser gets its own anonymous account on first load. Try:
 
 | Prompt | What you should see |
 |---|---|
 | *"I need food assistance for my family"* | NavigationWalker plan — SNAP, WIC, food bank with phone numbers |
 | *"Who do I call for a domestic-violence safe house?"* | Leads with **1-800-799-7233** |
 | *"Necesito ayuda con la renta"* | Spanish input → Spanish reply |
-| *"I lost my job and need legal help to avoid eviction"* | Heuristic locks `en`, routes to **legal** category, plan from Legal Services Corporation |
+| *"இன்று நான் எங்கே உணவு பெறுவது?"* | Tamil, routed without an LLM → food programs, then a Tamil summary |
+| *"I lost my job and need legal help to avoid eviction"* | routes to **legal** + housing, with local housing authorities from HUD open data |
 
 If you get a generic "Page Not Found" right after deploy, the container is mid-boot. Wait 30 s and reload.
 
 ## Memory and rate-limit notes
 
-- **512 MB is tight** but fits because byllm inference is remote (NIM API). If you see OOM kills in Render → Service → Logs, your only escape on the free tier is to reduce `max_candidates` in `civicmesh/walkers/eligibility.jac` (already at 6).
-- **NVIDIA NIM free tier** rate-limits at ~40 RPM. EligibilityWalker caps at 6 LLM calls per turn; a typical chat turn issues 8–10 LLM calls total (intake + 6× eligibility + plan + translate). One user at a time is comfortable; concurrent demo traffic risks 429s — that's exactly when the Featherless fallback kicks in.
+- **512 MB is tight** but fits because model inference is remote (NIM API) and the eligibility engine is pure Python-level math.
+- **NVIDIA NIM free tier** rate-limits at ~40 RPM. A chat turn makes **one** LLM call (background narration), plus one time-boxed routing call only when no language lexicon matches — so rate limits no longer block answers; at worst the narration is skipped.
 - **Sleep behavior:** Render pings your `healthCheckPath` (set to `/docs`) every minute. If the page returns 200, the service is considered awake. To prevent sleep during a scheduled demo, hit any page yourself (or use a cron-ping service like [cron-job.org](https://cron-job.org)) in the 15 min leading up to it.
 
 ## Updating
@@ -85,5 +86,5 @@ The `Dockerfile` and `.dockerignore` are portable — any of these platforms can
 | `jac build app.jac` step hangs > 8 min | bun downloading deps | First build is slow; subsequent builds reuse cached layers. |
 | All chats route to EscalationWalker | Graph not seeded yet | The client triggers SeedWalker on login automatically. Log out and back in once, OR `curl -X POST https://<service>.onrender.com/walker/SeedWalker -H "Authorization: Bearer <token>"` |
 | LLM returns 429 | NIM rate limit | Set `FEATHERLESS_API_KEY` env var and redeploy |
-| English prompt → Spanish reply | (Should be impossible after the heuristic lock) | If it still happens, the heuristic markers list in `civicmesh/walkers/intake.jac` may need a missing-language case — open an issue with the prompt |
+| Wrong language detected | missing marker words | add the case to `civicmesh/tests/golden_i18n.json`, then the words to `civicmesh/engine/i18n.jac`; run `jac run tests/eval_engine.jac` |
 | Long pause on first request | Service was asleep | Expected; wait ~30 s |

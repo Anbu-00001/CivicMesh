@@ -35,10 +35,9 @@ temperature = 0.2
 
 [plugins.byllm.fallback]
 strategy = "fallback"
-# Fail fast on launch day. With num_retries=1 + timeout=25, a hung LLM
-# triggers our walker-level try/except within ~25 s instead of the old
-# ~360 s (120s × 3 attempts). The walker fallback then synthesizes a
-# deterministic result so the user always gets a response.
+# Defaults for any ModelPool that doesn't set its own. The app's pools in
+# llm/stubs.jac override these (num_retries=0, 5–8 s timeouts, SDK retries
+# off), and the routing call also runs under a 3.5 s walker deadline.
 num_retries = 1
 timeout = 25.0
 
@@ -53,6 +52,11 @@ host = "0.0.0.0"
 
 [plugins.scale.metrics]
 enabled = true
+
+[plugins.scale.admin]
+# jac-scale otherwise bootstraps a login-capable admin/changeme account, and
+# this is a public demo that never uses the admin portal.
+enabled = false
 
 [plugins.client]
 debug = false

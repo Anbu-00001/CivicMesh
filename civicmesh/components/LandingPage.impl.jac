@@ -245,3 +245,32 @@ impl LandingPage.renderPreviewBubble(role: str, walker_name: str, text: str, col
             </div>
         </div>;
 }
+
+impl LandingPage.previewLine(step: int) -> str {
+    # Text for the hero preview, built from a real engine run (PlatformWalker)
+    # on the example prompt — nothing here is typed in by hand.
+    if not platform { return "Running the engine on this prompt…"; }
+    pv = platform["preview"];
+    if step == 2 {
+        facts: list = [str(pv["category"])];
+        if Number(pv["household"]) > 0 { facts = facts + ["household of " + str(pv["household"])]; }
+        if Number(pv["income_annual"]) >= 0 { facts = facts + ["$" + Number(pv["income_annual"]).toLocaleString() + "/yr"]; }
+        if pv["city"] or pv["state"] {
+            city_words: list = [w.slice(0, 1).toUpperCase() + w.slice(1) for w in str(pv["city"]).split(" ") if w];
+            facts = facts + [(city_words.join(" ") + ", " if pv["city"] else "") + str(pv["state"])];
+        }
+        return "Understood: " + facts.join(" · ") + " — parsed in " + str(pv["engine_ms"]) + " ms, no LLM.";
+    }
+    if step == 3 {
+        parts: list = [];
+        for t in list(pv["top"]) {
+            tier = str(t["tier"]).replace("_", " ");
+            parts = parts + [str(t["name"]).split(" (")[0] + " — " + tier + " " + str(Math.round(Number(t["p"]) * 100)) + "%" + ((" · " + str(t["benefit"])) if t["benefit"] else "")];
+        }
+        return "Scored " + str(pv["scored"]) + " relevant programs. " + parts.join(" · ");
+    }
+    if pv["question"] {
+        return "“" + str(pv["question"]) + "” — the one fact that changes " + str(pv["affects"]) + " of these matches.";
+    }
+    return "No follow-up needed.";
+}

@@ -184,41 +184,6 @@ impl ActionPlan.statusIcon(status: str, color: str) -> JsxElement {
         </svg>;
 }
 
-impl ActionPlan.impactValue(resource_name: str) -> int {
-    # Rule-based annual benefit estimate per resource. Numbers are anchored
-    # to 2024 public program averages — Section 8 voucher subsidy, SNAP
-    # average household benefit, etc. Returns 0 when the resource name
-    # doesn't match any known program so unknown rows don't inflate the
-    # headline impact total.
-    n = resource_name.lower();
-    # Order matters: more specific keywords first so "Section 8 Housing"
-    # doesn't accidentally hit the "housing" fallback.
-    if "section 8" in n or "voucher" in n { return 8400; }
-    if "snap" in n or "food stamp" in n { return 2880; }
-    if "wic" in n { return 600; }
-    if "liheap" in n or "energy assistance" in n or "heating" in n { return 500; }
-    if "medicaid" in n or "medical" in n { return 3000; }
-    if "medicare" in n { return 2000; }
-    if "tanf" in n or "cash assistance" in n { return 3600; }
-    if "ssi" in n or "supplemental security" in n { return 11000; }
-    if "ssdi" in n or "disability" in n { return 17000; }
-    if "unemployment" in n { return 8000; }
-    if "head start" in n or "childcare" in n or "child care" in n { return 6000; }
-    if "legal aid" in n or "legal help" in n or "pro bono" in n or "tenant" in n { return 2500; }
-    if "health center" in n or "free clinic" in n or "fqhc" in n or "homeless health" in n { return 1800; }
-    if "rental assistance" in n or "rent" in n { return 4800; }
-    if "food bank" in n or "food pantry" in n or "meals on wheels" in n { return 1200; }
-    if "shelter" in n or "transitional housing" in n { return 3600; }
-    if "utility" in n { return 400; }
-    if "school lunch" in n or "school meals" in n { return 750; }
-    # Generic housing/food/healthcare/legal — last-resort fallbacks
-    if "housing" in n { return 4000; }
-    if "food" in n { return 1500; }
-    if "healthcare" in n or "health" in n { return 1500; }
-    if "legal" in n { return 1500; }
-    return 0;
-}
-
 impl ActionPlan.renderStep(s: Any, i: int) -> JsxElement {
     st = str(s["status"]);
     nm = str(s["name"]);

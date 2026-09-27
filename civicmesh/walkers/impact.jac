@@ -1,11 +1,16 @@
-"""ImpactWalker — aggregate stats across the whole graph for the Impact Report tab.
+"""ImpactWalker — the Impact tab: your case + live platform counters.
 
-Traverses every PersonNode reachable from `root`, every NeedNode, and every
-ApplicationNode they own to build a single dashboard payload:
+Two scopes, labelled as such in the UI:
+  * platform — anonymous in-process counters across every visitor since the
+    server last started (engine/stats.jac): turns, languages, latency, how
+    often an LLM was needed.
+  * your case — this visitor's own graph (each visitor has a private root):
+
   - total_users, total_applications, applications_by_status
   - languages_detected with counts
   - need_categories with counts (housing/food/healthcare/legal)
-  - approval_rate (applications approved / non-pending applications)
+  - approval_rate = approved / (approved + denied) over outcomes the visitor
+    recorded; -1 when none are recorded yet
   - top_resource_names with application counts
 
 Demo-grade aggregator only. No LLM call — pure graph traversal so it stays
@@ -15,6 +20,7 @@ ImpactReport React component on mount and on tab switch.
 
 import from graph.nodes { PersonNode, NeedNode, ApplicationNode }
 import from graph.edges { applied_to, has_need }
+import from engine.stats { stats_snapshot }
 
 
 walker ImpactWalker {
@@ -72,17 +78,11 @@ walker ImpactWalker {
             }
         }
 
-        # Approval rate: approved / (approved + denied + applied). Pending
-        # applications are excluded because they haven't reached a decision
-        # yet, which would unfairly drag the headline number down.
-        decided = (int(app_status_counts["approved"])
-                 + int(app_status_counts["denied"])
-                 + int(app_status_counts["applied"]));
-        approved_n = int(app_status_counts["approved"]) + int(app_status_counts["applied"]);
-        approval_rate = 0;
-        if decided > 0 {
-            approval_rate = int((approved_n * 100) / decided);
-        }
+        # Recorded approval rate: only outcomes the visitor actually marked
+        # (Approved / Denied in the Action Plan). "applied" and "pending"
+        # have no decision yet and are not counted as approvals.
+        decided = int(app_status_counts["approved"]) + int(app_status_counts["denied"]);
+        approval_rate = int(round(int(app_status_counts["approved"]) * 100 / decided)) if decided > 0 else -1;
 
         # Flatten the language dict into a list of {lang, count} pairs.
         # Plain JS objects aren't iterable on the client, so emitting a
@@ -130,7 +130,9 @@ walker ImpactWalker {
             "need_categories": category_pairs,
             "app_status_counts": app_status_counts,
             "approval_rate": approval_rate,
-            "top_resources": top_resources
+            "decided": decided,
+            "top_resources": top_resources,
+            "platform": stats_snapshot()
         };
         self.summary = payload;
         report payload;

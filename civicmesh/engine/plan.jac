@@ -3,10 +3,10 @@
 Minimising weighted completion time on a single "machine" (the user's day) is
 solved exactly by ordering jobs by w/p descending (Smith, 1956). Here:
 
-    w = urgency × P(eligible) × E[approval] × access      (value of the step)
+    w = urgency × P(eligible) × E[approval] × access × (1 + monthly benefit/$100)
     p = application minutes + waitlist delay equivalent   (cost of the step)
 
-Crisis lines are pinned first. Documents shared across steps are gathered
+The top steps are chosen by w (value), then sequenced by w/p. Crisis lines are pinned first. Documents shared across steps are gathered
 once ("bring your photo ID — needed by 3 of 4 steps").
 """
 
@@ -45,13 +45,21 @@ def build_plan(ranked: list, urgency: str, lang: str, max_steps: int = 4) -> dic
         minutes = float(form.get("estimated_minutes", 30) or 30);
         if s["capacity"] == "waitlist" { minutes += WAITLIST_MINUTES; }
         access = 1.3 if (s["capacity"] == "open" and urgency == "immediate") else 1.0;
-        w = uw * float(s["p_eligible"]) * float(s["approval"]["mean"]) * access;
+        # A program with an estimable recurring benefit (SNAP) is worth more
+        # than a one-off visit: weight by its monthly value.
+        ben = float(dict(s.get("benefit", {}) or {}).get("monthly", 0));
+        value_f = 1.0 + min(8.0, ben / 100.0);
+        w = uw * float(s["p_eligible"]) * float(s["approval"]["mean"]) * access * value_f;
         ratio = w / max(5.0, minutes);
-        if s.get("pinned", False) { ratio += 100.0; }
-        jobs.append((ratio, s, form, minutes));
+        if s.get("pinned", False) { ratio += 100.0; w += 100.0; }
+        jobs.append((ratio, s, form, minutes, w));
     }
-    jobs.sort(key=lambda j: tuple : -j[0]);
+    # Choose WHICH steps by value, then order them by Smith's rule — the rule
+    # sequences a fixed set of jobs; it shouldn't decide which jobs make the cut
+    # (that would drop a 40-minute SNAP application for three 10-minute visits).
+    jobs.sort(key=lambda j: tuple : -j[4]);
     jobs = jobs[:max_steps];
+    jobs.sort(key=lambda j: tuple : -j[0]);
 
     labels = DEADLINE_LABEL.get(lang if lang in ["en", "es"] else "en", DEADLINE_LABEL["en"]);
     steps: list = [];

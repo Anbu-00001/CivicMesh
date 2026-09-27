@@ -12,7 +12,7 @@ cl import ".assets/index.css";
 glob VISITOR_KEY: str = "cm_uid";
 glob VISITOR_SECRET_KEY: str = "cm_pw";
 
-import from "@jac/runtime" { jacLogin, jacSignup, jacIsLoggedIn }
+import from "@jac/runtime" { jacLogin, jacSignup, jacIsLoggedIn, jacSpawn }
 import from .components.ChatPane { ChatPane }
 import from .components.GraphViz { GraphViz }
 import from .components.ActionPlan { ActionPlan }
@@ -23,6 +23,7 @@ import from .components.ImpactReport { ImpactReport }
 
 sv import from walkers.memory { MemoryWalker }
 sv import from walkers.seed { SeedWalker }
+sv import from walkers.platform { PlatformWalker }
 
 def:pub ClientApp -> JsxElement {
     has active_tab: str = "chat",
@@ -33,7 +34,9 @@ def:pub ClientApp -> JsxElement {
         show_landing: bool = True,
         palette_open: bool = False,
         palette_query: str = "",
-        palette_idx: int = 0;
+        palette_idx: int = 0,
+        # Live engine preview + platform counters for the landing page.
+        platform: Any = None;
 
     # Master action list for the Cmd+K command palette. Each entry is a
     # (label, kind, payload) triple so navigate actions and side effects
@@ -108,7 +111,7 @@ def:pub ClientApp -> JsxElement {
     }
 
     if show_landing {
-        return <LandingPage on_start={startApp}/>;
+        return <LandingPage on_start={startApp} platform={platform}/>;
     }
 
     return
@@ -126,6 +129,7 @@ def:pub ClientApp -> JsxElement {
             <div className="aurora-blob aurora-blob-2"/>
             <div className="aurora-blob aurora-blob-3"/>
             <header
+                className="cm-appbar"
                 style={{
                     "padding": "0 24px",
                     "height": "54px",
@@ -151,6 +155,7 @@ def:pub ClientApp -> JsxElement {
                         CivicMesh
                     </span>
                     <span
+                        className="cm-appbar-badge"
                         style={{
                             "fontSize": "11px",
                             "padding": "2px 8px",
@@ -164,6 +169,7 @@ def:pub ClientApp -> JsxElement {
                     </span>
                 </div>
                 <nav
+                    className="cm-appnav"
                     style={{
                         "display": "flex",
                         "gap": "3px",
@@ -235,14 +241,17 @@ def:pub ClientApp -> JsxElement {
                     session_data={session_data}
                     walker_events={walker_events}
                 />}
-                {active_tab == "graph" and <GraphViz walker_events={walker_events}/>}
+                {active_tab == "graph" and <GraphViz walker_events={walker_events} user_id={user_id}/>}
                 {active_tab == "plan" and <ActionPlan user_id={user_id} walker_events={walker_events}/>}
-                {active_tab == "telemetry" and <TelemetryPanel walker_events={walker_events}/>}
+                {active_tab == "telemetry" and <TelemetryPanel walker_events={walker_events} user_id={user_id}/>}
                 {active_tab == "impact" and <ImpactReport/>}
             </main>
             <footer
+                className="cm-appfooter"
                 style={{
                     "padding": "12px 28px",
+                    "gap": "16px",
+                    "flexWrap": "wrap",
                     "borderTop": "0.5px solid rgba(255,255,255,0.05)",
                     "display": "flex",
                     "alignItems": "center",
@@ -256,7 +265,7 @@ def:pub ClientApp -> JsxElement {
                 <div style={{"display": "flex", "alignItems": "center", "gap": "10px"}}>
                     <span>CivicMesh · Agentic AI Navigator</span>
                     <span style={{"opacity": "0.5"}}>·</span>
-                    <span>5 walkers · {str(len(walker_events))} events captured this session</span>
+                    <span>{"Jac walkers · " + str(len(walker_events)) + " events this session"}</span>
                 </div>
                 <div style={{"display": "flex", "alignItems": "center", "gap": "10px"}}>
                     <span>Powered by Jac · jac-scale · byllm</span>

@@ -44,6 +44,10 @@ impl ClientApp.initAuth -> None {
             await root spawn SeedWalker(user_id=creds[0]);
         } except Exception as _ex {}
         is_authed = True;
+        # jacSpawn + .catch: a rejected walker call must never break auth
+        # (client-side `except` can't match the runtime's exception class).
+        pw = await jacSpawn("PlatformWalker", "", {}).catch(lambda e: Any -> dict { return {"reports": []}; });
+        if pw["reports"] and len(pw["reports"]) > 0 { platform = pw["reports"][len(pw["reports"]) - 1]; }
     }
 }
 
@@ -187,10 +191,10 @@ impl ClientApp.runPaletteAction(action: Any) -> None {
         # right there once you land.
         active_tab = "graph";
     } elif kind == "docs" {
-        # Open the jac-scale auto-generated OpenAPI page in a new tab.
-        # `window.open` is a JS builtin; jac compiles the bare name through.
+        # Open the jac-scale auto-generated OpenAPI page (same origin, so it
+        # works locally and on the deployed Space).
         try {
-            window.open("http://localhost:8001/docs", "_blank");
+            window.open("/docs", "_blank");
         } except Exception as _ex {}
     } elif kind == "reset" {
         # Reset the live walker_events buffer so the graph + telemetry

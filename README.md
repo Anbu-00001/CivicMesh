@@ -12,7 +12,7 @@ pinned: false
 
 # CivicMesh
 
-### A multi-agent AI navigator that routes people in crisis to the housing, food, healthcare, and legal aid they qualify for — in any language, in under a minute.
+### A multi-agent navigator that routes people in crisis to the housing, food, healthcare and legal aid they qualify for — answered in under a second, in 40 languages, against 2026 federal rules.
 
 [![Winner – Agentic AI](https://img.shields.io/badge/JacHacks%20Spring%202026-%F0%9F%8F%86%201st%20Place%20Agentic%20AI-FFD700?style=for-the-badge)](https://devpost.com/software/civicmesh-0ctxl5)
 [![Winner – Best Startup Idea](https://img.shields.io/badge/JacHacks%20Spring%202026-%F0%9F%8F%86%20Best%20Startup%20Idea-FFD700?style=for-the-badge)](https://devpost.com/software/civicmesh-0ctxl5)
@@ -22,7 +22,8 @@ pinned: false
 [![Jac](https://img.shields.io/badge/Jac-0.15-7c3aed?style=flat-square)](https://github.com/Jaseci-Labs/jaclang)
 [![Jaseci](https://img.shields.io/badge/Jaseci-runtime-1f6feb?style=flat-square)](https://jaseci.org)
 [![byllm](https://img.shields.io/badge/byllm-0.6.7-22c55e?style=flat-square)](https://github.com/Jaseci-Labs/byllm)
-[![NVIDIA NIM](https://img.shields.io/badge/NVIDIA%20NIM-llama--3.1--8b-76b900?style=flat-square)](https://build.nvidia.com)
+[![NVIDIA NIM](https://img.shields.io/badge/NVIDIA%20NIM-narration%20only-76b900?style=flat-square)](https://build.nvidia.com)
+[![Eval](https://img.shields.io/badge/routing%20eval-196%20cases%20%C2%B7%2040%20languages-22c55e?style=flat-square)](#routing-robustness--hard-tests)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](./LICENSE)
 
 </div>
@@ -40,7 +41,7 @@ pinned: false
 
 Tens of millions of vulnerable people — single mothers, undocumented families, elderly tenants on fixed incomes — do not know which programs they qualify for, what documents they need, or which agency to call first. The safety net is real, but it is buried behind fragmented websites, English-only intake forms, and screening logic that takes a caseworker to decode.
 
-CivicMesh is a **graph-native multi-agent navigator** built on Jac. One sentence in English or Spanish → a ranked, explainable, eligibility-checked action plan in **a few hundred milliseconds**, with **phone numbers up front** and a plain-language reason for every recommendation.
+CivicMesh is a **graph-native multi-agent navigator** built on Jac. One sentence in any of **40 languages** → a ranked, explainable action plan checked against **2026 federal eligibility rules for that household**, in **a few hundred milliseconds**, with **phone numbers up front** (including real local offices from HUD and HRSA open data) and a plain-language reason for every recommendation.
 
 ---
 
@@ -50,12 +51,16 @@ CivicMesh is a **graph-native multi-agent navigator** built on Jac. One sentence
 
 | | Feature | What it does |
 |---|---|---|
-| ⚖️ | **Explainable, calibrated eligibility** (`engine/score.jac`) | Hard gates (citizenship, age) × weighted soft criteria (logistic income threshold, residency, household, curated situation targets). Every criterion is reported met / unmet / unknown with a reason. Thin evidence triggers **calibrated abstention** ("needs info") instead of a confident guess, and every near-miss gets a **counterfactual** ("you'd qualify if yearly income were ≤ $30,000 — you're $2,400 over"). |
+| 🌐 | **40 languages without an LLM** (`engine/i18n.jac`) | Script identification (Tamil, Telugu, Bengali, Hangul, Kana, Ethiopic, Arabic-script Urdu/Persian/Arabic, Cyrillic Ukrainian/Russian, …) + distinctive-word scoring for Latin scripts (Vietnamese, Tagalog, Haitian Creole, Portuguese, Hmong, romanized Hindi/Tamil, …) + a routing lexicon per language. The answer is instant; the one LLM call then writes a summary in the user's own language. Anything outside the lexicon still works: a time-boxed (3.5 s) LLM read routes it and the narrator mirrors the user's language. |
+| 📜 | **Effective-dated 2026 policy table** (`engine/policy.jac`) | Income limits are computed per household, not hardcoded: % of the **2026 HHS poverty guidelines** (AK/HI tables), **HUD FY2026 area median income** with HUD's household-size adjustments, **state Medicaid expansion** status, and the **P.L. 119-21** immigrant-eligibility changes (SNAP since 2025-07-04, Medicaid/CHIP from 2026-10-01 — the card warns before the date and flips after it). SNAP shows a **benefit estimate** from USDA's FY2026 formula. Every criterion cites its source. |
+| ⚖️ | **Explainable, calibrated eligibility** (`engine/score.jac`) | Hard gates (status, age, coverage rules, season) × weighted soft criteria (logistic income threshold against the policy limit, residency, household, curated situation targets), capped at 97% — never "certain". Unknown ≠ fail: thin evidence triggers **calibrated abstention** ("needs info"), and near-misses get a **counterfactual** ("you'd qualify with a household of 4 or more"). Ranking is expected-value aware (SNAP ranks by what it's worth to this household). |
 | ❓ | **Value-of-information follow-ups** | Instead of a form, the agent asks the *one* question whose answer moves the most matches ("affects 6 matches"), with quick replies. Answers fold into the same case across turns. |
 | 📈 | **Bayesian outcome learning** | Approval odds are a Beta-Binomial posterior (capacity-informed prior, 90% credible interval, UCB exploration bonus for ranking). Marking a real application approved/denied in the Action Plan tab updates the posterior and re-ranks future matches. |
 | 🧭 | **Expected-cost routes** (`engine/paths.jac`) | Yen's k-shortest loopless paths (Dijkstra inside) over typed `leads_to` edges, with cost = days + λ·difficulty − μ·ln P(next program says yes). A super-source/super-sink turns "from anything I can start today to anything worth reaching" into one search. |
 | 🗓️ | **Plan sequencing** (`engine/plan.jac`) | Steps ordered by Smith's weighted-shortest-processing-time rule (value ÷ effort, crisis lines pinned first); documents shared across steps are gathered once. |
-| ⚡ | **Instant answer, narrated in the background** | The deterministic answer renders immediately; `NarrateWalker` makes the turn's single LLM call afterwards and is guarded against inventing phone numbers or facts. Every turn ships OpenTelemetry-shaped spans, rendered as a latency waterfall. |
+| ⚡ | **Instant answer, narrated in the background** | The deterministic answer renders immediately; `NarrateWalker` makes the turn's single LLM call afterwards. A facts guard voids any narration containing a number the engine didn't produce (phone-length numbers must come from the engine, so a prompt-injected "call 555-…" can't be echoed). Every turn ships OpenTelemetry-shaped spans, rendered as a latency waterfall. |
+| 📍 | **Real local offices** (`walkers/local_help.jac`) | After the answer, the client asks for offices near the user's city/state from keyless federal open data: **HUD Public Housing Authorities** (3,776), **HUD-approved housing counselors** (4,767) and **HRSA health center sites** — names, phones, addresses, voucher counts, opening hours. Parallel, 4 s timeouts, 6 h cache, input sanitized. |
+| 🕸️ | **The graph tab is a query, not a drawing** | Each verdict is persisted as a scored `eligible_for` edge (tier, P(eligible), rank, benefit). `GraphSnapshotWalker` returns the visitor's real subgraph — person → latest need → programs → rules → forms, applications, `leads_to` routes, self-critiques — and Replay walks it in pipeline order. |
 
 ---
 
@@ -64,29 +69,36 @@ CivicMesh is a **graph-native multi-agent navigator** built on Jac. One sentence
 ```mermaid
 flowchart TD
     User([👤 User · any language])
-    Client[React-on-Jac client<br/>ChatPane · GraphViz · ActionPlan]
+    Client[React-on-Jac client<br/>ChatPane · GraphViz · ActionPlan · Impact]
 
     User -->|chat turn| Client
-    Client -->|spawn root walker| Intake
+    Client -->|spawn| Intake
 
-    subgraph Pipeline ["Walker chain · spawned per turn"]
+    subgraph Pipeline ["Walker chain · one turn · 0 LLM calls on the critical path"]
         direction TB
-        Intake[🚪 IntakeWalker<br/><i>detect lang · extract NeedProfile</i>]
-        Elig[🎯 EligibilityWalker<br/><i>score 6 ResourceNodes · LLM</i>]
-        Nav[📋 NavigationWalker<br/><i>sequence ActionPlan</i>]
-        Path[🧭 PathfinderWalker<br/><i>multi-hop BFS</i>]
-        Esc[🆘 EscalationWalker<br/><i>ReAct loop · WebSocket</i>]
-        Crit[🪞 CritiqueWalker<br/><i>write SessionInsight</i>]
+        Intake[🚪 IntakeWalker<br/><i>language ID + parse · 40 languages<br/>LLM only if nothing routes · 3.5 s cap</i>]
+        Elig[🎯 EligibilityWalker<br/><i>2026 policy table · tiers · Beta odds<br/>writes eligible_for edges</i>]
+        Nav[📋 NavigationWalker<br/><i>Smith's-rule plan · ApplicationNodes</i>]
+        Path[🧭 PathfinderWalker<br/><i>Yen k-shortest over leads_to</i>]
+        Esc[🆘 EscalationWalker<br/><i>deterministic crisis lines</i>]
+        Crit[🪞 CritiqueWalker<br/><i>SessionInsight from the trace</i>]
     end
 
-    Intake -->|spawn| Elig
-    Elig -->|matches ≥ threshold| Nav
-    Elig -->|0 matches| Path
-    Path -->|0 paths| Esc
-    Elig -.->|fire-and-forget| Crit
-    Nav -.->|fire-and-forget| Crit
+    subgraph Async ["After the answer is on screen"]
+        direction TB
+        Narr[✦ NarrateWalker<br/><i>the one LLM call · user's language · facts guard</i>]
+        Local[📍 LocalHelpWalker<br/><i>HUD + HRSA open data</i>]
+    end
 
-    subgraph Graph ["Persistent graph · reachable from root"]
+    Intake -->|spawn on NeedNode| Elig
+    Elig --> Nav
+    Elig --> Path
+    Elig -->|risk flags or no credible match| Esc
+    Intake --> Crit
+    Client -.->|background| Narr
+    Client -.->|background| Local
+
+    subgraph Graph ["Per-visitor graph · reachable from root"]
         direction LR
         Person((PersonNode))
         Need((NeedNode))
@@ -99,24 +111,21 @@ flowchart TD
 
     Intake --> Person
     Person --> Need
+    Need -->|eligible_for| Resource
     Resource --> Rule
     Rule --> Form
     Nav --> App
     Crit --> Insight
 
-    Nav --> Client
-    Path --> Client
-    Esc --> Client
-
     classDef walker fill:#7c3aed,stroke:#5b21b6,color:#fff,stroke-width:2px
     classDef nodecls fill:#1f6feb,stroke:#1e40af,color:#fff
     classDef ui fill:#22c55e,stroke:#15803d,color:#fff
-    class Intake,Elig,Nav,Path,Esc,Crit walker
+    class Intake,Elig,Nav,Path,Esc,Crit,Narr,Local walker
     class Person,Need,Resource,Rule,Form,App,Insight nodecls
     class Client,User ui
 ```
 
-The chain is **lazy-branching**: EligibilityWalker only spawns NavigationWalker if matches exist, only spawns PathfinderWalker on a dead end, and only spawns EscalationWalker if Pathfinder also fails. CritiqueWalker fires at the end regardless — the post-turn self-reflection is mandatory.
+Everything in the chain is deterministic; the only model call per turn (`NarrateWalker`) happens after the answer is already on screen. EscalationWalker runs when the message shows risk (self-harm, domestic violence — flags that negation can never cancel) or when nothing credible matched; its crisis lines never wait on a model.
 
 ---
 
@@ -135,18 +144,20 @@ sequenceDiagram
     participant L as NarrateWalker (LLM)
 
     U->>I: message + case so far
-    I->>P: regex + EN/ES lexicon (< 1 ms)
+    I->>P: script / marker language ID + lexicons, negation, need focus (~1 ms)
     P-->>I: profile + evidence spans + routing confidence
-    Note over I: LLM understand_message() only if the parser can't route
+    Note over I: understand_message() only if nothing routes — worker thread, 3.5 s wall-clock deadline
     I->>E: spawn on NeedNode
     E->>E: Resource → Rule → Form triples (cached per visitor)
-    E->>S: score 40 programs in closed form
-    S-->>E: tiers · Beta CIs · reasons · counterfactuals · next question
+    E->>S: score 40 programs against the 2026 policy table
+    S-->>E: tiers · Beta CIs · cited reasons · counterfactuals · SNAP estimate · next question
+    E->>E: persist verdicts as eligible_for edges
     E->>N: plan (Smith's rule) · routes (Yen) · crisis lines if needed
-    I->>C: Reflexion write-back (SessionInsight)
+    I->>C: self-critique from the trace (SessionInsight)
     I-->>U: answer + cards + plan + trace (~0.2–0.5 s round trip)
-    U->>L: background: facts → warm, localized summary
-    L-->>U: narration (guarded: no new numbers)
+    U->>L: background: facts → summary in the user's language
+    L-->>U: narration (guarded: no numbers the engine didn't produce)
+    Note over U: in parallel: LocalHelpWalker → offices near the user (HUD / HRSA)
 ```
 
 ---
@@ -160,7 +171,7 @@ erDiagram
     PersonNode ||--o{ NeedNode : "has_need"
     PersonNode ||--o{ ApplicationNode : "applied_to"
     PersonNode ||--o{ SessionInsight : "reflected_on"
-    NeedNode ||--o{ ResourceNode : "matches (category)"
+    NeedNode ||--o{ ResourceNode : "eligible_for (tier, p_eligible, rank, benefit_monthly)"
     ResourceNode ||--|| EligibilityRuleNode : "governed_by"
     EligibilityRuleNode ||--|| FormNode : "requires_form"
     ResourceNode ||--o{ ResourceNode : "leads_to (multi-hop)"
@@ -240,15 +251,38 @@ The UI shows the move ("approval odds 38% → 44%, 1 real outcome"), and future 
 
 ---
 
-## Reflexion · the agent critiques itself
+## Self-critique
 
-After every turn, `CritiqueWalker` writes a `SessionInsight` node (quality score, what fired, top match) on a `reflected_on` edge — zero LLM calls. The Telemetry tab charts `quality_score` over time. (Reading those insights back into prompts was removed: it polluted category detection.)
+After every turn, `CritiqueWalker` writes a `SessionInsight` node on a `reflected_on` edge: a quality score, the walkers that actually ran and the LLM calls actually made — both read off the turn's trace, not estimated. The Telemetry tab charts them. (Feeding insights back into routing was tried and removed: it polluted category detection.)
 
 ---
 
-## Multi-language UX
+## Languages
 
-English and Spanish are understood **without an LLM**: the parser carries bilingual lexicons and patterns ("gano $1,400 al mes", "somos 4", "no hemos comido", "sin papeles"), and replies, plan steps, follow-up questions and quick replies are composed in the user's language. For any other language the one LLM call (`understand_message`) routes the need, and `NarrateWalker` localizes the reply and chips in the background.
+Routing needs no model in **40 languages**: English, Spanish, and the languages spoken most in U.S. homes after them (Census ACS table S1601) — Chinese, Tagalog, Vietnamese, Arabic, French, Korean, Russian, Haitian Creole, German, Hindi, Portuguese, Italian, Polish, Urdu, Persian, Japanese, Gujarati, Telugu, Bengali, Tamil, Punjabi, Ukrainian, Greek, Armenian, Hebrew, Amharic, Somali, Nepali, Thai, Khmer, Hmong, Burmese, Swahili, Malayalam, Kannada, Marathi, Turkish, Indonesian — plus romanized Hindi and Tamil.
+
+- **Script first.** A non-Latin script names the language; shared scripts are split by letters only one language uses (Urdu ٹ ڈ ڑ ں ے vs Persian پ چ ژ گ vs Arabic; Ukrainian і ї є ґ vs Russian; Kana → Japanese, Han-only → Chinese; Nepali छैन / मलाई vs Marathi आहे / नाही).
+- **Latin scripts** are scored by distinctive function words and letters (Vietnamese ơ ư đ + tone marks — but not Yoruba's dot-below vowels; Turkish ı ğ ş; Polish ł ą ę; Portuguese ã õ). One stray marker in a long sentence is not evidence: the language is left unidentified instead of guessed.
+- **Meaning, not keywords.** Negation and possession cancel a keyword ("we're not homeless", "I don't need a lawyer", "we have food", "no necesito comida", "我不需要食物", "खाना नहीं चाहिए") while lacking something stays a need ("no food", "haven't eaten", "no tengo casa", "我没有食物"); "…but they ran out" undoes possession. The thing asked for outweighs context ("the shelter gave us a bed, now I need a doctor" → healthcare). Generic "home" words (घर, வீடு, بيت, bahay) are weak evidence, so "no food at home" stays food.
+- **Everything else.** Messages outside the lexicon get a 3.5 s time-boxed LLM read; the narrator writes back in whatever language the user used. Messages with no signal at all (empty, emoji, a bare number) get a "what do you need help with?" question with four quick replies instead of a guess.
+
+---
+
+## Eligibility rules · 2026 policy table
+
+`engine/policy.jac` holds the numbers, their effective dates and their sources; `engine/score.jac` applies them to the household described.
+
+| Rule | Value | Source |
+|---|---|---|
+| Poverty guideline | $15,960 + $5,680 per person (AK $19,950 + $7,100 · HI $18,360 + $6,530) | HHS 2026 poverty guidelines, Federal Register 2026-01-15 |
+| Area median income | U.S. median family income $107,900; size adjustments 70/80/90/100/108/116/124/132% | HUD FY2026 Section 8 income limits (effective 2026-05-01) |
+| Program limits | SNAP 130% · WIC 185% · school meals 130/185% · CSFP 150% · LIHEAP 150% · Medicaid expansion 138% · LSC legal aid 125% · Section 8 50% AMI · public housing 80% AMI | program rules; locally-set limits are labelled "typical" |
+| Medicaid expansion | not expanded: AL FL GA KS MS SC TN TX WI WY (WI covers adults to 100%) — childless adults in the others are blocked with the reason and pointed to health centers / the Marketplace | KFF, Status of State Medicaid Expansion Decisions |
+| Immigrant eligibility | SNAP: citizens, green-card holders, Cuban/Haitian entrants, COFA citizens (refugees/asylees/parolees out since 2025-07-04). Medicaid/CHIP: same from 2026-10-01 | P.L. 119-21 §10108, §71109; USDA/FNS memo 2025-12-09 |
+| SNAP estimate | max allotment − 30% of net income (20% earnings + standard deduction); FY2026 max $994 for 4 | USDA FNS FY2026 allotments and deductions |
+| Seasonal | Summer Food Service Program runs June–August | USDA SFSP |
+
+Unknown household size? The limit is shown for one person with the per-person increment, and a household that might qualify is "needs info" — not ruled out. The FY2027 SNAP amounts (effective 2026-10-01) are not encoded yet.
 
 ---
 
@@ -257,10 +291,10 @@ English and Spanish are understood **without an LLM**: the parser carries biling
 - **Walkers with abilities keyed by node type.** Each walker declares `with PersonNode entry`, `with NeedNode entry`, `with ResourceNode entry`, so node-specific logic stays at the node boundary.
 - **Typed edges with payload.** `leads_to`, `applied_to`, `governed_by`, `reflected_on`, `has_need` — all carry typed `has` fields (transition_reason, difficulty, status, ts).
 - **Edge-filter traversal expressions.** `[root --> [?:PersonNode, user_id == self.user_id]]` and chained walks like `[resource ->:governed_by:-> [?:EligibilityRuleNode]]` express multi-hop joins in one line.
-- **byllm Meaning-Typed Programming, used sparingly.** Two typed stubs (`understand_message → UnderstoodNeed`, `narrate_turn → Narration`) with `sem` strings as the prompt; a litellm fallback pool (Groq → NIM) with tight timeouts and no retries.
+- **byllm Meaning-Typed Programming, used sparingly.** Two typed stubs (`understand_message → UnderstoodNeed`, `narrate_turn → Narration`) with `sem` strings as the prompt; a litellm fallback pool (Groq → NIM). Retries are off at both layers — the Router's and the provider SDK's (pinned per deployment, since litellm's OpenAI handler otherwise retries twice after every timeout) — and the routing call runs under a walker-owned wall-clock deadline.
 - **`sem` strings everywhere.** Every node, edge, walker field, and stub parameter ships a semstring — byllm uses these as the entire prompt context, so the schema *is* the system prompt.
 - **jac-scale auto REST.** Every walker is an HTTP endpoint with zero FastAPI glue; the client calls them with `root spawn` / `jacSpawn`.
-- **Root-reachable session persistence.** Sessions live as subgraphs reachable from `root`; a browser refresh reloads the user's full conversation, plan, and applications with zero database calls.
+- **Root-reachable session persistence.** Each browser gets an anonymous account and its own root; the case (needs, scored `eligible_for` verdicts, applications, self-critiques) is a subgraph under it, and the Graph tab reads it back with one walker.
 - **`spawn` chaining with `.summary` mirroring.** Child walkers mirror their final `report` payload to `.summary` so the parent walker can read it back — because `report` only bubbles to the outermost walker's stream.
 
 ---
@@ -270,21 +304,30 @@ English and Spanish are understood **without an LLM**: the parser carries biling
 | | Before (LLM per step) | After (math-first) |
 |---|---|---|
 | Chat turn, live HF Space (cpu-basic) | 60+ s (Spanish sample: 62.6 s server, then client-side translation calls) | answer on screen ~1 s after the click; server time 60–200 ms (measured 2026-09-27 from a client with ~1.1 s baseline RTT to the Space) |
-| LLM calls on the critical path | 7–15 sequential | 0 (1 only if the parser can't route the message) |
-| LLM narration | inline, blocking | async, 2.7–3.1 s server-side on NIM mistral-nemotron, guarded against invented numbers |
-| Engine time per turn | — | p50 0.75 ms · p95 1.1 ms (golden set, in-process) |
-| Round trip, local container | — | p50 ~0.2–0.3 s |
+| Tamil / Hindi / Chinese message | 33 s (sync LLM routing + hidden SDK retries), English-only reply | routed deterministically: 0.25–0.5 s round trip in a local container, narration in the user's language afterwards (2.5–4.2 s measured live for ta/hi/zh/vi) |
+| LLM calls on the critical path | 7–15 sequential | 0 (1 only if nothing routes, capped at 3.5 s) |
+| LLM narration | inline, blocking | async, guarded against invented numbers |
+| Engine time per turn | — | p50 ~1 ms · p95 ~3 ms (all suites, in-process) |
 
-Golden-set regression gate (`tests/golden.json`, 36 hand-written EN/ES cases):
+### Routing robustness · hard tests
+
+`tests/eval_engine.jac` is the regression gate (non-zero exit below the floors). Four suites, 196 cases, 393 checks:
+
+| Suite | Cases | What it covers |
+|---|---|---|
+| `golden.json` | 41 | EN/ES full pipeline: fields, top-3 programs, exclusions, and 5 policy cases (refugee + SNAP, Texas childless adult + Medicaid, California expansion, 130% FPL for 4, Alaska table) |
+| `golden_i18n.json` | 55 | language ID + need routing in 38 more languages, crisis and DV phrasing, one out-of-lexicon language (Yoruba) that must stay unidentified |
+| `golden_adversarial.json` | 60 | cross-category traps ("no food at home", "debt collectors about hospital bills"), negation, possession, idioms ("dying of hunger", "tooth is killing me"), code-switching, romanized scripts, no-signal input |
+| `golden_holdout.json` | 40 | written *after* tuning on the adversarial set, then scored before any fix |
 
 ```
 cd civicmesh && jac run tests/eval_engine.jac
-  field accuracy 100% (116/116) · top-3 hit rate 100% (33/33) · exclusion errors 0
+  field accuracy 100% (393/393) · 40/40 languages · top-3 + plan checks 100% (54/54) · exclusion errors 0
 ```
 
-The golden set was written alongside the engine, so treat it as a regression gate rather than an independent benchmark.
+Honest numbers: on first run the adversarial suite scored **74%** category accuracy and the held-out batch **78%** of checks. The held-out misses included two safety gaps — "I don't want to live anymore" raised no crisis flag, and two domestic-violence phrasings were missed — which were fixed first; crisis/violence flags can no longer be cancelled by negation. All suites were written by the same author as the engine, so they are regression gates, not an independent benchmark; native-speaker review of the lexicons is welcome.
 
----
+An end-to-end script also drives a running server through multi-turn flows (Tamil yes/no replies, a refugee answering the status question, a language switch), hostile input (empty, 6,000 characters, `<script>`, SQL-shaped text, emoji, prompt injection) and every walker: 32/32 checks locally.
 
 ## Quick start
 
@@ -315,7 +358,10 @@ Then open **http://localhost:8000/cl/app** in a browser. The dev server binds `:
 | *"I'm a single mom, need help with rent, two kids"* | Intake → Eligibility → **Navigation** (action plan) |
 | *"Necesito un refugio esta noche"* | Intake (es) → Eligibility → Navigation in Spanish |
 | *"Who do I call for a domestic-violence safe house?"* | Intake → Eligibility → Navigation with **1-800-799-7233** up front |
-| *"I'm being evicted tomorrow, nothing has worked"* | Intake → Eligibility (0 matches) → **Pathfinder** (multi-hop escape) |
+| *"I'm being evicted tomorrow, nothing has worked"* | Intake → Eligibility → Pathfinder routes + local housing authorities |
+| *"இன்று நான் எங்கே உணவு பெறுவது? எனக்கு வேலை இல்லை."* | Tamil, routed without an LLM → food programs → summary in Tamil |
+| *"I'm a refugee and we need food stamps, family of 3"* | SNAP explained as ineligible under P.L. 119-21; WIC / food banks instead |
+| *"We are a family of 4, we earn $2,800 a month and need food"* | SNAP first, ≈ $389/mo estimate with the USDA arithmetic |
 
 ---
 
@@ -323,14 +369,12 @@ Then open **http://localhost:8000/cl/app** in a browser. The dev server binds `:
 
 | Name | Required | Description |
 |---|---|---|
-| `NVIDIA_NIM_API_KEY` | yes | byllm key for the NVIDIA NIM model chain (default primary `mistralai/mistral-nemotron`) |
-| `CIVICMESH_LLM_MODELS` | no | Comma-separated litellm model ids tried in order, e.g. `nvidia_nim/mistralai/mistral-nemotron,nvidia_nim/openai/gpt-oss-20b`. Overrides the default chain in `llm/stubs.jac` |
-| `CIVICMESH_DEMO_MODE` | no | `1` skips per-resource LLM eligibility scoring (deterministic, fast) |
-| `FEATHERLESS_API_KEY` | no | Optional fallback provider |
-| `JAC_SCALE_HOST` | no | API bind host. Default `127.0.0.1` |
-| `JAC_SCALE_PORT` | no | API port. Default `8001` |
-| `JAC_CLIENT_PORT` | no | React client port. Default `8000` |
-| `CIVICMESH_LOG_LEVEL` | no | `debug` · `info` · `warn` · `error` |
+| `NVIDIA_NIM_API_KEY` | yes | byllm key for the NVIDIA NIM model chain (default primary `mistralai/mistral-nemotron`, fallback `openai/gpt-oss-20b`) |
+| `GROQ_API_KEY` | no | When set, `groq/openai/gpt-oss-20b` leads the pool |
+| `CIVICMESH_LLM_MODELS` | no | Comma-separated litellm model ids tried in order; overrides the default chain in `llm/stubs.jac` |
+| `FEATHERLESS_API_KEY` | no | Optional last-resort fallback provider |
+| `CIVICMESH_POLICY_DATE` | no | `YYYY-MM-DD` override for effective-dated rules (tests pin 2026-09-27) |
+| `PORT` | no | Container port (Dockerfile default 7860) |
 
 ---
 
@@ -343,18 +387,29 @@ CivicMesh/
 │   ├── app.sv.jac             # server-side bindings
 │   ├── frontend.cl.jac        # React client shell + routing
 │   ├── frontend.impl.jac      # client implementation
+│   ├── engine/                # pure, deterministic, sub-millisecond
+│   │   ├── i18n.jac           # language ID (scripts + markers), 40-language lexicons, negation, need focus
+│   │   ├── parse.jac          # profile extraction with evidence spans
+│   │   ├── policy.jac         # effective-dated 2026 rules: FPL, HUD AMI, Medicaid, P.L. 119-21, SNAP estimate
+│   │   ├── score.jac          # tiers, Beta posteriors, counterfactuals, value of information
+│   │   ├── plan.jac           # Smith's-rule plan + shared documents
+│   │   ├── paths.jac          # Dijkstra + Yen k-shortest routes
+│   │   ├── compose.jac        # multi-turn merge, reply text, OTel-shaped spans
+│   │   └── stats.jac          # anonymous platform counters (since restart)
 │   ├── walkers/
-│   │   ├── intake.jac         # language detect · NeedProfile extract · Reflexion read
-│   │   ├── eligibility.jac    # score 6 ResourceNodes · outcome-learning blend
-│   │   ├── navigation.jac     # ActionPlan generation · ApplicationNode persist
-│   │   ├── pathfinder.jac     # multi-hop BFS over leads_to edges
-│   │   ├── escalation.jac     # ReAct loop · WebSocket streaming
-│   │   ├── critique.jac       # Reflexion write · SessionInsight headline
-│   │   ├── memory.jac         # read_session · update_status · prior backfill
-│   │   ├── translate.jac      # batched translation with session cache
-│   │   ├── impact.jac         # aggregate dashboard stats
-│   │   ├── live_telemetry.jac # real-time walker-event stream
-│   │   └── seed.jac           # idempotent graph seeding + migration sweep
+│   │   ├── intake.jac         # orchestrator · 3.5 s deadline on the routing LLM call
+│   │   ├── eligibility.jac    # scoring · eligible_for edges · spawns the rest
+│   │   ├── navigation.jac     # plan · ApplicationNodes
+│   │   ├── pathfinder.jac     # Yen routes over leads_to edges
+│   │   ├── escalation.jac     # deterministic crisis lines
+│   │   ├── critique.jac       # SessionInsight from the trace
+│   │   ├── memory.jac         # sessions · outcome → Beta posterior
+│   │   ├── narrate.jac        # the one LLM call · facts guard
+│   │   ├── local_help.jac     # HUD / HRSA open-data office lookup
+│   │   ├── graph_snapshot.jac # the Graph tab's real subgraph
+│   │   ├── platform.jac       # landing page: live engine run + counters
+│   │   ├── impact.jac         # your case + platform counters
+│   │   └── seed.jac           # idempotent per-visitor seeding
 │   ├── components/
 │   │   ├── ChatPane.{cl,impl}.jac
 │   │   ├── ActionPlan.{cl,impl}.jac
@@ -370,8 +425,9 @@ CivicMesh/
 │   │   ├── edges.jac          # has_need · governed_by · leads_to · reflected_on
 │   │   └── seed_data.jac      # demo seed wiring
 │   ├── data/
-│   │   └── resources.json     # 40 curated US safety-net programs
-│   ├── tests/
+│   │   ├── resources.json     # 40 national safety-net programs
+│   │   └── transitions.json   # leads_to edges (days, difficulty, reason)
+│   ├── tests/                 # eval_engine.jac + golden / i18n / adversarial / holdout suites
 │   └── jac.toml
 ├── docs/
 │   ├── DEMO_SCRIPT.md         # 3-min judge walkthrough

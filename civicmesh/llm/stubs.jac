@@ -55,10 +55,28 @@ def pool_model_names -> list {
     return [str(m.model_name) for m in build_pool_models()];
 }
 
-# Sync path: the user is waiting, so fail fast into the deterministic answer.
-glob fast_pool = ModelPool(models=build_pool_models(), strategy="fallback", num_retries=0, timeout=6.0);
+"""Turn off the provider SDK's hidden retries on every pool member.
+
+Router(num_retries=0) only stops the Router. Each deployment's OpenAI-
+compatible client still retries twice after a timeout, because litellm's
+handler defaults `max_retries` to 2 when the call doesn't carry one. A
+6 s timeout became 3 × 6 s per model (the 31 s Tamil turn in the logs).
+The Router merges a deployment's litellm_params into every call, so pinning
+max_retries=0 there reaches the SDK.
+"""
+def without_sdk_retries(pool: Any) -> Any {
+    try {
+        for dep in list(pool._router.model_list) {
+            dep["litellm_params"]["max_retries"] = 0;
+        }
+    } except Exception as _ex {}
+    return pool;
+}
+
+# Sync path: the user is waiting (the walker also enforces a 3.5 s deadline).
+glob fast_pool = without_sdk_retries(ModelPool(models=build_pool_models(), strategy="fallback", num_retries=0, timeout=5.0));
 # Async path: nobody is blocked; allow one slow model before giving up.
-glob narrate_pool = ModelPool(models=build_pool_models(), strategy="fallback", num_retries=0, timeout=8.0);
+glob narrate_pool = without_sdk_retries(ModelPool(models=build_pool_models(), strategy="fallback", num_retries=0, timeout=8.0));
 
 # ---------- types kept for walker interfaces ----------
 
@@ -105,7 +123,7 @@ sem UnderstoodNeed.monthly_income is "Household income per month in USD if state
 sem UnderstoodNeed.household_size is "People in the household including the writer, 0 if not stated.";
 sem UnderstoodNeed.age is "Writer's age in years, 0 if not stated.";
 sem UnderstoodNeed.state is "Two-letter US state code if a US place is mentioned, else empty.";
-sem UnderstoodNeed.citizenship is "One of 'citizen', 'eligible_immigrant' (green card / refugee / asylee), 'non_citizen', or '' if not mentioned.";
+sem UnderstoodNeed.citizenship is "One of 'citizen', 'eligible_immigrant' (green card), 'humanitarian' (refugee, asylee, parolee), 'non_citizen', or '' if not mentioned.";
 sem UnderstoodNeed.english_summary is "One short English sentence describing what the person needs.";
 
 """Read a help request in any language and extract the need and facts that are explicitly stated. Never guess values that are not in the text."""
@@ -122,12 +140,12 @@ obj Narration {
 }
 
 sem Narration.message is "Two or three warm, plain sentences in the target language: acknowledge the situation in one clause, name the first program to contact and why, and end with the follow-up question if one is given. No new facts, programs, numbers or phone numbers beyond those in `facts`. No markdown.";
-sem Narration.chips is "The follow-up suggestions translated into the target language, same count and order as given. Return them unchanged if the target language is English.";
+sem Narration.chips is "The follow-up suggestions translated into the target language, same count and order as given. Return them unchanged if the target language is English. Keep program names (SNAP, WIC, Medicaid, Section 8) as they are.";
 
 """Write the reply for a social-services navigator from pre-computed facts. The facts are authoritative: do not add programs, eligibility claims, numbers or phone numbers that are not in them."""
 def narrate_turn(user_message: str, language: str, facts: str, chips: list[str]) -> Narration by narrate_pool();
 
 sem narrate_turn.user_message is "What the person wrote, for tone and context only.";
-sem narrate_turn.language is "ISO 639-1 code of the language to write in.";
+sem narrate_turn.language is "ISO 639 code of the language to write in (e.g. 'ta', 'zh', 'hmn'). If 'auto', write in the same language as user_message.";
 sem narrate_turn.facts is "Engine output: matched programs with reasons, the first step, and the follow-up question. Authoritative.";
 sem narrate_turn.chips is "Follow-up suggestion chips in English to translate.";

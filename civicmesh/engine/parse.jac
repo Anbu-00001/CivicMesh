@@ -13,7 +13,8 @@ Output contract (plain dict so it serialises straight into walker reports):
   income_annual              int, -1 = unknown (0 = stated no income)
   household_size, age        int, 0 = unknown
   state, city, zip
-  citizenship                citizen | eligible_immigrant | non_citizen | ""
+  citizenship                citizen | eligible_immigrant (green card) |
+                             humanitarian (refugee/asylee/parolee) | non_citizen | ""
   flags                      senior, veteran, disabled, dv, self_harm, homeless,
                              children, pregnant, family
   evidence                   [{field, value, start, end, text}]
@@ -22,6 +23,7 @@ Output contract (plain dict so it serialises straight into walker reports):
 """
 
 import re;
+import from engine.i18n { detect_script, detect_latin_other, route_i18n, negated, need_focus }
 
 # ---------- lexicons ----------
 # (pattern, weight). Patterns are regex fragments matched on lowercase text
@@ -33,7 +35,10 @@ glob CATEGORY_LEXICON: dict = {
         ("snap", 2.5), ("wic", 2.0), ("food stamps", 2.5), ("pantry", 2.0),
         ("comida", 2.0), ("comer", 1.5), ("comido", 2.0), ("hambre", 2.5),
         ("alimentos?", 2.0), ("despensa", 2.0), ("cupones", 1.5),
-        ("cook", 1.5), ("cooking", 1.5), ("cocinar", 1.5)
+        ("cook", 1.5), ("cooking", 1.5), ("cocinar", 1.5),
+        ("(?:baby )?formula", 2.0), ("diapers?", 1.5), ("nothing to eat", 2.5),
+        ("(?:fridge|refrigerator|pantry) is empty", 2.5), ("empty (?:fridge|refrigerator)", 2.5),
+        ("grocery store", 2.0), ("get to the store", 2.0), ("pa[ñn]ales", 1.5), ("leche de f[oó]rmula", 2.0)
     ],
     "housing": [
         ("rent", 1.5), ("evict(?:ed|ion|ing)?", 2.5), ("landlord", 1.5),
@@ -44,7 +49,10 @@ glob CATEGORY_LEXICON: dict = {
         ("casero", 1.5), ("vivienda", 2.5), ("refugio", 2.0), ("sin hogar", 2.5),
         ("heating", 2.0), ("electric(?:ity)?", 1.5), ("utilit(?:y|ies)", 2.0),
         ("power bill", 2.0), ("gas bill", 2.0), ("shut ?off", 1.5),
-        ("calefacci[oó]n", 2.0), ("luz", 1.0)
+        ("calefacci[oó]n", 2.0), ("luz", 1.0),
+        ("place to (?:shower|wash)", 2.5), ("showers?", 1.5), ("laundry", 1.5),
+        ("lugar (?:para|donde) (?:dormir|quedarnos|quedarme|vivir)", 2.5), ("d[oó]nde (?:dormir|vivir|quedarnos)", 2.0),
+        ("no tengo (?:casa|hogar|d[oó]nde vivir)", 2.5)
     ],
     "healthcare": [
         ("doctor", 2.0), ("medicaid", 2.5), ("medicine", 2.0), ("medication", 2.0),
@@ -61,10 +69,20 @@ glob CATEGORY_LEXICON: dict = {
     "legal": [
         ("lawyer", 2.5), ("attorney", 2.5), ("legal (?:aid|help|advice)", 2.5),
         ("court", 2.0), ("deport\\w*", 2.5), ("immigration", 2.0), ("asylum", 2.0),
+        ("changed the locks", 2.5), ("locked (?:me |us )?out", 2.5), ("lockout", 2.5), ("cambi[oó] (?:la|las) cerradura", 2.5),
+        ("mou?ld", 2.0), ("roach(?:es)?", 2.0), ("bed ?bugs", 2.0), ("repairs?", 1.5), ("won'?t fix", 2.0), ("refuses? to fix", 2.0), ("arreglar", 1.5),
+        ("collections", 2.5), ("medical debt", 2.5),
+        ("fired for", 2.5), ("wrongful(?:ly)? (?:termination|terminated|fired)", 2.5), ("fired", 1.0),
+        ("visitation", 2.5), ("see my (?:kids|children|son|daughter|grandkids)", 2.0), ("child support", 2.5), ("divorce", 2.5), ("custodia", 2.5),
+        ("arrest(?:ed)?", 2.5), ("jail", 2.0), ("charged with", 2.0), ("criminal record", 2.5),
+        ("seal(?:ed|ing)? (?:my |his |her |the )?(?:criminal )?record", 2.5), ("record seal\\w*", 2.5),
+        ("wages?", 2.0), ("unpaid (?:wages|pay|overtime)", 2.5), ("didn'?t pay me", 2.5), ("wage theft", 2.5),
+        ("(?:security )?deposit back", 2.0), ("security deposit", 2.0), ("discriminat\\w*", 2.0),
+        ("arrestad[oa]", 2.5), ("c[aá]rcel", 2.0), ("antecedentes", 2.0), ("salario no pagado", 2.5),
         ("illegal(?:ly)?", 1.5), ("my rights", 2.0), ("sue", 1.5), ("custody", 2.0),
         ("protective order", 2.5), ("expunge\\w*", 2.5), ("abogad[oa]", 2.5),
         ("corte", 2.0), ("tribunal", 2.0), ("deportaci[oó]n", 2.5),
-        ("debt collector", 2.5), ("collectors?", 1.5), ("loan", 1.0), ("scam\\w*", 2.0),
+        ("debt collectors?", 2.5), ("collection agenc(?:y|ies)", 2.5), ("collectors?", 1.5), ("loan", 1.0), ("scam\\w*", 2.0),
         ("fraud", 2.0), ("credit report", 2.0), ("cobrador", 2.0), ("estafa", 2.0),
         ("inmigraci[oó]n", 2.0), ("asilo", 2.0), ("derechos", 1.5)
     ]
@@ -74,8 +92,12 @@ glob FLAG_LEXICON: dict = {
     "senior": ["senior", "elderly", "retired", "retiree", "social security", "jubilad[oa]", "ancian[oa]", "tercera edad"],
     "veteran": ["veteran", "army", "navy", "marines?", "air force", "military", "served in", "veteran[oa]"],
     "disabled": ["disabilit(?:y|ies)", "disabled", "ssi", "ssdi", "wheelchair", "discapacidad", "discapacitad[oa]"],
-    "dv": ["domestic violence", "abus(?:e|ed|ive)", "hits me", "beats me", "hurts me", "safe house", "violencia dom[eé]stica", "maltrato", "me golpea"],
-    "self_harm": ["suicid\\w*", "kill myself", "end my life", "want to die", "self[- ]harm", "hurt myself", "quitarme la vida", "matarme", "no quiero vivir"],
+    "dv": ["domestic violence", "abus(?:e|ed|ive)", "hits me", "beats me", "hurts me", "safe house", "violencia dom[eé]stica", "maltrato", "me golpea",
+           "(?:he|she)(?:'ll| will| might| could| is going to)? hurt me", "hurt me again", "(?:afraid|scared) (?:of )?(?:my )?(?:husband|boyfriend|partner|ex|wife|girlfriend)",
+           "i'?m (?:scared|afraid) (?:that )?(?:he|she)", "me peg(?:a|[oó]|aba)", "me maltrata", "tengo miedo de mi (?:esposo|pareja|novio|ex)"],
+    "self_harm": ["suicid\\w*", "kill myself", "end my life", "want to die", "self[- ]harm", "hurt myself", "quitarme la vida", "matarme", "no quiero vivir",
+                  "(?:don'?t|do not) want to (?:live|be alive|be here|wake up)", "no reason to (?:live|go on)", "better off dead", "end it all",
+                  "take my (?:own )?life", "can'?t go on (?:anymore|like this)?", "quiero morir(?:me)?", "suicidarme", "no quiero seguir viviendo"],
     "homeless": ["homeless", "on the street", "sleeping in (?:my|our|the) car", "nowhere to (?:go|stay|sleep)", "sin hogar", "en la calle", "sin techo"],
     "pregnant": ["pregnant", "expecting a baby", "embarazada"],
     "children": ["kids?", "children", "child", "sons?", "daughters?", "baby", "toddler", "infant", "hij[oa]s?", "ni[nñ][oa]s?", "beb[eé]"],
@@ -166,17 +188,21 @@ def _num(tok: str) -> int {
     return int(NUMBER_WORDS.get(t, 0));
 }
 
-"""Detect the message language from marker-word hits and script.
+"""Detect the message language: script first, then Latin marker words.
 
-Returns (code, confidence). "" means neither English nor Spanish — the
-LLM call handles those.
+Returns (code, confidence). A non-Latin script names the language outright
+(engine/i18n.jac); Latin text is scored against English and Spanish marker
+words here and against other Latin-script languages in i18n. "" means no
+language could be identified — the narration call then writes back in
+whatever language the user used.
 """
 def detect_language(text: str) -> tuple {
+    (sc, sconf) = detect_script(text);
+    if sc {
+        return (sc, sconf);
+    }
     low = text.lower();
     words = re.findall(r"[a-záéíóúñü']+", low);
-    if not words {
-        return ("", 0.0);
-    }
     en = 0;
     es = 0;
     for w in words {
@@ -184,12 +210,14 @@ def detect_language(text: str) -> tuple {
         if w in ES_MARKERS { es += 1; }
     }
     if re.search(r"[ñ¿¡áéíóú]", low) { es += 2; }
-    non_ascii = len([c for c in text if ord(c) > 127 and c not in "ñ¿¡áéíóúüÑÁÉÍÓÚ$€—–’‘“”"]);
-    if non_ascii > len(text) * 0.2 {
-        return ("", 0.0);
+    (other, other_hits) = detect_latin_other(low);
+    if other and other_hits >= 2 and other_hits > max(en, es) {
+        return (other, round(min(0.95, 0.5 + 0.08 * other_hits), 2));
     }
     total = en + es;
-    if total == 0 {
+    # One stray marker ("mi") in a long sentence is not evidence of English
+    # or Spanish — leave it unidentified and let the narrator mirror it.
+    if total == 0 or (total == 1 and len(words) >= 5) {
         return ("", 0.0);
     }
     if en >= es {
@@ -204,7 +232,11 @@ def score_categories(low: str, evidence: list, text: str) -> dict {
     for (cat, lex) in CATEGORY_LEXICON.items() {
         for (pat, w) in lex {
             for m in re.finditer("\\b" + pat + "\\b", low) {
-                scores[cat] = scores[cat] + w;
+                # "we're not homeless", "I don't need a lawyer", "we have food"
+                if negated(low, m.start(), m.end()) { continue; }
+                # The thing asked for outweighs context ("the shelter gave us
+                # a bed, now I need a doctor").
+                scores[cat] = scores[cat] + w + (1.0 if need_focus(low, m.start(), m.end()) else 0.0);
                 _ev(evidence, "category", cat, m.start(), m.end(), text);
             }
         }
@@ -316,7 +348,11 @@ def parse_age(low: str, evidence: list, text: str) -> int {
         r"\b(?:i'?m|i am|aged?|age of)\s+(\d{2,3})\b(?!\s*(?:min|minutes|hours|days|months|weeks|dollars|%|k\b))",
         r"\b(\d{2,3})\s*(?:years? old|yrs? old|y/?o\b|year-old)",
         r"\btengo\s+(\d{2,3})\s+a[nñ]os\b",
-        r"\b(\d{2,3})\s+a[nñ]os de edad\b"
+        r"\b(\d{2,3})\s+a[nñ]os de edad\b",
+        # A caregiver writing for someone else: the age of the person the help
+        # is for ("my mom is 80", "mi padre tiene 75 años").
+        r"\bmy\s+(?:elderly\s+)?(?:mom|mother|dad|father|grandma|grandmother|grandpa|grandfather|husband|wife|aunt|uncle|parents?)\s*(?:is|,)\s*(\d{2,3})\b(?!\s*(?:dollars|%|k\b|/))",
+        r"\bmi\s+(?:mam[aá]|madre|pap[aá]|padre|abuel[oa]|espos[oa])\s+tiene\s+(\d{2,3})\b"
     ] {
         m = re.search(pat, low);
         if m {
@@ -374,7 +410,8 @@ def parse_citizenship(low: str, evidence: list, text: str) -> str {
     rules: list = [
         (r"\b(?:undocumented|no papers|without papers|no documents|illegal immigrant|not a (?:us )?citizen|out of status|indocumentad[oa]s?|sin papeles|sin documentos)\b", "non_citizen"),
         (r"\b(?:seeking asylum|asylum seeker|solicitando asilo|pidiendo asilo)\b", "non_citizen"),
-        (r"\b(?:green card|permanent resident|lpr|refugee|asylee|granted asylum|residente permanente|tarjeta verde|refugiad[oa])\b", "eligible_immigrant"),
+        (r"\b(?:refugee|asylee|granted asylum|parolee|humanitarian parole|refugiad[oa]|asilad[oa]|asilo aprobado)\b", "humanitarian"),
+        (r"\b(?:green card|permanent resident|lpr|residente permanente|tarjeta verde)\b", "eligible_immigrant"),
         (r"\b(?:daca|dreamer|visa holder|on a visa|work visa|tps)\b", "non_citizen"),
         (r"\b(?:us citizen|u\.s\. citizen|american citizen|citizen|born here|ciudadan[oa])\b", "citizen")
     ];
@@ -399,6 +436,19 @@ def parse_intake(text: str) -> dict {
     (lang, lang_conf) = detect_language(raw);
 
     scores = score_categories(low, evidence, raw);
+    i18n_flags: list = [];
+    i18n_urgent = False;
+    if lang and lang not in ["en", "es"] {
+        routed = route_i18n(lang, low);
+        for (cat, v) in routed["scores"].items() {
+            scores[cat] = float(scores[cat]) + float(v);
+        }
+        for sp in routed["spans"] {
+            _ev(evidence, sp["field"], sp["value"], int(sp["start"]), int(sp["end"]), raw);
+        }
+        i18n_flags = list(routed["flags"]);
+        i18n_urgent = bool(routed["urgent"]);
+    }
     ranked = sorted(scores.items(), key=lambda kv: tuple : -kv[1]);
     top_cat = ranked[0][0] if ranked[0][1] > 0 else "";
     top_score = float(ranked[0][1]);
@@ -415,12 +465,18 @@ def parse_intake(text: str) -> dict {
     for (flag, pats) in FLAG_LEXICON.items() {
         for pat in pats {
             m = re.search("\\b" + pat + "\\b", low);
+            # Crisis and violence flags are never negated away: a false alarm
+            # shows a hotline, a miss hides one.
+            if m and flag not in ["self_harm", "dv"] and negated(low, m.start(), m.end()) { m = None; }
             if m {
                 flags.append(flag);
                 _ev(evidence, "flag", flag, m.start(), m.end(), raw);
                 break;
             }
         }
+    }
+    for f in i18n_flags {
+        if f not in flags { flags.append(f); }
     }
     # Crisis flags override the category router: they always need a human line.
     if "self_harm" in flags and not top_cat {
@@ -451,7 +507,7 @@ def parse_intake(text: str) -> dict {
             }
         }
     }
-    if "self_harm" in flags or "dv" in flags or "homeless" in flags {
+    if i18n_urgent or "self_harm" in flags or "dv" in flags or "homeless" in flags {
         urgency = "immediate";
     }
     # "haven't eaten in 2 days" / "no hemos comido en 2 días"
@@ -483,15 +539,12 @@ def parse_intake(text: str) -> dict {
 
     needs_llm = False;
     llm_reason = "";
+    # The LLM is consulted only when nothing could be routed. A language
+    # outside the lexicon no longer forces it: the narration call writes
+    # back in the user's language either way.
     if not top_cat {
         needs_llm = True;
-        llm_reason = "no category evidence";
-    } elif cat_conf < 0.35 {
-        needs_llm = True;
-        llm_reason = "ambiguous category";
-    } elif not lang {
-        needs_llm = True;
-        llm_reason = "language outside EN/ES";
+        llm_reason = "no category evidence" if lang else "unrecognized language";
     }
 
     return {

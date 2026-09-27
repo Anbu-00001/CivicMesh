@@ -13,6 +13,7 @@
 import re;
 import time;
 import uuid;
+import from engine.i18n { yes_no, unspaced_chars }
 
 glob MERGE_FIELDS: list = ["income_annual", "household_size", "age", "state", "city", "zip", "citizenship"];
 
@@ -42,9 +43,11 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
     if not prior {
         return out;
     }
-    short = len(str(text).split()) < 4;
-    if short and prior.get("language") {
-        # "no", "sí", "$900" carry too little signal to switch language.
+    # Chinese / Japanese / Thai sentences have no spaces: count characters.
+    short = len(str(text).split()) < 4 and unspaced_chars(str(text)) < 6;
+    if short and prior.get("language") and float(cur.get("language_conf", 0) or 0) < 0.85 {
+        # "no", "sí", "$900" carry too little signal to switch language; a
+        # reply written in a different script (conf ≥ 0.85) still does.
         out["language"] = prior.get("language");
     }
     # Length, not "is a question pending", decides: the client marks every
@@ -63,7 +66,8 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
         low = str(text).lower();
         # "Do you have a safe place to sleep tonight?" / "Are you safe at home?"
         # are asked in the negative: a "no" is the evidence.
-        affirm = re.search(NO_RE, low) if answering in NEGATIVE_QUESTIONS else re.search(YES_RE, low);
+        yn = yes_no(text);
+        affirm = (re.search(NO_RE, low) or yn == "no") if answering in NEGATIVE_QUESTIONS else (re.search(YES_RE, low) or yn == "yes");
         if answering in ANSWER_EVIDENCE and affirm {
             out["case_text"] = out["case_text"] + " " + ANSWER_EVIDENCE[answering];
             out["answered_yes"] = answering;
@@ -87,7 +91,7 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
     }
     if not cur.get("language") and prior.get("language") {
         out["language"] = prior.get("language");
-        if out.get("llm_reason", "") == "language outside EN/ES" {
+        if out.get("llm_reason", "") == "unrecognized language" and out.get("category") {
             out["needs_llm"] = False;
             out["llm_reason"] = "";
         }
@@ -118,6 +122,10 @@ def compose_reply(lang: str, profile: dict, ranking: dict, plan: dict, routes: l
     pinned = [s for s in ranked if s.get("pinned", False)];
     lines: list = [];
 
+    if profile.get("defaulted_category") and not pinned {
+        lines.append("No estoy seguro de qué tipo de ayuda busca. Elija una opción abajo o cuénteme un poco más; mientras tanto, el **211** conecta con ayuda local las 24 horas." if es else "I'm not sure yet what kind of help you need. Pick one below or tell me a little more — meanwhile, **211** connects you to local help 24/7.");
+        return "\n\n".join(lines);
+    }
     if pinned {
         p = pinned[0];
         lines.append(("**Primero, su seguridad:** " if es else "**First, your safety:** ") + p["resource_name"] + " — " + p["contact_phone"] + (" (24/7, gratis y confidencial)." if es else " (24/7, free and confidential)."));

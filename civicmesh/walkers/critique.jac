@@ -1,21 +1,14 @@
-"""CritiqueWalker — Reflexion-style self-reflection for the agent chain.
+"""CritiqueWalker — per-turn self-critique persisted in the graph.
 
-Fires once at the end of every IntakeWalker chain. Reads the chain's
-walker_events buffer (passed in from the caller), computes a session
-quality score from heuristics on which walkers fired and what outcomes
-they produced, then writes a SessionInsight node attached to the
-PersonNode via the `reflected_on` edge.
+Fires once at the end of every IntakeWalker chain with the list of walkers
+that actually ran (read off the turn's trace) and the number of LLM calls
+actually made (0 or 1 on the critical path + 1 background narration). It
+scores the turn from its outcomes and writes a SessionInsight node on the
+PersonNode via `reflected_on`, which the Telemetry tab charts over time.
 
-The next IntakeWalker turn READS the last few SessionInsight nodes off
-the same PersonNode and prepends a one-line summary to the conversation
-the LLM sees — so the agent literally learns from its own past
-performance via graph memory.
-
-Zero LLM calls. Pure graph mutation. The substrate IS the memory.
-
-This is Reflexion (Shinn et al, 2023) implemented as Jac walker code,
-no external memory store, no PyTorch, no vector DB. The 2026 self-
-improvement frontier in ~80 lines of OSP.
+Zero LLM calls; pure graph mutation. Inspired by Reflexion (Shinn et al.,
+2023), but deliberately NOT fed back into routing: an earlier version
+prepended past insights to the next turn and it polluted category detection.
 """
 
 import datetime;
@@ -37,6 +30,8 @@ walker CritiqueWalker {
     has need_category: str = "";
     has need_urgency: str = "";
     has top_resource: str = "";
+    # LLM calls actually made this turn; -1 falls back to the old estimate.
+    has llm_calls: int = -1;
     has summary: dict = {};
 
     can reflect with PersonNode entry {
@@ -76,6 +71,10 @@ walker CritiqueWalker {
         }
         if "TranslateWalker" in fired_names {
             llm_estimate = llm_estimate + 1;
+        }
+
+        if self.llm_calls >= 0 {
+            llm_estimate = self.llm_calls;
         }
 
         # Quality score formula. Baseline 50, lifted by successful
@@ -243,7 +242,8 @@ walker ReflectionReadWalker {
 
 sem CritiqueWalker is "Reflexion-style self-reflection. Runs once at the end of each chat turn, computes a session quality score from walker chain telemetry (zero LLM cost), and writes a SessionInsight node attached to the PersonNode. The agent's memory of its own past performance IS the graph.";
 sem CritiqueWalker.user_id is "Stable session identifier used to find the PersonNode this critique attaches to.";
-sem CritiqueWalker.walker_events is "Full walker_events buffer from the just-completed chain. Drives the distinct-walker-set computation and the LLM-call estimator.";
+sem CritiqueWalker.walker_events is "Walkers that ran this turn, read off the trace. Drives the distinct-walker set shown in Telemetry.";
+sem CritiqueWalker.llm_calls is "LLM calls actually made this turn (sync routing call if any + background narration).";
 sem CritiqueWalker.user_prompt is "Original user prompt that triggered the turn. First 80 chars become the SessionInsight snippet for the Telemetry timeline.";
 sem CritiqueWalker.eligible_count is "Count of eligible resources EligibilityWalker found this turn. Lifts the quality score.";
 sem CritiqueWalker.escalated is "True when the chain routed to EscalationWalker. Drags the quality score down.";

@@ -1,0 +1,496 @@
+{
+ "_doc": "Adversarial routing set: cross-category traps, negation, idioms, crisis, code-switching, romanized scripts, no-signal inputs. Expectations encode the correct behaviour, written before fixing the engine.",
+ "cases": [
+  {
+   "text": "My landlord won't let me cook in my apartment and we have no food.",
+   "expect": {
+    "category": "food"
+   },
+   "_why": "housing words must not beat an explicit lack of food"
+  },
+  {
+   "text": "I have a place to live but we can't afford groceries this week.",
+   "expect": {
+    "category": "food"
+   },
+   "_why": "'have a place to live' is not a housing need"
+  },
+  {
+   "text": "We're not homeless, we just need food for the kids.",
+   "expect": {
+    "category": "food",
+    "flag_absent": "homeless"
+   },
+   "_why": "negated homelessness"
+  },
+  {
+   "text": "There's no food at home and my kids are hungry.",
+   "expect": {
+    "category": "food"
+   },
+   "_why": "'at home' is a location, not a housing need"
+  },
+  {
+   "text": "The shelter gave us a bed, now I need a doctor for my son's asthma.",
+   "expect": {
+    "category": "healthcare"
+   },
+   "_why": "past shelter, current medical need"
+  },
+  {
+   "text": "I need a lawyer because my food stamps were cut off.",
+   "expect": {
+    "category_in": [
+     "legal",
+     "food"
+    ]
+   },
+   "_why": "benefit appeal: legal or food both defensible"
+  },
+  {
+   "text": "Can't pay my electric bill, they're going to shut off the power.",
+   "expect": {
+    "category": "housing"
+   },
+   "top3_any": [
+    "LIHEAP (Low Income Home Energy Assistance Program)"
+   ],
+   "_why": "utilities live under housing (LIHEAP)"
+  },
+  {
+   "text": "I'm pregnant and hungry.",
+   "expect": {
+    "category": "food",
+    "flag": "pregnant"
+   },
+   "top3_any": [
+    "WIC (Women, Infants and Children)"
+   ],
+   "_why": "pregnancy + hunger → WIC"
+  },
+  {
+   "text": "My baby needs formula and diapers.",
+   "expect": {
+    "category": "food"
+   },
+   "top3_any": [
+    "WIC (Women, Infants and Children)"
+   ],
+   "_why": "formula is food (WIC)"
+  },
+  {
+   "text": "I got an eviction notice because I spent the rent on my medicine.",
+   "expect": {
+    "category": "housing",
+    "urgency": "immediate"
+   },
+   "_why": "eviction outranks the medicine mention"
+  },
+  {
+   "text": "My insulin costs too much, I can't afford it.",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "Need dental work, my tooth is killing me.",
+   "expect": {
+    "category": "healthcare",
+    "flag_absent": "self_harm"
+   },
+   "_why": "idiom must not trip the crisis flag"
+  },
+  {
+   "text": "I'm dying of hunger here.",
+   "expect": {
+    "category": "food",
+    "flag_absent": "self_harm"
+   },
+   "_why": "idiom, not self-harm"
+  },
+  {
+   "text": "Debt collectors keep calling about my old hospital bills.",
+   "expect": {
+    "category": "legal"
+   },
+   "top3_any": [
+    "Consumer Financial Protection Bureau Complaint System"
+   ],
+   "_why": "debt collection is legal, not healthcare"
+  },
+  {
+   "text": "My boss didn't pay my wages for three weeks.",
+   "expect": {
+    "category": "legal"
+   },
+   "_why": "wage theft"
+  },
+  {
+   "text": "I need help with my immigration papers so I can work.",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "Where can I get a free meal tonight?",
+   "expect": {
+    "category": "food",
+    "urgency": "immediate"
+   }
+  },
+  {
+   "text": "I'm sleeping in my car with my two kids.",
+   "expect": {
+    "category": "housing",
+    "flag": "homeless",
+    "urgency": "immediate"
+   }
+  },
+  {
+   "text": "Our heat is broken and the landlord refuses to fix it.",
+   "expect": {
+    "category_in": [
+     "housing",
+     "legal"
+    ]
+   },
+   "top3_any": [
+    "Tenant Rights Hotline (National Housing Law Project)",
+    "LIHEAP (Low Income Home Energy Assistance Program)"
+   ],
+   "_why": "repairs: tenant rights"
+  },
+  {
+   "text": "My daughter needs glasses to see the board at school.",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "My mom is 80, has dementia and can't cook for herself anymore.",
+   "expect": {
+    "category": "food"
+   },
+   "top3_any": [
+    "Meals on Wheels America"
+   ],
+   "_why": "homebound senior → Meals on Wheels"
+  },
+  {
+   "text": "We need a place to stay tonight, we have food.",
+   "expect": {
+    "category": "housing"
+   },
+   "_why": "'we have food' is negated food"
+  },
+  {
+   "text": "Not looking for food stamps, I need help with rent.",
+   "expect": {
+    "category": "housing"
+   },
+   "_why": "negated food stamps"
+  },
+  {
+   "text": "Food bank near 77002?",
+   "expect": {
+    "category": "food",
+    "zip": "77002"
+   }
+  },
+  {
+   "text": "I'm a veteran and I'm homeless.",
+   "expect": {
+    "category": "housing",
+    "flag": "homeless"
+   },
+   "top3_any": [
+    "HUD-VASH (Veterans Affairs Supportive Housing)"
+   ]
+  },
+  {
+   "text": "I was arrested and can't afford a lawyer.",
+   "expect": {
+    "category": "legal"
+   },
+   "top3_any": [
+    "Public Defender Service"
+   ]
+  },
+  {
+   "text": "How do I seal my criminal record so I can rent an apartment?",
+   "expect": {
+    "category": "legal"
+   },
+   "top3_any": [
+    "Expungement and Record Sealing Clinic"
+   ],
+   "_why": "record sealing is legal even though renting is the goal"
+  },
+  {
+   "text": "My kid got sick and we don't have health insurance.",
+   "expect": {
+    "category": "healthcare"
+   },
+   "top3_any": [
+    "CHIP (Children's Health Insurance Program)",
+    "Medicaid",
+    "Federally Qualified Health Center Sliding-Scale Care"
+   ]
+  },
+  {
+   "text": "I need my HIV medication and lost my job.",
+   "expect": {
+    "category": "healthcare"
+   },
+   "top3_any": [
+    "Ryan White HIV/AIDS Program"
+   ]
+  },
+  {
+   "text": "I'm addicted to opioids and I want to get clean.",
+   "expect": {
+    "category": "healthcare"
+   },
+   "top3_any": [
+    "SAMHSA National Helpline (Substance Use Treatment Referral)"
+   ]
+  },
+  {
+   "text": "I feel depressed and anxious all the time.",
+   "expect": {
+    "category": "healthcare",
+    "flag_absent": "self_harm"
+   },
+   "_why": "mental health, not crisis"
+  },
+  {
+   "text": "A scammer took all my savings.",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "My landlord is keeping my security deposit for no reason.",
+   "expect": {
+    "category_in": [
+     "legal",
+     "housing"
+    ]
+   },
+   "top3_any": [
+    "Tenant Rights Hotline (National Housing Law Project)"
+   ]
+  },
+  {
+   "text": "I don't need a lawyer, I need food.",
+   "expect": {
+    "category": "food"
+   },
+   "_why": "negated legal"
+  },
+  {
+   "text": "Do food banks ask for ID?",
+   "expect": {
+    "category": "food"
+   },
+   "_why": "question form"
+  },
+  {
+   "text": "I'm 67, I live alone and can't get to the grocery store.",
+   "expect": {
+    "category": "food"
+   }
+  },
+  {
+   "text": "Need rent money.",
+   "expect": {
+    "category": "housing"
+   },
+   "_why": "terse"
+  },
+  {
+   "text": "Help me find a doctor who speaks Spanish.",
+   "expect": {
+    "category": "healthcare",
+    "language": "en"
+   },
+   "_why": "mentions Spanish, written in English"
+  },
+  {
+   "text": "My son was arrested last night.",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "I lost my job, rent is due Friday, and the fridge is empty.",
+   "expect": {
+    "category_in": [
+     "housing",
+     "food"
+    ],
+    "secondary_nonempty": true
+   },
+   "_why": "two needs: both surface"
+  },
+  {
+   "text": "I want to kill myself because I lost my home.",
+   "expect": {
+    "flag": "self_harm"
+   },
+   "top3_any": [
+    "988 Suicide and Crisis Lifeline"
+   ],
+   "_why": "crisis pinned first"
+  },
+  {
+   "text": "My husband hits me and I need somewhere safe to stay tonight.",
+   "expect": {
+    "flag": "dv",
+    "category": "housing",
+    "urgency": "immediate"
+   },
+   "top3_any": [
+    "National Domestic Violence Hotline Shelter Referral"
+   ]
+  },
+  {
+   "text": "No tengo casa y mi hijo está enfermo.",
+   "expect": {
+    "category_in": [
+     "housing",
+     "healthcare"
+    ],
+    "language": "es"
+   }
+  },
+  {
+   "text": "Necesito un abogado de inmigración.",
+   "expect": {
+    "category": "legal",
+    "language": "es"
+   }
+  },
+  {
+   "text": "Me van a cortar la luz la próxima semana.",
+   "expect": {
+    "category": "housing",
+    "language": "es"
+   },
+   "_why": "utility shutoff"
+  },
+  {
+   "text": "No necesito comida, necesito ayuda con la renta.",
+   "expect": {
+    "category": "housing",
+    "language": "es"
+   },
+   "_why": "negated food"
+  },
+  {
+   "text": "Mi hija necesita lentes para la escuela.",
+   "expect": {
+    "category": "healthcare",
+    "language": "es"
+   }
+  },
+  {
+   "text": "Necesito help con la renta.",
+   "expect": {
+    "category": "housing"
+   },
+   "_why": "Spanglish"
+  },
+  {
+   "text": "我不需要食物，我需要住的地方。",
+   "expect": {
+    "category": "housing",
+    "language": "zh"
+   },
+   "_why": "Chinese negation"
+  },
+  {
+   "text": "எனக்கு மருந்து வாங்க பணம் இல்லை.",
+   "expect": {
+    "category": "healthcare",
+    "language": "ta"
+   }
+  },
+  {
+   "text": "வீட்டில் சாப்பிட எதுவும் இல்லை.",
+   "expect": {
+    "category": "food",
+    "language": "ta"
+   },
+   "_why": "'at home' in Tamil is not housing"
+  },
+  {
+   "text": "घर में खाना नहीं है, बच्चे भूखे हैं।",
+   "expect": {
+    "category": "food",
+    "language": "hi"
+   },
+   "_why": "'ghar' as location, food need"
+  },
+  {
+   "text": "मुझे वकील चाहिए, मकान मालिक मुझे निकाल रहा है।",
+   "expect": {
+    "category_in": [
+     "legal",
+     "housing"
+    ],
+    "language": "hi"
+   }
+  },
+  {
+   "text": "أحتاج إلى طبيب لابني.",
+   "expect": {
+    "category": "healthcare",
+    "language": "ar"
+   }
+  },
+  {
+   "text": "Walang pagkain sa bahay namin.",
+   "expect": {
+    "category": "food",
+    "language": "tl"
+   },
+   "_why": "'sa bahay' = at home"
+  },
+  {
+   "text": "Mujhe khana chahiye, ghar mein kuch nahi hai.",
+   "expect": {
+    "category": "food"
+   },
+   "_why": "romanized Hindi"
+  },
+  {
+   "text": "Enakku saapadu venum, kaasu illa.",
+   "expect": {
+    "category": "food"
+   },
+   "_why": "romanized Tamil"
+  },
+  {
+   "text": "asdfgh qwerty zxcv",
+   "expect": {
+    "needs_llm": true
+   },
+   "_why": "gibberish"
+  },
+  {
+   "text": "help",
+   "expect": {
+    "needs_llm": true
+   },
+   "_why": "one word"
+  },
+  {
+   "text": "I need help paying for my father's funeral.",
+   "expect": {
+    "needs_llm": true
+   },
+   "_why": "out of scope: don't guess food/housing"
+  }
+ ]
+}

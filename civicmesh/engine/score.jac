@@ -6,8 +6,10 @@ data (EligibilityRuleNode fields + resource descriptions):
   * Hard gates (citizenship, age) multiply; soft criteria (income, household,
     residency, situation fit) are a weighted mean. Every criterion reports
     met / unmet / unknown with a plain-language reason.
-  * Income uses a logistic "soft threshold"  c = σ(k·(L − I)/L),  k = 6, so
-    $50 over a $30k limit reads as borderline rather than a cliff.
+  * Income uses a logistic "soft threshold"  c = σ(k·(L − I)/L),  k = 12, so
+    $50 over a limit reads as borderline (≈0.5) rather than a cliff, 10% under
+    reads 0.77 and 25% under 0.95. L itself comes from engine/policy.jac: a
+    percentage of the 2026 poverty line or HUD area median for this household.
   * Unknown ≠ fail: an unknown field contributes its prior expectation and
     lowers *coverage*. Low coverage triggers calibrated abstention — the tier
     becomes "needs_info" instead of a confident guess.
@@ -22,15 +24,21 @@ data (EligibilityRuleNode fields + resource descriptions):
 
 import math;
 import re;
+import from engine.policy { income_limit, status_rule, snap_estimate, season_rule }
 
-glob INCOME_K: float = 6.0;
+glob INCOME_K: float = 12.0;
 glob W_INCOME: float = 0.45;
 glob W_SITUATION: float = 0.30;
 glob W_RESIDENCY: float = 0.15;
 glob W_HOUSEHOLD: float = 0.10;
 glob UNKNOWN_HARD: float = 0.7;
 glob UNKNOWN_INCOME: float = 0.55;
-glob UNKNOWN_RESIDENCY: float = 0.75;
+# Everyone applies in the state they live in, so an unstated state barely
+# lowers eligibility; it is still asked for (it finds the local office).
+glob UNKNOWN_RESIDENCY: float = 0.95;
+# ~93% of U.S. residents are citizens or green-card holders (Census ACS /
+# DHS estimates), so an unstated status is a mild, not a heavy, discount.
+glob UNKNOWN_STATUS: float = 0.9;
 
 # Capacity-informed Beta prior (pseudo-counts), updated by recorded outcomes.
 glob CAPACITY_PRIOR: dict = {"open": [6.0, 3.0], "waitlist": [3.0, 5.0], "closed": [1.0, 6.0]};
@@ -68,6 +76,7 @@ glob TARGET_GATE: float = 0.35;
 
 glob QUESTIONS: dict = {
     "en": {
+        "need": "What do you need help with most right now?",
         "income": "About how much does your household earn per month (before taxes)?",
         "household": "How many people live in your household, including you?",
         "age": "How old are you?",
@@ -82,6 +91,7 @@ glob QUESTIONS: dict = {
         "eviction": "Have you received an eviction notice or are you behind on rent?"
     },
     "es": {
+        "need": "¿Con qué necesita ayuda más ahora mismo?",
         "income": "¿Cuánto gana su hogar al mes, más o menos (antes de impuestos)?",
         "household": "¿Cuántas personas viven en su hogar, contándose usted?",
         "age": "¿Cuántos años tiene?",
@@ -159,8 +169,11 @@ def cf_text(key: str, lang: str, a: str = "", b: str = "") -> str {
     if key == "age" {
         return ("está abierto a " + a) if es else ("it's open to " + a);
     }
+    if key == "coverage_gap" {
+        return "su estado no amplió Medicaid: un centro de salud comunitario (tarifa según ingresos) o el Mercado de Salud cubren ese hueco" if es else "your state didn't expand Medicaid — a community health center (sliding-scale fees) or the ACA Marketplace covers that gap";
+    }
     if key == "household" {
-        return ("requiere un hogar de " + a + " personas o más") if es else ("it needs a household of " + a + " or more");
+        return ("calificaría con un hogar de " + a + " personas o más") if es else ("you'd qualify with a household of " + a + " or more");
     }
     if key == "situation" {
         return ("es para " + a + " — dígame si es su caso") if es else ("it's for " + a + " — tell me if that's you");
@@ -186,26 +199,72 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
     specificity = 1.0;
 
     income = int(profile.get("income_annual", -1));
-    limit = int(rule.get("income_limit_annual", 0) or 0);
-    if limit <= 0 {
-        crits.append(_crit("income", "Income", "met", 1.0, W_INCOME, False, "No income limit"));
-    } elif income < 0 {
-        crits.append(_crit("income", "Income", "unknown", UNKNOWN_INCOME, W_INCOME, False, "Limit " + usd(limit) + "/yr — income not mentioned yet"));
-        asks.append("income");
+    rule_id = str(rule.get("rule_id", ""));
+    lim = income_limit(rule_id, profile, int(rule.get("income_limit_annual", 0) or 0));
+    if lim.get("blocked") {
+        # The rule itself excludes this person (e.g. childless adult in a
+        # state that did not expand Medicaid): a hard gate, not a soft score.
+        cr = _crit("income", "Coverage rule", "unmet", 0.0, 0.0, True, str(lim["blocked"]));
+        cr["source"] = "KFF state Medicaid expansion status (2026)";
+        crits.append(cr);
+        cfs.append({"key": "coverage_gap", "effort": 6.0, "text": cf_text("coverage_gap", lang)});
+    } elif (not lim) or lim.get("none") {
+        note = str(lim.get("note", "")) if lim else "";
+        crits.append(_crit("income", "Income", "met", 1.0, W_INCOME, False, "No income limit" + (" — " + note if note else "")));
     } else {
-        c = sigmoid(INCOME_K * (limit - income) / float(limit));
-        if income <= limit {
-            crits.append(_crit("income", "Income", "met", c, W_INCOME, False, usd(income) + "/yr is under the " + usd(limit) + " limit"));
+        limit = int(lim["limit"]);
+        per = int(lim.get("per_person", 0));
+        basis = str(lim["label"]) + " (" + usd(limit) + "/yr)";
+        if lim.get("assumed_household") and per > 0 {
+            basis = basis + ", +" + usd(per) + " per extra person";
+            if "household" not in asks { asks.append("household"); }
+        }
+        cr: dict = {};
+        if income < 0 {
+            cr = _crit("income", "Income", "unknown", UNKNOWN_INCOME, W_INCOME, False, "Limit: " + basis + " — income not mentioned yet");
+            asks.append("income");
+        } elif income <= limit {
+            cr = _crit("income", "Income", "met", sigmoid(INCOME_K * (limit - income) / float(limit)), W_INCOME, False, usd(income) + "/yr is under " + basis);
+        } elif lim.get("assumed_household") and per > 0 and income <= limit + 7 * per {
+            # Over the 1-person line, but household size is unknown and the
+            # limit grows with every person: ask before ruling it out.
+            need_n = 1 + int(math.ceil((income - limit) / float(per)));
+            cr = _crit("income", "Income", "unknown", 0.5, W_INCOME, False, usd(income) + "/yr is over the limit for 1 person; it fits a household of " + str(need_n) + " or more (" + basis + ")");
+            cfs.append({"key": "household", "effort": 1.0, "text": cf_text("household", lang, str(need_n))});
         } else {
-            crits.append(_crit("income", "Income", "unmet", c, W_INCOME, False, usd(income) + "/yr is over the " + usd(limit) + " limit"));
+            cr = _crit("income", "Income", "unmet", sigmoid(INCOME_K * (limit - income) / float(limit)), W_INCOME, False, usd(income) + "/yr is over " + basis);
             cfs.append({"key": "income", "effort": (income - limit) / float(limit), "text": cf_text("income", lang, usd(limit), usd(income - limit))});
         }
+        cr["source"] = str(lim.get("source", ""));
+        if lim.get("note") { cr["note"] = str(lim["note"]); }
+        if lim.get("typical") { cr["typical"] = True; }
+        crits.append(cr);
     }
 
-    if bool(rule.get("citizenship_required", False)) {
+    se = season_rule(rule_id);
+    if se and not se["open"] {
+        cr = _crit("season", "Season", "unmet", 0.0, 0.0, True, str(se["detail"]));
+        cr["source"] = "USDA Summer Food Service Program calendar";
+        crits.append(cr);
+        cfs.append({"key": "season", "effort": 9.0, "text": str(se["detail"])});
+    }
+
+    sr = status_rule(rule_id, profile);
+    if sr {
+        st = str(sr["status"]);
+        cr = _crit("citizenship", "Status", st, 1.0 if st == "met" else (0.0 if st == "unmet" else UNKNOWN_STATUS), 0.0, True, str(sr["detail"]));
+        if sr.get("change_note") { cr["note"] = str(sr["change_note"]); }
+        cr["source"] = "P.L. 119-21 (2025) immigrant-eligibility rules";
+        crits.append(cr);
+        if st == "unmet" {
+            cfs.append({"key": "citizenship", "effort": 2.0, "text": str(sr["detail"]) if lang != "es" else cf_text("citizenship_waiver", lang)});
+        } elif st == "unknown" {
+            asks.append("citizenship");
+        }
+    } elif bool(rule.get("citizenship_required", False)) {
         cit = str(profile.get("citizenship", ""));
         waiver = bool(re.search(r"immigra|lpr|refugee|asylee|qualified non-citizen|legal resident", (str(rule.get("exceptions", "")) + " " + str(rule.get("criteria_summary", ""))).lower()));
-        if cit == "citizen" or cit == "eligible_immigrant" {
+        if cit in ["citizen", "eligible_immigrant", "humanitarian"] {
             crits.append(_crit("citizenship", "Status", "met", 1.0, 0.0, True, "Citizen or eligible immigrant"));
         } elif cit == "non_citizen" {
             crits.append(_crit("citizenship", "Status", "unmet", 0.0, 0.0, True, "Needs citizenship or an eligible immigration status"));
@@ -241,6 +300,11 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
             }
         } elif amin >= 60 and "senior" in flags {
             crits.append(_crit("age", "Age", "met", 0.9, 0.0, True, "Senior (" + band + ")"));
+        } elif amin >= 60 {
+            # A seniors-only program is a targeting question, not a likely fit.
+            crits.append(_crit("age", "Age", "unknown", 0.45, 0.0, True, "For people " + band));
+            asks.append("age");
+            targeted_unconfirmed = True;
         } elif amin <= 18 {
             crits.append(_crit("age", "Age", "met", 0.95, 0.0, True, "Adults " + band));
         } else {
@@ -313,7 +377,8 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
             soft_den += float(c["weight"]);
         }
     }
-    p_elig = gate * (soft_num / soft_den if soft_den > 0 else 1.0);
+    # Never claim certainty: rules are applied from what the person said.
+    p_elig = min(0.97, gate * (soft_num / soft_den if soft_den > 0 else 1.0));
     coverage = known_w / total_w if total_w > 0 else 1.0;
     hard_fail = len([c for c in crits if c["hard"] and c["status"] == "unmet"]) > 0;
     soft_unmet = len([c for c in crits if (not c["hard"]) and c["status"] == "unmet"]);
@@ -334,7 +399,11 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
     capacity = str(resource.get("capacity", "open"));
     post = beta_posterior(int(rule.get("prior_approvals", 0) or 0), int(rule.get("prior_attempts", 0) or 0), capacity);
     cap_f = float(CAPACITY_FACTOR.get(capacity, 0.6));
-    rank = p_elig * cap_f * specificity * (0.55 + 0.45 * float(post["ucb"]));
+    # Expected value, not just fit: a program with an estimable cash-like
+    # benefit (SNAP) ranks by what it is worth to this household.
+    benefit: dict = snap_estimate(profile) if rule_id == "snap-rule" and tier != "unlikely" else {};
+    value_f = 1.0 + min(0.6, float(benefit.get("monthly", 0)) / 800.0) if benefit else 1.0;
+    rank = p_elig * cap_f * specificity * value_f * (0.55 + 0.45 * float(post["ucb"]));
 
     cfs.sort(key=lambda c: dict : float(c["effort"]));
     return {
@@ -349,6 +418,7 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         "rank_score": round(rank, 4),
         "criteria": crits,
         "counterfactual": cfs[0]["text"] if (cfs and tier != "likely") else "",
+        "benefit": benefit,
         "asks": asks,
         "contact_phone": str(resource.get("contact_phone", "")),
         "contact_email": str(resource.get("contact_email", "")),

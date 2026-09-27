@@ -10,8 +10,16 @@ edge has_need {}
 sem has_need is "A PersonNode currently has this NeedNode open. Created when extract_need_profile() lifts a need from conversation. Persists until the underlying need is resolved.";
 
 # NeedNode -> ResourceNode
-edge eligible_for {}
-sem eligible_for is "A NeedNode could be fulfilled by this ResourceNode. Created by the EligibilityWalker after check_eligibility() returns is_eligible=true.";
+edge eligible_for {
+    has tier: str = "",
+        p_eligible: float = 0.0,
+        rank: int = 0,
+        benefit_monthly: int = 0;
+}
+sem eligible_for is "The engine's verdict for one need against one program, persisted: EligibilityWalker writes one edge per top match (tier, P(eligible), rank, estimated monthly benefit). The Graph tab is a query over these edges.";
+sem eligible_for.tier is "likely | possible | needs_info | unlikely — the calibrated abstention tier.";
+sem eligible_for.p_eligible is "P(eligible) from engine/score.jac for this need.";
+sem eligible_for.rank is "0-based position in the ranked answer the user saw.";
 
 # ResourceNode -> EligibilityRuleNode
 edge governed_by {}
@@ -45,4 +53,4 @@ sem leads_to.difficulty is "Perceived friction of making this hop. One of: 'easy
 
 # PersonNode -> SessionInsight
 edge reflected_on {}
-sem reflected_on is "Connects a PersonNode to a SessionInsight written after each chat turn. IntakeWalker traverses these edges on the next turn to read the agent's own recent self-critique and prepend it as context — Reflexion-style self-improvement via pure graph memory, no external retrieval store.";
+sem reflected_on is "Connects a PersonNode to a SessionInsight written after each chat turn (quality score, walkers that ran, LLM calls actually made). Read back by the Telemetry tab.";

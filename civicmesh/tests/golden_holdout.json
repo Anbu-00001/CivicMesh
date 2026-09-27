@@ -1,0 +1,278 @@
+{
+ "_doc": "Held-out adversarial batch, written AFTER the engine was tuned on golden_adversarial.json. First-run score is reported in the README; fixes made afterwards are listed there.",
+ "cases": [
+  {
+   "text": "Is there anywhere I can get groceries without paying? My check doesn't come until the 3rd.",
+   "expect": {
+    "category": "food"
+   }
+  },
+  {
+   "text": "They changed the locks on me and my stuff is still inside.",
+   "expect": {
+    "category_in": [
+     "legal",
+     "housing"
+    ]
+   }
+  },
+  {
+   "text": "Our apartment has mold and my son keeps getting sick from it.",
+   "expect": {
+    "category_in": [
+     "legal",
+     "housing"
+    ]
+   }
+  },
+  {
+   "text": "I can't afford my prescriptions after losing Medicaid.",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "We need baby food.",
+   "expect": {
+    "category": "food"
+   }
+  },
+  {
+   "text": "My electricity got cut off yesterday.",
+   "expect": {
+    "category": "housing"
+   }
+  },
+  {
+   "text": "Need a free clinic, no insurance.",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "Can someone help me file for custody of my grandkids?",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "I'm about to lose my house to foreclosure.",
+   "expect": {
+    "category": "housing"
+   }
+  },
+  {
+   "text": "Soy indocumentado y me quieren deportar.",
+   "expect": {
+    "category": "legal",
+    "language": "es",
+    "citizenship": "non_citizen"
+   }
+  },
+  {
+   "text": "Mi esposo me pega y tengo miedo.",
+   "expect": {
+    "flag": "dv"
+   }
+  },
+  {
+   "text": "My roommate stole my rent money and now I'm behind.",
+   "expect": {
+    "category": "housing"
+   }
+  },
+  {
+   "text": "I'm a student and I'm hungry most days.",
+   "expect": {
+    "category": "food"
+   }
+  },
+  {
+   "text": "The hospital sent my bill to collections.",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "I think I have diabetes but I can't pay for a doctor.",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "we havent eaten since yesterday",
+   "expect": {
+    "category": "food",
+    "urgency": "immediate"
+   }
+  },
+  {
+   "text": "RENT IS DUE AND I HAVE $0",
+   "expect": {
+    "category": "housing"
+   }
+  },
+  {
+   "text": "food",
+   "expect": {
+    "category": "food"
+   }
+  },
+  {
+   "text": "housing",
+   "expect": {
+    "category": "housing"
+   }
+  },
+  {
+   "text": "abogado",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "I need a place to shower and do laundry.",
+   "expect": {
+    "category": "housing"
+   }
+  },
+  {
+   "text": "My disability check isn't enough for food and rent.",
+   "expect": {
+    "category_in": [
+     "food",
+     "housing"
+    ],
+    "flag": "disabled"
+   }
+  },
+  {
+   "text": "I was fired for being pregnant.",
+   "expect": {
+    "category": "legal",
+    "flag": "pregnant"
+   }
+  },
+  {
+   "text": "My ex won't let me see my kids.",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "I need a translator for my court date.",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "Tengo hambre y no tengo dinero.",
+   "expect": {
+    "category": "food",
+    "language": "es"
+   }
+  },
+  {
+   "text": "No tenemos luz ni agua.",
+   "expect": {
+    "category": "housing",
+    "language": "es"
+   }
+  },
+  {
+   "text": "Necesito un médico para mi hijo.",
+   "expect": {
+    "category": "healthcare",
+    "language": "es"
+   }
+  },
+  {
+   "text": "我需要看医生，但是没有保险。",
+   "expect": {
+    "category": "healthcare",
+    "language": "zh"
+   }
+  },
+  {
+   "text": "Tôi bị chủ nhà đuổi ra khỏi nhà.",
+   "expect": {
+    "category": "housing",
+    "language": "vi"
+   }
+  },
+  {
+   "text": "मेरे पास दवाई के पैसे नहीं हैं।",
+   "expect": {
+    "category": "healthcare",
+    "language": "hi"
+   }
+  },
+  {
+   "text": "எங்கள் வீட்டு உரிமையாளர் வாடகை உயர்த்திவிட்டார்.",
+   "expect": {
+    "category": "housing",
+    "language": "ta"
+   }
+  },
+  {
+   "text": "Necesito comida y un lugar para dormir.",
+   "expect": {
+    "category_in": [
+     "food",
+     "housing"
+    ],
+    "secondary_nonempty": true,
+    "language": "es"
+   }
+  },
+  {
+   "text": "I'm not sick, I just need food.",
+   "expect": {
+    "category": "food"
+   }
+  },
+  {
+   "text": "Food isn't the problem, it's the rent.",
+   "expect": {
+    "category": "housing"
+   }
+  },
+  {
+   "text": "I have food stamps but they ran out.",
+   "expect": {
+    "category": "food"
+   }
+  },
+  {
+   "text": "Kill me now, this paperwork is endless lol",
+   "expect": {
+    "flag_absent": "self_harm"
+   }
+  },
+  {
+   "text": "I don't want to live anymore.",
+   "expect": {
+    "flag": "self_harm"
+   },
+   "top3_any": [
+    "988 Suicide and Crisis Lifeline"
+   ]
+  },
+  {
+   "text": "I'm scared he'll hurt me again.",
+   "expect": {
+    "flag": "dv"
+   }
+  },
+  {
+   "text": "Nuestro casero no quiere arreglar la calefacción.",
+   "expect": {
+    "category_in": [
+     "legal",
+     "housing"
+    ],
+    "language": "es"
+   }
+  }
+ ]
+}

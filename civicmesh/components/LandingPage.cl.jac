@@ -19,7 +19,7 @@ dashed rail scroll). No Spline / WebGL — keeps bundle small and first
 paint fast on 4G.
 """
 
-def:pub LandingPage(on_start: Any) -> JsxElement {
+def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
 
     # Auto-typing chat preview state. The hero's "live session" glass card
     # advances bubble-by-bubble on a 1.4s cadence so judges see the agent
@@ -45,6 +45,7 @@ def:pub LandingPage(on_start: Any) -> JsxElement {
     def renderWalkerCard(idx: int, name: str, role: str, color: str, tilt: str) -> JsxElement;
     def renderTrackBadge(label: str, accent: str) -> JsxElement;
     def renderPreviewBubble(role: str, walker_name: str, text: str, color: str) -> JsxElement;
+    def previewLine(step: int) -> str;
 
     return
         <div
@@ -112,7 +113,7 @@ def:pub LandingPage(on_start: Any) -> JsxElement {
                 <div style={{"display": "flex", "alignItems": "center", "gap": "10px"}}>
                     <div className="lp-pulse-dot"/>
                     <span style={{"fontSize": "12px", "color": "rgba(255,255,255,0.55)"}}>
-                        mistral-nemotron · live
+                        {("engine live · " + str(platform["programs"]) + " programs") if platform else "engine starting…"}
                     </span>
                     <div style={{"width": "1px", "height": "16px", "background": "rgba(255,255,255,0.1)", "margin": "0 6px"}}/>
                     <span style={{"fontSize": "11px", "color": "rgba(255,255,255,0.4)"}}>
@@ -151,7 +152,7 @@ def:pub LandingPage(on_start: Any) -> JsxElement {
                     "letterSpacing": "0.01em"
                 }}>
                     <span style={{"width": "5px", "height": "5px", "borderRadius": "50%", "background": "#00FF88", "display": "inline-block", "boxShadow": "0 0 6px #00FF88"}}/>
-                    Multi-agent · 5 specialized walkers · Jac + NVIDIA NIM
+                    Jac walkers · deterministic eligibility engine · one LLM call, off the critical path
                 </div>
 
                 <h1 style={{
@@ -177,7 +178,7 @@ def:pub LandingPage(on_start: Any) -> JsxElement {
                     "margin": "0 auto 38px",
                     "fontWeight": "400"
                 }}>
-                    A multi-agent AI navigator that routes people in crisis — single mothers, undocumented families, elderly tenants — to the housing, food, healthcare and legal aid they qualify for. In any language. In under a minute.
+                    A multi-agent navigator that routes people in crisis — single mothers, immigrant families, elderly tenants — to the housing, food, healthcare and legal aid they qualify for, and shows exactly why. Instant answers in 40 languages; a warm summary in the user's own language a few seconds later.
                 </p>
 
                 <div style={{"display": "flex", "justifyContent": "center", "alignItems": "center", "gap": "16px", "marginBottom": "56px", "flexWrap": "wrap"}}>
@@ -185,8 +186,8 @@ def:pub LandingPage(on_start: Any) -> JsxElement {
                         Enter the Navigator  →
                     </button>
                     <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.4)", "textAlign": "left", "lineHeight": "1.5"}}>
-                        <div style={{"color": "rgba(255,255,255,0.65)"}}>No signup · No data collection</div>
-                        <div>Demo runs against 40 real seeded resources.</div>
+                        <div style={{"color": "rgba(255,255,255,0.65)"}}>No signup — an anonymous account lives in this browser</div>
+                        <div>{"40 national programs · 2026 federal income rules · local offices from HUD & HRSA open data"}</div>
                     </div>
                 </div>
 
@@ -206,7 +207,7 @@ def:pub LandingPage(on_start: Any) -> JsxElement {
                             <span style={{"width": "10px", "height": "10px", "borderRadius": "50%", "background": "#FEBC2E"}}/>
                             <span style={{"width": "10px", "height": "10px", "borderRadius": "50%", "background": "#28C840"}}/>
                             <span style={{"fontSize": "11px", "color": "rgba(255,255,255,0.4)", "marginLeft": "10px", "letterSpacing": "0.02em"}}>
-                                CivicMesh Navigator · live session
+                                {"Live engine run · " + ((str(platform["preview"]["engine_ms"]) + " ms, 0 LLM calls") if platform else "starting…")}
                             </span>
                         </div>
                         <div style={{
@@ -225,10 +226,10 @@ def:pub LandingPage(on_start: Any) -> JsxElement {
                         </div>
                     </div>
                     <div style={{"display": "flex", "flexDirection": "column", "gap": "10px", "minHeight": "180px"}}>
-                        {(preview_step >= 1) and renderPreviewBubble("user", "",                  "Single mom · 2 kids · $1800/mo in Houston. Need help.", "#FFE500")}
-                        {(preview_step >= 2) and renderPreviewBubble("bot",  "IntakeWalker",       "Detected: housing + food · urgency: immediate · ES/EN.", "#FFE500")}
-                        {(preview_step >= 3) and renderPreviewBubble("bot",  "EligibilityWalker",  "Scored 40 resources. 12 eligible. Top: Section 8 (94), SNAP (89), WIC (82).", "#4488FF")}
-                        {(preview_step >= 4) and renderPreviewBubble("bot",  "NavigationWalker",   "Built 4-step plan. Estimated $11,880/yr unlocked if approved.", "#00FF88")}
+                        {(preview_step >= 1) and renderPreviewBubble("user", "", (str(platform["preview"]["prompt"]) if platform else "I'm a single mom with 2 kids in Houston. I earn $1,800 a month and we need food."), "#FFE500")}
+                        {(preview_step >= 2) and renderPreviewBubble("bot", "IntakeWalker", previewLine(2), "#FFE500")}
+                        {(preview_step >= 3) and renderPreviewBubble("bot", "EligibilityWalker", previewLine(3), "#4488FF")}
+                        {(preview_step >= 4) and renderPreviewBubble("bot", "Next question", previewLine(4), "#00FF88")}
                         {(preview_step > 0 and preview_step < 4) and <div style={{"display": "flex", "alignItems": "center", "gap": "6px", "color": "rgba(255,255,255,0.35)", "fontSize": "11px", "fontStyle": "italic", "paddingLeft": "34px"}}>
                             <span className="lp-typing-dot"/>
                             <span className="lp-typing-dot"/>
@@ -253,10 +254,10 @@ def:pub LandingPage(on_start: Any) -> JsxElement {
                     "gridTemplateColumns": "repeat(4, 1fr)",
                     "gap": "14px"
                 }}>
-                    {renderStatTile("40+",   "Resources seeded",        "Section 8 · SNAP · WIC · Medicaid · LIHEAP",            "#FFE500")}
-                    {renderStatTile("5",     "AI agents collaborating", "Intake · Eligibility · Navigation · Memory · Escalation","#00FF88")}
-                    {renderStatTile("∞",     "Languages supported",     "Detected per turn · routed via TranslateWalker",        "#4488FF")}
-                    {renderStatTile("<12s",  "Median time per case",    "From free-form prompt to ranked action plan",           "#FF88AA")}
+                    {renderStatTile((str(platform["programs"]) if platform else "40"), "Programs scored per turn", "Federal + national programs · 2026 poverty & HUD limits by household size", "#FFE500")}
+                    {renderStatTile((str(platform["languages_routed"]) if platform else "40"), "Languages routed without an LLM", "Script + lexicon language ID · others narrated in the user's language", "#00FF88")}
+                    {renderStatTile(((str(platform["stats"]["engine_ms_p50"]) + " ms") if (platform and Number(platform["stats"]["turns"]) > 0) else "< 1 s"), "Median engine time per turn", ((str(platform["stats"]["turns"]) + " live turns since last restart") if (platform and Number(platform["stats"]["turns"]) > 0) else "Answer on screen before any LLM call"), "#4488FF")}
+                    {renderStatTile("1", "LLM call per turn", "Async narration with a facts guard — never on the critical path", "#FF88AA")}
                 </div>
             </section>
 
@@ -296,10 +297,10 @@ def:pub LandingPage(on_start: Any) -> JsxElement {
                         "letterSpacing": "-0.025em",
                         "margin": "0 0 8px"
                     }}>
-                        Five specialized walkers, one pipeline.
+                        Nine walkers, one traced pipeline.
                     </h2>
                     <p style={{"fontSize": "14px", "color": "rgba(255,255,255,0.5)", "margin": "0", "maxWidth": "560px", "marginLeft": "auto", "marginRight": "auto"}}>
-                        Each agent owns a single concern. Together they turn one prompt into a ranked, persisted action plan.
+                        Each walker owns one concern and writes its result to the graph. Escalation, Memory (outcome learning) and Critique run alongside these five.
                     </p>
                 </div>
 
@@ -321,11 +322,11 @@ def:pub LandingPage(on_start: Any) -> JsxElement {
                         "position": "relative",
                         "zIndex": "1"
                     }}>
-                        {renderWalkerCard(1, "Intake",      "Extracts the user's need + language from free-form input", "#FFE500", "-3deg")}
-                        {renderWalkerCard(2, "Eligibility", "Scores 40 resources against the profile via check_eligibility()", "#4488FF", "2deg")}
-                        {renderWalkerCard(3, "Navigation",  "Builds an ordered ActionPlan, persists ApplicationNodes",   "#00FF88", "-2deg")}
-                        {renderWalkerCard(4, "Memory",      "Stores session state on PersonNode for return visits",      "#FFB344", "3deg")}
-                        {renderWalkerCard(5, "Escalation",  "ReAct loop with 3 tools for crisis routing when no match",  "#FF4444", "-2deg")}
+                        {renderWalkerCard(1, "Intake",      "Identifies the language and need in 40 languages with evidence spans; an LLM only if nothing routes (3.5 s cap)", "#FFE500", "-3deg")}
+                        {renderWalkerCard(2, "Eligibility", "Scores every program with effective-dated 2026 rules, calibrated tiers and Beta approval odds; writes eligible_for edges", "#4488FF", "2deg")}
+                        {renderWalkerCard(3, "Navigation",  "Orders the plan by Smith's rule, merges shared documents, persists ApplicationNodes",   "#00FF88", "-2deg")}
+                        {renderWalkerCard(4, "Pathfinder",  "Yen k-shortest expected-cost routes over leads_to edges",      "#FFB344", "3deg")}
+                        {renderWalkerCard(5, "Narrator",    "The one LLM call: a summary in the user's language, after the answer is on screen", "#FF88AA", "-2deg")}
                     </div>
                 </div>
             </section>
@@ -373,7 +374,7 @@ def:pub LandingPage(on_start: Any) -> JsxElement {
                         "I'm a single mother with two kids and we just lost our apartment. I don't know what to do, and English is hard for me."
                     </div>
                     <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.5)", "marginBottom": "20px", "fontStyle": "italic"}}>
-                        — Maria, demo persona · routed to Section 8 + SNAP + WIC in 11 seconds
+                        — example situation · paste it into the Navigator to see the real answer
                     </div>
                     <div style={{"display": "flex", "flexWrap": "wrap", "gap": "8px"}}>
                         {renderPersonaPill("Single mother · 2 kids · $1800/mo", "#FFE500")}
@@ -431,7 +432,7 @@ def:pub LandingPage(on_start: Any) -> JsxElement {
                 <span>
                     Built on <span style={{"color": "rgba(255,229,0,0.7)", "fontWeight": "500"}}>Jac</span>
                     · Powered by <span style={{"color": "rgba(0,255,136,0.7)", "fontWeight": "500"}}>NVIDIA NIM</span>
-                    · mistral-nemotron
+                    · narration only
                 </span>
                 <span>
                     JacHacks Spring 2026

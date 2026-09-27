@@ -100,6 +100,8 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "") -> None 
     new_messages = new_messages + [{"role": "bot", "kind": "result", "id": bot_id, "data": data, "rtt_ms": rtt}];
     messages = new_messages;
     profile_ctx = data["profile"];
+    ln = data["language_name"];
+    lang_label = (str(ln[1]) + (" · " + str(ln[0]) if str(ln[0]) != str(ln[1]) else "")) if (ln and data["narrate_language"] != "auto") else "not identified";
     q = data["question"];
     pending_question = str(q["key"]) if (q and q["key"]) else "";
     last_trace = data["trace"];
@@ -110,6 +112,59 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "") -> None 
     if llm and llm["narrate"] {
         narrate(bot_id, data, user_text);
     }
+    prof = data["profile"];
+    cat = str(prof["category"]) if prof else "";
+    if prof and prof["state"] and (cat == "housing" or cat == "healthcare" or cat == "legal") {
+        findLocal(bot_id, data);
+    }
+}
+
+impl ChatPane.findLocal(msg_id: str, data: Any) -> None {
+    prof = data["profile"];
+    flags: list = list(prof["flags"]) if prof["flags"] else [];
+    locals[msg_id] = {"status": "pending"};
+    narr_tick = Math.random();
+    res = await safeSpawn("LocalHelpWalker", {
+        "category": str(prof["category"]), "city": str(prof["city"]) if prof["city"] else "",
+        "state": str(prof["state"]), "homeless": flags.includes("homeless")
+    });
+    reps = res["reports"];
+    r = reps[len(reps) - 1] if (reps and len(reps) > 0) else None;
+    locals[msg_id] = {"status": ("ok" if (r and r["offices"] and len(r["offices"]) > 0) else "none"), "data": r};
+    narr_tick = Math.random();
+}
+
+impl ChatPane.renderLocal(loc: Any) -> JsxElement {
+    if not loc { return <div/>; }
+    if loc["status"] == "pending" {
+        return <div className="cm-block cm-local cm-muted">Looking up offices near you in HUD and HRSA open data…</div>;
+    }
+    if loc["status"] != "ok" { return <div/>; }
+    d = loc["data"];
+    offices: list = list(d["offices"]);
+    return
+        <div className="cm-block cm-local">
+            <div className="cm-block-title">
+                <span>{"Near you · " + str(d["place"])}</span>
+                <span className="cm-muted">{"federal open data · " + (("cached" if d["cached"] else str(Math.round(Number(d["latency_ms"]))) + " ms"))}</span>
+            </div>
+            {[
+                <div key={"lo" + str(i)} className="cm-local-row">
+                    <div className="cm-local-main">
+                        <div className="cm-local-name">{str(offices[i]["name"])}</div>
+                        <div className="cm-muted cm-local-meta">{str(offices[i]["kind"]) + " · " + str(offices[i]["detail"])}</div>
+                        <div className="cm-muted cm-local-meta">{str(offices[i]["address"])}</div>
+                    </div>
+                    <div className="cm-local-actions">
+                        {offices[i]["phone"] and <a className="cm-call" href={"tel:" + str(offices[i]["phone"])}>{str(offices[i]["phone"])}</a>}
+                        {offices[i]["email"] and <a className="cm-link" href={"mailto:" + str(offices[i]["email"])}>Email</a>}
+                        {offices[i]["url"] and <a className="cm-link" href={(str(offices[i]["url"]) if str(offices[i]["url"]).startsWith("http") else "https://" + str(offices[i]["url"]))} target="_blank" rel="noreferrer">Website</a>}
+                    </div>
+                </div>
+                for i in range(len(offices))
+            ]}
+            <div className="cm-crit-foot">{"Source: " + str(offices[0]["source"]) + ". Listings come straight from the federal datasets; call ahead to confirm hours."}</div>
+        </div>;
 }
 
 impl ChatPane.narrate(msg_id: str, data: Any, user_text: str) -> None {
@@ -118,7 +173,7 @@ impl ChatPane.narrate(msg_id: str, data: Any, user_text: str) -> None {
     t0 = window.performance.now();
     res = await safeSpawn("NarrateWalker", {
         "user_message": user_text,
-        "language": data["language"],
+        "language": data["narrate_language"] if data["narrate_language"] else data["language"],
         "facts": data["facts"],
         "chips": data["chips"] if data["chips"] else []
     });
@@ -188,6 +243,12 @@ impl ChatPane.renderQuickReplies(q: Any, lang: str) -> JsxElement {
     opts: list = [];
     if YES_NO_KEYS.includes(key) {
         opts = [["Sí" if es else "Yes", "sí" if es else "yes"], ["No", "no"]];
+    } elif key == "need" {
+        if es {
+            opts = [["Comida", "necesito comida"], ["Vivienda", "necesito ayuda con vivienda"], ["Salud", "necesito un médico"], ["Ayuda legal", "necesito un abogado"]];
+        } else {
+            opts = [["Food", "I need food"], ["Housing", "I need help with housing"], ["Health care", "I need a doctor"], ["Legal help", "I need a lawyer"]];
+        }
     } elif key == "income" {
         if es {
             opts = [["Menos de $1,000/mes", "unos $800 al mes"], ["$1,000–2,000/mes", "unos $1,500 al mes"], ["$2,000–3,000/mes", "unos $2,500 al mes"], ["Más de $3,000/mes", "unos $3,500 al mes"], ["Sin ingresos", "no tengo ingresos"]];
@@ -202,9 +263,9 @@ impl ChatPane.renderQuickReplies(q: Any, lang: str) -> JsxElement {
         }
     } elif key == "citizenship" {
         if es {
-            opts = [["Ciudadano/a", "soy ciudadano"], ["Residente permanente", "soy residente permanente"], ["Sin papeles", "estoy sin papeles"]];
+            opts = [["Ciudadano/a", "soy ciudadano"], ["Residente permanente", "soy residente permanente"], ["Refugiado/a o asilado/a", "soy refugiado"], ["Sin papeles", "estoy sin papeles"]];
         } else {
-            opts = [["U.S. citizen", "I'm a US citizen"], ["Green card / refugee", "I have a green card"], ["Not a citizen", "I'm undocumented"]];
+            opts = [["U.S. citizen", "I'm a US citizen"], ["Green card", "I have a green card"], ["Refugee / asylee", "I'm a refugee"], ["No status", "I'm undocumented"]];
         }
     }
     return
@@ -233,6 +294,10 @@ impl ChatPane.renderMatchCard(m: Any, idx: int, j: int) -> JsxElement {
     url = str(m["online_url"]) if m["online_url"] else "";
     crits: list = list(m["criteria"]) if m["criteria"] else [];
     cap = str(m["capacity"]);
+    ben: Any = m["benefit"] if m["benefit"] else {};
+    # A policy change that affects this person (e.g. the Oct 1, 2026 Medicaid
+    # rule for refugees) is surfaced on the card, not hidden under "Why?".
+    notes: list = [str(c["note"]) for c in crits if c["note"] and c["key"] == "citizenship"];
     return
         <div key={"card-" + card_key} className="cm-card card-enter">
             <div className="cm-card-top">
@@ -253,17 +318,27 @@ impl ChatPane.renderMatchCard(m: Any, idx: int, j: int) -> JsxElement {
                 <div className="cm-ci-band" style={{"left": str(lo) + "%", "width": str(hi - lo) + "%"}}/>
                 <div className="cm-ci-mean" style={{"left": str(mean) + "%"}}/>
             </div>
+            {ben["label"] and <div className="cm-benefit" title={str(ben["basis"])}>
+                <span className="cm-benefit-amt">{str(ben["label"])}</span>
+                <span className="cm-muted">{"estimated benefit · household of " + str(ben["household"]) + (" (assumed)" if ben["assumed_household"] else "")}</span>
+            </div>}
+            {len(notes) > 0 and <div className="cm-policy-note">{"⚑ " + notes[0]}</div>}
             {m["counterfactual"] and <div className="cm-cf">{"↺ " + str(m["counterfactual"])}</div>}
             {is_open and <div className="cm-criteria">
                 {[
                     <div key={"cr-" + str(k)} className="cm-crit">
                         <span className={"cm-crit-icon cm-crit-" + str(crits[k]["status"])}>{("✓" if crits[k]["status"] == "met" else ("✗" if crits[k]["status"] == "unmet" else "?"))}</span>
                         <span className="cm-crit-label">{str(crits[k]["label"])}</span>
-                        <span className="cm-crit-detail">{str(crits[k]["detail"])}</span>
+                        <span className="cm-crit-detail">
+                            {str(crits[k]["detail"])}
+                            {crits[k]["note"] and <span className="cm-crit-note">{" — " + str(crits[k]["note"])}</span>}
+                            {crits[k]["source"] and <span className="cm-crit-src">{str(crits[k]["source"]) + (" · typical, varies locally" if crits[k]["typical"] else "")}</span>}
+                        </span>
                     </div>
                     for k in range(len(crits))
                 ]}
-                <div className="cm-crit-foot">{"Criteria confirmed: " + str(Math.round(Number(m["coverage"]) * 100)) + "% · score = hard gates × weighted soft criteria"}</div>
+                {ben["basis"] and <div className="cm-crit-foot">{"Benefit estimate: " + str(ben["basis"])}</div>}
+                <div className="cm-crit-foot">{"Criteria confirmed: " + str(Math.round(Number(m["coverage"]) * 100)) + "% · score = hard gates × weighted soft criteria · rules as of Sep 27, 2026"}</div>
             </div>}
             <div className="cm-card-actions">
                 {phone and <a className="cm-call" href={"tel:" + phone}>{"Call " + phone}</a>}
@@ -355,6 +430,10 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
     tick = narr_tick;
     narr: Any = narrations[msg["id"]];
     lang = str(d["language"]) if d["language"] else "en";
+    lname: list = list(d["language_name"]) if d["language_name"] else ["English", "English"];
+    # Outside English/Spanish the deterministic text is English, so the
+    # narration IS the answer: label it with the language's own name.
+    foreign = lang != "en" and lang != "es";
     matches: list = list(d["matches"]) if d["matches"] else [];
     plan: Any = d["plan"] if d["plan"] else {};
     routes: list = list(d["routes"]) if d["routes"] else [];
@@ -378,12 +457,19 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
         <div key={"m-" + str(idx)} className="cm-row msg-enter">
             <div className="cm-avatar">CM</div>
             <div className="cm-result">
-                {(narr and narr["status"] == "ok") and <div className="cm-narration">
+                {(narr and narr["status"] == "ok") and <div className={"cm-narration" + (" cm-narration-main" if foreign else "")} lang={lang}>
                     <span className="cm-spark">✦</span>
-                    <span>{str(narr["message"])}</span>
+                    <span>
+                        {foreign and <span className="cm-lang-tag">{str(lname[1])}</span>}
+                        {str(narr["message"])}
+                    </span>
                 </div>}
-                {(narr and narr["status"] == "pending") and <div className="cm-narration cm-narration-pending">✦ Writing a personalized summary…</div>}
-                <div className="cm-bubble">{renderRich(str(d["reply"]))}</div>
+                {(narr and narr["status"] == "pending") and <div className="cm-narration cm-narration-pending">{("✦ Writing this in " + str(lname[1]) + "…") if foreign else "✦ Writing a personalized summary…"}</div>}
+                {(foreign and narr and narr["status"] == "failed") and <div className="cm-narration cm-narration-pending">{"Couldn't reach the translator just now — here is the answer in English."}</div>}
+                <div className={"cm-bubble" + (" cm-bubble-en" if foreign else "")}>
+                    {foreign and <div className="cm-muted cm-bubble-label">Engine answer · English</div>}
+                    {renderRich(str(d["reply"]))}
+                </div>
                 {len(facts) > 0 and <div className="cm-understood">
                     <span className="cm-muted">Understood</span>
                     {[<span key={"f" + str(i)} className="cm-fact">{facts[i]}</span> for i in range(len(facts))]}
@@ -397,6 +483,7 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                     {[renderMatchCard(matches[j], idx, j) for j in range(len(matches) if len(matches) < 4 else 4)]}
                 </div>}
                 {(plan["steps"] and len(plan["steps"]) > 0) and renderPlan(plan)}
+                {renderLocal(locals[msg["id"]])}
                 {len(routes) > 0 and <div className="cm-block">
                     <div className="cm-block-title">
                         <span>Longer-term routes</span>
@@ -453,7 +540,7 @@ impl ChatPane.renderProfilePanel -> JsxElement {
     comp = Math.round(Number(p["completeness"]) * 100) if p["completeness"] else 0;
     rows = [
         ["Need", (str(p["category"]) + " · " + str(p["urgency"]).replace("_", " ")) if p["category"] else ""],
-        ["Language", str(p["language"]).toUpperCase() if p["language"] else ""],
+        ["Language", lang_label if lang_label else (str(p["language"]).toUpperCase() if p["language"] else "")],
         ["Income", ("$" + Number(p["income_annual"]).toLocaleString() + "/yr") if (p["income_annual"] != None and Number(p["income_annual"]) >= 0) else ""],
         ["Household", str(p["household_size"]) if Number(p["household_size"]) > 0 else ""],
         ["Age", str(p["age"]) if Number(p["age"]) > 0 else ""],
@@ -481,13 +568,13 @@ impl ChatPane.renderProfilePanel -> JsxElement {
 
 impl ChatPane.renderPipeline -> JsxElement {
     agents = [
-        ["IntakeWalker", "intake.parse", "Regex + lexicon parse, EN/ES, evidence spans"],
-        ["LLM · understand", "chat understand_message", "Only when the parser can't route"],
-        ["EligibilityWalker", "EligibilityWalker score", "40 programs · Beta posteriors · abstention"],
+        ["IntakeWalker", "intake.parse", "Language ID + parse in 40 languages, evidence spans"],
+        ["LLM · understand", "chat understand_message", "Only if nothing routes · 3.5 s cap"],
+        ["EligibilityWalker", "EligibilityWalker score", "2026 rules by household · Beta odds · abstention"],
         ["NavigationWalker", "NavigationWalker plan", "Smith's-rule step ordering"],
         ["PathfinderWalker", "PathfinderWalker yen_k_shortest", "Yen k-shortest expected-cost routes"],
         ["EscalationWalker", "EscalationWalker crisis_route", "Crisis lines when risk is present"],
-        ["CritiqueWalker", "reflexion.critique", "Reflexion write-back to the graph"]
+        ["CritiqueWalker", "reflexion.critique", "Self-critique written to the graph"]
     ];
     spans: list = list(last_trace["spans"]) if (last_trace and last_trace["spans"]) else [];
     return

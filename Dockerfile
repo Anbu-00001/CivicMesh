@@ -55,12 +55,16 @@ EXPOSE 7860
 # client is served from the pre-built bundle and the REST + WebSocket API
 # bind to the same port.
 #
+# SYSTEM_USER_PASSWORD: jac-scale's scheduler creates a login-capable
+# `__system__` account (default password "system_secret"); a random one per
+# boot closes that door (the scheduler itself uses a minted JWT, not the password).
 # Port priority: $PORT env var (Render injects 10000) → default 7860
 # (Hugging Face Spaces). We patch jac.toml at runtime so jac's internal
 # config matches the actual port — avoids a mismatch where the CLI flag
 # says one port but jac.toml says another.
 CMD ["sh", "-c", "\
   P=${PORT:-7860} && \
+  export SYSTEM_USER_PASSWORD=\"${SYSTEM_USER_PASSWORD:-$(head -c 24 /dev/urandom | base64 | tr -d '/+=')}\" && \
   sed -i \"s/^port = .*/port = $P/\" jac.toml && \
   sed -i \"s/^host = .*/host = \\\"0.0.0.0\\\"/\" jac.toml && \
   exec jac start app.jac --no-dev --port $P --host 0.0.0.0\

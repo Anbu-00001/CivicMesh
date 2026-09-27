@@ -1,5 +1,8 @@
 # CivicMesh — Devpost Submission
 
+> **Note (2026-09-27):** this is the hackathon-era write-up. The pipeline has since moved to a deterministic, math-first engine (one background LLM call per turn, 40 languages routed without a model, 2026 federal policy table, real local offices from HUD/HRSA open data). See the [README](../README.md) for the current architecture and measured numbers.
+
+
 ## Inspiration
 
 Tens of millions of vulnerable people — single mothers, undocumented families, elderly tenants on fixed incomes — don't know which programs they qualify for, what documents they need, or which agency to call first. The American safety net is real (Section 8 vouchers, SNAP, WIC, LIHEAP, Medicaid, legal aid), but it lives behind bureaucratic walls: fragmented websites, English-only intake forms, and screening logic that takes a trained caseworker to decode.

@@ -8,7 +8,9 @@ Math-first pipeline, traced end to end:
                       LLM call (understand_message), 6 s budget, then fall back
   3. graph.write      find-or-create PersonNode, attach NeedNode (has_need)
   4. EligibilityWalker → Navigation / Pathfinder / Escalation (all deterministic)
-  5. CritiqueWalker   Reflexion write-back (SessionInsight on reflected_on)
+  5. CritiqueWalker   self-critique written back to the graph (SessionInsight on
+                      reflected_on): quality score + the walkers and LLM calls
+                      that actually ran, read off this turn's trace
 
 The report carries the answer, the explainable match cards, the plan, the
 escape routes, and an OpenTelemetry-shaped span list for the latency
@@ -17,15 +19,24 @@ background to localize and warm up the wording.
 """
 
 import datetime;
+import contextvars;
+import concurrent.futures;
 import from graph.nodes { PersonNode, NeedNode }
 import from graph.edges { has_need }
 import from llm.stubs { understand_message, pool_model_names }
 import from engine.parse { parse_intake }
+import from engine.i18n { language_name }
+import from engine.stats { record_turn }
 import from engine.compose { merge_profiles, new_trace, span_begin, span_end, export_spans }
 import from walkers.eligibility { EligibilityWalker }
 import from walkers.critique { CritiqueWalker }
 
 glob CATEGORIES: list = ["housing", "food", "healthcare", "legal"];
+# The routing LLM call runs on a worker thread with a wall-clock deadline:
+# litellm's own timeout is per HTTP read and the provider SDK can retry, so
+# only a deadline the walker owns bounds what the user waits.
+glob LLM_EXEC: Any = concurrent.futures.ThreadPoolExecutor(max_workers=4, thread_name_prefix="cm-llm");
+glob SYNC_LLM_BUDGET_S: float = 3.5;
 
 walker IntakeWalker {
     has conversation: str;
@@ -52,12 +63,19 @@ walker IntakeWalker {
         llm_sync = False;
         llm_reason = str(profile.get("llm_reason", ""));
         llm_error = "";
-        if profile.get("needs_llm", False) {
+        # Nothing to read (empty, emoji, a bare number): no LLM call — the
+        # engine asks what the person needs instead.
+        has_letters = len([c for c in text if c.isalpha()]) >= 2;
+        if profile.get("needs_llm", False) and not has_letters {
+            llm_reason = "no text to route";
+        }
+        if profile.get("needs_llm", False) and has_letters {
             llm_sync = True;
             models = pool_model_names();
             sp = span_begin(tr, "chat understand_message", "CLIENT", rid, {"gen_ai.operation.name": "chat", "gen_ai.request.model": models[0] if models else "", "gen_ai.system": "litellm", "civicmesh.reason": llm_reason});
             try {
-                u = understand_message(message=text);
+                fut = LLM_EXEC.submit(contextvars.copy_context().run, understand_message, text);
+                u = fut.result(timeout=SYNC_LLM_BUDGET_S);
                 cat = str(u.category).strip().lower();
                 if cat in CATEGORIES {
                     profile["category"] = cat;
@@ -69,16 +87,20 @@ walker IntakeWalker {
                 if int(profile.get("household_size", 0)) <= 0 and int(u.household_size) > 0 { profile["household_size"] = int(u.household_size); }
                 if int(profile.get("age", 0)) <= 0 and int(u.age) > 0 { profile["age"] = int(u.age); }
                 if not profile.get("state") and len(str(u.state)) == 2 { profile["state"] = str(u.state).upper(); }
-                if not profile.get("citizenship") and str(u.citizenship) in ["citizen", "eligible_immigrant", "non_citizen"] { profile["citizenship"] = str(u.citizenship); }
+                if not profile.get("citizenship") and str(u.citizenship) in ["citizen", "eligible_immigrant", "humanitarian", "non_citizen"] { profile["citizenship"] = str(u.citizenship); }
                 if str(u.urgency) == "immediate" { profile["urgency"] = "immediate"; }
                 profile["llm_summary"] = str(u.english_summary);
                 span_end(tr, sp, {"civicmesh.category": profile["category"]});
+            } except concurrent.futures.TimeoutError as _deadline {
+                llm_error = "no answer within " + str(SYNC_LLM_BUDGET_S) + " s — the engine answered alone";
+                span_end(tr, sp, {"error.type": "deadline_exceeded"}, "ERROR");
             } except Exception as ex {
                 llm_error = str(ex)[:160];
                 span_end(tr, sp, {"error.type": type(ex).__name__}, "ERROR");
             }
         }
-        lang_out = str(profile.get("language", "") or "en");
+        detected = str(profile.get("language", "") or "");
+        lang_out = detected or "en";
         if not profile.get("category") {
             # Still nothing to route on: default to the broadest safety net
             # and let the follow-up question narrow it down.
@@ -122,9 +144,16 @@ walker IntakeWalker {
         sp = span_begin(tr, "reflexion.critique", "INTERNAL", rid);
         try {
             ranked = list(result.get("matches", []));
+            # What actually ran this turn, read off the trace (not estimated).
+            fired: list = ["IntakeWalker"];
+            for x in tr["spans"] {
+                nm = str(x["name"]).split(" ")[0];
+                if nm.endswith("Walker") and nm not in fired { fired.append(nm); }
+            }
             critique = person_node spawn CritiqueWalker(
                 user_id=self.user_id,
-                walker_events=list(self.chain_events),
+                walker_events=[{"walker": w} for w in fired],
+                llm_calls=(1 if llm_sync else 0) + 1,
                 user_prompt=text,
                 eligible_count=int(result.get("tiers", {}).get("likely", 0)),
                 escalated=bool(result.get("escalation")),
@@ -140,6 +169,7 @@ walker IntakeWalker {
         }
 
         span_end(tr, root_span, {"civicmesh.llm_calls_sync": 1 if llm_sync else 0});
+        record_turn(self.user_id, detected or "?", str(profile["category"]), float(root_span.get("duration_ms", 0.0)), llm_sync, llm_error.startswith("no answer within"));
         spans = export_spans(tr);
 
         public_profile = {k: v for (k, v) in profile.items() if k not in ["evidence", "category_scores"]};
@@ -157,6 +187,9 @@ walker IntakeWalker {
         report {
             "version": 2,
             "language": lang_out,
+            # "auto": no language identified — the narrator mirrors the user's.
+            "narrate_language": detected or "auto",
+            "language_name": language_name(detected or "en"),
             "profile": public_profile,
             "evidence": highlights,
             "category_scores": parsed["category_scores"],
@@ -170,7 +203,7 @@ walker IntakeWalker {
             "escalation": result.get("escalation", {}),
             "chips": result.get("chips", []),
             "facts": result.get("facts", ""),
-            "llm": {"sync_used": llm_sync, "reason": llm_reason, "error": llm_error, "models": pool_model_names(), "narrate": not llm_sync},
+            "llm": {"sync_used": llm_sync, "reason": llm_reason, "error": llm_error, "models": pool_model_names(), "narrate": True, "budget_s": SYNC_LLM_BUDGET_S},
             "trace": {"trace_id": tr["trace_id"], "total_ms": root_span.get("duration_ms", 0.0), "spans": spans}
         };
     }

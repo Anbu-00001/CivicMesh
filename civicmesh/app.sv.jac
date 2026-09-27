@@ -16,6 +16,8 @@ import from walkers.escalation { EscalationWalker }
 import from walkers.narrate { NarrateWalker }
 import from walkers.impact { ImpactWalker }
 import from walkers.seed { SeedWalker }
-import from walkers.live_telemetry { LiveTelemetryWalker }
+import from walkers.graph_snapshot { GraphSnapshotWalker }
 import from walkers.pathfinder { PathfinderWalker }
 import from walkers.critique { CritiqueWalker, ReflectionReadWalker }
+import from walkers.platform { PlatformWalker }
+import from walkers.local_help { LocalHelpWalker }

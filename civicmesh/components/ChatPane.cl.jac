@@ -33,18 +33,22 @@ def:pub ChatPane(
         waterfall_open: int = -1,
         narr_tick: float = 0.0,
         # Mutated in place by background narration; narr_tick forces a re-render.
-        narrations: dict = {};
+        narrations: dict = {},
+        # Local offices from HUD / HRSA open data, keyed by bot message id.
+        locals: dict = {},
+        lang_label: str = "";
 
     can with entry {
         seed = [{
             "role": "bot",
             "kind": "text",
             "id": "welcome",
-            "text": "Hi, I'm CivicMesh. Tell me what's going on — in English or Spanish, in your own words — and I'll find the housing, food, healthcare or legal programs you can use, and show exactly why.",
+            "text": "Hi, I'm CivicMesh. Tell me what's going on, in your own words and in your own language, and I'll find the housing, food, healthcare or legal programs you can use and show exactly why. I answer instantly in 40 languages and add a short summary in yours a few seconds later.",
             "suggestions": [
                 "I'm 72, on $1200/month Social Security, my landlord is trying to evict me illegally.",
                 "Mi familia y yo no hemos comido en 2 días. Estamos en Texas.",
-                "I'm a single mother with 2 kids in Houston. I earn $1,800/month and need housing help."
+                "I'm a single mother with 2 kids in Houston. I earn $1,800/month and need housing help.",
+                "我今天在哪里可以得到食物？我没有工作。"
             ]
         }];
         has_history_flag = False;
@@ -73,6 +77,8 @@ def:pub ChatPane(
     async def sendMessage(text_override: str = "", answering: str = "") -> None;
     async def safeSpawn(walker_name: str, fields: dict) -> Any;
     async def narrate(msg_id: str, data: Any, user_text: str) -> None;
+    async def findLocal(msg_id: str, data: Any) -> None;
+    def renderLocal(loc: Any) -> JsxElement;
     def resetCase -> None;
     def spansToEvents(spans: list) -> list;
     def fmtMs(ms: float) -> str;
@@ -97,7 +103,7 @@ def:pub ChatPane(
                     <div style={{"flex": "1", "minWidth": "0"}}>
                         <div style={{"fontSize": "14px", "fontWeight": "600"}}>CivicMesh Navigator</div>
                         <div className="cm-muted" style={{"fontSize": "11px", "marginTop": "2px"}}>
-                            Deterministic eligibility engine · 40 programs · English & Spanish · 1 LLM call per turn, off the critical path
+                            Deterministic eligibility engine · 2026 federal rules · 40 languages · 1 LLM call per turn, off the critical path
                         </div>
                     </div>
                     {is_loading and <div className="cm-badge badge-glow"><span className="cm-dot-live"/>Scoring 40 programs…</div>}
@@ -117,7 +123,7 @@ def:pub ChatPane(
                         onKeyDown={lambda e: KeyboardEvent {
                             if e.key == "Enter" { sendMessage(); }
                         }}
-                        placeholder={("Answer the question above, or describe anything else…" if pending_question else "Describe your situation in English or Spanish…")}
+                        placeholder={("Answer the question above, or describe anything else…" if pending_question else "Describe your situation in any language…")}
                         disabled={is_loading}
                         className="cm-input"
                     />

@@ -114,11 +114,11 @@ node SessionInsight {
         user_prompt_snippet: str = "";
 }
 
-sem SessionInsight is "Agent self-reflection record. Written by CritiqueWalker after each chat turn — pure graph mutation, no LLM call. Future IntakeWalker turns read the last few to prepend as context so the agent learns from its own past sessions without external memory infrastructure. Reflexion in pure Jac.";
+sem SessionInsight is "Agent self-critique record. Written by CritiqueWalker after each chat turn — pure graph mutation, no LLM call: quality score, walkers that ran, LLM calls actually made. Charted in the Telemetry tab.";
 sem SessionInsight.session_id is "Stable identifier for the chat turn. Timestamp-based; lets the client deduplicate when multiple insights for the same turn would otherwise stack.";
 sem SessionInsight.ts is "ISO 8601 timestamp the insight was written. Used by Telemetry's rolling-trend chart and by IntakeWalker's recency-weighted lookback.";
 sem SessionInsight.walkers_fired is "Distinct list of walker names that produced events during this turn. Drives the quality_score formula and surfaces in the Telemetry self-reflection panel.";
-sem SessionInsight.llm_calls_est is "Estimated number of byllm calls this turn made. Heuristic: 1 intake + N eligibility candidates + (1 navigation OR 1 escalation) + translation. Lets the Telemetry tab compute rolling free-tier budget burn.";
+sem SessionInsight.llm_calls_est is "LLM calls actually made this turn (0–1 routing call on the critical path + 1 background narration). Field name kept for stored-data compatibility.";
 sem SessionInsight.escalated is "True if the chain routed through EscalationWalker — a session-quality penalty. Demo loop: if escalation keeps firing on the same user, the agent should improve its NeedProfile extraction next turn.";
 sem SessionInsight.pathfinder_used is "True if PathfinderWalker found a multi-hop escape path. Counts as a positive outcome — the system found a route the flat eligibility check couldn't see.";
 sem SessionInsight.navigation_used is "True if NavigationWalker produced a non-empty ActionPlan. The cleanest signal of a successful turn.";

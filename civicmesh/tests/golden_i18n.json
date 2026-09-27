@@ -1,0 +1,400 @@
+{
+ "_doc": "Multilingual routing set (tests/eval_engine.jac): language ID + need category without an LLM, across the most-spoken U.S. home languages (Census ACS S1601). Self-authored; native-speaker review welcome.",
+ "cases": [
+  {
+   "text": "இன்று நான் எங்கே உணவு பெறுவது? எனக்கு வேலை இல்லை.",
+   "expect": {
+    "language": "ta",
+    "category": "food",
+    "urgency": "immediate"
+   }
+  },
+  {
+   "text": "வாடகை கட்ட முடியவில்லை, வீட்டு உரிமையாளர் வெளியேற்ற சொல்கிறார்.",
+   "expect": {
+    "language": "ta",
+    "category": "housing"
+   }
+  },
+  {
+   "text": "मुझे आज खाना कहाँ मिलेगा? मेरे पास नौकरी नहीं है।",
+   "expect": {
+    "language": "hi",
+    "category": "food"
+   }
+  },
+  {
+   "text": "मेरे बच्चे बीमार हैं और मेरे पास डॉक्टर के लिए पैसे नहीं हैं।",
+   "expect": {
+    "language": "hi",
+    "category": "healthcare",
+    "flag": "children"
+   }
+  },
+  {
+   "text": "我今天在哪里可以得到食物？我没有工作。",
+   "expect": {
+    "language": "zh",
+    "category": "food"
+   }
+  },
+  {
+   "text": "房东要把我们赶出去，我们付不起房租。",
+   "expect": {
+    "language": "zh",
+    "category": "housing"
+   }
+  },
+  {
+   "text": "我需要找律師，我的移民身份有問題。",
+   "expect": {
+    "language": "zh",
+    "category": "legal"
+   }
+  },
+  {
+   "text": "Hôm nay tôi có thể lấy thức ăn ở đâu? Tôi không có việc làm.",
+   "expect": {
+    "language": "vi",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Tôi cần bác sĩ nhưng không có bảo hiểm y tế.",
+   "expect": {
+    "language": "vi",
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "Wala kaming pagkain, kailangan namin ng tulong.",
+   "expect": {
+    "language": "tl",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Pinapaalis kami sa bahay, hindi namin mabayaran ang renta.",
+   "expect": {
+    "language": "tl",
+    "category": "housing"
+   }
+  },
+  {
+   "text": "أحتاج إلى طعام لعائلتي، ليس لدينا أي شيء.",
+   "expect": {
+    "language": "ar",
+    "category": "food"
+   }
+  },
+  {
+   "text": "المالك يريد طردنا من الشقة ولا أستطيع دفع الإيجار.",
+   "expect": {
+    "language": "ar",
+    "category": "housing"
+   }
+  },
+  {
+   "text": "집주인이 우리를 쫓아내려고 해요. 월세를 낼 수 없어요.",
+   "expect": {
+    "language": "ko",
+    "category": "housing"
+   }
+  },
+  {
+   "text": "병원에 가야 하는데 보험이 없어요.",
+   "expect": {
+    "language": "ko",
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "今日食べ物がありません。助けてください。",
+   "expect": {
+    "language": "ja",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Нам нечего есть, нужна еда для детей.",
+   "expect": {
+    "language": "ru",
+    "category": "food",
+    "flag": "children"
+   }
+  },
+  {
+   "text": "Мне нужен адвокат, меня хотят депортировать.",
+   "expect": {
+    "language": "ru",
+    "category": "legal"
+   }
+  },
+  {
+   "text": "Мені потрібен лікар, але я не маю страхування.",
+   "expect": {
+    "language": "uk",
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "J'ai besoin d'aide pour payer mon loyer, le propriétaire veut m'expulser.",
+   "expect": {
+    "language": "fr",
+    "category": "housing"
+   }
+  },
+  {
+   "text": "Nous n'avons rien à manger aujourd'hui.",
+   "expect": {
+    "language": "fr",
+    "category": "food",
+    "urgency": "immediate"
+   }
+  },
+  {
+   "text": "Eu preciso de comida para meus filhos, não temos nada.",
+   "expect": {
+    "language": "pt",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Estou sendo despejada e não tenho onde morar.",
+   "expect": {
+    "language": "pt",
+    "category": "housing"
+   }
+  },
+  {
+   "text": "Mwen bezwen manje pou pitit mwen yo.",
+   "expect": {
+    "language": "ht",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Mwen malad e mwen pa gen asirans.",
+   "expect": {
+    "language": "ht",
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "Potrzebuję pomocy, nie mam jedzenia dla dzieci.",
+   "expect": {
+    "language": "pl",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Ich brauche Hilfe, mein Vermieter will mich aus der Wohnung werfen.",
+   "expect": {
+    "language": "de",
+    "category": "housing"
+   }
+  },
+  {
+   "text": "Ho bisogno di un medico ma non ho soldi.",
+   "expect": {
+    "language": "it",
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "مجھے کھانا چاہیے، میرے بچے بھوکے ہیں۔",
+   "expect": {
+    "language": "ur",
+    "category": "food"
+   }
+  },
+  {
+   "text": "صاحبخانه می‌خواهد ما را بیرون کند، نمی‌توانم اجاره بدهم.",
+   "expect": {
+    "language": "fa",
+    "category": "housing"
+   }
+  },
+  {
+   "text": "আমার খাবার দরকার, আমার কোনো কাজ নেই।",
+   "expect": {
+    "language": "bn",
+    "category": "food"
+   }
+  },
+  {
+   "text": "నాకు ఆహారం కావాలి, నాకు ఉద్యోగం లేదు.",
+   "expect": {
+    "language": "te",
+    "category": "food"
+   }
+  },
+  {
+   "text": "મારે ડૉક્ટરની જરૂર છે પણ મારી પાસે વીમો નથી.",
+   "expect": {
+    "language": "gu",
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "ਸਾਨੂੰ ਖਾਣਾ ਚਾਹੀਦਾ ਹੈ, ਬੱਚੇ ਭੁੱਖੇ ਹਨ।",
+   "expect": {
+    "language": "pa",
+    "category": "food"
+   }
+  },
+  {
+   "text": "എനിക്ക് ഭക്ഷണം വേണം, ജോലി ഇല്ല.",
+   "expect": {
+    "language": "ml",
+    "category": "food"
+   }
+  },
+  {
+   "text": "ನನಗೆ ಮನೆ ಬಾಡಿಗೆ ಕಟ್ಟಲು ಆಗುತ್ತಿಲ್ಲ.",
+   "expect": {
+    "language": "kn",
+    "category": "housing"
+   }
+  },
+  {
+   "text": "मला जेवण हवे आहे, माझ्याकडे काम नाही.",
+   "expect": {
+    "language": "mr",
+    "category": "food"
+   }
+  },
+  {
+   "text": "मलाई खाना चाहिन्छ, मसँग काम छैन।",
+   "expect": {
+    "language": "ne",
+    "category": "food"
+   }
+  },
+  {
+   "text": "ምግብ እፈልጋለሁ፣ ልጆቼ ተርበዋል።",
+   "expect": {
+    "language": "am",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Waxaan u baahanahay cunto, carruurtayda waa gaajo.",
+   "expect": {
+    "language": "so",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Nahitaji msaada, sina chakula kwa watoto wangu.",
+   "expect": {
+    "language": "sw",
+    "category": "food"
+   }
+  },
+  {
+   "text": "ฉันไม่มีอาหาร ต้องการความช่วยเหลือ",
+   "expect": {
+    "language": "th",
+    "category": "food"
+   }
+  },
+  {
+   "text": "ខ្ញុំត្រូវការម្ហូប",
+   "expect": {
+    "language": "km",
+    "category": "food"
+   }
+  },
+  {
+   "text": "ကျွန်တော် အစားအစာ လိုအပ်ပါတယ်",
+   "expect": {
+    "language": "my",
+    "category": "food"
+   }
+  },
+  {
+   "text": "אני צריך עורך דין, רוצים לגרש אותי.",
+   "expect": {
+    "language": "he",
+    "category": "legal"
+   }
+  },
+  {
+   "text": "Χρειάζομαι γιατρό αλλά δεν έχω ασφάλιση.",
+   "expect": {
+    "language": "el",
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "Ինձ բժիշկ է պետք:",
+   "expect": {
+    "language": "hy",
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "Kiramı ödeyemiyorum, ev sahibi beni evden çıkarmak istiyor.",
+   "expect": {
+    "language": "tr",
+    "category": "housing"
+   }
+  },
+  {
+   "text": "Saya butuh makanan untuk anak saya.",
+   "expect": {
+    "language": "id",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Kuv xav tau zaub mov rau kuv cov menyuam.",
+   "expect": {
+    "language": "hmn",
+    "category": "food"
+   }
+  },
+  {
+   "text": "我想自杀",
+   "expect": {
+    "language": "zh",
+    "category": "healthcare",
+    "flag": "self_harm",
+    "urgency": "immediate"
+   }
+  },
+  {
+   "text": "मैं आत्महत्या करना चाहता हूँ",
+   "expect": {
+    "language": "hi",
+    "category": "healthcare",
+    "flag": "self_harm"
+   }
+  },
+  {
+   "text": "남편이 때려요. 가정폭력이에요.",
+   "expect": {
+    "language": "ko",
+    "category": "housing",
+    "flag": "dv"
+   }
+  },
+  {
+   "text": "زوجي يضربني، أحتاج مأوى",
+   "expect": {
+    "language": "ar",
+    "category": "housing",
+    "flag": "dv"
+   }
+  },
+  {
+   "text": "Mo nilo ounjẹ fun awọn ọmọ mi",
+   "expect": {
+    "language": "",
+    "needs_llm": true
+   },
+   "_note": "Yoruba: outside the lexicon -> time-boxed LLM + auto narration"
+  }
+ ]
+}

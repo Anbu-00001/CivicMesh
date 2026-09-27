@@ -14,7 +14,7 @@ It then hands off, all deterministic:
 """
 
 import from graph.nodes { PersonNode, NeedNode, ResourceNode, EligibilityRuleNode, FormNode }
-import from graph.edges { governed_by, requires_form }
+import from graph.edges { governed_by, requires_form, eligible_for }
 import from engine.score { rank_resources, question_for }
 import from engine.compose { span_begin, span_end, compose_reply }
 import from walkers.navigation { NavigationWalker }
@@ -119,10 +119,35 @@ walker EligibilityWalker {
         sp = span_begin(tr, "EligibilityWalker score", "INTERNAL", self.parent_span, {"gen_ai.agent.name": "EligibilityWalker"});
         ranking = rank_resources(items, self.profile, self.message, 6, lang);
         ask = ranking["ask"];
+        if self.profile.get("defaulted_category") {
+            # Nothing routed the message: ask what the need is rather than
+            # presenting a guess (housing) as if it were understood.
+            ask = {"key": "need", "gain": 1.0, "affects": int(ranking["all_count"])};
+        }
         question = question_for(str(ask["key"]), lang) if ask["key"] else "";
         span_end(tr, sp, {"civicmesh.scored": ranking["all_count"], "civicmesh.likely": ranking["tiers"]["likely"], "civicmesh.ask": str(ask["key"])});
 
         ranked = list(ranking["ranked"]);
+
+        # Persist the verdicts: one scored eligible_for edge per top match, so
+        # the case's reasoning lives in the graph (the Graph tab queries it).
+        sp = span_begin(tr, "graph.write eligible_for", "INTERNAL", self.parent_span);
+        rank_of: dict = {};
+        for (i, s) in enumerate(ranked) { rank_of[str(s["resource_name"])] = i; }
+        written = 0;
+        for r in [root --> [?:ResourceNode]] {
+            nm = str(r.agency_name);
+            if nm in rank_of {
+                s = ranked[int(rank_of[nm])];
+                here +>: eligible_for(
+                    tier=str(s["tier"]), p_eligible=float(s["p_eligible"]), rank=int(rank_of[nm]),
+                    benefit_monthly=int(dict(s.get("benefit", {}) or {}).get("monthly", 0))
+                ) :+> r;
+                written += 1;
+            }
+        }
+        span_end(tr, sp, {"civicmesh.edges": written});
+
         nav = self.person_node spawn NavigationWalker(
             ranked=ranked, urgency=str(self.profile.get("urgency", "within_weeks")),
             language=lang, trace=tr, parent_span=self.parent_span

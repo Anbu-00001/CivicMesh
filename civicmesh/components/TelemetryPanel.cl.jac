@@ -7,7 +7,7 @@ panel shows an empty-state explanation.
 
 sv import from walkers.critique { ReflectionReadWalker }
 
-def:pub TelemetryPanel(walker_events: list) -> JsxElement {
+def:pub TelemetryPanel(walker_events: list, user_id: str = "") -> JsxElement {
     # Reflexion-style self-reflection panel state. Populated by
     # ReflectionReadWalker on mount and whenever walker_events grows
     # (i.e. when a new chat turn writes a fresh SessionInsight).
@@ -77,11 +77,11 @@ def:pub TelemetryPanel(walker_events: list) -> JsxElement {
         "IntakeWalker": {
             "input": "Latest message + case carried from earlier turns",
             "output": "Profile{category, urgency, income, household, age, location, status} + evidence spans",
-            "stub": "engine/parse.jac (regex + EN/ES lexicon) · understand_message() only if unroutable",
+            "stub": "engine/i18n.jac + parse.jac (script + lexicon language ID, 40 languages) · understand_message() only if nothing routes, 3.5 s deadline",
             "tools": False
         },
         "EligibilityWalker": {
-            "input": "Profile + 40 Resource→Rule→Form triples from the graph",
+            "input": "Profile + every Resource→Rule→Form triple in your graph",
             "output": "Ranked matches{p_eligible, tier, Beta approval CI, criteria, counterfactual} + next question",
             "stub": "engine/score.jac — logistic income, hard gates, abstention, value of information",
             "tools": False

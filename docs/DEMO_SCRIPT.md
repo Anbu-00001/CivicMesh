@@ -1,5 +1,8 @@
 # CivicMesh — 3-Minute Demo Script
 
+> **Note (2026-09-27):** this is the hackathon-era write-up. The pipeline has since moved to a deterministic, math-first engine (one background LLM call per turn, 40 languages routed without a model, 2026 federal policy table, real local offices from HUD/HRSA open data). See the [README](../README.md) for the current architecture and measured numbers.
+
+
 Target length: 3:00. Recorded at 1080p, screen capture + voiceover. Cursor visible.
 
 ---
