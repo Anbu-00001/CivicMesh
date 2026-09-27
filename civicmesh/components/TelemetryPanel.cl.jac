@@ -229,7 +229,7 @@ def:pub TelemetryPanel(walker_events: list) -> JsxElement {
                 >
                     <div style={{"fontSize": "20px", "marginBottom": "5px"}}>⚡</div>
                     <div style={{"fontSize": "22px", "fontWeight": "600", "color": "#FFE500"}}>
-                        llama-3.1-8b
+                        mistral-nemotron
                     </div>
                     <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.4)", "marginTop": "3px"}}>
                         Active model

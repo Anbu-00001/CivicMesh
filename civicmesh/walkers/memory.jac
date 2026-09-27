@@ -76,12 +76,16 @@ walker MemoryWalker {
 
             session_summary: any = None;
             if approved or pending or denied {
-                session_summary = summarize_session(
-                    approved=approved,
-                    pending=pending,
-                    denied=denied,
-                    profile=profile_stub
-                );
+                # A failed summary must not 500 the page-load session fetch;
+                # the client already handles a missing session_summary.
+                try {
+                    session_summary = summarize_session(
+                        approved=approved,
+                        pending=pending,
+                        denied=denied,
+                        profile=profile_stub
+                    );
+                } except Exception as _ex {}
             }
 
             report {
@@ -109,11 +113,14 @@ walker MemoryWalker {
             setattr(app, "updated_at", ts);
             if self.new_status == "denied" and self.denial_reason {
                 setattr(app, "denial_reason", self.denial_reason);
-                hint = generate_denial_next_step(
-                    resource_name=self.resource_name,
-                    denial_reason=self.denial_reason,
-                    profile=profile_stub
-                );
+                hint = "Ask " + self.resource_name + " how to appeal, or call 2-1-1 for similar programs.";
+                try {
+                    hint = generate_denial_next_step(
+                        resource_name=self.resource_name,
+                        denial_reason=self.denial_reason,
+                        profile=profile_stub
+                    );
+                } except Exception as _ex {}
                 setattr(app, "next_step_hint", str(hint));
             }
             if self.new_status == "applied" {

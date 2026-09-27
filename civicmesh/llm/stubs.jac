@@ -5,15 +5,42 @@ walkers will consume). The actual prompt templates and walker integration are
 added in Phase 2. Defining the types here means walkers can import these names
 today and the LLM router stays grounded by stable, named schemas.
 
-The ModelPool is configured here as a module-level glob. Adding a fallback
-model in Phase 2 is a one-line change to the `models=[...]` list - no
-call-site edits required. Default model parameters come from jac.toml.
+The ModelPool is configured here as a module-level glob. Default model
+parameters (timeout, retries) come from jac.toml.
 """
 
+import os;
 import from byllm.lib { Model, ModelPool }
 
+# Tried in order: pool-primary first, then each fallback. NVIDIA retired
+# meta/llama-3.1-8b-instruct on 2026-08-26 (every call returned HTTP 410
+# and the single-model pool had nothing to fall back to), so the chain now
+# spans several model families — one EOL no longer takes the app down.
+# Override without a code change by setting CIVICMESH_LLM_MODELS to a
+# comma-separated list of litellm model ids (HF Space → Settings → Variables).
+glob DEFAULT_LLM_MODELS: list[str] = [
+    "nvidia_nim/mistralai/mistral-nemotron",
+    "nvidia_nim/nv-mistralai/mistral-nemo-12b-instruct",
+    "nvidia_nim/openai/gpt-oss-20b"
+];
+
+def build_pool_models -> list {
+    raw = str(os.environ.get("CIVICMESH_LLM_MODELS", "")).strip();
+    names: list[str] = [n.strip() for n in raw.split(",") if n.strip()] if raw else list(DEFAULT_LLM_MODELS);
+    models: list = [Model(model_name=n) for n in names];
+    # Featherless is a last resort on a separate provider, only when keyed.
+    featherless_key = str(os.environ.get("FEATHERLESS_API_KEY", "")).strip();
+    if featherless_key {
+        models.append(Model(
+            model_name="featherless_ai/meta-llama/Llama-3.1-8B-Instruct",
+            api_key=featherless_key
+        ));
+    }
+    return models;
+}
+
 glob pool = ModelPool(
-    models=[Model(model_name="nvidia_nim/meta/llama-3.1-8b-instruct")],
+    models=build_pool_models(),
     strategy="fallback",
 );
 

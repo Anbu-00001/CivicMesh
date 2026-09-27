@@ -261,6 +261,19 @@ impl ChatPane.walkerColor(walker_name: str) -> str {
 }
 
 
+impl ChatPane.safeSpawn(walker_name: str, fields: dict) -> Any {
+    # jac-client bundles a separate copy of the Jac exception classes into
+    # every compiled module, so the runtime's "Walker X failed" Exception is
+    # not `instanceof` this module's Exception. It sailed past every
+    # `except Exception` in sendMessage and left is_loading stuck at True —
+    # the chat spun forever on any server error. Turn the rejection into a
+    # value at the promise level; callers re-raise it locally where their
+    # own except blocks can catch it.
+    return await jacSpawn(walker_name, "", fields).catch(
+        lambda err: Any -> dict { return {"reports": [], "spawn_error": str(err)}; }
+    );
+}
+
 impl ChatPane.sendMessage(text_override: str = "") -> None {
     if is_loading {
         return;
@@ -326,10 +339,13 @@ impl ChatPane.sendMessage(text_override: str = "") -> None {
     trace_steps: list = [];
 
     try {
-        result = await root spawn IntakeWalker(
-            conversation=conversation,
-            user_id=user_id
+        result = await safeSpawn(
+            "IntakeWalker",
+            {"conversation": conversation, "user_id": user_id}
         );
+        if result["spawn_error"] {
+            raise Exception(str(result["spawn_error"]));
+        }
         # Walker chain emits reports inner-first; the outermost IntakeWalker
         # payload (which carries `language`, `profile`, `eligibility_results`)
         # is the LAST entry in `reports`. Safe-by-default container so missing
@@ -637,9 +653,10 @@ impl ChatPane.sendMessage(text_override: str = "") -> None {
             # Translate the cache-miss items in one batch (if any)
             new_cache_entries: dict = {};
             if len(cache_misses) > 0 {
-                tr_result = await root spawn TranslateWalker(
-                    texts=cache_misses,
-                    target_language=lang_str
+                # A failed spawn yields empty reports → English fallback below.
+                tr_result = await safeSpawn(
+                    "TranslateWalker",
+                    {"texts": cache_misses, "target_language": lang_str}
                 );
                 tr_reports = tr_result.reports;
                 tr_n = len(tr_reports) if tr_reports else 0;
@@ -671,9 +688,9 @@ impl ChatPane.sendMessage(text_override: str = "") -> None {
                             # Pass 2: retry skipped items in a second batch
                             if len(untranslated_inputs) > 0 {
                                 try {
-                                    retry_result = await root spawn TranslateWalker(
-                                        texts=untranslated_inputs,
-                                        target_language=lang_str
+                                    retry_result = await safeSpawn(
+                                        "TranslateWalker",
+                                        {"texts": untranslated_inputs, "target_language": lang_str}
                                     );
                                     retry_reports = retry_result.reports;
                                     if retry_reports and len(retry_reports) > 0 {

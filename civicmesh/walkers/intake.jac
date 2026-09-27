@@ -141,7 +141,13 @@ walker IntakeWalker {
             detected_lang_str = heuristic_lang;
             lang_profile = LanguageProfile(detected_language=heuristic_lang, confidence=1.0, translated_intent=raw);
         } else {
-            lang_profile = detect_language_and_extract(message=self.conversation);
+            # Unguarded, this 500'd every non-English turn during an LLM
+            # outage. Fall back to English so the chain still completes.
+            try {
+                lang_profile = detect_language_and_extract(message=self.conversation);
+            } except Exception as _ex {
+                lang_profile = LanguageProfile(detected_language="en", confidence=0.0, translated_intent=raw);
+            }
             detected_lang_str = str(lang_profile.detected_language);
         }
 

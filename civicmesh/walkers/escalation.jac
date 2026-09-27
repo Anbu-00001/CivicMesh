@@ -122,11 +122,39 @@ walker EscalationWalker {
             target_lang = str(here.language) if here.language else "en";
         }
 
-        escalation_msg: EscalationMessage = compose_escalation_message(
-            context=self.context,
-            tools=[check_emergency_resources, find_appeal_orgs, assess_safety_risk],
-            on_iteration=iteration_guard
-        );
+        # Every other LLM call in the chain has a deterministic fallback;
+        # this one didn't, so an LLM outage 500'd the whole chat turn. When
+        # the model is unreachable, call the same tools the ReAct loop would
+        # have used and let the deterministic lead line below carry the reply.
+        escalation_msg: EscalationMessage;
+        try {
+            escalation_msg = compose_escalation_message(
+                context=self.context,
+                tools=[check_emergency_resources, find_appeal_orgs, assess_safety_risk],
+                on_iteration=iteration_guard
+            );
+        } except Exception as _ex {
+            fb_category = "";
+            fb_zip = "";
+            fb_denials: list[str] = [];
+            try { fb_category = str(self.context.profile.category); } except Exception as _ex2 {}
+            try { fb_zip = str(self.context.profile.location_zip); } except Exception as _ex2 {}
+            try { fb_denials = [str(x) for x in self.context.denial_reasons]; } except Exception as _ex2 {}
+            fb_tail = "";
+            if target_lang.lower() in ["en", "english"] {
+                fb_tail = "Tell them your age, household size, monthly income, and city so they can match you to the right program quickly.";
+            }
+            escalation_msg = EscalationMessage(
+                crisis_resources=check_emergency_resources(fb_category, fb_zip),
+                appeal_options=["Call " + org for org in find_appeal_orgs("", "")],
+                personalized_message=fb_tail,
+                is_emergency=assess_safety_risk(
+                    str(self.context.trigger_reason),
+                    str(self.context.urgency_level),
+                    fb_denials
+                )
+            );
+        }
 
         # Deterministic lead-line construction. The LLM was producing
         # category cross-talk (food prompts getting 988, housing prompts

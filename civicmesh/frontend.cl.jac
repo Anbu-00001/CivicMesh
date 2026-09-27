@@ -213,7 +213,7 @@ def:pub ClientApp -> JsxElement {
                         }}
                     />
                     <span style={{"fontSize": "12px", "color": "rgba(255,255,255,0.4)"}}>
-                        {("llama-3.1-8b · connected" if is_authed else "connecting...")}
+                        {("mistral-nemotron · connected" if is_authed else "connecting...")}
                     </span>
                 </div>
             </header>

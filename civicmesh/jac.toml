@@ -21,7 +21,7 @@ typescript = "^5.3.3"
 "@types/react-dom" = "^18.2.0"
 
 [plugins.byllm.model]
-default_model = "nvidia_nim/meta/llama-3.1-8b-instruct"
+default_model = "nvidia_nim/mistralai/mistral-nemotron"
 temperature = 0.2
 
 # Featherless.AI fallback. Featherless gives us flat-rate access to 30k+
@@ -56,6 +56,15 @@ enabled = true
 
 [plugins.client]
 debug = false
+
+[run]
+# jaclang 0.15.1's topology-index shortcut for typed graph queries goes stale:
+# after a walker's first write in a request, `[root --> [?:ResourceNode]]`
+# resolves to an empty set even though 40 ResourceNodes are seeded (untyped
+# `[root -->]` still sees them). That emptied every eligibility candidate
+# list and sent every chat turn to escalation. The plain edge walk is correct
+# and cheap at this graph size.
+topology_index = false
 
 [serve]
 base_route_app = "app"

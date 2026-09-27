@@ -126,7 +126,7 @@ sequenceDiagram
     autonumber
     participant U as User
     participant I as IntakeWalker
-    participant LLM as byllm pool<br/>(NIM llama-3.1-8b)
+    participant LLM as byllm pool<br/>(NIM mistral-nemotron)
     participant E as EligibilityWalker
     participant N as NavigationWalker
     participant C as CritiqueWalker
@@ -387,7 +387,9 @@ Then open **http://localhost:8000/cl/app** in a browser. The dev server binds `:
 
 | Name | Required | Description |
 |---|---|---|
-| `NVIDIA_NIM_API_KEY` | yes | byllm key for `meta/llama-3.1-8b-instruct` |
+| `NVIDIA_NIM_API_KEY` | yes | byllm key for the NVIDIA NIM model chain (default primary `mistralai/mistral-nemotron`) |
+| `CIVICMESH_LLM_MODELS` | no | Comma-separated litellm model ids tried in order, e.g. `nvidia_nim/mistralai/mistral-nemotron,nvidia_nim/openai/gpt-oss-20b`. Overrides the default chain in `llm/stubs.jac` |
+| `CIVICMESH_DEMO_MODE` | no | `1` skips per-resource LLM eligibility scoring (deterministic, fast) |
 | `FEATHERLESS_API_KEY` | no | Optional fallback provider |
 | `JAC_SCALE_HOST` | no | API bind host. Default `127.0.0.1` |
 | `JAC_SCALE_PORT` | no | API port. Default `8001` |

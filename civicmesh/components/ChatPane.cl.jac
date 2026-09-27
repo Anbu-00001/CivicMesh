@@ -4,6 +4,7 @@ Right: detected language + walker chain status sidebar.
 """
 sv import from walkers.intake { IntakeWalker }
 sv import from walkers.translate { TranslateWalker }
+import from "@jac/runtime" { jacSpawn }
 
 def:pub ChatPane(
     user_id: str,
@@ -85,6 +86,7 @@ def:pub ChatPane(
     }
 
     async def sendMessage(text_override: str = "") -> None;
+    async def safeSpawn(walker_name: str, fields: dict) -> Any;
     def renderMessage(msg: dict, idx: int, is_last: bool) -> JsxElement;
     def renderTraceStep(step: Any, idx: int) -> JsxElement;
     def renderSuggestionChip(text: str) -> JsxElement;

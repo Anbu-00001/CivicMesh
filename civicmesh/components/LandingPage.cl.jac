@@ -112,7 +112,7 @@ def:pub LandingPage(on_start: Any) -> JsxElement {
                 <div style={{"display": "flex", "alignItems": "center", "gap": "10px"}}>
                     <div className="lp-pulse-dot"/>
                     <span style={{"fontSize": "12px", "color": "rgba(255,255,255,0.55)"}}>
-                        llama-3.1-8b · live
+                        mistral-nemotron · live
                     </span>
                     <div style={{"width": "1px", "height": "16px", "background": "rgba(255,255,255,0.1)", "margin": "0 6px"}}/>
                     <span style={{"fontSize": "11px", "color": "rgba(255,255,255,0.4)"}}>
@@ -431,7 +431,7 @@ def:pub LandingPage(on_start: Any) -> JsxElement {
                 <span>
                     Built on <span style={{"color": "rgba(255,229,0,0.7)", "fontWeight": "500"}}>Jac</span>
                     · Powered by <span style={{"color": "rgba(0,255,136,0.7)", "fontWeight": "500"}}>NVIDIA NIM</span>
-                    · llama-3.1-8b-instruct
+                    · mistral-nemotron
                 </span>
                 <span>
                     JacHacks Spring 2026
