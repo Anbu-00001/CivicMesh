@@ -40,19 +40,22 @@ pinned: false
 
 Tens of millions of vulnerable people — single mothers, undocumented families, elderly tenants on fixed incomes — do not know which programs they qualify for, what documents they need, or which agency to call first. The safety net is real, but it is buried behind fragmented websites, English-only intake forms, and screening logic that takes a caseworker to decode.
 
-CivicMesh is a **graph-native multi-agent navigator** built on Jac. One sentence in any language → a ranked, eligibility-checked, multilingual action plan. With **phone numbers up front**.
+CivicMesh is a **graph-native multi-agent navigator** built on Jac. One sentence in English or Spanish → a ranked, explainable, eligibility-checked action plan in **a few hundred milliseconds**, with **phone numbers up front** and a plain-language reason for every recommendation.
 
 ---
 
 ## What makes it different
 
-Three innovations no other Jac project has shipped:
+**Math first, LLM last.** Every decision a caseworker would need to defend — who qualifies, why, what to do first — is computed in closed form over the graph in about a millisecond. The model is used once per turn, off the critical path, only to phrase the answer warmly in the user's language.
 
-| | Innovation | Why it matters |
+| | Feature | What it does |
 |---|---|---|
-| 🧭 | **Pathfinder** — multi-hop BFS over `leads_to` edges between resources | When a user doesn't qualify *directly*, the graph finds a 2-3 step escape route (e.g. *Emergency Shelter → Continuum of Care → Section 8*). Graph-RAG over a curated civic-aid knowledge graph. |
-| 🧠 | **Outcome-Learning Eligibility** — Bayesian priors on `EligibilityRuleNode` | Every approved/denied `ApplicationNode` updates a Laplace-smoothed success prior on the gating rule. The graph **gets smarter every time someone uses it** — no PyTorch, no retraining, just Jac OSP. |
-| 🔁 | **Reflexion self-reflection loop** | `CritiqueWalker` writes a `SessionInsight` after every turn; the next `IntakeWalker` reads the last two as conversation prefix. The agent literally **reads its own past performance as memory** — Shinn et al. (2023) implemented as native graph edges. |
+| ⚖️ | **Explainable, calibrated eligibility** (`engine/score.jac`) | Hard gates (citizenship, age) × weighted soft criteria (logistic income threshold, residency, household, curated situation targets). Every criterion is reported met / unmet / unknown with a reason. Thin evidence triggers **calibrated abstention** ("needs info") instead of a confident guess, and every near-miss gets a **counterfactual** ("you'd qualify if yearly income were ≤ $30,000 — you're $2,400 over"). |
+| ❓ | **Value-of-information follow-ups** | Instead of a form, the agent asks the *one* question whose answer moves the most matches ("affects 6 matches"), with quick replies. Answers fold into the same case across turns. |
+| 📈 | **Bayesian outcome learning** | Approval odds are a Beta-Binomial posterior (capacity-informed prior, 90% credible interval, UCB exploration bonus for ranking). Marking a real application approved/denied in the Action Plan tab updates the posterior and re-ranks future matches. |
+| 🧭 | **Expected-cost routes** (`engine/paths.jac`) | Yen's k-shortest loopless paths (Dijkstra inside) over typed `leads_to` edges, with cost = days + λ·difficulty − μ·ln P(next program says yes). A super-source/super-sink turns "from anything I can start today to anything worth reaching" into one search. |
+| 🗓️ | **Plan sequencing** (`engine/plan.jac`) | Steps ordered by Smith's weighted-shortest-processing-time rule (value ÷ effort, crisis lines pinned first); documents shared across steps are gathered once. |
+| ⚡ | **Instant answer, narrated in the background** | The deterministic answer renders immediately; `NarrateWalker` makes the turn's single LLM call afterwards and is guarded against inventing phone numbers or facts. Every turn ships OpenTelemetry-shaped spans, rendered as a latency waterfall. |
 
 ---
 
@@ -117,48 +120,33 @@ The chain is **lazy-branching**: EligibilityWalker only spawns NavigationWalker 
 
 ---
 
-## Walker path · the happy path
-
-A typical successful turn — *"I'm a single mom, need help with rent, two kids, $1,200/month"* — traces this exact path through the graph:
+## Walker path · one turn
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant U as User
+    participant U as Browser
     participant I as IntakeWalker
-    participant LLM as byllm pool<br/>(NIM mistral-nemotron)
+    participant P as engine.parse
     participant E as EligibilityWalker
-    participant N as NavigationWalker
+    participant S as engine.score
+    participant N as Navigation / Pathfinder / Escalation
     participant C as CritiqueWalker
-    participant G as Graph (root)
+    participant L as NarrateWalker (LLM)
 
-    U->>I: "Necesito ayuda con el alquiler"
-    I->>G: read past SessionInsights (Reflexion)
-    G-->>I: 2 prior headlines
-    I->>LLM: detect_language(raw prompt)
-    LLM-->>I: lang="es"
-    I->>LLM: extract_need_profile(augmented)
-    LLM-->>I: NeedProfile(housing, immediate, ...)
-    I->>G: ++> NeedNode via has_need edge
-    I->>E: spawn(profile, person_node)
-
-    loop 6 ResourceNodes
-        E->>G: traverse governed_by → EligibilityRuleNode
-        E->>LLM: check_eligibility(profile, rule)
-        LLM-->>E: EligibilityResult(score, matched, missing)
-        E->>E: blend with prior_success_rate (outcome learning)
-    end
-
-    E->>N: spawn(eligible, possible, profile)
-    N->>G: traverse requires_form → FormNode
-    N->>LLM: generate_action_plan(eligible_names)
-    LLM-->>N: ActionPlan(steps)
-    N->>G: ++> ApplicationNode per step
-
-    I->>C: spawn(chain events, outcomes)
-    C->>G: ++> SessionInsight via reflected_on edge
-
-    N-->>U: ranked plan · translated to es · with phone numbers
+    U->>I: message + case so far
+    I->>P: regex + EN/ES lexicon (< 1 ms)
+    P-->>I: profile + evidence spans + routing confidence
+    Note over I: LLM understand_message() only if the parser can't route
+    I->>E: spawn on NeedNode
+    E->>E: Resource → Rule → Form triples (cached per visitor)
+    E->>S: score 40 programs in closed form
+    S-->>E: tiers · Beta CIs · reasons · counterfactuals · next question
+    E->>N: plan (Smith's rule) · routes (Yen) · crisis lines if needed
+    I->>C: Reflexion write-back (SessionInsight)
+    I-->>U: answer + cards + plan + trace (~0.2–0.5 s round trip)
+    U->>L: background: facts → warm, localized summary
+    L-->>U: narration (guarded: no new numbers)
 ```
 
 ---
@@ -226,114 +214,41 @@ erDiagram
 
 ---
 
-## Dead-end recovery · Pathfinder
+## Escape routes · Pathfinder
 
-When EligibilityWalker scores **zero** matches above threshold, we don't drop straight to crisis. Pathfinder runs BFS over the typed `leads_to` edge — 25+ curated real-world resource transitions (DV Hotline → Emergency Shelter → Section 8, SNAP intake → WIC pre-qualification, etc.) — to discover **multi-step escape paths**:
+The civic safety net is a graph: shelter intake files a re-housing referral, SNAP intake pre-qualifies WIC. `PathfinderWalker` reads the typed `leads_to` edges (days, difficulty, reason) straight off the graph and runs **Yen's k-shortest loopless paths** from every program the user can start today to every program worth reaching:
 
-```mermaid
-flowchart LR
-    seed[Seed: near-miss<br/>resources from<br/>EligibilityWalker]
-    start([User's category])
-
-    start --> bfs{BFS over<br/>leads_to edges<br/>max_hops=3}
-    seed --> bfs
-
-    bfs -->|hop 1| r1[Emergency<br/>Shelter<br/>Network]
-    r1 -->|7 days · easy| r2[Continuum<br/>of Care]
-    r2 -->|90 days · medium| r3[Section 8<br/>HCV priority]
-
-    bfs -->|hop 1| h1[DV Hotline]
-    h1 -->|same-day · easy| h2[Safe-house<br/>placement]
-
-    r3 --> out([Up to 3 paths<br/>ranked by<br/>total_days + hops])
-    h2 --> out
-
-    classDef seed fill:#fbbf24,stroke:#d97706,color:#000
-    classDef resource fill:#0ea5e9,stroke:#0369a1,color:#fff
-    classDef out fill:#22c55e,stroke:#15803d,color:#fff
-    class start,seed seed
-    class r1,r2,r3,h1,h2 resource
-    class out,bfs out
+```
+cost(u → v) = days(u→v) + λ · difficulty(u→v) + μ · (−ln P(v says yes))      λ = 10, μ = 30
+P(v says yes) = P(eligible) × E[approval | Beta posterior]
 ```
 
-This is **graph-RAG** applied to social services — the 2026 RAG frontier, native to Jac, with zero external vector store.
+A fast hop into a program that will probably reject you costs more than a slower, surer one. Costs are non-negative (−ln p ≥ 0), so Dijkstra stays exact; a virtual super-source and super-sink make it a single k-shortest search. V≈40, E≈26: well under a millisecond.
 
 ---
 
 ## Outcome learning · the graph gets smarter
 
-Every terminal `ApplicationNode.status` update (`approved` or `denied`) walks back to the gating `EligibilityRuleNode` and updates a **Laplace-smoothed Bayesian prior**. Subsequent EligibilityWalker calls blend the raw LLM `match_score` with that prior, weighted by `attempts / (attempts + 20)`:
+Approval odds on every card are a **Beta-Binomial posterior**. The prior comes from capacity (open programs `Beta(6,3)`, waitlists `Beta(3,5)`); each real outcome recorded in the Action Plan tab (`Approved` / `Denied`) walks back to the gating `EligibilityRuleNode` and updates it:
 
-```mermaid
-flowchart TD
-    A[User marks app<br/>'approved' or 'denied'] --> B[MemoryWalker<br/>update_status mode]
-    B --> C[Walk back to<br/>EligibilityRuleNode<br/>via governed_by]
-    C --> D["Update priors:<br/>attempts += 1<br/>approvals += approved?1:0<br/>rate = (a+1)/(t+2)"]
-    D --> E[(Graph)]
-    E --> F[Next EligibilityWalker<br/>turn for any user]
-    F --> G["adjusted_score =<br/>(1-blend)·llm + blend·prior·100<br/>where blend = t/(t+20)"]
-    G --> H[Better ranked<br/>plan for next user]
-    H -.->|over time| E
-
-    classDef store fill:#1f6feb,stroke:#1e40af,color:#fff
-    classDef walker fill:#7c3aed,stroke:#5b21b6,color:#fff
-    class E store
-    class B,F walker
+```
+a = prior_a + approvals        b = prior_b + denials
+mean = a / (a+b)      90% CI ≈ mean ± 1.645·sd      rank bonus = UCB₈₀ = mean + 1.28·sd
 ```
 
-Pure Jac OSP. No PyTorch, no fine-tuning, no offline batch job — the **graph itself is the model**.
+The UI shows the move ("approval odds 38% → 44%, 1 real outcome"), and future rankings use it. Wide intervals on untested programs earn an exploration bonus, so the agent doesn't only ever recommend the well-trodden options.
 
 ---
 
-## Reflexion · the agent reads its own past
+## Reflexion · the agent critiques itself
 
-After every turn, `CritiqueWalker` writes a `SessionInsight` node with a diversified headline (category prefix · resource named · quality score). The next `IntakeWalker` for the same user reads the most recent two as a conversation prefix — the agent literally **uses its own past performance as memory**, Shinn et al. (2023) implemented in 80 lines of Jac.
-
-```mermaid
-stateDiagram-v2
-    [*] --> Turn_N
-    Turn_N: Turn N · user message
-    Turn_N --> Intake_N
-    Intake_N: IntakeWalker reads<br/>last 2 SessionInsights<br/>as conversation prefix
-    Intake_N --> Chain_N
-    Chain_N: Eligibility → Navigation<br/>or → Pathfinder<br/>or → Escalation
-    Chain_N --> Critique_N
-    Critique_N: CritiqueWalker writes<br/>new SessionInsight<br/>with quality_score
-    Critique_N --> [*]: turn complete
-
-    [*] --> Turn_NP1
-    Turn_NP1: Turn N+1 · same user
-    Turn_NP1 --> Intake_NP1
-    Intake_NP1: reads Critique_N's<br/>SessionInsight
-    Intake_NP1 --> Chain_NP1
-    Chain_NP1: chain uses<br/>last-turn context
-    Chain_NP1 --> [*]
-```
-
-Telemetry tab renders a rolling chart of `quality_score` over time so judges can watch the agent improve in real time.
+After every turn, `CritiqueWalker` writes a `SessionInsight` node (quality score, what fired, top match) on a `reflected_on` edge — zero LLM calls. The Telemetry tab charts `quality_score` over time. (Reading those insights back into prompts was removed: it polluted category detection.)
 
 ---
 
 ## Multi-language UX
 
-The whole pipeline is **English-internal**. A user types in Spanish / Hindi / Tamil / Vietnamese / Bengali — `IntakeWalker` detects language on the **raw prompt** (never on the Reflexion-prefixed augmented input — that contaminated detection in early builds), and the final bot reply + suggestion chips are translated in **one batched LLM call** with a session-level translation cache so repeat strings never re-hit the model.
-
-```mermaid
-flowchart LR
-    A["Necesito un<br/>refugio esta noche"] -->|raw| B[detect_language_and_extract]
-    B -->|lang=es| C[extract_need_profile<br/>augmented w/ Reflexion]
-    C --> D[Eligibility · Navigation<br/>all internal English]
-    D --> E[bot_text<br/>suggestion_chips<br/>action_step descriptions]
-    E -->|batched| F[translate_batch<br/>cached]
-    F --> G["Llama al 1-800-799-7233<br/>Refugio inmediato disponible..."]
-
-    classDef src fill:#fbbf24,stroke:#d97706,color:#000
-    classDef out fill:#22c55e,stroke:#15803d,color:#fff
-    classDef llm fill:#7c3aed,stroke:#5b21b6,color:#fff
-    class A src
-    class G out
-    class B,C,D,F llm
-```
+English and Spanish are understood **without an LLM**: the parser carries bilingual lexicons and patterns ("gano $1,400 al mes", "somos 4", "no hemos comido", "sin papeles"), and replies, plan steps, follow-up questions and quick replies are composed in the user's language. For any other language the one LLM call (`understand_message`) routes the need, and `NarrateWalker` localizes the reply and chips in the background.
 
 ---
 
@@ -342,11 +257,31 @@ flowchart LR
 - **Walkers with abilities keyed by node type.** Each walker declares `with PersonNode entry`, `with NeedNode entry`, `with ResourceNode entry`, so node-specific logic stays at the node boundary.
 - **Typed edges with payload.** `leads_to`, `applied_to`, `governed_by`, `reflected_on`, `has_need` — all carry typed `has` fields (transition_reason, difficulty, status, ts).
 - **Edge-filter traversal expressions.** `[root --> [?:PersonNode, user_id == self.user_id]]` and chained walks like `[resource ->:governed_by:-> [?:EligibilityRuleNode]]` express multi-hop joins in one line.
-- **byllm with structured returns + ReAct + tools.** LLM-backed abilities return typed Jac objects (`NeedProfile`, `EligibilityResult`, `ActionPlan`). `EscalationWalker` runs ReAct with three live-graph tools.
+- **byllm Meaning-Typed Programming, used sparingly.** Two typed stubs (`understand_message → UnderstoodNeed`, `narrate_turn → Narration`) with `sem` strings as the prompt; a litellm fallback pool (Groq → NIM) with tight timeouts and no retries.
 - **`sem` strings everywhere.** Every node, edge, walker field, and stub parameter ships a semstring — byllm uses these as the entire prompt context, so the schema *is* the system prompt.
-- **jac-scale auto REST + WebSocket.** Walkers are exposed as both an HTTP endpoint and a streamed WebSocket without one line of FastAPI glue. `@restspec(protocol=APIProtocol.WEBSOCKET)` on EscalationWalker streams each ReAct step live.
+- **jac-scale auto REST.** Every walker is an HTTP endpoint with zero FastAPI glue; the client calls them with `root spawn` / `jacSpawn`.
 - **Root-reachable session persistence.** Sessions live as subgraphs reachable from `root`; a browser refresh reloads the user's full conversation, plan, and applications with zero database calls.
 - **`spawn` chaining with `.summary` mirroring.** Child walkers mirror their final `report` payload to `.summary` so the parent walker can read it back — because `report` only bubbles to the outermost walker's stream.
+
+---
+
+## Performance & evaluation
+
+| | Before (LLM per step) | After (math-first) |
+|---|---|---|
+| Chat turn, live HF Space | 60+ s (Spanish sample: 62.6 s server + translation calls) | see live numbers below |
+| LLM calls on the critical path | 7–15 sequential | 0 (1 only if the parser can't route) |
+| Engine time per turn | — | p50 0.75 ms · p95 1.1 ms (golden set, in-process) |
+| Round trip, local container | — | p50 ~0.2–0.3 s |
+
+Golden-set regression gate (`tests/golden.json`, 36 hand-written EN/ES cases):
+
+```
+cd civicmesh && jac run tests/eval_engine.jac
+  field accuracy 100% (116/116) · top-3 hit rate 100% (33/33) · exclusion errors 0
+```
+
+The golden set was written alongside the engine, so treat it as a regression gate rather than an independent benchmark.
 
 ---
 

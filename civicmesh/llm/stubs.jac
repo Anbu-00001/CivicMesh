@@ -58,7 +58,7 @@ def pool_model_names -> list {
 # Sync path: the user is waiting, so fail fast into the deterministic answer.
 glob fast_pool = ModelPool(models=build_pool_models(), strategy="fallback", num_retries=0, timeout=6.0);
 # Async path: nobody is blocked; allow one slow model before giving up.
-glob narrate_pool = ModelPool(models=build_pool_models(), strategy="fallback", num_retries=0, timeout=12.0);
+glob narrate_pool = ModelPool(models=build_pool_models(), strategy="fallback", num_retries=0, timeout=8.0);
 
 # ---------- types kept for walker interfaces ----------
 

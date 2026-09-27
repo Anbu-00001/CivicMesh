@@ -8,7 +8,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
     BUN_INSTALL=/opt/bun \
-    PATH=/opt/bun/bin:$PATH
+    PATH=/opt/bun/bin:$PATH \
+    DEFAULT_MAX_RETRIES=0
+
+# DEFAULT_MAX_RETRIES=0: litellm's provider clients otherwise retry each LLM
+# request twice *inside* every Router attempt (openai SDK retries), which
+# stacked 12 s timeouts into 40+ s narrations. The Router owns fallback.
 
 # System deps: curl + unzip for bun installer, git for any pip VCS deps,
 # build-essential for native wheels (litellm has a few).

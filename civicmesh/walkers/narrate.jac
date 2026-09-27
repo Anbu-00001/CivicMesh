@@ -14,10 +14,11 @@ import re;
 import time;
 import from llm.stubs { narrate_turn, pool_model_names }
 
-"""True if the text contains a 3+ digit run that the facts don't contain."""
-def invents_numbers(text: str, facts: str) -> bool {
-    fact_digits = set(re.findall(r"\d{3,}", facts.replace("-", "")));
-    for d in re.findall(r"\d{3,}", text.replace("-", "")) {
+"""True if the text contains a 3+ digit run found in neither the facts nor the user's own message."""
+def invents_numbers(text: str, facts: str, user_message: str = "") -> bool {
+    allowed = (facts + " " + user_message).replace("-", "").replace(",", "");
+    fact_digits = set(re.findall(r"\d{3,}", allowed));
+    for d in re.findall(r"\d{3,}", text.replace("-", "").replace(",", "")) {
         if d not in fact_digits {
             return True;
         }
@@ -45,7 +46,7 @@ walker NarrateWalker {
             );
             msg = str(n.message).strip();
             chips = [str(c) for c in list(n.chips)];
-            if msg and not invents_numbers(msg, str(self.facts)) {
+            if msg and not invents_numbers(msg, str(self.facts), str(self.user_message)) {
                 out["ok"] = True;
                 out["message"] = msg;
             } else {
