@@ -269,8 +269,9 @@ English and Spanish are understood **without an LLM**: the parser carries biling
 
 | | Before (LLM per step) | After (math-first) |
 |---|---|---|
-| Chat turn, live HF Space | 60+ s (Spanish sample: 62.6 s server + translation calls) | see live numbers below |
-| LLM calls on the critical path | 7–15 sequential | 0 (1 only if the parser can't route) |
+| Chat turn, live HF Space (cpu-basic) | 60+ s (Spanish sample: 62.6 s server, then client-side translation calls) | answer on screen ~1 s after the click; server time 60–200 ms (measured 2026-09-27 from a client with ~1.1 s baseline RTT to the Space) |
+| LLM calls on the critical path | 7–15 sequential | 0 (1 only if the parser can't route the message) |
+| LLM narration | inline, blocking | async, 2.7–3.1 s server-side on NIM mistral-nemotron, guarded against invented numbers |
 | Engine time per turn | — | p50 0.75 ms · p95 1.1 ms (golden set, in-process) |
 | Round trip, local container | — | p50 ~0.2–0.3 s |
 
