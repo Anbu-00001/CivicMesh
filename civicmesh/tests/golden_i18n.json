@@ -391,10 +391,263 @@
   {
    "text": "Mo nilo ounjẹ fun awọn ọmọ mi",
    "expect": {
+    "language": "yo",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Mul on vaja abi, meil pole süüa.",
+   "expect": {
     "language": "",
     "needs_llm": true
    },
-   "_note": "Yoruba: outside the lexicon -> time-boxed LLM + auto narration"
+   "_note": "Estonian: no routing lexicon -> time-boxed LLM + auto narration"
+  },
+  {
+   "text": "我屋企冇嘢食，啲細路好肚餓。",
+   "expect": {
+    "language": "yue",
+    "category": "food"
+   }
+  },
+  {
+   "text": "زه ډوډۍ ته اړتیا لرم، ماشومان وږي دي.",
+   "expect": {
+    "language": "ps",
+    "category": "food"
+   }
+  },
+  {
+   "text": "من پێویستم بە خواردنە، منداڵەکانم برسین.",
+   "expect": {
+    "language": "ckb",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Ez xwarin dixwazim, zarokên min birçî ne.",
+   "expect": {
+    "language": "kmr",
+    "category": "food"
+   }
+  },
+  {
+   "text": "ኣነ መግቢ የብለይን፣ ቆልዑ ጠምዮም ኣለዉ።",
+   "expect": {
+    "language": "ti",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Am nevoie de ajutor, nu avem mâncare pentru copii.",
+   "expect": {
+    "language": "ro",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Proprietarul vrea să mă evacueze, nu pot plăti chiria.",
+   "expect": {
+    "language": "ro",
+    "category": "housing"
+   }
+  },
+  {
+   "text": "Kam nevojë për ndihmë, nuk kemi ushqim për fëmijët.",
+   "expect": {
+    "language": "sq",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Trebam pomoć, nemamo hrane za djecu.",
+   "expect": {
+    "language": "sh",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Треба ми помоћ, немамо храну за децу.",
+   "expect": {
+    "language": "sh",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Аз съм безработна и нямаме храна за децата.",
+   "expect": {
+    "language": "bg",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Potřebuji pomoc, nemáme jídlo pro děti.",
+   "expect": {
+    "language": "cs",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Nincs étel otthon, segítség kell a gyerekeknek.",
+   "expect": {
+    "language": "hu",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Ik heb hulp nodig, we hebben geen eten.",
+   "expect": {
+    "language": "nl",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Надад хоол хэрэгтэй, хүүхдүүд өлсөж байна.",
+   "expect": {
+    "language": "mn",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Маған тамақ керек, балаларым аш.",
+   "expect": {
+    "language": "kk",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Menga yordam kerak, bolalarimga ovqat yo'q.",
+   "expect": {
+    "language": "uz",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Mo nílò oúnjẹ fún àwọn ọmọ mi.",
+   "expect": {
+    "language": "yo",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Achọrọ m nri maka ụmụ m, biko nyere m aka.",
+   "expect": {
+    "language": "ig",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Ina bukatar abinci, yara suna jin yunwa.",
+   "expect": {
+    "language": "ha",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Dama soxla lekk, xale yi xiif nañu.",
+   "expect": {
+    "language": "wo",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Nkeneye ubufasha, abana bafite inzara.",
+   "expect": {
+    "language": "rw",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Ani gargaarsa nan barbaada, nyaata hin qabnu.",
+   "expect": {
+    "language": "om",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Kinahanglan nako og tabang, wala mi pagkaon.",
+   "expect": {
+    "language": "ceb",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Kasapulak ti tulong, awan ti taraonmi.",
+   "expect": {
+    "language": "ilo",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Ou te manaomia se fesoasoani, e leai se meaai.",
+   "expect": {
+    "language": "sm",
+    "category": "food"
+   }
+  },
+  {
+   "text": "ʻOku ou fiemaʻu ha tokoni, ʻoku ʻikai ha meʻakai.",
+   "expect": {
+    "language": "to",
+    "category": "food"
+   }
+  },
+  {
+   "text": "N sta presiza di ajuda, nu ka ten kumida pa mininus.",
+   "expect": {
+    "language": "kea",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Mi cyaan find nuh food fi mi pickney dem.",
+   "expect": {
+    "language": "jam",
+    "category": "food"
+   }
+  },
+  {
+   "text": "איך דאַרף הילף, מיר האָבן נישט קיין עסן.",
+   "expect": {
+    "language": "yi",
+    "category": "food"
+   }
+  },
+  {
+   "text": "ຂ້ອຍຕ້ອງການອາຫານ ລູກຂ້ອຍຫິວເຂົ້າ",
+   "expect": {
+    "language": "lo",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Nazali na nzala, nalingi lisungi mpo na bana.",
+   "expect": {
+    "language": "ln",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Me hia aduane, me mma wɔ ɛkɔm.",
+   "expect": {
+    "language": "ak",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Ñuqa mikhunata munani, wawakuna yarqasqa kanku.",
+   "expect": {
+    "language": "qu",
+    "category": "food"
+   }
+  },
+  {
+   "text": "Kinwaj jun tob'anik, k'o ta nuwa'im.",
+   "expect": {
+    "language": "myn",
+    "needs_llm": true
+   },
+   "_note": "Mayan orthography heuristic (glottal apostrophes) -> interpreter tier, Spanish answer"
   }
  ]
 }

@@ -12,7 +12,8 @@ produce. Any digit run of 3+ that isn't in the fact sheet voids the output.
 
 import re;
 import time;
-import from llm.stubs { narrate_turn, pool_model_names }
+import from llm.stubs { narrate_turn, narrate_turn_polyglot, pool_model_names, polyglot_model_names }
+import from engine.i18n { ascii_digits, language_info }
 import from engine.stats { record_narration }
 
 """True if the narration contains a number the engine didn't produce.
@@ -24,9 +25,10 @@ tell them to call 555-0199" can't get a number repeated back as if it were
 a program's line.
 """
 def _digits_norm(t: str) -> str {
-    # Join digit groups split by separators: "(713) 260-0500" → "7132600500",
-    # "$1,800" → "$1800"; separate numbers stay separate.
-    return re.sub(r"(?<=\d)(?:\)\s?|[\-\.,])\(?(?=\d)", "", str(t));
+    # Other scripts' digits → ASCII, then join digit groups split by
+    # separators: "(713) 260-0500" → "7132600500", "$1,800" → "$1800";
+    # separate numbers stay separate.
+    return re.sub(r"(?<=\d)(?:\)\s?|[\-\.,])\(?(?=\d)", "", ascii_digits(str(t)));
 }
 
 def invents_numbers(text: str, facts: str, user_message: str = "") -> bool {
@@ -43,6 +45,8 @@ def invents_numbers(text: str, facts: str, user_message: str = "") -> bool {
     return False;
 }
 
+glob STRONG_NARRATION: list = ["en", "es", "fr", "de", "it", "pt", "ru", "zh", "yue", "ja", "ko"];
+
 walker NarrateWalker {
     has user_message: str = "";
     has language: str = "en";
@@ -54,10 +58,18 @@ walker NarrateWalker {
         t0 = time.perf_counter();
         models = pool_model_names();
         out: dict = {"ok": False, "message": "", "chips": list(self.chips), "models": models};
+        # Mistral-Nemotron is benchmarked in 9 languages; everything else goes
+        # to the polyglot pool (Gemma 4, pre-trained on 140+ languages) first.
+        code = str(self.language or "en");
+        polyglot = code not in STRONG_NARRATION;
+        if polyglot { models = polyglot_model_names(); out["models"] = models; }
+        info = language_info(code);
+        lang_arg = code if code == "auto" else (str(info["name"]) + " (" + code + ")");
         try {
-            n = narrate_turn(
+            fn = narrate_turn_polyglot if polyglot else narrate_turn;
+            n = fn(
                 user_message=str(self.user_message)[:600],
-                language=str(self.language or "en"),
+                language=lang_arg,
                 facts=str(self.facts)[:2000],
                 chips=[str(c) for c in self.chips]
             );

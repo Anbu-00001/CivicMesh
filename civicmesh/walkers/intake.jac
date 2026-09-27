@@ -25,7 +25,7 @@ import from graph.nodes { PersonNode, NeedNode }
 import from graph.edges { has_need }
 import from llm.stubs { understand_message, pool_model_names }
 import from engine.parse { parse_intake }
-import from engine.i18n { language_name }
+import from engine.i18n { language_name, language_info, interpreter_card }
 import from engine.stats { record_turn }
 import from engine.compose { merge_profiles, new_trace, span_begin, span_end, export_spans }
 import from walkers.eligibility { EligibilityWalker }
@@ -46,6 +46,9 @@ walker IntakeWalker {
     has prior: dict = {};
     # Key of the follow-up question this message answers (yes/no answers).
     has answering: str = "";
+    # Language picked in the UI ("" / "auto" = detect). Wins over detection
+    # for the reply language; routing still reads the message itself.
+    has preferred_language: str = "";
     has chain_events: list = [];
 
     can intake with `Root entry {
@@ -100,7 +103,14 @@ walker IntakeWalker {
             }
         }
         detected = str(profile.get("language", "") or "");
-        lang_out = detected or "en";
+        chosen = str(self.preferred_language or "").strip();
+        lang_code = chosen if (chosen and chosen != "auto") else detected;
+        info = language_info(lang_code or "en");
+        interpreter = str(info["tier"]) == "interpreter";
+        # Mostly spoken languages (Mam, K'iche', Mixtec, …): answer in the
+        # fallback language most speakers also use, plus an interpreter card.
+        lang_out = (str(info["fallback"]) or "es") if interpreter else (lang_code or "en");
+        narrate_lang = lang_out if interpreter else (lang_code or "auto");
         if not profile.get("category") {
             # Still nothing to route on: default to the broadest safety net
             # and let the follow-up question narrow it down.
@@ -169,7 +179,7 @@ walker IntakeWalker {
         }
 
         span_end(tr, root_span, {"civicmesh.llm_calls_sync": 1 if llm_sync else 0});
-        record_turn(self.user_id, detected or "?", str(profile["category"]), float(root_span.get("duration_ms", 0.0)), llm_sync, llm_error.startswith("no answer within"));
+        record_turn(self.user_id, lang_code or "?", str(profile["category"]), float(root_span.get("duration_ms", 0.0)), llm_sync, llm_error.startswith("no answer within"));
         spans = export_spans(tr);
 
         public_profile = {k: v for (k, v) in profile.items() if k not in ["evidence", "category_scores"]};
@@ -188,8 +198,10 @@ walker IntakeWalker {
             "version": 2,
             "language": lang_out,
             # "auto": no language identified — the narrator mirrors the user's.
-            "narrate_language": detected or "auto",
-            "language_name": language_name(detected or "en"),
+            "narrate_language": narrate_lang,
+            "language_name": [str(info["name"]), str(info["endonym"])] if lang_code else language_name("en"),
+            "language_info": info,
+            "interpreter": interpreter_card(lang_code) if (lang_code and lang_code not in ["en", "es"]) else {},
             "profile": public_profile,
             "evidence": highlights,
             "category_scores": parsed["category_scores"],

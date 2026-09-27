@@ -78,6 +78,23 @@ glob fast_pool = without_sdk_retries(ModelPool(models=build_pool_models(), strat
 # Async path: nobody is blocked; allow one slow model before giving up.
 glob narrate_pool = without_sdk_retries(ModelPool(models=build_pool_models(), strategy="fallback", num_retries=0, timeout=8.0));
 
+# Long-tail languages: Gemma 4 (pre-trained on 140+ languages, on NVIDIA NIM)
+# leads, then the default chain. CIVICMESH_POLYGLOT_MODELS overrides the lead.
+glob POLYGLOT_MODELS: list[str] = ["nvidia_nim/google/gemma-4-31b-it"];
+
+def build_polyglot_models -> list {
+    raw = str(os.environ.get("CIVICMESH_POLYGLOT_MODELS", "")).strip();
+    lead: list[str] = [n.strip() for n in raw.split(",") if n.strip()] if raw else list(POLYGLOT_MODELS);
+    rest = [m for m in build_pool_models() if str(m.model_name) not in lead];
+    return [Model(model_name=n) for n in lead] + rest;
+}
+
+def polyglot_model_names -> list {
+    return [str(m.model_name) for m in build_polyglot_models()];
+}
+
+glob polyglot_pool = without_sdk_retries(ModelPool(models=build_polyglot_models(), strategy="fallback", num_retries=0, timeout=9.0));
+
 # ---------- types kept for walker interfaces ----------
 
 obj NeedProfile {
@@ -146,6 +163,14 @@ sem Narration.chips is "The follow-up suggestions translated into the target lan
 def narrate_turn(user_message: str, language: str, facts: str, chips: list[str]) -> Narration by narrate_pool();
 
 sem narrate_turn.user_message is "What the person wrote, for tone and context only.";
-sem narrate_turn.language is "ISO 639 code of the language to write in (e.g. 'ta', 'zh', 'hmn'). If 'auto', write in the same language as user_message.";
+sem narrate_turn.language is "Language to write in, as 'Name (code)', e.g. 'Tamil (ta)'. If 'auto', write in the same language as user_message.";
 sem narrate_turn.facts is "Engine output: matched programs with reasons, the first step, and the follow-up question. Authoritative.";
 sem narrate_turn.chips is "Follow-up suggestion chips in English to translate.";
+
+"""Same contract as narrate_turn, served by the polyglot pool for long-tail languages."""
+def narrate_turn_polyglot(user_message: str, language: str, facts: str, chips: list[str]) -> Narration by polyglot_pool();
+
+sem narrate_turn_polyglot.user_message is "What the person wrote, for tone and context only.";
+sem narrate_turn_polyglot.language is "Language to write in, as 'Name (code)', e.g. 'Tigrinya (ti)', 'Kurdish (Sorani) (ckb)'. If 'auto', write in the same language as user_message.";
+sem narrate_turn_polyglot.facts is "Engine output: matched programs with reasons, the first step, and the follow-up question. Authoritative.";
+sem narrate_turn_polyglot.chips is "Follow-up suggestion chips in English to translate.";

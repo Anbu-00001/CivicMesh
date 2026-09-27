@@ -25,6 +25,7 @@ heavy agglutination (Chinese, Japanese, Thai, Tamil, Telugu, ...).
 """
 
 import re;
+import unicodedata;
 import bisect;
 
 # (first code point, last code point, script)
@@ -46,6 +47,18 @@ glob RANGE_STARTS: list = [r[0] for r in SCRIPT_RANGES];
 
 # ISO code → [English name, endonym]
 glob LANG_NAMES: dict = {
+    "yue": ["Cantonese", "粵語"], "ps": ["Pashto", "پښتو"], "ckb": ["Kurdish (Sorani)", "کوردیی ناوەندی"],
+    "kmr": ["Kurdish (Kurmanji)", "Kurmancî"], "ti": ["Tigrinya", "ትግርኛ"], "ro": ["Romanian", "Română"],
+    "sq": ["Albanian", "Shqip"], "sh": ["Bosnian / Croatian / Serbian", "Bosanski / Hrvatski / Српски"],
+    "bg": ["Bulgarian", "Български"], "mk": ["Macedonian", "Македонски"], "be": ["Belarusian", "Беларуская"],
+    "cs": ["Czech", "Čeština"], "sk": ["Slovak", "Slovenčina"], "hu": ["Hungarian", "Magyar"], "nl": ["Dutch", "Nederlands"],
+    "kk": ["Kazakh", "Қазақша"], "uz": ["Uzbek", "Oʻzbekcha"], "yo": ["Yoruba", "Yorùbá"], "ig": ["Igbo", "Asụsụ Igbo"],
+    "ha": ["Hausa", "Hausa"], "wo": ["Wolof", "Wolof"], "rw": ["Kinyarwanda / Kirundi", "Ikinyarwanda / Ikirundi"],
+    "om": ["Oromo", "Afaan Oromoo"], "ceb": ["Cebuano (Bisaya)", "Sinugbuanong Binisaya"], "ilo": ["Ilocano", "Ilokano"],
+    "sm": ["Samoan", "Gagana Sāmoa"], "to": ["Tongan", "Lea faka-Tonga"], "mh": ["Marshallese", "Kajin M̧ajeļ"],
+    "kea": ["Cape Verdean Creole", "Kriolu"], "jam": ["Jamaican Patois", "Patwa"], "yi": ["Yiddish", "ייִדיש"],
+    "ff": ["Fula (Pulaar)", "Pulaar"], "ln": ["Lingala", "Lingála"], "ak": ["Twi (Akan)", "Twi"], "qu": ["Quechua", "Runa Simi"],
+    "ksw": ["Karen (S'gaw)", "ကညီကျိာ်"], "myn": ["Mayan language", "Maya"],
     "hi-Latn": ["Hindi (romanized)", "Hinglish"], "ta-Latn": ["Tamil (romanized)", "Tanglish"],
     "en": ["English", "English"], "es": ["Spanish", "Español"], "zh": ["Chinese", "中文"],
     "tl": ["Tagalog", "Tagalog"], "vi": ["Vietnamese", "Tiếng Việt"], "ar": ["Arabic", "العربية"],
@@ -81,17 +94,43 @@ glob LATIN_MARKERS: dict = {
     "so": ["waxaan", "iyo", "waa", "anigu", "waxaa", "baahan", "caawimaad", "carruur", "shaqo", "maanta"],
     "hmn": ["kuv", "koj", "peb", "yog", "tsis", "muaj", "xav", "pab", "thov", "tsev", "noj", "mov"],
     "vi": ["tôi", "chúng", "không", "cần", "giúp", "của", "và", "có", "được", "với", "hôm nay"],
+    "ro": ["și", "nu", "eu", "sunt", "avem", "nevoie", "ajutor", "pentru", "copii", "este", "acasă", "vă", "rog", "mulțumesc", "mâncare", "să", "mă", "pot", "vrea", "meu", "mea"],
+    "sq": ["unë", "kam", "nevojë", "ndihmë", "nuk", "jam", "fëmijët", "është", "dhe", "për", "lutem", "faleminderit", "shtëpi", "ushqim"],
+    "sh": ["sam", "nemam", "trebam", "treba", "pomoć", "pomoc", "djeca", "deca", "hvala", "molim", "nije", "imam", "smo", "stan"],
+    "cs": ["potřebuji", "potrebuji", "pomoc", "jsem", "nemám", "máme", "děti", "prosím", "děkuji", "není", "jídlo"],
+    "sk": ["potrebujem", "pomoc", "som", "nemám", "máme", "deti", "prosím", "ďakujem", "nie", "jedlo"],
+    "hu": ["segítség", "segítséget", "nincs", "vagyok", "kell", "gyerekek", "kérem", "köszönöm", "és", "nekem", "nem"],
+    "nl": ["ik", "heb", "hulp", "nodig", "een", "het", "niet", "wij", "kinderen", "alstublieft", "dank", "eten", "huur"],
+    "kmr": ["ez", "min", "ji", "hewce", "alîkarî", "dixwazim", "heye", "tune", "zarok", "em", "ne"],
+    "uz": ["men", "menga", "kerak", "yordam", "bor", "yo'q", "yoʻq", "va", "uchun", "bolalar", "iltimos", "rahmat"],
+    "yo": ["mo", "ní", "fún", "àwọn", "awọn", "ọmọ", "nílò", "nilo", "ìrànlọ́wọ́", "iranlọwọ", "kò", "jẹ", "ẹ", "wà"],
+    "ig": ["achọrọ", "achoro", "enyemaka", "anyị", "nke", "bụ", "nwere", "enweghị", "ụmụ", "biko", "daalụ", "achọ"],
+    "ha": ["ina", "bukatar", "taimako", "muna", "yara", "don", "ban", "abinci", "gida", "yunwa", "sannu"],
+    "wo": ["dama", "soxla", "ndimbal", "amul", "xale", "ndax", "jërëjëf", "waaw", "déedéet", "lekk"],
+    "rw": ["ndashaka", "nkeneye", "ubufasha", "mfite", "ntabwo", "turi", "abana", "murakoze", "ndagusaba", "ibiryo"],
+    "om": ["ani", "nan", "barbaada", "gargaarsa", "qaba", "hin", "keessa", "ijoollee", "galatoomi", "maaloo", "nyaata"],
+    "ceb": ["nako", "kinahanglan", "tabang", "naa", "og", "unsa", "dili", "kaayo", "akong", "among", "palihug"],
+    "ilo": ["siak", "kasapulak", "awan", "adda", "dagiti", "ken", "pangngaasim", "agyamanak", "diak", "taraon"],
+    "sm": ["manaomia", "fesoasoani", "matou", "fanau", "faamolemole", "faafetai", "ou te", "meaai"],
+    "to": ["ʻoku", "oku ou", "fiemaʻu", "fiema'u", "tokoni", "kātaki", "ʻikai", "fānau", "mālō", "meʻakai"],
+    "mh": ["aikuj", "jipañ", "kom̧m̧ool", "ij", "eo", "ilo", "kōjparok", "mona"],
+    "kea": ["kre", "nha", "mininus", "fidjus", "obrigadu", "sta", "ka ten", "N ka", "kumida"],
+    "jam": ["nuh", "yuh", "unnu", "pickney", "cyaan", "deh", "nyam", "yaad", "wah", "fi"],
+    "ff": ["miɗo", "yiɗi", "wallitaade", "ɓiɓɓe", "jaaraama", "ñaamdu", "suudu"],
+    "ln": ["nazali", "nalingi", "lisungi", "bana", "mpe", "malamu", "matondi", "bolimbisi", "nakoki", "bilei"],
+    "ak": ["hia", "mmoa", "yɛ", "wɔ", "mma", "medaase", "mepa", "kyɛw", "aduane", "ɛkɔm"],
+    "qu": ["ñuqa", "noqa", "ñoqa", "yanapay", "kani", "kanchu", "wawakuna", "munani", "sulpayki", "allinllachu", "mikhuna"],
     "hi-Latn": ["mujhe", "mera", "meri", "mere", "hai", "hain", "nahi", "nahin", "chahiye", "kya", "hum", "humein", "hamare", "aap", "kuch", "bahut", "paisa", "paise", "mein", "ghar", "bacche", "karo"],
     "ta-Latn": ["enakku", "naan", "naanga", "illa", "illai", "venum", "vendum", "romba", "konjam", "enna", "epdi", "engaluku", "kaasu", "panam", "irukku", "vaanga", "pannunga"]
 };
 # Vietnamese: breve / horn / đ / hook / tilde letters are distinctive; the
 # dot-below vowels alone are shared with Yoruba and Igbo, and â ê ô with
 # French and Portuguese.
-glob VI_STRONG: str = "ăđơưấầẩẫậắằẳẵặếềểễệốồổỗộớờởỡợứừửữựảẻẽỉỏủỷỹĩũ";
+glob VI_STRONG: str = "đơưấầẩẫậắằẳẵặếềểễệốồổỗộớờởỡợứừửữựảẻẽỉỏủỷỹĩũ";
 glob VI_WEAK: str = "ạẹịọụỵ";
 # Letters (almost) exclusive to one language; ç is shared by pt/fr/tr, so it
 # is not a hint for any of them.
-glob LATIN_CHAR_HINTS: dict = {"pt": "ãõ", "fr": "èêàùœ", "de": "äöüß", "pl": "ąęłńśźż", "tr": "ığş", "ht": "òè"};
+glob LATIN_CHAR_HINTS: dict = {"pt": "ãõ", "fr": "èêàùœ", "de": "äöüß", "pl": "ąęłńśźż", "tr": "ığş", "ht": "òè", "ro": "șțşă", "sq": "ë", "sh": "ćđ", "cs": "řěů", "sk": "ľĺŕô", "hu": "őű", "yo": "ṣ", "ig": "ṅ", "ha": "ɗƙɓƴ", "ff": "ŋ", "ak": "ɛɔ", "mh": "ļņ", "uz": "ʻ"};
 
 # Per-language routing keywords. Keys: food, housing, healthcare, legal,
 # self_harm, dv, urgent, homeless, children.
@@ -536,6 +575,319 @@ glob LEX: dict = {
         "homeless": ["veedu illa", "veedu illai", "thanga idam illa"],
         "children": ["kuzhandhai", "kulandhai", "pasanga", "paiyan", "ponnu"]
     },
+    "yue": {
+        "food": ["食嘢", "食飯", "冇嘢食", "肚餓", "餓", "食物", "糧食", "食物銀行"],
+        "housing": ["租金", "交租", "租", "業主", "趕走", "冇地方住", "住屋", "房屋", "庇護所", "電費"],
+        "healthcare": ["睇醫生", "醫生", "醫院", "藥", "病", "保險", "牙醫", "診所"],
+        "legal": ["律師", "法庭", "移民", "簽證", "綠卡", "呃錢", "權利"],
+        "self_harm": ["自殺", "想死", "唔想生存"],
+        "dv": ["家暴", "家庭暴力", "被打"],
+        "urgent": ["今日", "今晚", "即刻", "緊急"],
+        "homeless": ["冇屋住", "露宿", "無家可歸"],
+        "children": ["仔女", "細路", "小朋友", "個仔", "個女"]
+    },
+    "ps": {
+        "food": ["خواړه", "خوراک", "ډوډۍ", "لوږه", "وږی"],
+        "housing": ["کرایه", "د کور خاوند", "سرپناه", "کډوال"],
+        "healthcare": ["ډاکټر", "روغتون", "درمل", "ناروغ", "درملنه"],
+        "legal": ["وکیل", "محکمه", "مهاجرت", "ویزه", "پناه غوښتنه"],
+        "self_harm": ["ځان وژنه", "ځان ووژنم"],
+        "dv": ["کورنی تاوتریخوالی", "وهي مې"],
+        "urgent": ["نن", "ژر", "بېړني"],
+        "homeless": ["بې کوره"],
+        "children": ["ماشومان", "زوی", "لور"]
+    },
+    "ckb": {
+        "food": ["خواردن", "نان", "برسی", "برسێتی"],
+        "housing": ["کرێ", "خاوەن ماڵ", "خانوو", "حەوانەوە"],
+        "healthcare": ["دکتۆر", "نەخۆشخانە", "دەرمان", "نەخۆش"],
+        "legal": ["پارێزەر", "دادگا", "کۆچ", "پەنابەری"],
+        "self_harm": ["خۆکوشتن"],
+        "dv": ["توندوتیژی خێزانی"],
+        "urgent": ["ئەمڕۆ", "بەپەلە"],
+        "homeless": ["بێ ماڵ", "بێ لانە"],
+        "children": ["منداڵ"]
+    },
+    "kmr": {
+        "food": ["xwarin", "birçî", "nan"],
+        "housing": ["kirê", "xanî", "xwediyê malê", "stargeh"],
+        "healthcare": ["doktor", "nexweşxane", "derman", "nexweş"],
+        "legal": ["parêzer", "dadgeh", "koçberî", "penaberî"],
+        "self_harm": ["xwekuştin"],
+        "dv": ["tundiya malbatî"],
+        "urgent": ["îro", "lezgîn"],
+        "homeless": ["bê mal"],
+        "children": ["zarok"]
+    },
+    "ti": {
+        "food": ["መግቢ", "ጥሜት", "ጠሚአ"],
+        "housing": ["ገዛ", "ክራይ", "መዕቆቢ"],
+        "healthcare": ["ሓኪም", "ሆስፒታል", "መድሃኒት", "ሕማም", "ሕሙም"],
+        "legal": ["ጠበቓ", "ቤት ፍርዲ", "ስደት", "ዑቕባ"],
+        "self_harm": ["ርእሰ ቕትለት"],
+        "dv": ["ዓመጽ ስድራ"],
+        "urgent": ["ሎሚ", "ህጹጽ"],
+        "homeless": ["ገዛ የብለይን", "ገዛ የብልናን"],
+        "children": ["ቆልዑ", "ውላድ"]
+    },
+    "ro": {
+        "food": ["mâncare", "mancare", "hrană", "foame", "alimente"],
+        "housing": ["chirie", "chiria", "locuință", "locuinta", "proprietar", "evacuare", "evacuat", "adăpost", "fără adăpost"],
+        "healthcare": ["medic", "doctor", "spital", "medicamente", "bolnav", "asigurare de sănătate"],
+        "legal": ["avocat", "instanță", "tribunal", "imigrare", "azil", "viză", "drepturi", "înșelătorie"],
+        "self_harm": ["sinucidere", "să mă sinucid", "vreau să mor"],
+        "dv": ["violență domestică", "mă bate"],
+        "urgent": ["azi", "astăzi", "urgent", "diseară"],
+        "homeless": ["fără adăpost", "în stradă", "pe stradă"],
+        "children": ["copii", "copilul", "fiul", "fiica"]
+    },
+    "sq": {
+        "food": ["ushqim", "bukë", "kam uri", "urie"],
+        "housing": ["qira", "qiranë", "pronari", "strehim", "dëbim", "strehë"],
+        "healthcare": ["mjek", "doktor", "spital", "ilaç", "ilaçe", "i sëmurë", "e sëmurë", "sigurim shëndetësor"],
+        "legal": ["avokat", "gjykatë", "imigrim", "azil", "vizë"],
+        "self_harm": ["vetëvrasje"],
+        "dv": ["dhunë në familje"],
+        "urgent": ["sot", "sonte", "urgjent"],
+        "homeless": ["pa strehë", "në rrugë"],
+        "children": ["fëmijët", "fëmijë", "djali", "vajza"]
+    },
+    "sh": {
+        "food": ["hran", "jelo", "gladan", "gladni", "gladna", "хран", "гладан"],
+        "housing": ["stan", "kirija", "kirije", "stanarina", "najam", "stanodavac", "iseljenje", "sklonište", "кирија", "стан", "станодавац"],
+        "healthcare": ["doktor", "ljekar", "lekar", "bolnica", "lijek", "lek", "lijekove", "lekove", "bolestan", "osiguranje", "доктор", "лекар", "болница", "лек"],
+        "legal": ["advokat", "odvjetnik", "sud", "imigracija", "azil", "viza", "адвокат", "суд"],
+        "self_harm": ["samoubistvo", "samoubojstvo", "самоубиство"],
+        "dv": ["nasilje u porodici", "obiteljsko nasilje", "насиље у породици"],
+        "urgent": ["danas", "večeras", "hitno", "данас", "хитно"],
+        "homeless": ["beskućnik", "beskućnici", "бескућник"],
+        "children": ["djeca", "deca", "dijete", "dete", "деца", "дете"]
+    },
+    "bg": {
+        "food": ["храна", "гладен", "гладна", "гладни"],
+        "housing": ["наем", "хазяин", "жилище", "изгонен", "подслон"],
+        "healthcare": ["лекар", "болница", "лекарства", "болен", "болна", "осигуровка"],
+        "legal": ["адвокат", "съд", "имиграция", "убежище", "виза"],
+        "self_harm": ["самоубийство"],
+        "dv": ["домашно насилие"],
+        "urgent": ["днес", "спешно"],
+        "homeless": ["бездомен", "бездомни"],
+        "children": ["деца", "дете", "син", "дъщеря"]
+    },
+    "cs": {
+        "food": ["jídlo", "jidlo", "hlad", "potraviny"],
+        "housing": ["nájem", "najem", "pronajímatel", "vystěhování", "bydlení", "azylový dům"],
+        "healthcare": ["lékař", "doktor", "nemocnice", "léky", "nemocný", "pojištění"],
+        "legal": ["právník", "advokát", "soud", "imigrace", "azyl", "vízum"],
+        "self_harm": ["sebevražda"],
+        "dv": ["domácí násilí"],
+        "urgent": ["dnes", "naléhavé", "ihned"],
+        "homeless": ["bezdomovec", "bez domova"],
+        "children": ["děti", "dítě", "syn", "dcera"]
+    },
+    "sk": {
+        "food": ["jedlo", "hlad", "potraviny"],
+        "housing": ["nájom", "prenajímateľ", "vysťahovanie", "bývanie", "útulok"],
+        "healthcare": ["lekár", "doktor", "nemocnica", "lieky", "chorý", "poistenie"],
+        "legal": ["právnik", "advokát", "súd", "imigrácia", "azyl", "víza"],
+        "self_harm": ["samovražda"],
+        "dv": ["domáce násilie"],
+        "urgent": ["dnes", "naliehavé", "ihneď"],
+        "homeless": ["bezdomovec", "bez domova"],
+        "children": ["deti", "dieťa", "syn", "dcéra"]
+    },
+    "hu": {
+        "food": ["étel", "élelmiszer", "éhes", "enni"],
+        "housing": ["lakbér", "bérleti díj", "főbérlő", "kilakoltat", "lakás", "szállás"],
+        "healthcare": ["orvos", "kórház", "gyógyszer", "beteg", "biztosítás"],
+        "legal": ["ügyvéd", "bíróság", "bevándorlás", "menedékjog", "vízum"],
+        "self_harm": ["öngyilkos"],
+        "dv": ["családon belüli erőszak"],
+        "urgent": ["ma este", "sürgős", "azonnal"],
+        "homeless": ["hajléktalan"],
+        "children": ["gyerekek", "gyerek", "fiam", "lányom"]
+    },
+    "nl": {
+        "food": ["eten", "voedsel", "honger", "voedselbank"],
+        "housing": ["huur", "huisbaas", "verhuurder", "uitzetting", "woning", "opvang", "dakloos"],
+        "healthcare": ["dokter", "arts", "ziekenhuis", "medicijnen", "ziek", "zorgverzekering"],
+        "legal": ["advocaat", "rechtbank", "immigratie", "asiel", "visum"],
+        "self_harm": ["zelfmoord"],
+        "dv": ["huiselijk geweld"],
+        "urgent": ["vandaag", "vanavond", "dringend"],
+        "homeless": ["dakloos"],
+        "children": ["kinderen", "kind", "zoon", "dochter"]
+    },
+    "mn": {
+        "food": ["хоол", "хүнс", "өлсөж", "өлссөн"],
+        "housing": ["түрээс", "байр", "орон сууц", "байрны эзэн"],
+        "healthcare": ["эмч", "эмнэлэг", "эм", "өвчтэй", "даатгал"],
+        "legal": ["өмгөөлөгч", "шүүх", "цагаачлал", "виз"],
+        "self_harm": ["амиа хорлох"],
+        "dv": ["гэр бүлийн хүчирхийлэл"],
+        "urgent": ["өнөөдөр", "яаралтай"],
+        "homeless": ["орон гэргүй"],
+        "children": ["хүүхэд"]
+    },
+    "kk": {
+        "food": ["тамақ", "азық", "аш"],
+        "housing": ["пәтер", "жалдау", "баспана", "үй иесі"],
+        "healthcare": ["дәрігер", "аурухана", "дәрі", "ауру", "сақтандыру"],
+        "legal": ["адвокат", "сот", "көші-қон", "виза"],
+        "self_harm": ["өзін-өзі өлтіру"],
+        "dv": ["тұрмыстық зорлық"],
+        "urgent": ["бүгін", "шұғыл"],
+        "homeless": ["баспанасыз"],
+        "children": ["балалар", "бала"]
+    },
+    "uz": {
+        "food": ["ovqat", "oziq-ovqat", "ochman", "ochmiz", "non"],
+        "housing": ["ijara", "uy egasi", "kvartira", "boshpana"],
+        "healthcare": ["shifokor", "doktor", "kasalxona", "dori", "kasal", "sug'urta"],
+        "legal": ["advokat", "sud", "immigratsiya", "viza"],
+        "self_harm": ["o'z joniga qasd"],
+        "dv": ["oiladagi zo'ravonlik"],
+        "urgent": ["bugun", "shoshilinch", "tezda"],
+        "homeless": ["uysiz"],
+        "children": ["bolalar", "bola", "o'g'il", "qiz"]
+    },
+    "yo": {
+        "food": ["oúnjẹ", "ounjẹ", "ounje", "ebi n pa", "ebi"],
+        "housing": ["owó ilé", "owo ile", "ibùgbé", "ibugbe", "onílé"],
+        "healthcare": ["dókítà", "dokita", "ilé ìwòsàn", "ile iwosan", "oògùn", "oogun", "àìsàn", "aisan"],
+        "legal": ["agbẹjọ́rò", "agbejoro", "ilé ẹjọ́", "ile ejo"],
+        "self_harm": ["pa ara mi"],
+        "urgent": ["lónìí", "loni", "kíákíá"],
+        "children": ["àwọn ọmọ", "awon omo", "ọmọ mi"]
+    },
+    "ig": {
+        "food": ["nri", "agụụ", "agu"],
+        "housing": ["ụgwọ ụlọ", "ugwo ulo", "onye nwe ụlọ", "ebe obibi"],
+        "healthcare": ["dọkịta", "dokita", "ụlọ ọgwụ", "ulo ogwu", "ọgwụ", "ogwu", "ọrịa", "oria"],
+        "legal": ["ọkàiwu", "ọka iwu", "oka iwu", "ụlọikpe", "ulo ikpe"],
+        "urgent": ["taa", "ngwa ngwa"],
+        "children": ["ụmụ m", "umu m", "nwa m"]
+    },
+    "ha": {
+        "food": ["abinci", "yunwa"],
+        "housing": ["haya", "kuɗin haya", "mai gida", "matsuguni"],
+        "healthcare": ["likita", "asibiti", "magani", "rashin lafiya"],
+        "legal": ["lauya", "kotu", "shige da fice"],
+        "urgent": ["yau", "gaggawa"],
+        "children": ["yara", "ɗana", "'yata"]
+    },
+    "wo": {
+        "food": ["lekk", "ñam", "xiif"],
+        "housing": ["kër", "néeg", "luwaas"],
+        "healthcare": ["doktoor", "opitaal", "garab", "feebar"],
+        "legal": ["awokaa", "àttekaay"],
+        "urgent": ["tey", "gaaw"],
+        "children": ["xale yi", "doom"]
+    },
+    "rw": {
+        "food": ["ibiryo", "ibifungurwa", "inzara"],
+        "housing": ["ubukode", "nyir'inzu", "icumbi"],
+        "healthcare": ["muganga", "ibitaro", "umuti", "imiti", "ndarwaye"],
+        "legal": ["umwavoka", "urukiko", "ubuhungiro"],
+        "urgent": ["uyu munsi", "byihutirwa"],
+        "children": ["abana", "umwana"]
+    },
+    "om": {
+        "food": ["nyaata", "beela"],
+        "housing": ["kiraa", "abbaa manaa", "mana jireenyaa"],
+        "healthcare": ["doktora", "hakiima", "hospitaala", "qoricha", "dhukkuba", "dhukkubsataa"],
+        "legal": ["abukaatoo", "mana murtii", "godaansa"],
+        "urgent": ["har'a", "ariifachiisaa"],
+        "children": ["ijoollee", "daa'ima"]
+    },
+    "ceb": {
+        "food": ["pagkaon", "gutom", "makaon"],
+        "housing": ["abang", "tag-iya sa balay", "gipapahawa", "puy-anan"],
+        "healthcare": ["doktor", "ospital", "tambal", "masakiton", "sakit"],
+        "legal": ["abogado", "korte", "imigrasyon"],
+        "urgent": ["dayon", "karon dayon"],
+        "homeless": ["walay balay"],
+        "children": ["mga anak", "bata"]
+    },
+    "ilo": {
+        "food": ["taraon", "mabisin", "makan"],
+        "housing": ["abang", "pagtaengan", "akinbalay"],
+        "healthcare": ["doktor", "ospital", "agas", "masakit"],
+        "legal": ["abogado", "korte"],
+        "urgent": ["ita nga aldaw"],
+        "homeless": ["awan ti balay"],
+        "children": ["annak", "ubbing"]
+    },
+    "sm": {
+        "food": ["meaai", "fia 'ai", "fiaai"],
+        "housing": ["totogi fale", "nofoaga"],
+        "healthcare": ["foma'i", "fomai", "falemai", "vailaau", "ma'i"],
+        "legal": ["loia", "faamasinoga"],
+        "urgent": ["aso nei", "vave"],
+        "children": ["fanau", "tamaiti"]
+    },
+    "to": {
+        "food": ["meʻakai", "me'akai", "fiekaia"],
+        "housing": ["totongi fale", "nofoʻanga"],
+        "healthcare": ["toketā", "toketa", "falemahaki", "faitoʻo", "faito'o", "puke"],
+        "legal": ["loea", "fakamaauʻanga"],
+        "children": ["fānau", "fanau"]
+    },
+    "kea": {
+        "food": ["kumida", "fomi"],
+        "housing": ["renda", "donu di kasa"],
+        "healthcare": ["médiku", "mediku", "ospital", "rimédiu", "remédiu", "duenti"],
+        "legal": ["advogadu", "tribunal"],
+        "children": ["fidjus", "mininus", "fidju"]
+    },
+    "jam": {
+        "food": ["nyam", "sinting fi nyam", "belly a hurt"],
+        "housing": ["rent", "landlord", "yaad"],
+        "healthcare": ["docta", "doctor", "hospital", "medicine"],
+        "legal": ["lawyer", "court", "immigration"],
+        "children": ["pickney", "pickneys"]
+    },
+    "yi": {
+        "food": ["עסן", "הונגעריק", "שפּייַז"],
+        "housing": ["דירה", "רענט", "באַלעבאָס"],
+        "healthcare": ["דאָקטער", "שפּיטאָל", "מעדיצין", "קראַנק"],
+        "legal": ["אַדוואָקאַט", "געריכט"],
+        "children": ["קינדער"]
+    },
+    "lo": {
+        "food": ["ອາຫານ", "ຫິວເຂົ້າ", "ຫິວ"],
+        "housing": ["ຄ່າເຊົ່າ", "ເຈົ້າຂອງເຮືອນ", "ທີ່ພັກ"],
+        "healthcare": ["ທ່ານໝໍ", "ໂຮງໝໍ", "ເຈັບປ່ວຍ"],
+        "legal": ["ທະນາຍຄວາມ"],
+        "urgent": ["ມື້ນີ້", "ດ່ວນ"],
+        "children": ["ລູກ"]
+    },
+    "ff": {
+        "food": ["ñaamdu", "ñaameede", "heege"],
+        "housing": ["suudu"],
+        "healthcare": ["doktoor", "lopitaal", "lekki"],
+        "children": ["ɓiɓɓe"]
+    },
+    "ln": {
+        "food": ["bilei", "nzala"],
+        "housing": ["lifuti ya ndako", "ndako"],
+        "healthcare": ["monganga", "lopitalo", "nkisi", "kobela"],
+        "legal": ["avoka", "esambiselo"],
+        "children": ["bana"]
+    },
+    "ak": {
+        "food": ["aduane", "ɛkɔm"],
+        "housing": ["ofie", "dan ka"],
+        "healthcare": ["dɔkota", "ayaresabea", "aduro", "yare"],
+        "legal": ["mmaranimfo", "asɛnnibea"],
+        "children": ["mma"]
+    },
+    "qu": {
+        "food": ["mikhuna", "mikuna", "mikuy", "yarqay", "yarqasqa"],
+        "housing": ["wasi"],
+        "healthcare": ["hampiq", "hampi", "unquy", "onqoy"],
+        "children": ["wawakuna", "wawa"]
+    },
     "hmn": {
         "food": ["zaub mov", "tshaib"],
         "housing": ["xauj tsev", "tsev nyob", "raug ntiab"],
@@ -551,7 +903,7 @@ glob LEX: dict = {
 
 # Scripts written without spaces (or so agglutinative that a word-start match
 # misses inflected forms) are matched as substrings.
-glob SUBSTRING_LANGS: list = ["zh", "ja", "ko", "th", "km", "my", "lo", "bo", "ta", "te", "kn", "ml", "am", "bn", "gu", "pa", "hi", "mr", "ne", "ar", "fa", "ur", "he", "si", "or"];
+glob SUBSTRING_LANGS: list = ["zh", "yue", "ja", "ko", "th", "km", "my", "lo", "bo", "ta", "te", "kn", "ml", "am", "ti", "bn", "gu", "pa", "hi", "mr", "ne", "ar", "fa", "ur", "ps", "ckb", "he", "yi", "si", "or"];
 
 # Short yes / no replies to the agent's follow-up question.
 glob YES_WORDS: list = ["yes", "yeah", "yep", "sí", "si", "claro", "是", "是的", "对", "對", "有", "はい", "ええ", "네", "예", "có", "vâng", "dạ", "oo", "opo", "نعم", "أجل", "بله", "آره", "ہاں", "جی", "да", "так", "हाँ", "हां", "जी", "ஆம்", "ஆமாம்", "ஆமா", "అవును", "ಹೌದು", "അതെ", "হ্যাঁ", "હા", "ਹਾਂ", "sim", "oui", "wi", "ja", "sì", "tak", "evet", "ya", "iya", "ndiyo", "haa", "ใช่", "បាទ", "ចាស", "ဟုတ်", "አዎ", "כן", "ναι", "այո", "დიახ", "yog"];
@@ -606,11 +958,18 @@ def detect_script(text: str) -> tuple {
             code = "ko";
         } elif int(counts.get("kana", 0)) > 0 {
             code = "ja";
+        } elif len(re.findall(r"[係冇唔嘅咗啲喺佢哋嘢睇咩乜]", text)) >= 2 {
+            # Written Cantonese: colloquial characters Mandarin doesn't use.
+            code = "yue";
         } else {
             code = "zh";
         }
     } elif top == "arabic" {
-        if re.search(r"[ٹڈڑںےھۓ]", text) {
+        if re.search(r"[ڕڵۆێ]", text) {
+            code = "ckb";
+        } elif re.search(r"[ټډړښږځڅۍګڼ]", text) {
+            code = "ps";
+        } elif re.search(r"[ٹڈڑںےھۓ]", text) {
             code = "ur";
         } elif re.search(r"[پچژگ]", text) or re.search(r"[کی]", text) and not re.search(r"[كي]", text) {
             code = "fa";
@@ -618,7 +977,23 @@ def detect_script(text: str) -> tuple {
             code = "ar";
         }
     } elif top == "cyrillic" {
-        code = "uk" if re.search(r"[іїєґІЇЄҐ]", text) else "ru";
+        if re.search(r"[әғқңұһӘҒҚҢҰҺ]", text) {
+            code = "kk";
+        } elif re.search(r"[өүӨҮ]", text) {
+            code = "mn";
+        } elif re.search(r"[іїєґІЇЄҐ]", text) {
+            code = "uk";
+        } elif re.search(r"[ђћљњџјЂЋЉЊЏЈ]", text) {
+            code = "sh";
+        } elif re.search(r"[ѓќѕЃЌЅ]", text) {
+            code = "mk";
+        } elif re.search(r"ў", text) {
+            code = "be";
+        } elif len(re.findall(r"ъ", text.lower())) >= 2 or re.search(r"\b(?:съм|ще|във|със|аз)\b", text.lower()) {
+            code = "bg";
+        } else {
+            code = "ru";
+        }
     } elif top == "devanagari" {
         # Nepali first: its "मलाई" contains Marathi's "मला".
         if re.search(r"छ[।\s]|छु|छैन|मलाई|हुन्छ|छौं|चाहिन्छ", text) {
@@ -633,7 +1008,16 @@ def detect_script(text: str) -> tuple {
     } elif top == "armenian" {
         code = "hy";
     } elif top == "hebrew" {
-        code = "he";
+        code = "yi" if re.search(r"[װױײ]|אַ|אָ|\bאיך\b|נישט|\bמיר\b", text) else "he";
+    } elif top == "am" {
+        # Tigrinya and Amharic share Ethiopic script; their pronouns and
+        # copulas differ (ኣነ / ኣለኹ / እየ vs እኔ / ነኝ / አለኝ).
+        ti_hits = len(re.findall(r"ኣነ|ኣለኹ|እየ|ኢዩ|የብለይን|ኣሎ|ክንደይ|ብኽብረት|ኣይ", text));
+        am_hits = len(re.findall(r"እኔ|ነኝ|አለኝ|የለኝም|ነው|እባክ|እፈልጋለሁ", text));
+        code = "ti" if ti_hits > am_hits else "am";
+    } elif top == "my" {
+        # S'gaw Karen extends the Myanmar script with its own letters.
+        code = "ksw" if re.search(r"[\u105A-\u1071]", text) else "my";
     }
     return (code, conf);
 }
@@ -644,6 +1028,11 @@ def detect_latin_other(low: str) -> tuple {
     vi_hits = vi_strong + len([c for c in low if c in VI_WEAK]);
     if vi_strong >= 1 and vi_hits >= 2 {
         return ("vi", 4 + vi_hits);
+    }
+    # Mayan orthographies (Mam, K'iche', Q'anjob'al, Q'eqchi', ...) mark
+    # glottalized consonants with an apostrophe: tx', tz', ch', q', k', b'.
+    if len(re.findall(r"\b\w*(?:tx|tz|ch|[qkb])['’]\w*", low)) >= 2 and not re.search(r"\b(?:the|and|you|i'm|don't|can't)\b", low) {
+        return ("myn", 6);
     }
     words = re.findall(r"[^\W\d_]+(?:'[^\W\d_]+)?", low);
     wset = set(words);
@@ -658,8 +1047,10 @@ def detect_latin_other(low: str) -> tuple {
                 hits += 1;
             }
         }
+        # Letters alone are not evidence (Estonian "süüa" is not German):
+        # they only strengthen at least one marker-word hit.
         hint = str(LATIN_CHAR_HINTS.get(code, ""));
-        if hint and any([c in low for c in hint]) {
+        if hits >= 1 and hint and any([c in low for c in hint]) {
             hits += 2;
         }
         if hits > best_hits {
@@ -673,7 +1064,7 @@ def detect_latin_other(low: str) -> tuple {
 # Generic words for "home/house". In most languages they are used as a
 # location ("no food at home", "घर में खाना नहीं है", "walang pagkain sa
 # bahay"), so on their own they are weak housing evidence.
-glob WEAK_HOUSING: list = ["घर", "வீடு", "வீட்டு", "بيت", "منزل", "bahay", "kay", "বাড়ি", "বাসা", "گھر", "خانه", "ઘર", "ਘਰ", "ಮನೆ", "വീട്", "ఇల్లు", "ఇంటి", "σπίτι", "guri", "nyumba", "ផ្ទះ", "အိမ်", "ቤት", "บ้าน", "տուն", "სახლი", "tsev nyob"];
+glob WEAK_HOUSING: list = ["wasi", "ndako", "suudu", "kër", "ofie", "yaad", "ገዛ", "خانوو", "xanî", "ile", "ụlọ", "gida", "balay", "घर", "வீடு", "வீட்டு", "بيت", "منزل", "bahay", "kay", "বাড়ি", "বাসা", "گھر", "خانه", "ઘર", "ਘਰ", "ಮನೆ", "വീട്", "ఇల్లు", "ఇంటి", "σπίτι", "guri", "nyumba", "ផ្ទះ", "အိမ်", "ቤት", "บ้าน", "տուն", "სახლი", "tsev nyob"];
 
 """Find lexicon hits for one key. Returns [(start, end)] of matches in `low`."""
 def _hits(code: str, words: list, low: str) -> list {
@@ -823,4 +1214,120 @@ def need_focus(low: str, start: int, end: int) -> bool {
         return True;
     }
     return bool(re.search(NEED_RIGHT, low[end:end + 30]));
+}
+
+# ---------- language registry: what CivicMesh does for each language ----------
+# Languages and dialects spoken by immigrants and refugees in the U.S.:
+# Census ACS S1601 "language spoken at home", EOIR immigration-court language
+# counts (FY2024: Spanish, Portuguese, Haitian Creole, Russian, Mandarin,
+# Punjabi, Turkish, Arabic, Mam, …) and refugee arrival languages.
+#   tier "instant"      routed by the engine with no model (lexicon above)
+#   tier "translate"    full answer machine-translated by NVIDIA Riva Translate v2
+#   tier "llm"          routed/narrated by a multilingual LLM (Gemma 4: 140+ languages)
+#   tier "interpreter"  mostly spoken languages machines don't handle reliably:
+#                       answer in `fallback` + a card asking for a free interpreter
+# [code, English name, endonym, note, fallback]
+glob IMMIGRANT_LANGUAGES: list = [
+    ["en", "English", "English", "", ""], ["es", "Spanish", "Español", "all regional varieties", ""],
+    ["zh", "Chinese (Mandarin)", "中文（普通话）", "Simplified & Traditional", ""], ["yue", "Cantonese", "粵語", "incl. Taishanese speakers", ""],
+    ["tl", "Tagalog / Filipino", "Tagalog", "", ""], ["ceb", "Cebuano (Bisaya)", "Binisaya", "", ""], ["ilo", "Ilocano", "Ilokano", "", ""],
+    ["vi", "Vietnamese", "Tiếng Việt", "", ""], ["ar", "Arabic", "العربية", "Levantine, Egyptian, Iraqi, Maghrebi, Sudanese", ""],
+    ["fr", "French", "Français", "incl. West & Central African French", ""], ["ht", "Haitian Creole", "Kreyòl ayisyen", "", ""],
+    ["ko", "Korean", "한국어", "", ""], ["ru", "Russian", "Русский", "", ""], ["uk", "Ukrainian", "Українська", "", ""],
+    ["pt", "Portuguese", "Português", "Brazilian & European", ""], ["kea", "Cape Verdean Creole", "Kriolu", "", ""],
+    ["de", "German", "Deutsch", "", ""], ["it", "Italian", "Italiano", "", ""], ["pl", "Polish", "Polski", "", ""],
+    ["hi", "Hindi", "हिन्दी", "", ""], ["hi-Latn", "Hindi / Urdu (romanized)", "Hinglish", "", ""], ["ur", "Urdu", "اردو", "", ""],
+    ["pa", "Punjabi", "ਪੰਜਾਬੀ", "Gurmukhi script", ""], ["bn", "Bengali", "বাংলা", "incl. Sylheti speakers", ""],
+    ["gu", "Gujarati", "ગુજરાતી", "", ""], ["te", "Telugu", "తెలుగు", "", ""], ["ta", "Tamil", "தமிழ்", "", ""],
+    ["ta-Latn", "Tamil (romanized)", "Tanglish", "", ""], ["ml", "Malayalam", "മലയാളം", "", ""], ["kn", "Kannada", "ಕನ್ನಡ", "", ""],
+    ["mr", "Marathi", "मराठी", "", ""], ["ne", "Nepali", "नेपाली", "incl. Bhutanese refugees", ""], ["si", "Sinhala", "සිංහල", "", ""],
+    ["fa", "Persian (Farsi / Dari)", "فارسی / دری", "Iranian & Afghan", ""], ["ps", "Pashto", "پښتو", "", ""],
+    ["ckb", "Kurdish (Sorani)", "کوردی", "", ""], ["kmr", "Kurdish (Kurmanji)", "Kurmancî", "", ""],
+    ["tr", "Turkish", "Türkçe", "", ""], ["he", "Hebrew", "עברית", "", ""], ["yi", "Yiddish", "ייִדיש", "", ""],
+    ["el", "Greek", "Ελληνικά", "", ""], ["hy", "Armenian", "Հայերեն", "Eastern & Western", ""], ["ka", "Georgian", "ქართული", "", ""],
+    ["ro", "Romanian / Moldovan", "Română", "", ""], ["sq", "Albanian", "Shqip", "", ""], ["sh", "Bosnian / Croatian / Serbian", "BCS / Српски", "Latin & Cyrillic", ""],
+    ["bg", "Bulgarian", "Български", "", ""], ["mk", "Macedonian", "Македонски", "", ""], ["be", "Belarusian", "Беларуская", "", ""],
+    ["cs", "Czech", "Čeština", "", ""], ["sk", "Slovak", "Slovenčina", "", ""], ["hu", "Hungarian", "Magyar", "", ""],
+    ["lt", "Lithuanian", "Lietuvių", "", ""], ["lv", "Latvian", "Latviešu", "", ""], ["nl", "Dutch", "Nederlands", "", ""],
+    ["kk", "Kazakh", "Қазақша", "", ""], ["uz", "Uzbek", "Oʻzbekcha", "", ""], ["ky", "Kyrgyz", "Кыргызча", "", ""], ["tg", "Tajik", "Тоҷикӣ", "", ""],
+    ["mn", "Mongolian", "Монгол", "", ""], ["ja", "Japanese", "日本語", "", ""], ["th", "Thai", "ไทย", "", ""],
+    ["lo", "Lao", "ລາວ", "", ""], ["km", "Khmer", "ខ្មែរ", "", ""], ["my", "Burmese", "မြန်မာ", "", ""],
+    ["ksw", "Karen (S'gaw)", "ကညီ", "Burmese refugees", ""], ["cnh", "Chin (Hakha)", "Laiholh", "Burmese refugees", "en"],
+    ["kac", "Kachin (Jingpho)", "Jinghpaw", "", "en"], ["hmn", "Hmong", "Hmoob", "White & Green Hmong", ""],
+    ["id", "Indonesian", "Bahasa Indonesia", "", ""], ["ms", "Malay", "Bahasa Melayu", "", ""],
+    ["am", "Amharic", "አማርኛ", "", ""], ["ti", "Tigrinya", "ትግርኛ", "Eritrean & Ethiopian", ""], ["om", "Oromo", "Afaan Oromoo", "", ""],
+    ["so", "Somali", "Soomaali", "", ""], ["sw", "Swahili", "Kiswahili", "", ""], ["rw", "Kinyarwanda / Kirundi", "Ikinyarwanda", "", ""],
+    ["ln", "Lingala", "Lingála", "", ""], ["yo", "Yoruba", "Yorùbá", "", ""], ["ig", "Igbo", "Igbo", "", ""],
+    ["ha", "Hausa", "Hausa", "", ""], ["ak", "Twi (Akan)", "Twi", "", ""], ["ee", "Ewe", "Eʋegbe", "", "en"],
+    ["wo", "Wolof", "Wolof", "", ""], ["ff", "Fula (Pulaar)", "Pulaar", "", ""], ["bm", "Bambara / Mandinka", "Bamanankan", "", "fr"],
+    ["din", "Dinka", "Thuɔŋjäŋ", "South Sudanese", "en"], ["nus", "Nuer", "Thok Naath", "South Sudanese", "en"],
+    ["sm", "Samoan", "Gagana Sāmoa", "", ""], ["to", "Tongan", "Lea faka-Tonga", "", ""], ["mh", "Marshallese", "Kajin M̧ajeļ", "COFA community", "en"],
+    ["chk", "Chuukese", "Chuuk", "COFA community", "en"], ["ch", "Chamorro", "Chamoru", "", "en"],
+    ["jam", "Jamaican Patois", "Patwa", "", ""], ["qu", "Quechua", "Runa Simi", "", "es"],
+    ["mam", "Mam", "Qyol Mam", "Guatemala — top-10 immigration-court language", "es"], ["quc", "K'iche'", "K'iche'", "Guatemala", "es"],
+    ["kjb", "Q'anjob'al", "Q'anjob'al", "Guatemala", "es"], ["kek", "Q'eqchi'", "Q'eqchi'", "Guatemala, Belize", "es"],
+    ["cak", "Kaqchikel", "Kaqchikel", "Guatemala", "es"], ["knj", "Akateko", "Akateko", "Guatemala", "es"], ["cac", "Chuj", "Chuj", "Guatemala", "es"],
+    ["ixl", "Ixil", "Ixil", "Guatemala", "es"], ["mix", "Mixtec", "Tu'un Savi", "Mexico", "es"], ["zap", "Zapotec", "Diidxazá", "Mexico", "es"],
+    ["trs", "Triqui", "Triqui", "Mexico", "es"], ["nah", "Nahuatl", "Nāhuatl", "Mexico", "es"], ["tsz", "Purépecha", "P'urhépecha", "Mexico", "es"],
+    ["tzh", "Tseltal / Tsotsil", "Bats'il k'op", "Chiapas", "es"], ["cab", "Garifuna", "Garifuna", "Honduras, Belize", "es"],
+    ["myn", "Mayan language (unspecified)", "Maya", "pick yours below", "es"]
+];
+# Languages whose full answer NVIDIA Riva Translate v2 translates (English → 36).
+glob RIVA_CODES: dict = {"cs": "cs", "da": "da", "de": "de", "el": "el", "es": "es-us", "fi": "fi", "fr": "fr", "hu": "hu", "it": "it", "lt": "lt", "lv": "lv", "nl": "nl", "no": "no", "pl": "pl", "pt": "pt-br", "ro": "ro", "ru": "ru", "sk": "sk", "sv": "sv", "zh": "zh-cn", "yue": "zh-tw", "ja": "ja", "hi": "hi", "ko": "ko", "et": "et", "sl": "sl", "bg": "bg", "uk": "uk", "sh": "hr", "ar": "ar", "vi": "vi", "tr": "tr", "id": "id", "th": "th"};
+# Mostly spoken languages without reliable machine translation today.
+glob INTERPRETER_CODES: list = ["mam", "quc", "kjb", "kek", "cak", "knj", "cac", "ixl", "mix", "zap", "trs", "nah", "tsz", "tzh", "cab", "myn", "qu", "din", "nus", "chk", "mh", "ch", "cnh", "kac", "bm", "ee"];
+
+"""Registry row + support tier for a language code."""
+def language_info(code: str) -> dict {
+    c = str(code or "");
+    row: list = [];
+    for r in IMMIGRANT_LANGUAGES {
+        if r[0] == c { row = r; break; }
+    }
+    names = language_name(c);
+    tier = "llm";
+    if c in ["en", "es"] or c in LEX { tier = "instant"; }
+    elif c in RIVA_CODES { tier = "translate"; }
+    if c in INTERPRETER_CODES { tier = "interpreter"; }
+    return {
+        "code": c, "name": str(row[1]) if row else str(names[0]), "endonym": str(row[2]) if row else str(names[1]),
+        "note": str(row[3]) if row else "", "fallback": (str(row[4]) if row and row[4] else ("es" if tier == "interpreter" else "")),
+        "tier": tier, "riva": str(RIVA_CODES.get(c, ""))
+    };
+}
+
+"""Picker list for the client: every registry language with its tier."""
+def language_catalog -> list {
+    return [language_info(str(r[0])) for r in IMMIGRANT_LANGUAGES];
+}
+
+"""Interpreter request card, deterministic, in English and the fallback language."""
+def interpreter_card(code: str) -> dict {
+    info = language_info(code);
+    name = str(info["name"]).replace(" (unspecified)", "");
+    card: dict = {
+        "language": name, "endonym": str(info["endonym"]),
+        "en": "I speak " + name + ". Please get me a free " + name + " interpreter.",
+        "es": "Hablo " + name + ". Por favor, necesito un intérprete de " + name + " gratuito.",
+        "basis": "Title VI of the Civil Rights Act bars national-origin discrimination in federally funded programs, and courts have held that includes language (Lau v. Nichols, 1974). SNAP offices must have bilingual staff or interpreters where many households speak your language (7 CFR 272.4(b)); health programs must offer free interpreters (ACA §1557). The 2025 order naming English the official language (EO 14224) did not change these laws.",
+        "tip": "Call 211 and ask for a " + name + " interpreter — they connect you to local help through an interpreter line."
+    };
+    return card;
+}
+
+"""Map any Unicode decimal digit to ASCII: '٩٨٨' / '९८८' → '988'.
+
+Guards compare numbers across scripts; a narrator or translator writing the
+988 line in Arabic-Indic or Devanagari digits is not inventing a number.
+"""
+def ascii_digits(t: str) -> str {
+    out: list = [];
+    for c in str(t) {
+        if (not c.isascii()) and unicodedata.decimal(c, None) is not None {
+            out.append(str(unicodedata.decimal(c)));
+        } else {
+            out.append(c);
+        }
+    }
+    return "".join(out);
 }

@@ -81,7 +81,8 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "") -> None 
         "conversation": user_text,
         "user_id": user_id,
         "prior": profile_ctx if profile_ctx else {},
-        "answering": ans
+        "answering": ans,
+        "preferred_language": pref_lang
     });
     rtt = window.performance.now() - t0;
 
@@ -112,6 +113,11 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "") -> None 
     if llm and llm["narrate"] {
         narrate(bot_id, data, user_text);
     }
+    li = data["language_info"];
+    code = str(li["code"]) if li else "";
+    if code and code != "en" and code != "es" and li["tier"] != "interpreter" {
+        localize(bot_id, data);
+    }
     prof = data["profile"];
     cat = str(prof["category"]) if prof else "";
     if prof and prof["state"] and (cat == "housing" or cat == "healthcare" or cat == "legal") {
@@ -132,6 +138,50 @@ impl ChatPane.findLocal(msg_id: str, data: Any) -> None {
     r = reps[len(reps) - 1] if (reps and len(reps) > 0) else None;
     locals[msg_id] = {"status": ("ok" if (r and r["offices"] and len(r["offices"]) > 0) else "none"), "data": r};
     narr_tick = Math.random();
+}
+
+impl ChatPane.localize(msg_id: str, data: Any) -> None {
+    localized[msg_id] = {"status": "pending"};
+    narr_tick = Math.random();
+    res = await safeSpawn("LocalizeWalker", {"text": str(data["reply"]), "language": str(data["language_info"]["code"])});
+    reps = res["reports"];
+    r = reps[len(reps) - 1] if (reps and len(reps) > 0) else None;
+    localized[msg_id] = {"status": ("ok" if (r and r["ok"]) else "failed"), "data": r};
+    narr_tick = Math.random();
+}
+
+impl ChatPane.renderInterpreter(card: Any, open_default: bool) -> JsxElement {
+    if not card or not card["en"] { return <div/>; }
+    return
+        <details className="cm-interp" open={open_default}>
+            <summary>{"🗣 Interpreter card · " + str(card["language"]) + (" · " + str(card["endonym"]) if str(card["endonym"]) != str(card["language"]) else "")}</summary>
+            <div className="cm-interp-body">
+                <div className="cm-interp-show">Show this at any benefits office, clinic or court:</div>
+                <div className="cm-interp-line">{str(card["en"])}</div>
+                <div className="cm-interp-line cm-interp-es">{str(card["es"])}</div>
+                <div className="cm-muted cm-interp-tip">{str(card["tip"])}</div>
+                <div className="cm-crit-src">{str(card["basis"])}</div>
+            </div>
+        </details>;
+}
+
+impl ChatPane.renderLangPicker -> JsxElement {
+    langs: list = list(platform["languages"]) if (platform and platform["languages"]) else [];
+    tier_mark: dict = {"instant": "", "translate": " ·  translated", "llm": " · AI", "interpreter": " · interpreter card"};
+    return
+        <select
+            className="cm-lang-select"
+            value={pref_lang}
+            title="Reply language — auto-detect, or pick yours"
+            aria-label="Reply language"
+            onChange={lambda e: ChangeEvent {
+                pref_lang = e.target.value;
+                try { localStorage.setItem("cm_lang", e.target.value); } except Exception as _ex {}
+            }}
+        >
+            <option value="auto">🌐 Auto-detect language</option>
+            {[<option key={str(l["code"])} value={str(l["code"])}>{str(l["endonym"]) + (" — " + str(l["name"]) if str(l["endonym"]) != str(l["name"]) else "") + str(tier_mark[str(l["tier"])])}</option> for l in langs]}
+        </select>;
 }
 
 impl ChatPane.renderLocal(loc: Any) -> JsxElement {
@@ -434,6 +484,10 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
     # Outside English/Spanish the deterministic text is English, so the
     # narration IS the answer: label it with the language's own name.
     foreign = lang != "en" and lang != "es";
+    loc_t: Any = localized[msg["id"]];
+    linfo: Any = d["language_info"] if d["language_info"] else {};
+    interp_tier = linfo["tier"] == "interpreter";
+    card: Any = d["interpreter"] if d["interpreter"] else {};
     matches: list = list(d["matches"]) if d["matches"] else [];
     plan: Any = d["plan"] if d["plan"] else {};
     routes: list = list(d["routes"]) if d["routes"] else [];
@@ -466,10 +520,18 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                 </div>}
                 {(narr and narr["status"] == "pending") and <div className="cm-narration cm-narration-pending">{("✦ Writing this in " + str(lname[1]) + "…") if foreign else "✦ Writing a personalized summary…"}</div>}
                 {(foreign and narr and narr["status"] == "failed") and <div className="cm-narration cm-narration-pending">{"Couldn't reach the translator just now — here is the answer in English."}</div>}
+                {interp_tier and renderInterpreter(card, True)}
+                {(loc_t and loc_t["status"] == "ok") and <div className="cm-bubble cm-bubble-translated" lang={lang}>
+                    <div className="cm-muted cm-bubble-label">{str(lname[1]) + " · full answer, translated by " + (("NVIDIA Riva Translate" if str(loc_t["data"]["model"]).includes("riva") else ("Gemma 4" if str(loc_t["data"]["model"]).includes("gemma") else "an LLM"))) + " · numbers checked"}</div>
+                    <div style={{"whiteSpace": "pre-wrap"}}>{str(loc_t["data"]["text"])}</div>
+                </div>}
+                {(loc_t and loc_t["status"] == "pending") and <div className="cm-narration cm-narration-pending">{"Translating the full answer into " + str(lname[1]) + "…"}</div>}
                 <div className={"cm-bubble" + (" cm-bubble-en" if foreign else "")}>
                     {foreign and <div className="cm-muted cm-bubble-label">Engine answer · English</div>}
+                    {interp_tier and <div className="cm-muted cm-bubble-label">{"Answer in " + ("Spanish" if lang == "es" else "English") + " — text translation for " + str(linfo["name"]) + " isn't reliable yet"}</div>}
                     {renderRich(str(d["reply"]))}
                 </div>
+                {((not interp_tier) and foreign) and renderInterpreter(card, False)}
                 {len(facts) > 0 and <div className="cm-understood">
                     <span className="cm-muted">Understood</span>
                     {[<span key={"f" + str(i)} className="cm-fact">{facts[i]}</span> for i in range(len(facts))]}
@@ -568,7 +630,7 @@ impl ChatPane.renderProfilePanel -> JsxElement {
 
 impl ChatPane.renderPipeline -> JsxElement {
     agents = [
-        ["IntakeWalker", "intake.parse", "Language ID + parse in 40 languages, evidence spans"],
+        ["IntakeWalker", "intake.parse", "Language ID + parse in 75 languages, evidence spans"],
         ["LLM · understand", "chat understand_message", "Only if nothing routes · 3.5 s cap"],
         ["EligibilityWalker", "EligibilityWalker score", "2026 rules by household · Beta odds · abstention"],
         ["NavigationWalker", "NavigationWalker plan", "Smith's-rule step ordering"],

@@ -1,7 +1,7 @@
 """Golden-set evaluation for the deterministic engine.
 
 Runs every case in tests/golden.json (EN/ES, full pipeline) and
-tests/golden_i18n.json (language ID + routing in 38 more languages) and
+tests/golden_i18n.json (language ID + routing in 70+ more languages) and
 tests/golden_adversarial.json (negation, idioms, cross-category traps,
 crisis, code-switching, romanized scripts, no-signal input) through
 parse → rank → plan → routes

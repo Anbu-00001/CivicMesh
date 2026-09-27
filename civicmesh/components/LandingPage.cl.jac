@@ -178,7 +178,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     "margin": "0 auto 38px",
                     "fontWeight": "400"
                 }}>
-                    A multi-agent navigator that routes people in crisis — single mothers, immigrant families, elderly tenants — to the housing, food, healthcare and legal aid they qualify for, and shows exactly why. Instant answers in 40 languages; a warm summary in the user's own language a few seconds later.
+                    A multi-agent navigator that routes people in crisis — single mothers, immigrant families, elderly tenants — to the housing, food, healthcare and legal aid they qualify for, and shows exactly why. Instant answers in 75 languages, a full translation and summary in 111 immigrant languages and dialects, and an interpreter card for the ones machines can't translate yet.
                 </p>
 
                 <div style={{"display": "flex", "justifyContent": "center", "alignItems": "center", "gap": "16px", "marginBottom": "56px", "flexWrap": "wrap"}}>
@@ -255,7 +255,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     "gap": "14px"
                 }}>
                     {renderStatTile((str(platform["programs"]) if platform else "40"), "Programs scored per turn", "Federal + national programs · 2026 poverty & HUD limits by household size", "#FFE500")}
-                    {renderStatTile((str(platform["languages_routed"]) if platform else "40"), "Languages routed without an LLM", "Script + lexicon language ID · others narrated in the user's language", "#00FF88")}
+                    {renderStatTile((str(platform["languages_routed"]) if platform else "75"), "Languages routed without an LLM", "Script + lexicon language ID · others narrated in the user's language", "#00FF88")}
                     {renderStatTile(((str(platform["stats"]["engine_ms_p50"]) + " ms") if (platform and Number(platform["stats"]["turns"]) > 0) else "< 1 s"), "Median engine time per turn", ((str(platform["stats"]["turns"]) + " live turns since last restart") if (platform and Number(platform["stats"]["turns"]) > 0) else "Answer on screen before any LLM call"), "#4488FF")}
                     {renderStatTile("1", "LLM call per turn", "Async narration with a facts guard — never on the critical path", "#FF88AA")}
                 </div>
@@ -322,7 +322,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                         "position": "relative",
                         "zIndex": "1"
                     }}>
-                        {renderWalkerCard(1, "Intake",      "Identifies the language and need in 40 languages with evidence spans; an LLM only if nothing routes (3.5 s cap)", "#FFE500", "-3deg")}
+                        {renderWalkerCard(1, "Intake",      "Identifies the language and need in 75 languages with evidence spans; an LLM only if nothing routes (3.5 s cap)", "#FFE500", "-3deg")}
                         {renderWalkerCard(2, "Eligibility", "Scores every program with effective-dated 2026 rules, calibrated tiers and Beta approval odds; writes eligible_for edges", "#4488FF", "2deg")}
                         {renderWalkerCard(3, "Navigation",  "Orders the plan by Smith's rule, merges shared documents, persists ApplicationNodes",   "#00FF88", "-2deg")}
                         {renderWalkerCard(4, "Pathfinder",  "Yen k-shortest expected-cost routes over leads_to edges",      "#FFB344", "3deg")}

@@ -21,7 +21,8 @@ def:pub ChatPane(
     user_id: str,
     on_walker_event: Any,
     session_data: dict,
-    walker_events: list = []
+    walker_events: list = [],
+    platform: Any = None
 ) -> JsxElement {
     has messages: list[dict] = [],
         input_val: str = "",
@@ -36,14 +37,18 @@ def:pub ChatPane(
         narrations: dict = {},
         # Local offices from HUD / HRSA open data, keyed by bot message id.
         locals: dict = {},
-        lang_label: str = "";
+        lang_label: str = "",
+        # Reply language picked by the user ("auto" = detect from the message).
+        pref_lang: str = "auto",
+        # Full-answer translations (LocalizeWalker), keyed by bot message id.
+        localized: dict = {};
 
     can with entry {
         seed = [{
             "role": "bot",
             "kind": "text",
             "id": "welcome",
-            "text": "Hi, I'm CivicMesh. Tell me what's going on, in your own words and in your own language, and I'll find the housing, food, healthcare or legal programs you can use and show exactly why. I answer instantly in 40 languages and add a short summary in yours a few seconds later.",
+            "text": "Hi, I'm CivicMesh. Tell me what's going on, in your own words and in your own language, and I'll find the housing, food, healthcare or legal programs you can use and show exactly why. I answer instantly in 75 languages, add a summary and a full translation in yours a few seconds later, and can give you an interpreter card for 100+ languages and dialects — pick yours at the top if I get it wrong.",
             "suggestions": [
                 "I'm 72, on $1200/month Social Security, my landlord is trying to evict me illegally.",
                 "Mi familia y yo no hemos comido en 2 días. Estamos en Texas.",
@@ -64,6 +69,10 @@ def:pub ChatPane(
             }
         }
         messages = seed;
+        try {
+            saved = localStorage.getItem("cm_lang");
+            if saved { pref_lang = saved; }
+        } except Exception as _ex {}
     }
 
     # Keep the newest turn in view (also when a narration lands).
@@ -78,6 +87,9 @@ def:pub ChatPane(
     async def safeSpawn(walker_name: str, fields: dict) -> Any;
     async def narrate(msg_id: str, data: Any, user_text: str) -> None;
     async def findLocal(msg_id: str, data: Any) -> None;
+    async def localize(msg_id: str, data: Any) -> None;
+    def renderInterpreter(card: Any, open_default: bool) -> JsxElement;
+    def renderLangPicker -> JsxElement;
     def renderLocal(loc: Any) -> JsxElement;
     def resetCase -> None;
     def spansToEvents(spans: list) -> list;
@@ -103,10 +115,11 @@ def:pub ChatPane(
                     <div style={{"flex": "1", "minWidth": "0"}}>
                         <div style={{"fontSize": "14px", "fontWeight": "600"}}>CivicMesh Navigator</div>
                         <div className="cm-muted" style={{"fontSize": "11px", "marginTop": "2px"}}>
-                            Deterministic eligibility engine · 2026 federal rules · 40 languages · 1 LLM call per turn, off the critical path
+                            Deterministic eligibility engine · 2026 federal rules · 111 languages & dialects · 1 LLM call per turn, off the critical path
                         </div>
                     </div>
                     {is_loading and <div className="cm-badge badge-glow"><span className="cm-dot-live"/>Scoring 40 programs…</div>}
+                    {renderLangPicker()}
                     <button className="cm-ghost-btn" onClick={lambda _e: MouseEvent { resetCase(); }} title="Start a new case">New case</button>
                 </div>
                 <div className="cm-thread">

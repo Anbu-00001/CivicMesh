@@ -21,3 +21,4 @@ import from walkers.pathfinder { PathfinderWalker }
 import from walkers.critique { CritiqueWalker, ReflectionReadWalker }
 import from walkers.platform { PlatformWalker }
 import from walkers.local_help { LocalHelpWalker }
+import from walkers.localize { LocalizeWalker }

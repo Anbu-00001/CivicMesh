@@ -418,6 +418,7 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         "rank_score": round(rank, 4),
         "criteria": crits,
         "counterfactual": cfs[0]["text"] if (cfs and tier != "likely") else "",
+        "cf_effort": float(cfs[0]["effort"]) if cfs else 99.0,
         "benefit": benefit,
         "asks": asks,
         "contact_phone": str(resource.get("contact_phone", "")),
@@ -490,7 +491,13 @@ def rank_resources(items: list, profile: dict, message: str, limit: int = 6, lan
     }
     affected = len([s for s in scored[:10] if ask_key in s["asks"]]) if ask_key else 0;
 
-    near_misses: list = [s for s in scored if s["tier"] in ["unlikely", "needs_info"] and s["counterfactual"]][:3];
+    # Near misses worth explaining: the person's own need first, then the
+    # smallest change that would flip them (a status rule before "ages 60+").
+    need_cat = str(profile.get("category", ""));
+    near_misses: list = sorted(
+        [s for s in scored if s["tier"] in ["unlikely", "needs_info"] and s["counterfactual"]],
+        key=lambda s: dict : (0 if s["category"] == need_cat else 1, float(s["cf_effort"]))
+    )[:3];
     return {
         "ranked": top,
         "all_count": len(scored),

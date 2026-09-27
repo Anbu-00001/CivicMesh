@@ -77,7 +77,7 @@ def:pub TelemetryPanel(walker_events: list, user_id: str = "") -> JsxElement {
         "IntakeWalker": {
             "input": "Latest message + case carried from earlier turns",
             "output": "Profile{category, urgency, income, household, age, location, status} + evidence spans",
-            "stub": "engine/i18n.jac + parse.jac (script + lexicon language ID, 40 languages) · understand_message() only if nothing routes, 3.5 s deadline",
+            "stub": "engine/i18n.jac + parse.jac (script + lexicon language ID, 75 languages) · understand_message() only if nothing routes, 3.5 s deadline",
             "tools": False
         },
         "EligibilityWalker": {

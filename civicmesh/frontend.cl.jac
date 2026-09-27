@@ -240,6 +240,7 @@ def:pub ClientApp -> JsxElement {
                     on_walker_event={pushWalkerEvent}
                     session_data={session_data}
                     walker_events={walker_events}
+                    platform={platform}
                 />}
                 {active_tab == "graph" and <GraphViz walker_events={walker_events} user_id={user_id}/>}
                 {active_tab == "plan" and <ActionPlan user_id={user_id} walker_events={walker_events}/>}
