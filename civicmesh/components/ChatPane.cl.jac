@@ -11,6 +11,7 @@ real timing from the last turn's trace.
 """
 sv import from walkers.intake { IntakeWalker }
 sv import from walkers.narrate { NarrateWalker }
+sv import from walkers.forget { ForgetWalker }
 import from "@jac/runtime" { jacSpawn }
 
 # Follow-up questions answered with a quick Yes / No (must live in the .cl.jac:
@@ -41,7 +42,11 @@ def:pub ChatPane(
         # Reply language picked by the user ("auto" = detect from the message).
         pref_lang: str = "auto",
         # Full-answer translations (LocalizeWalker), keyed by bot message id.
-        localized: dict = {};
+        localized: dict = {},
+        # "Delete my data": "" | deleting | done | failed.
+        forget_state: str = "",
+        # Bot message id whose English original is expanded.
+        en_open: str = "";
 
     can with entry {
         seed = [{
@@ -92,6 +97,8 @@ def:pub ChatPane(
     def renderLangPicker -> JsxElement;
     def renderLocal(loc: Any) -> JsxElement;
     def resetCase -> None;
+    async def forgetMe -> None;
+    def renderPrivacy -> JsxElement;
     def spansToEvents(spans: list) -> list;
     def fmtMs(ms: float) -> str;
     def tierStyle(tier: str, ui: Any) -> dict;
@@ -151,6 +158,7 @@ def:pub ChatPane(
                         →
                     </button>
                 </div>
+                {renderPrivacy()}
             </div>
             <div className="cm-side">
                 {renderProfilePanel()}

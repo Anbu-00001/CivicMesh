@@ -12,10 +12,12 @@ summary the walker emits on completion.
 
 import from walkers.intake { IntakeWalker }
 import from walkers.memory { MemoryWalker }
+import from walkers.seed { SeedWalker }
 
 test "single_mother_full_pipeline" {
     conversation = "Hola, soy madre soltera con 2 hijos pequenos. Necesito ayuda urgente con vivienda y comida. Gano aproximadamente $1,800 al mes. Vivimos en el codigo postal 77001 en Houston. Mis hijos tienen 4 y 7 anos. Estamos en riesgo de perder nuestro apartamento este mes.";
 
+    root spawn SeedWalker(user_id="test_persona_001");
     intake = root spawn IntakeWalker(
         conversation=conversation,
         user_id="test_persona_001"
@@ -29,15 +31,11 @@ test "single_mother_full_pipeline" {
     assert "profile" in result;
     assert result["profile"]["category"] in ["housing", "food"];
     assert result["language"] == "es";
-    assert "eligibility_results" in result;
-
-    elig = result["eligibility_results"];
-    assert "escalated" in elig;
-
-    if not elig["escalated"] {
-        steps = elig["action_plan"]["action_plan"]["steps"];
-        assert len(steps) > 0;
-    }
+    # v2 response: scored matches, a plan, and the answer in Spanish.
+    assert len(result["matches"]) > 0;
+    assert len(result["plan"]["steps"]) > 0;
+    assert result["reply_language"] == "es";
+    assert int(result["profile"]["household_size"]) == 3 or int(result["profile"]["income_annual"]) == 21600;
 
     mem = root spawn MemoryWalker(
         user_id="test_persona_001",

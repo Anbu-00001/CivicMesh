@@ -1,0 +1,58 @@
+name: Translation review or mistake
+description: Review a language, or report a wrong or unclear translation in CivicMesh's answers.
+title: "[lang] translation: "
+labels: ["translation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. CivicMesh's answers in 50 languages were drafted by machine, and people in crisis read them.
+        A native speaker's eye is the most useful contribution this project can get.
+        `python3 civicmesh/tools/review_sheet.py <code>` prints every string side by side, safety-critical ones first.
+  - type: input
+    id: language
+    attributes:
+      label: Language
+      description: Name and code, e.g. "Chinese (Mandarin), zh" or "Haitian Creole, ht".
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is this?
+      options:
+        - A wrong or misleading translation (please fix soon)
+        - A wording that's understandable but unnatural
+        - A full review of the language (all strings)
+    validations:
+      required: true
+  - type: dropdown
+    id: safety
+    attributes:
+      label: Does it involve a crisis line, the safety question, or immigration status?
+      options:
+        - "Yes"
+        - "No"
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: text
+    attributes:
+      label: What the app says, and what it should say
+      description: Paste the text you saw (or the key from the review sheet) and your correction.
+    validations:
+      required: true
+  - type: dropdown
+    id: reviewer
+    attributes:
+      label: Your background in this language
+      options:
+        - Native speaker
+        - Professional or certified translator / interpreter
+        - Fluent second-language speaker
+        - Other
+  - type: markdown
+    attributes:
+      value: |
+        Please don't include anything about your own situation here — this issue is public.

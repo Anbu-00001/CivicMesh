@@ -1,22 +1,46 @@
-"""Graph tab — the visitor's real case subgraph, not a drawing.
+"""Graph tab — the visitor's real case subgraph, drawn as a decision flow.
 
-Every node and edge comes from GraphSnapshotWalker, which reads what the
-chat pipeline persisted: PersonNode → latest NeedNode → scored eligible_for
-edges (tier + P(eligible)) → ResourceNode → EligibilityRuleNode → FormNode,
-ApplicationNodes on applied_to, leads_to escape routes and SessionInsights.
-Layout is layered by node type; Replay walks the graph in the order the
-walkers touched it (Intake → Eligibility → Navigation → Pathfinder).
+Every card and line comes from GraphSnapshotWalker, which reads what the chat
+pipeline persisted: PersonNode → latest NeedNode → scored eligible_for edges
+(tier + P(eligible)) → ResourceNode → EligibilityRuleNode → FormNode,
+ApplicationNodes on applied_to, leads_to routes and SessionInsights.
+
+Read left to right: you and your latest need, the programs the engine scored
+for it (ranked), and the programs those lead to later. Encoding rules:
+  · color means one thing — the engine's verdict — and never stands alone
+    (icon + word; Okabe–Ito-style hues that survive color-vision deficiency);
+  · line thickness is P(eligible); arrows are leads_to routes; no dashed lines;
+  · rules and forms are the leaves of every program, so they sit inside the
+    program card (not as rows of identical dots), and an application is a
+    badge on its program (not a line crossing the graph);
+  · filled cards were scored for this need, outlined cards are reachable later.
+Hover or focus a card to trace its edges; Schema shows node/edge type names;
+Replay walks the graph in the order the walkers touched it.
 """
 
 sv import from walkers.graph_snapshot { GraphSnapshotWalker }
 import from "@jac/runtime" { jacSpawn }
 
-glob GV_W: int = 760;
-glob GV_H: int = 540;
-glob GV_ROW_Y: dict = {"Root": 34, "PersonNode": 104, "NeedNode": 184, "ApplicationNode": 184, "SessionInsight": 184, "ResourceNode": 300, "EligibilityRuleNode": 396, "FormNode": 480};
-glob GV_COLORS: dict = {"Root": "#9AA0A6", "PersonNode": "#FFE500", "NeedNode": "#4488FF", "ResourceNode": "#00E08A", "EligibilityRuleNode": "#FFB344", "FormNode": "#FF88AA", "ApplicationNode": "#AA88FF", "SessionInsight": "#00C8FF"};
-glob GV_TIER: dict = {"likely": "#00E08A", "possible": "#5AA2FF", "needs_info": "#FFB344", "unlikely": "rgba(255,255,255,0.35)"};
-glob GV_LEGEND: list = [["PersonNode", "You"], ["NeedNode", "Need"], ["ResourceNode", "Program"], ["EligibilityRuleNode", "Rule"], ["FormNode", "Form"], ["ApplicationNode", "Application"], ["SessionInsight", "Self-critique"]];
+# Geometry (px). Cards have fixed heights so connector endpoints are known
+# without measuring the DOM.
+glob GV_PAD: int = 8;
+glob GV_HEAD: int = 24;
+glob GV_CH: int = 80;
+glob GV_GAP: int = 10;
+glob GV_YOU_H: int = 58;
+glob GV_NEED_H: int = 80;
+glob GV_RH: int = 66;
+glob GV_LW: int = 196;
+glob GV_GL: int = 64;
+glob GV_GR: int = 96;
+glob GV_RW: int = 188;
+glob GV_TIER: dict = {
+    "likely": {"color": "#00E08A", "icon": "✓", "label": "Likely"},
+    "possible": {"color": "#5AA2FF", "icon": "~", "label": "Possible"},
+    "needs_info": {"color": "#FFB344", "icon": "?", "label": "Needs info"},
+    "unlikely": {"color": "rgba(255,255,255,0.45)", "icon": "✕", "label": "Unlikely"}
+};
+glob GV_TIER_ORDER: list = ["likely", "possible", "needs_info", "unlikely"];
 
 def:pub GraphViz(walker_events: list, user_id: str = "") -> JsxElement {
     has snap: Any = None,
@@ -24,7 +48,7 @@ def:pub GraphViz(walker_events: list, user_id: str = "") -> JsxElement {
         err: str = "",
         selected: str = "",
         hovered: str = "",
-        show_labels: bool = False,
+        schema: bool = False,
         playing: bool = False,
         visited: list = [],
         current: str = "";
@@ -34,27 +58,35 @@ def:pub GraphViz(walker_events: list, user_id: str = "") -> JsxElement {
     }
 
     async def loadSnap -> None;
-    def layout -> dict;
+    def model -> dict;
     def replayOrder -> list;
     def startReplay -> None;
     def stepReplay(idx: int, order: list) -> None;
-    def renderEdge(e: Any, pos: Any, i: int) -> JsxElement;
-    def renderNode(n: Any, pos: Any) -> JsxElement;
-    def renderDetail(pos: Any) -> JsxElement;
+    def isOn(nid: str) -> bool;
+    def pick(nid: str) -> None;
+    def renderLeft(m: dict) -> JsxElement;
+    def renderCard(n: Any, i: int, m: dict) -> JsxElement;
+    def renderRight(m: dict) -> JsxElement;
+    def renderFan(m: dict) -> JsxElement;
+    def renderRoutes(m: dict) -> JsxElement;
+    def renderDetail(m: dict) -> JsxElement;
+    def renderLegend -> JsxElement;
 
     nodes: list = list(snap["nodes"]) if (snap and snap["nodes"]) else [];
-    edges: list = list(snap["edges"]) if (snap and snap["edges"]) else [];
     counts: Any = snap["counts"] if (snap and snap["counts"]) else {};
-    pos = layout();
     empty = (not snap) or bool(snap["empty"]) or len(nodes) <= 2;
+    m = model();
+    has_routes = len(m["routes"]) > 0;
+    gr = GV_GR if has_routes else (64 if len(m["arcs"]) > 0 else 12);
+    cols = str(GV_LW) + "px " + str(GV_GL) + "px minmax(220px, 1fr) " + str(gr) + "px" + ((" " + str(GV_RW) + "px") if has_routes else "");
 
     return
         <div className="cm-panel gv-wrap">
             <div className="gv-head">
-                <div style={{"flex": "1", "minWidth": "0"}}>
+                <div className="gv-head-text">
                     <div className="gv-title">Your case graph</div>
                     <div className="cm-muted gv-sub">
-                        {("Read live from your graph: every node below was written by a walker during your chat. Hover or tap a node for its fields.") if (not empty) else ("Send a message in Chat — each turn writes a NeedNode and one scored eligible_for edge per matched program, and they appear here.")}
+                        {("Read live from your graph: every card is a node a walker wrote during your chat. Left to right — your need, the programs the engine scored for it, and where they lead. Hover or tap a card to trace its edges.") if (not empty) else ("Send a message in Chat — each turn writes a NeedNode and one scored eligible_for edge per matched program, and they appear here.")}
                     </div>
                     {(not empty) and <div className="gv-counts">
                         <span className="cm-fact">{str(counts["NeedNode"]) + " need" + ("" if Number(counts["NeedNode"]) == 1 else "s")}</span>
@@ -65,7 +97,7 @@ def:pub GraphViz(walker_events: list, user_id: str = "") -> JsxElement {
                     </div>}
                 </div>
                 <div className="gv-actions">
-                    <button className="cm-ghost-btn" onClick={lambda _e: MouseEvent { show_labels = not show_labels; }}>{("Hide edge labels" if show_labels else "Edge labels")}</button>
+                    <button className={"cm-ghost-btn" + (" gv-btn-on" if schema else "")} aria-pressed={("true" if schema else "false")} onClick={lambda _e: MouseEvent { schema = not schema; }} title="Show the graph schema: node and edge type names">Schema</button>
                     <button className="cm-ghost-btn" onClick={lambda _e: MouseEvent { loadSnap(); }} disabled={loading}>{("Loading…" if loading else "Refresh")}</button>
                     <button className={"cm-ghost-btn" + (" gv-btn-on" if playing else "")} onClick={lambda _e: MouseEvent { startReplay(); }} disabled={empty or playing}>{("Replaying…" if playing else "▶ Replay turn")}</button>
                 </div>
@@ -73,18 +105,27 @@ def:pub GraphViz(walker_events: list, user_id: str = "") -> JsxElement {
             {err and <div className="gv-err">{"Couldn't load the graph: " + err}</div>}
             <div className="gv-body">
                 <div className="gv-canvas">
-                    <svg viewBox={"0 0 " + str(GV_W) + " " + str(GV_H)} preserveAspectRatio="xMidYMid meet" className="gv-svg" role="img" aria-label="Case graph">
-                        {[renderEdge(edges[i], pos, i) for i in range(len(edges))]}
-                        {[renderNode(nodes[i], pos) for i in range(len(nodes))]}
-                    </svg>
+                    {empty and <div className="gv-empty">
+                        <div className="gv-empty-flow"><span>You</span><i/><span>Need</span><i/><span>Programs</span><i/><span>Routes</span></div>
+                        <div className="cm-muted">Nothing here yet — your graph starts with your first message.</div>
+                    </div>}
+                    {(not empty) and <div className="gv-flow" style={{"gridTemplateColumns": cols}}>
+                        {renderLeft(m)}
+                        <div className="gv-gcol">{renderFan(m)}</div>
+                        <div className="gv-col gv-col-mid">
+                            <div className="gv-colhead">{"2 · Programs scored for this need"}</div>
+                            <div className="gv-stack">
+                                {[renderCard(m["progs"][i], i, m) for i in range(len(m["progs"]))]}
+                                {len(m["progs"]) == 0 and <div className="gv-none cm-muted">No program matched this need yet — answer the follow-up question in Chat.</div>}
+                            </div>
+                        </div>
+                        <div className="gv-gcol">{renderRoutes(m)}</div>
+                        {has_routes and renderRight(m)}
+                    </div>}
                 </div>
                 <div className="gv-side">
-                    {renderDetail(pos)}
-                    <div className="gv-legend">
-                        {[<div key={l[0]} className="gv-legend-row"><span className="gv-dot" style={{"background": GV_COLORS[l[0]]}}/><span>{l[1]}</span><span className="cm-muted gv-legend-type">{l[0]}</span></div> for l in GV_LEGEND]}
-                        <div className="gv-legend-row"><span className="gv-ring" style={{"borderColor": GV_TIER["likely"]}}/><span>likely</span><span className="gv-ring" style={{"borderColor": GV_TIER["needs_info"]}}/><span>needs info</span></div>
-                        <div className="gv-legend-row"><span className="gv-dash"/><span>leads_to route</span></div>
-                    </div>
+                    {renderDetail(m)}
+                    {renderLegend()}
                 </div>
             </div>
         </div>;

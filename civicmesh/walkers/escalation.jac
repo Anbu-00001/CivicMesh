@@ -41,12 +41,19 @@ walker EscalationWalker {
         lead = LEADS[key];
         es = self.language == "es";
         lead_line = ("Llame a " if es else "Call ") + lead[0] + ": " + lead[1] + " — " + (lead[3] if es else lead[2]) + ".";
+        lead_line_en = "";
         if self.language not in ["en", "es"] and has_messages(self.language) {
             lead_line = msg(self.language, "esc.call", {"name": lead[0], "phone": lead[1], "what": msg(self.language, "esc." + key)});
             # 988 and the DV hotline interpret 200+ languages for free
             # (988lifeline.org/interpretation-services; thehotline.org).
             if key in ["self_harm", "dv"] {
                 lead_line = lead_line + " " + msg(self.language, "esc.interp", {"language": str(language_info(self.language)["name"])});
+            }
+            # The English original rides along: the number and instructions of
+            # a crisis line must be checkable by anyone who reads English.
+            lead_line_en = msg("en", "esc.call", {"name": lead[0], "phone": lead[1], "what": msg("en", "esc." + key)});
+            if key in ["self_harm", "dv"] {
+                lead_line_en = lead_line_en + " " + msg("en", "esc.interp", {"language": str(language_info(self.language)["name"])});
             }
         }
 
@@ -68,6 +75,7 @@ walker EscalationWalker {
             "trigger": str(self.context.trigger_reason) if self.context.trigger_reason else ("risk_flag" if key in ["self_harm", "dv"] else "no_credible_match"),
             "is_emergency": key in ["self_harm", "dv"] or "homeless" in flags,
             "lead_line": lead_line,
+            "lead_line_en": lead_line_en,
             "personalized_message": lead_line,
             "crisis_resources": [c["name"] + ": " + c["phone"] for c in crisis[:5]],
             "appeal_options": near,

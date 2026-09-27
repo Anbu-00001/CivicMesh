@@ -8,6 +8,10 @@ notices: the deterministic answer is already on screen.
 
 Guardrail: the narration must not introduce phone numbers the engine didn't
 produce. Any digit run of 3+ that isn't in the fact sheet voids the output.
+
+Privacy (engine/privacy.jac): the user's words are scrubbed of identifiers
+before they're sent, and a crisis turn (self-harm, domestic violence) is
+never sent at all — the walker reports private=True and makes no call.
 """
 
 import re;
@@ -15,6 +19,8 @@ import time;
 import from llm.stubs { narrate_turn, narrate_turn_polyglot, pool_model_names, polyglot_model_names }
 import from engine.i18n { ascii_digits, language_info }
 import from engine.stats { record_narration }
+import from engine.privacy { redact, is_private_turn }
+import from engine.parse { parse_intake }
 
 """True if the narration contains a number the engine didn't produce.
 
@@ -63,19 +69,28 @@ walker NarrateWalker {
         code = str(self.language or "en");
         polyglot = code not in STRONG_NARRATION;
         if polyglot { models = polyglot_model_names(); out["models"] = models; }
+        # Decided here, not by the client: re-read the message's crisis flags.
+        if is_private_turn(list(parse_intake(str(self.user_message)[:600])["flags"])) {
+            out["private"] = True;
+            out["error"] = "crisis turn — not sent to any model";
+            out["latency_ms"] = round((time.perf_counter() - t0) * 1000.0, 1);
+            self.summary = out;
+            report out;
+            return;
+        }
         info = language_info(code);
         lang_arg = code if code == "auto" else (str(info["name"]) + " (" + code + ")");
         try {
             fn = narrate_turn_polyglot if polyglot else narrate_turn;
             n = fn(
-                user_message=str(self.user_message)[:600],
+                user_message=redact(str(self.user_message))[:600],
                 language=lang_arg,
                 facts=str(self.facts)[:2000],
                 chips=[str(c) for c in self.chips]
             );
             msg = str(n.message).strip();
             chips = [str(c) for c in list(n.chips)];
-            if msg and not invents_numbers(msg, str(self.facts), str(self.user_message)) {
+            if msg and not invents_numbers(msg, str(self.facts), redact(str(self.user_message))) {
                 out["ok"] = True;
                 out["message"] = msg;
             } else {

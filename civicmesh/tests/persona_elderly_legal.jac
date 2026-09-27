@@ -4,11 +4,13 @@ MemoryWalker resumes with the new status intact.
 """
 
 import from walkers.intake { IntakeWalker }
+import from walkers.seed { SeedWalker }
 import from walkers.memory { MemoryWalker }
 
 test "elderly_legal_session_memory" {
     conversation = "I am 72 years old and my landlord is trying to evict me illegally. I cannot afford a lawyer. I have lived in this apartment for 15 years. My only income is Social Security of about $1,200 per month. I need legal help urgently. The court date is in 2 weeks.";
 
+    root spawn SeedWalker(user_id="test_persona_003");
     intake = root spawn IntakeWalker(
         conversation=conversation,
         user_id="test_persona_003"
@@ -18,10 +20,10 @@ test "elderly_legal_session_memory" {
 
     assert result1["profile"]["category"] == "legal";
 
-    elig = result1["eligibility_results"];
-    if not elig["escalated"] {
-        steps = elig["action_plan"]["action_plan"]["steps"];
-        if len(steps) > 0 {
+    steps = list(result1["plan"]["steps"]);
+    assert len(steps) > 0;
+    if len(steps) > 0 {
+        if True {
             first_agency = str(steps[0]["agency_name"]);
             update_walker = root spawn MemoryWalker(
                 user_id="test_persona_003",

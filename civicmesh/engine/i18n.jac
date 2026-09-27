@@ -27,7 +27,7 @@ heavy agglutination (Chinese, Japanese, Thai, Tamil, Telugu, ...).
 import re;
 import unicodedata;
 import bisect;
-import from engine.messages { has_messages }
+import from engine.messages { has_messages, catalog_review }
 
 # (first code point, last code point, script)
 glob SCRIPT_RANGES: list = [
@@ -1309,7 +1309,8 @@ def language_info(code: str) -> dict {
         "tier": tier, "riva": str(RIVA_CODES.get(c, "")),
         # A message catalog (data/i18n): the whole answer is composed in this
         # language on the first response, not translated afterwards.
-        "catalog": bool(c and has_messages(c) and tier != "interpreter")
+        "catalog": bool(c and has_messages(c) and tier != "interpreter"),
+        "catalog_review": (catalog_review(c) if (c and tier != "interpreter") else "")
     };
 }
 

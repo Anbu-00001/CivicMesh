@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # Weekly PRs for the pinned Python stack (jaclang, jac-scale, byllm, litellm…).
+  # CI runs the full eval on each one, so a Jac release that changes behaviour
+  # shows up as a red check instead of a surprise in production.
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      jac:
+        patterns: ["jac*", "byllm", "jaseci"]
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly

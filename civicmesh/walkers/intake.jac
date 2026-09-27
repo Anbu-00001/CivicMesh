@@ -27,6 +27,7 @@ import from llm.stubs { understand_message, pool_model_names }
 import from engine.parse { parse_intake }
 import from engine.i18n { language_name, language_info, interpreter_card }
 import from engine.stats { record_turn }
+import from engine.privacy { redact, redaction_kinds, is_private_turn }
 import from engine.compose { merge_profiles, new_trace, span_begin, span_end, export_spans }
 import from walkers.eligibility { EligibilityWalker }
 import from walkers.critique { CritiqueWalker }
@@ -80,12 +81,18 @@ walker IntakeWalker {
         if profile.get("needs_llm", False) and not has_letters {
             llm_reason = "no text to route";
         }
-        if profile.get("needs_llm", False) and has_letters {
+        # A crisis turn never leaves the server (engine/privacy.jac): the
+        # fixed crisis routing answers it, no model sees the words.
+        private_turn = is_private_turn(list(profile.get("flags", [])));
+        if profile.get("needs_llm", False) and private_turn {
+            llm_reason = "crisis turn — kept on the server, answered by fixed code";
+        }
+        if profile.get("needs_llm", False) and has_letters and not private_turn {
             llm_sync = True;
             models = pool_model_names();
             sp = span_begin(tr, "chat understand_message", "CLIENT", rid, {"gen_ai.operation.name": "chat", "gen_ai.request.model": models[0] if models else "", "gen_ai.system": "litellm", "civicmesh.reason": llm_reason});
             try {
-                fut = LLM_EXEC.submit(contextvars.copy_context().run, understand_message, text);
+                fut = LLM_EXEC.submit(contextvars.copy_context().run, understand_message, redact(text));
                 u = fut.result(timeout=SYNC_LLM_BUDGET_S);
                 cat = str(u.category).strip().lower();
                 if cat in CATEGORIES {
@@ -143,7 +150,8 @@ walker IntakeWalker {
         attached = person_node +>: has_need() :+> NeedNode(
             category=str(profile["category"]),
             urgency=str(profile["urgency"]),
-            details=text[:500],
+            # Stored scrubbed: identifiers become [ssn], [phone], … placeholders.
+            details=redact(text)[:500],
             created_at=ts
         );
         need_node: NeedNode = attached[0];
@@ -217,6 +225,7 @@ walker IntakeWalker {
             # The language `reply`, question, chips and plan text are in
             # (the user's when a message catalog covers it, else English).
             "reply_language": result.get("reply_language", "en"),
+            "reply_en": result.get("reply_en", ""),
             "chip_labels": result.get("chip_labels", []),
             "ui": result.get("ui", {}),
             "question": result.get("question", {}),
@@ -228,7 +237,10 @@ walker IntakeWalker {
             "escalation": result.get("escalation", {}),
             "chips": result.get("chips", []),
             "facts": result.get("facts", ""),
-            "llm": {"sync_used": llm_sync, "reason": llm_reason, "error": llm_error, "models": pool_model_names(), "narrate": True, "budget_s": SYNC_LLM_BUDGET_S},
+            "llm": {"sync_used": llm_sync, "reason": llm_reason, "error": llm_error, "models": pool_model_names(), "narrate": not private_turn, "budget_s": SYNC_LLM_BUDGET_S},
+            # What the privacy guard did: crisis turns stay on the server; the
+            # kinds (never the values) of identifiers scrubbed before storage.
+            "privacy": {"private_turn": private_turn, "redacted": redaction_kinds(text)},
             "trace": {"trace_id": tr["trace_id"], "total_ms": root_span.get("duration_ms", 0.0), "spans": spans}
         };
     }

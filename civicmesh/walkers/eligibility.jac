@@ -18,6 +18,7 @@ import from graph.edges { governed_by, requires_form, eligible_for }
 import from engine.score { rank_resources, question_for }
 import from engine.compose { span_begin, span_end, compose_reply, reply_language }
 import from engine.messages { msg, quick_options, ui_labels }
+import from engine.plan { build_plan }
 import from walkers.navigation { NavigationWalker }
 import from walkers.pathfinder { PathfinderWalker }
 import from walkers.escalation { EscalationWalker }
@@ -237,11 +238,20 @@ walker EligibilityWalker {
         }
 
         reply = compose_reply(ui_lang, self.profile, ranking, plan, routes, question);
+        # The same answer in English, composed from the same numbers: shown on
+        # request under a catalog translation so a bilingual helper can check it
+        # (catalogs are machine-drafted until a native speaker reviews them).
+        reply_en = "";
+        if ui_lang not in ["en", "es"] {
+            plan_en = build_plan(ranked, str(self.profile.get("urgency", "within_weeks")), "en");
+            reply_en = compose_reply("en", self.profile, ranking, plan_en, routes, (question_for(str(ask["key"]), "en") if ask["key"] else ""));
+        }
         chips = chips_for(ranked, self.profile, ui_lang);
         qkey = str(ask["key"]);
         self.summary = {
             "reply": reply,
             "reply_language": ui_lang,
+            "reply_en": reply_en,
             "question": {
                 "key": qkey, "text": question, "affects": int(ask["affects"]), "gain": float(ask["gain"]),
                 "affects_label": msg(ui_lang, "affects", {"n": int(ask["affects"])}) if int(ask["affects"]) > 0 else "",

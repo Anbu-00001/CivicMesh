@@ -545,6 +545,11 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
     routes: list = list(d["routes"]) if d["routes"] else [];
     esc: Any = d["escalation"] if d["escalation"] else {};
     q: Any = d["question"] if d["question"] else {};
+    # A machine-drafted catalog (no native review yet): say so in the user's
+    # language, keep the English original one tap away, and show the English
+    # of any crisis line under it (HHS §1557 guidance on unreviewed MT).
+    mt_draft = native_chips and lang != "es" and str(linfo["catalog_review"]) == "draft" and bool(d["reply_en"]);
+    report_url = "https://github.com/Anbu-00001/CivicMesh/issues/new?template=translation.yml&labels=translation&title=" + encodeURIComponent("[" + lang + "] translation: ");
     trace: Any = d["trace"];
     prof: Any = d["profile"] if d["profile"] else {};
     loc_c: Any = localized[msg["id"] + ":s"];
@@ -588,6 +593,17 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                     {foreign and <div className="cm-muted cm-bubble-label">Engine answer · English</div>}
                     {interp_tier and <div className="cm-muted cm-bubble-label">{"Answer in " + ("Spanish" if lang == "es" else "English") + " — text translation for " + str(linfo["name"]) + " isn't reliable yet"}</div>}
                     {renderRich(str(d["reply"]))}
+                    {mt_draft and <div className="cm-mt-note">
+                        <span>{L(ui, "ui.mt_draft", "Machine translation, not yet checked by a native speaker — it may contain mistakes. Names, amounts and phone numbers are exact.")}</span>
+                        <span className="cm-mt-actions">
+                            <button className="cm-why" onClick={lambda _e: MouseEvent { en_open = ("" if en_open == msg["id"] else msg["id"]); }} aria-expanded={("true" if en_open == msg["id"] else "false")}>{L(ui, "ui.show_en", "Show the English original")}</button>
+                            <a className="cm-link" href={report_url} target="_blank" rel="noreferrer">{L(ui, "ui.report", "Report a translation mistake")}</a>
+                        </span>
+                    </div>}
+                    {(mt_draft and en_open == msg["id"]) and <div className="cm-en-original" lang="en" dir="ltr">
+                        <div className="cm-muted cm-bubble-label">English original · same engine answer</div>
+                        {renderRich(str(d["reply_en"]))}
+                    </div>}
                 </div>
                 {((not interp_tier) and foreign) and renderInterpreter(card, False)}
                 {len(facts) > 0 and <div className="cm-understood">
@@ -597,6 +613,7 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                 </div>}
                 {esc["lead_line"] and <div className="cm-crisis">
                     <div className="cm-crisis-lead">{str(esc["lead_line"])}</div>
+                    {esc["lead_line_en"] and <div className="cm-crisis-en" lang="en" dir="ltr">{"In English: " + str(esc["lead_line_en"])}</div>}
                     {[<div key={"cr" + str(i)} className="cm-crisis-item">{str(esc["crisis_resources"][i])}</div> for i in range(len(esc["crisis_resources"]) if esc["crisis_resources"] else 0)]}
                 </div>}
                 {len(matches) > 0 and <div className="cm-cards">
@@ -621,6 +638,8 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                     {Number(msg["rtt_ms"]) > 0 and <span>{"round trip " + fmtMs(msg["rtt_ms"])}</span>}
                     {(narr and narr["status"] == "ok") and <span className="cm-hud-llm">{"✦ narrated in " + fmtMs(narr["ms"]) + " · facts guard passed"}</span>}
                     {(narr and narr["status"] == "failed") and <span className="cm-muted">{"LLM narration unavailable — engine answer shown"}</span>}
+                    {(d["privacy"] and d["privacy"]["private_turn"]) and <span className="cm-hud-private">{"Kept on this server — crisis messages are never sent to an AI model"}</span>}
+                    {(d["privacy"] and len(d["privacy"]["redacted"]) > 0) and <span className="cm-hud-private">{"Removed before saving: " + ", ".join([str(k).replace("[", "").replace("]", "") for k in d["privacy"]["redacted"]]) + " — you never need to share these"}</span>}
                     <button className="cm-why" onClick={lambda _e: MouseEvent { waterfall_open = (-1 if waterfall_open == idx else idx); }}>{("Hide trace" if waterfall_open == idx else "Trace")}</button>
                 </div>
                 {waterfall_open == idx and renderWaterfall(trace, narr, idx)}
@@ -720,4 +739,46 @@ impl ChatPane.renderPipeline -> JsxElement {
                 <span className="cm-agent-ms">async</span>
             </div>
         </div>;
+}
+
+impl ChatPane.forgetMe -> None {
+    # Deletes this visitor's case graph on the server (ForgetWalker), then
+    # the browser's anonymous login, and starts over as a new visitor.
+    if not window.confirm("Delete everything this app saved about you? Your case, needs, tracked applications and answers are removed from the server, and this browser forgets its anonymous login. This can't be undone.") {
+        return;
+    }
+    forget_state = "deleting";
+    res = await safeSpawn("ForgetWalker", {"user_id": user_id});
+    reps = res["reports"];
+    ok = bool(reps and len(reps) > 0 and reps[len(reps) - 1]["ok"]);
+    forget_state = ("done" if ok else "failed");
+    if ok {
+        for k in ["cm_uid", "cm_pw", "jac_token", "cm_lang"] {
+            try { localStorage.removeItem(k); } except Exception as _ex {}
+        }
+        setTimeout(lambda { window.location.reload(); }, 1400);
+    }
+}
+
+impl ChatPane.renderPrivacy -> JsxElement {
+    return
+        <details className="cm-privacy">
+            <summary>
+                <span className="cm-privacy-lock" aria-hidden="true"><svg width="11" height="12" viewBox="0 0 11 12"><rect x="1" y="5" width="9" height="6.5" rx="1.5" fill="currentColor"/><path d="M 3 5 V 3.6 a 2.5 2.5 0 0 1 5 0 V 5" stroke="currentColor" strokeWidth="1.4" fill="none"/></svg></span>
+                {"Private by design — no name or ID needed"}
+            </summary>
+            <ul>
+                <li>You're anonymous: this browser holds a random login; nobody asks who you are.</li>
+                <li>Social Security, A-numbers, phone numbers, emails, addresses and dates of birth you type are replaced with placeholders before anything is saved or sent to a model.</li>
+                <li>Crisis messages (self-harm, abuse) are answered by fixed code and never sent to any AI model.</li>
+                <li>The eligibility engine runs on this server. Only a scrubbed copy of your message goes to NVIDIA's hosted models, for the optional summary and translation.</li>
+                <li>Your case is kept until you delete it or the server restarts; there's no advertising, no tracking, no selling.</li>
+            </ul>
+            <div className="cm-privacy-actions">
+                <a className="cm-link" href="https://github.com/Anbu-00001/CivicMesh/blob/main/PRIVACY.md" target="_blank" rel="noreferrer">Full privacy notice</a>
+                <button className="cm-ghost-btn cm-danger-btn" onClick={lambda _e: MouseEvent { forgetMe(); }} disabled={forget_state == "deleting" or forget_state == "done"}>
+                    {("Deleting…" if forget_state == "deleting" else ("Deleted — starting over" if forget_state == "done" else ("Couldn't delete — try again" if forget_state == "failed" else "Delete my data")))}
+                </button>
+            </div>
+        </details>;
 }

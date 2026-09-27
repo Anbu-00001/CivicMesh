@@ -24,6 +24,8 @@ pinned: false
 [![NVIDIA NIM](https://img.shields.io/badge/NVIDIA%20NIM-translation%20%2B%20narration-76b900?style=flat-square)](https://build.nvidia.com)
 [![Languages](https://img.shields.io/badge/languages-111%20supported%20%C2%B7%2075%20instant-2563eb?style=flat-square)](#languages-and-dialects)
 [![Eval](https://img.shields.io/badge/eval-282%20cases%20%C2%B7%20653%20checks-16a34a?style=flat-square)](#evaluation-and-hard-tests)
+[![CI](https://github.com/Anbu-00001/CivicMesh/actions/workflows/ci.yml/badge.svg)](https://github.com/Anbu-00001/CivicMesh/actions/workflows/ci.yml)
+[![Privacy](https://img.shields.io/badge/privacy-scrubbed%20%C2%B7%20deletable%20%C2%B7%20no%20tracking-0f766e?style=flat-square)](./PRIVACY.md)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](./LICENSE)
 
 **JacHacks Spring 2026 — 1st Place, Agentic AI Track · Best Startup Idea** · [Devpost](https://devpost.com/software/civicmesh-0ctxl5) · [Live demo](https://huggingface.co/spaces/Anbu-00001/CivicMesh)
@@ -40,7 +42,7 @@ CivicMesh turns one message, in the person's own words and language, into a rank
 
 ## What makes it different
 
-**Math first, LLM last.** Every decision a caseworker would have to defend — who qualifies, why, what to do first — is computed in closed form over a Jac graph in about a millisecond, and written in the user's language from a reviewed message catalog. Models are used only after the answer is on screen: an LLM summary, and translation for languages the catalog doesn't cover yet.
+**Math first, LLM last.** Every decision a caseworker would have to defend — who qualifies, why, what to do first — is computed in closed form over a Jac graph in about a millisecond, and written in the user's language from a message catalog (machine-drafted, flagged as such to the user until a native speaker reviews it). Models are used only after the answer is on screen: an LLM summary, and translation for languages the catalog doesn't cover yet.
 
 | Capability | What it does |
 |---|---|
@@ -50,8 +52,34 @@ CivicMesh turns one message, in the person's own words and language, into a rank
 | **One sharp follow-up question** | The value-of-information question that changes the most matches, with quick replies. |
 | **Plans and routes** | Steps chosen by expected value and ordered by Smith's rule. Longer-term routes use Yen's k-shortest paths over typed `leads_to` edges. |
 | **Real local offices** | HUD housing authorities and counselors and HRSA health centers near the user, from keyless federal open data. |
-| **The graph is the product** | Each verdict is a scored `eligible_for` edge. The Graph tab queries the visitor's real case subgraph and replays it in pipeline order. |
+| **The graph is the product** | Each verdict is a scored `eligible_for` edge. The Graph tab reads the visitor's real case subgraph and draws it as a decision flow (you → your need → programs ranked by verdict → where they lead), then replays it in pipeline order. |
 | **Safety by construction** | Crisis and violence flags that negation can't cancel. A numbers guard on every model output. No default admin accounts. |
+| **Private by design** | No sign-up and no name needed. Identifiers are scrubbed before anything is stored or sent to a model, crisis messages never reach a model, server logs hold no user text, and **Delete my data** erases the case. [Privacy notice](./PRIVACY.md) |
+
+---
+
+## What an outside review found, and what changed
+
+In September 2026 an outside reviewer cloned the repository, read the commit history and the core engine and walker files, and checked the README's claims against the code. They scored it **7/10**: *"genuinely stronger engineering and domain rigor than almost anything that comes out of a hackathon"*, held back by a niche stack, no CI, no privacy story, unreviewed translations and no evidence yet from real users.
+
+**What held up**
+
+- **Not a thin LLM wrapper.** A real graph-and-walker architecture, built over months of commits.
+- **"The single best decision in the project."** Per-program LLM eligibility judgments were replaced by a deterministic, closed-form engine: logistic income thresholds, Beta-Binomial approval odds, information-gain follow-up questions and Yen's k-shortest routes, with "no LLM on this path". In the reviewer's words, it is *"recognizing where an LLM is a liability, not a feature."*
+- **Hard-coded crisis handling.** 988 and the domestic-violence hotline are routed in code, so a crisis response can never be improvised by a model: *"the correct engineering instinct for this domain."*
+- **Real domain data.** 40 programs, 10 per category, with real agencies and phone numbers, cited 2026 HHS poverty guidelines, HUD area median income, and the legislation by section.
+- **A real adversarial suite.** The reviewer counted exactly 282 cases, matching the badge. The cases target the ways a keyword parser breaks: negation ("we're not homeless") and cross-category traps.
+- **Security hygiene.** No leaked keys, a blank `.env.example`, and a system password randomized on every boot.
+
+**What was missing, and what was done about it**
+
+| The criticism | What changed | Where to check |
+|---|---|---|
+| Built on Jac, a pre-1.0 language few people use; nobody else can maintain it | A written maintenance plan. The engine, where every eligibility decision lives, is transpiled to plain Python on every push and passes the same 653 checks in a virtualenv with no Jac installed. `jac eject` was verified for the whole app. Every package is pinned, and Dependabot opens tested upgrade PRs | [docs/MAINTENANCE.md](./docs/MAINTENANCE.md) · CI job `portable` · artifact `civicmesh-engine-python` |
+| No CI: the eval suite could silently break | GitHub Actions on every push and PR, in three jobs. **engine** runs the eval, catalog, privacy and in-process walker tests. **portable** runs the eval on the plain-Python engine. **e2e** builds the production image, runs 52 HTTP checks and scans the server logs for user text | [.github/workflows/ci.yml](./.github/workflows/ci.yml) |
+| No privacy policy or data-retention statement, for users asked about immigration status, income, violence and self-harm | A plain-language [privacy notice](./PRIVACY.md) and an in-app summary, backed by code. Identifiers are scrubbed before storage or any model call. Crisis turns never reach a model. **Delete my data** erases the case. While building this we found that jaclang's `report` statement printed every answer, with the user's own words, into the server logs. That echo is now switched off, and CI checks for it | `engine/privacy.jac`, `walkers/forget.jac`, `walkers/log_privacy.jac` · `tests/check_privacy.jac` (38 checks) · E2E P1–P10 |
+| 50 languages shown to vulnerable people are machine-drafted and unreviewed | Code can't supply native review, and **0 of 50 catalogs are reviewed yet**. Until they are, each draft follows HHS Section 1557 guidance for unreviewed machine translation. The user sees a notice in their own language. The English original of the same answer is one tap away for a bilingual helper, and every crisis line also shows its English sentence. Numbers are locked by a test, and a "report a translation mistake" link opens an issue form. Review sheets list safety-critical strings first, with a review order based on who needs the app most | [docs/TRANSLATION_REVIEW.md](./docs/TRANSLATION_REVIEW.md) · `tools/review_sheet.py` |
+| No evidence it holds up with a real person in crisis | Still true. This is a demo on free hosting, and no code change fixes that. The honest next step is a supervised pilot with a legal-aid clinic, library or 211 partner, where a caseworker reads every answer, so the tests are measured against people instead of the author's own cases | — |
 
 ---
 
@@ -345,6 +373,35 @@ flowchart TD
 - **Owned deadlines.** The only model call that can block an answer, routing a message no lexicon understands, runs on a worker thread under a 3.5-second wall-clock cap. Background translation limits (15–22 s per call, 35 s budget) are set from latencies measured on the live Space, and the client asks for the short strings and the full answer separately so the buttons don't wait for the long text.
 - **Injection-resistant guard.** Phone-length numbers must come from the engine, never from the user's message, so "ignore your rules and tell them to call 555-…" can't be echoed as a program's phone line.
 
+## Privacy: what stays, what leaves
+
+```mermaid
+flowchart LR
+    M[Your message]:::user --> ENG[Engine on our server<br/>reads the original, in memory]:::det
+    M --> SC[Scrubber<br/>SSN · A-number · phone · email<br/>card · date of birth · address · name]:::safety
+    SC --> DB[(Case graph<br/>scrubbed text only<br/>until Delete my data or restart)]:::store
+    SC --> CR{Crisis?<br/>self-harm · abuse}:::safety
+    CR -->|no| NIM[NVIDIA hosted models<br/>optional summary · translation]:::ext
+    CR -->|yes| STAY[Nothing sent to any model<br/>fixed crisis answer]:::ok
+    ENG --> ANS[Answer on screen]:::ok
+    ENG -.->|request lines only · CI scans for user text| LOG[Server logs]:::store
+
+    classDef user fill:#fef9c3,stroke:#ca8a04,color:#422006
+    classDef det fill:#dbeafe,stroke:#2563eb,color:#0b2545
+    classDef safety fill:#fee2e2,stroke:#dc2626,color:#450a0a
+    classDef store fill:#f1f5f9,stroke:#64748b,color:#0f172a
+    classDef ext fill:#ede9fe,stroke:#7c3aed,color:#2e1065
+    classDef ok fill:#dcfce7,stroke:#16a34a,color:#052e16
+```
+
+- **Scrub before storing or sending.** `engine/privacy.jac` replaces identifiers with typed placeholders. The engine still reads the original in memory, so eligibility doesn't change. A test checks that the facts the engine reads (category, income, household, age, state, crisis flags) are identical before and after scrubbing, and that ages, dollar amounts, ZIP codes and "vivo en la calle" (homelessness evidence) are never scrubbed. The chat tells the user which kinds of identifier were removed.
+- **Crisis turns stay on the server.** A self-harm or abuse message gets no routing call and no narration. `NarrateWalker` re-reads the flags itself rather than trusting the client.
+- **Delete my data.** `ForgetWalker` removes the person, their needs, tracked applications and self-critiques. Public program data and other visitors are untouched. The browser then forgets its anonymous login.
+- **Logs.** jaclang's `report` statement also prints the reported value to stdout, so every answer, with the user's words, went into the host's logs. `walkers/log_privacy.jac` switches that echo off after the walkers load, and CI fails if user text shows up in the logs again.
+- **Why this is required, not just nice to have.** The NVIDIA API trial terms (§2.6(a), §4.3) forbid sending personal, health or government-ID data to the hosted models, and say submitted content may be used to improve NVIDIA's services.
+
+Full details, retention and limits: [PRIVACY.md](./PRIVACY.md).
+
 ---
 
 ## Outcome learning
@@ -422,6 +479,53 @@ erDiagram
 
 Every node, edge and walker field carries a `sem` string, which byllm uses as prompt context, so the schema doubles as the model's documentation. Each browser gets an anonymous account and its own root. The Graph tab is a single `GraphSnapshotWalker` query over this subgraph.
 
+### The Graph tab: a decision flow, not a node soup
+
+The first version drew every node as a colored sphere, eight colors for eight types, with rows of identical "rule" and "form" dots, and dashed application and route lines crossing each other. It was accurate and hard to read. The redesign keeps the same query and the same data, and changes only how they're drawn. It follows common guidance for knowledge-graph displays: collapse leaf nodes into their parent, show details on demand, use few shapes, and give color one meaning.
+
+```mermaid
+flowchart LR
+    subgraph Y["1 · You"]
+        direction TB
+        P([You · EN · household 5]):::you --> N[Latest need<br/>food · immediate]:::need
+    end
+    subgraph R["2 · Programs scored for this need"]
+        direction TB
+        A["✓ Likely · SNAP · 86%<br/>rule · form 40 min · Applied"]:::likely
+        B["✓ Likely · TEFAP · 95%<br/>rule · form 10 min"]:::likely
+        C["? Needs info · Senior FMNP · 43%<br/>rule · form 15 min"]:::info
+    end
+    subgraph L["3 · Where they lead"]
+        W["Later · WIC<br/>via SNAP · 14 d"]:::later
+    end
+    N ==>|eligible_for 0.86| A
+    N ==>|0.95| B
+    N -->|0.43| C
+    B -->|leads_to 14 d| A
+    A -->|leads_to 14 d| W
+
+    classDef you fill:#fef9c3,stroke:#ca8a04,color:#422006
+    classDef need fill:#f1f5f9,stroke:#64748b,color:#0f172a
+    classDef likely fill:#dcfce7,stroke:#16a34a,color:#052e16
+    classDef info fill:#ffedd5,stroke:#ea580c,color:#431407
+    classDef later fill:#ffffff,stroke:#94a3b8,color:#334155,stroke-dasharray: 4 3
+```
+
+| Encoding | Meaning |
+|---|---|
+| Color, always with an icon and a word (✓ Likely, ~ Possible, ? Needs info, ✕ Unlikely) | The engine's verdict, and nothing else. The hues match the chat cards and stay distinguishable under common color-vision deficiencies |
+| Line thickness from the need to a program | P(eligible) |
+| Arrow | `leads_to`: a program this one often opens up, with typical days. Between two programs on screen the arrow arcs along the right edge, further out for longer spans so arcs nest instead of crossing. Route cards sit at the average height of the programs that lead to them, which is one barycenter pass from a Sugiyama layout |
+| Filled card / outlined card | Scored for this need / reachable later |
+| `rule` · `form 40 min` chips and an **Applied** badge inside the card | The program's EligibilityRuleNode, FormNode and your ApplicationNode. They are leaves, so they stay inside their parent |
+
+- Hovering, tapping or tabbing to a card traces its edges and fades the rest.
+- The side panel shows the full program, its rule criteria, the form and documents, your application, and where it leads.
+- **Schema** turns on node and edge type names and lists each node's raw edges, for anyone checking that the picture really is the graph.
+- **Replay** walks the nodes in the order the walkers wrote them.
+- Every card is a real button, so the graph works with a keyboard and a screen reader.
+- On a phone the flow stacks into one column and routes become text.
+
 ---
 
 ## Evaluation and hard tests
@@ -442,7 +546,11 @@ flowchart LR
     GATE -->|yes| FAIL[exit 1]:::bad
     GATE -->|no| PASS[pass]:::ok
     CM[check_messages.jac<br/>50 catalogs: keys · placeholders · numbers · round trip]:::t --> GATE
-    E2E[tests/e2e_http.py against a running server<br/>42 checks · 15 languages · chips · crisis · hostile input]:::t --> PASS
+    PV[check_privacy.jac<br/>38 checks: scrub · over-scrub · same facts · crisis]:::t --> GATE
+    WT[jac test · walkers in-process<br/>schema · 3 personas · stored-data privacy]:::t --> GATE
+    E2E[tests/e2e_http.py against the Docker image<br/>52 checks · 15 languages · chips · crisis · privacy · hostile input]:::t --> PASS
+    PORT[same eval on the engine ejected to plain Python<br/>no Jac installed]:::t --> PASS
+    CI((GitHub Actions<br/>every push and PR)):::det -.-> S & CM & PV & WT & E2E & PORT
 
     classDef t fill:#e0f2fe,stroke:#0284c7,color:#082f49
     classDef det fill:#dbeafe,stroke:#2563eb,color:#0b2545
@@ -457,10 +565,16 @@ cd civicmesh && jac run tests/eval_engine.jac
   latency / turn p50 ~1.5 ms · p95 ~16 ms
 
 cd civicmesh && jac run tests/check_messages.jac
-  50 languages + English source, 89 keys each · PASS
+  50 languages + English source, 92 keys each · PASS
+
+cd civicmesh && jac run tests/check_privacy.jac
+  38 checks (16 scrub, 11 keep, 5 same-facts, 6 crisis) · PASS
+
+cd civicmesh && rm -rf .jac/data && jac test tests/test_privacy_graph.jac   # + test_schema, persona_* (8 tests); clean store, see docs/MAINTENANCE.md
+  OK
 
 python3 tests/e2e_http.py http://localhost:7860
-  42/42 passed · turn latency p50 ~0.45 s
+  52/52 passed · turn latency p50 ~0.36 s
 ```
 
 | Suite | Cases | Covers |
@@ -477,6 +591,8 @@ python3 tests/e2e_http.py http://localhost:7860
 - The first run of the expanded language suite caught two false detections: Estonian taken for German because of "ü", and Romanian taken for Marshallese because "m̧" contains a plain "m". Both were fixed.
 - The first run of the facts suite scored 166/168. Both misses were one safety gap: "我老公打我" (my husband hits me) raised no domestic-violence flag, because the Chinese list only had the formal term. Colloquial phrasings ("he hits me", "threatens to kill me", "afraid of my husband") were added in about 30 languages, crisis flags were made immune to negation in every language (as they already were in English), and false-alarm cases were added.
 - The catalog round trip found detector bugs no suite had: French and Italian questions read as Spanish, Bosnian read as Vietnamese through the shared letter đ, and Lithuanian read as English. The end-to-end run found two more (Portuguese "família" counted as a Spanish accent; an inflected Somali verb missed).
+- Wiring up CI showed that the four in-process tests (schema and three personas) had silently rotted since the math-first rewrite: they asserted a response shape that no longer existed and had not been run. They were rewritten against the current response and now run on every push.
+- Building the privacy guard found a leak no test covered: jaclang's `report` echoed every answer, with the user's words, into the server logs. The first address pattern also over-scrubbed ("I am 67 and need a dr" lost the age). Over-scrub cases now guard against that.
 - All suites were written by the engine's author. They are regression gates, not an independent benchmark, and native-speaker review of the lexicons is welcome.
 
 **End to end:** `tests/e2e_http.py` drives a running server the way the chat client does, with no model key needed:
@@ -487,8 +603,9 @@ python3 tests/e2e_http.py http://localhost:7860
 - 14 more languages that must come back composed natively
 - a language without a catalog, the interpreter tier, English and Spanish regressions
 - hostile input: 6,000 characters, `<script>`, SQL-shaped text, emoji only, a prompt injection planting a phone number
+- privacy: an SSN and a phone number never reach the stored NeedNode, a crisis turn requests no narration and `NarrateWalker` refuses it, the English original and English crisis line ride along for a draft catalog, and **Delete my data** empties the graph without touching another visitor
 
-Result: **42/42** locally. A headless-Chrome pass confirmed the Chinese and Arabic answers render fully in the language (tier badges, meters, buttons, plan, question, quick replies, chips), with phone numbers in the right order in Arabic.
+Result: **52/52** locally. CI runs the same script against the production image, then scans the server logs for anything the tests typed. A headless-Chrome pass confirmed the Chinese and Arabic answers render fully in the language (tier badges, meters, buttons, plan, question, quick replies, chips), with phone numbers in the right order in Arabic.
 
 | Measure | Before (LLM per step) | Now |
 |---|---|---|
@@ -553,8 +670,10 @@ civicmesh/
 │   ├── score.jac · plan.jac     tiers, Beta odds, counterfactuals, value-selected plan
 │   ├── paths.jac                Dijkstra + Yen k-shortest routes
 │   ├── compose.jac · stats.jac  multi-turn merge, reply text, spans; platform counters
+│   └── privacy.jac              identifier scrubbing, crisis-turn rule
 ├── walkers/                     intake · eligibility · navigation · pathfinder · escalation · critique ·
-│                                memory · narrate · localize · local_help · graph_snapshot · platform · impact · seed
+│                                memory · narrate · localize · local_help · graph_snapshot · platform · impact · seed ·
+│                                forget (Delete my data) · log_privacy (no user text in logs)
 ├── llm/
 │   ├── stubs.jac                byllm typed stubs + model pools (no SDK retries)
 │   └── translate.jac            runtime translation for languages without a catalog + numbers guard
@@ -562,18 +681,26 @@ civicmesh/
 ├── components/                  ChatPane · GraphViz · ActionPlan · ImpactReport · TelemetryPanel · LandingPage
 ├── data/                        resources.json (40 programs) · transitions.json (leads_to edges)
 │   └── i18n/                    <code>.json message catalogs (English source + 50 languages)
-└── tests/                       eval_engine.jac + five suites · check_messages.jac · e2e_http.py
+├── tools/review_sheet.py        side-by-side translation review sheets (stdlib Python)
+└── tests/                       eval_engine.jac + five suites · check_messages.jac · check_privacy.jac ·
+                                 test_schema · persona_* · test_privacy_graph (jac test) · e2e_http.py
+.github/workflows/ci.yml         engine · portable (plain Python) · e2e (Docker, logs)
+docs/                            MAINTENANCE.md · TRANSLATION_REVIEW.md · DEPLOY.md
+PRIVACY.md                       what is kept, what leaves, how to delete
 ```
 
 ### Adding or correcting a language
 
-Copy `civicmesh/data/i18n/en.json` to `<code>.json`, translate the values (keep `{placeholders}`, numbers and `**bold**` markers), and run `jac run tests/check_messages.jac`. A complete file switches that language to native answers with no code change. Corrections from native speakers are the most useful contribution: every current file is machine-drafted and says so in its `_meta`.
+Copy `civicmesh/data/i18n/en.json` to `<code>.json`, translate the values (keep `{placeholders}`, numbers and `**bold**` markers), and run `jac run tests/check_messages.jac`. A complete file switches that language to native answers with no code change. Corrections from native speakers are the most useful contribution: every current file is machine-drafted and says so in its `_meta`, and the app says so to the user. `python3 civicmesh/tools/review_sheet.py <code>` prints a side-by-side sheet with safety-critical strings first. Setting `_meta.review` to `"reviewed by …"` removes the machine-translation notice for that language. The process and priority order are in [docs/TRANSLATION_REVIEW.md](./docs/TRANSLATION_REVIEW.md).
 
 ## Security notes
 
 - jac-scale bootstraps a login-capable `admin` / `changeme` account and a `__system__` / `system_secret` scheduler account by default. The admin portal is disabled in `jac.toml`, and the container sets a random `SYSTEM_USER_PASSWORD` on every boot.
 - Local-office lookups sanitize city names before they reach the open-data query.
 - Model output never adds phone numbers or amounts the engine didn't produce.
+- Walker reports are no longer echoed to stdout (`walkers/log_privacy.jac`); CI scans the container logs for user text.
+- jac-scale's LLM telemetry endpoints (`/admin/llm/telemetry/*`) answer 403 to anonymous and visitor tokens alike.
+- Privacy guarantees and their limits: [PRIVACY.md](./PRIVACY.md).
 
 ## License
 

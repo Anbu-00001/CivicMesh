@@ -1,0 +1,131 @@
+name: CI
+
+# Every push and pull request runs the same checks used locally:
+#   engine    — the 282-case eval (regression floor), message catalogs,
+#               privacy guard, and in-process walker tests (Jac)
+#   portable  — the same eval on the engine ejected to plain Python, run in a
+#               venv with no Jac installed (the escape hatch from the stack)
+#   e2e       — the production Docker image, 52 HTTP checks, and a scan of the
+#               server logs for anything a user typed
+# No secrets are needed: nothing on these paths calls an LLM.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  engine:
+    name: Engine eval · catalogs · privacy · walker tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: civicmesh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Install pinned dependencies
+        run: pip install -r ../requirements.txt
+      - name: Engine eval — 282 golden cases, fails below the regression floor
+        run: jac run tests/eval_engine.jac
+      - name: Message catalogs — keys, placeholders, numbers, detector round trip
+        run: jac run tests/check_messages.jac
+      - name: Privacy guard — scrubbing, over-scrubbing, crisis turns
+        run: jac run tests/check_privacy.jac
+      - name: In-process walker tests — schema, personas, stored-data privacy
+        run: |
+          for t in tests/test_schema.jac tests/persona_single_mother.jac tests/persona_undocumented.jac \
+                   tests/persona_elderly_legal.jac tests/test_privacy_graph.jac; do
+            # A clean local store per test: jaclang 0.15.1's CLI store can keep a
+            # dangling edge after a delete (see docs/MAINTENANCE.md).
+            rm -rf .jac/data
+            echo "::group::$t"; jac test "$t"; echo "::endgroup::"
+          done
+      - name: Translation review status
+        run: python3 tools/review_sheet.py --status >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-report
+          path: civicmesh/tests/eval_report.json
+          if-no-files-found: ignore
+
+  portable:
+    name: Same eval on the engine ejected to plain Python (no Jac)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: civicmesh
+    env:
+      COLUMNS: "100000"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Install the Jac toolchain (only to transpile)
+        run: pip install -r ../requirements.txt
+      - name: Transpile engine/*.jac and the eval harness with jac2py
+        run: |
+          out="$RUNNER_TEMP/ejected"
+          mkdir -p "$out/engine" "$out/tests"
+          touch "$out/engine/__init__.py"
+          for f in engine/*.jac; do jac jac2py "$f" > "$out/engine/$(basename "$f" .jac).py"; done
+          jac jac2py tests/eval_engine.jac > "$out/tests/eval_engine.py"
+          if grep -rn "jaclang" "$out"; then echo "ejected code still imports jaclang" >&2; exit 1; fi
+      - name: Run the eval in a fresh venv with no Jac packages
+        run: |
+          python -m venv "$RUNNER_TEMP/plain"
+          if "$RUNNER_TEMP/plain/bin/python" -m pip list 2>/dev/null | grep -i jac; then exit 1; fi
+          PYTHONPATH="$RUNNER_TEMP/ejected" "$RUNNER_TEMP/plain/bin/python" "$RUNNER_TEMP/ejected/tests/eval_engine.py"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: civicmesh-engine-python
+          path: ${{ runner.temp }}/ejected
+
+  e2e:
+    name: Docker image · HTTP end-to-end · log privacy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build the production image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: civicmesh:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Start the app
+        run: |
+          docker run -d --name cm -p 7860:7860 civicmesh:ci
+          for _ in $(seq 1 90); do curl -sf -o /dev/null http://localhost:7860/ && exit 0; sleep 2; done
+          docker logs cm; exit 1
+      - name: HTTP end-to-end (52 checks, no LLM key)
+        run: python3 civicmesh/tests/e2e_http.py http://localhost:7860
+      - name: Server logs hold no user text
+        run: |
+          if docker logs cm 2>&1 | grep -nE "case_text|123-45-6789|kill myself|老公|\{'version'"; then
+            echo "user text reached the server logs" >&2; exit 1
+          fi
+      - name: Server logs (on failure)
+        if: failure()
+        run: docker logs cm 2>&1 | tail -200

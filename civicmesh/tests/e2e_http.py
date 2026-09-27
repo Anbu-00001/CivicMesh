@@ -194,6 +194,36 @@ check("X5 picked language wins over detection (Chinese text, Vietnamese picked)"
 r, _ = post("/user/login", {"identity": {"type": "username", "value": "admin"}, "credential": {"type": "password", "password": "changeme"}})
 check("S1 default admin/changeme cannot log in", not r.get("ok"), str(r)[:80])
 
+# ---- P. Privacy: scrub before storing, crisis stays on the server, delete ----
+pu, pt = login()
+dp, _ = turn(pu, pt, "My SSN is 123-45-6789, call me at 713-555-0199. I need food in Houston")
+check("P1 identifiers reported as scrubbed (kinds only, never values)",
+      dp is not None and "[ssn]" in dp["privacy"]["redacted"] and "[phone]" in dp["privacy"]["redacted"]
+      and "123-45-6789" not in json.dumps(dp["privacy"]), dp["privacy"] if dp else "")
+check("P2 the engine still read the message (food, Houston)", dp is not None and dp["profile"]["category"] == "food" and dp["profile"]["city"] == "Houston")
+gs, _ = walker("GraphSnapshotWalker", {"user_id": pu}, pt)
+need_tip = next((n["tip"] for n in gs["nodes"] if n["id"] == "need"), "") if gs else ""
+check("P3 the stored NeedNode holds [ssn]/[phone], not the numbers",
+      "[ssn]" in need_tip and "[phone]" in need_tip and "6789" not in need_tip and "0199" not in need_tip, need_tip[:120])
+dc, _ = turn(pu, pt, "I want to kill myself")
+check("P4 crisis turn: private, no narration requested", dc is not None and dc["privacy"]["private_turn"] is True and dc["llm"]["narrate"] is False)
+nw, ms = walker("NarrateWalker", {"user_message": "my husband hits me and I want to die", "language": "en", "facts": "x", "chips": []}, pt)
+check("P5 NarrateWalker refuses to send a crisis message to any model", nw is not None and nw.get("private") is True and not nw.get("ok") and ms < 3000, f"{ms:.0f} ms")
+dz, _ = turn(pu, pt, "我老公打我，我需要一个安全的地方")
+check("P6 draft catalog: English original + English crisis line ride along (zh)",
+      dz is not None and dz["language_info"].get("catalog_review") == "draft" and "Call" in dz.get("reply_en", "") + dz["escalation"].get("lead_line_en", "")
+      and dz["escalation"].get("lead_line_en", "").startswith("Call "), (dz.get("reply_en", "")[:60], dz["escalation"].get("lead_line_en", "")[:60]) if dz else "")
+de, _ = turn(pu, pt, "I need food")
+check("P7 English answers carry no English duplicate", de is not None and de.get("reply_en", "") == "" and de["escalation"].get("lead_line_en", "") == "")
+fw, _ = walker("ForgetWalker", {"user_id": pu}, pt)
+check("P8 Delete my data removes the person, needs, applications and insights",
+      fw is not None and fw["ok"] and fw["removed"]["PersonNode"] == 1 and fw["removed"]["NeedNode"] >= 4, fw)
+gs2, _ = walker("GraphSnapshotWalker", {"user_id": pu}, pt)
+check("P9 after deletion the graph is empty", gs2 is not None and gs2.get("empty") is True and gs2["counts"]["ResourceNode"] == 40,
+      {k: gs2["counts"][k] for k in ["PersonNode", "NeedNode", "ResourceNode"]} if gs2 else "")
+dn, _ = turn(uid, tok, "I need food")
+check("P10 another visitor's case is untouched by the deletion", dn is not None and dn["profile"]["category"] == "food")
+
 lat.sort()
 p50 = lat[len(lat) // 2] if lat else 0
 print(f"\nturn latency p50 {p50:.0f} ms · max {max(lat) if lat else 0:.0f} ms over {len(lat)} turns")

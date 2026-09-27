@@ -11,7 +11,7 @@ Run: `jac test tests/test_schema.jac`
 import from graph.nodes { PersonNode, NeedNode, ResourceNode, EligibilityRuleNode, FormNode, ApplicationNode }
 import from graph.edges { has_need, eligible_for, governed_by, requires_form, applied_to }
 import from graph.seed_data { seed }
-import from llm.stubs { NeedProfile, EligibilityResult, ActionStep, ActionPlan, LanguageProfile, SessionSummary }
+import from llm.stubs { NeedProfile, UnderstoodNeed, Narration }
 
 test "node_instantiation" {
     person = PersonNode(
@@ -122,50 +122,12 @@ test "seed_loader_populates_graph" {
 }
 
 test "llm_return_types_constructible" {
-    profile = NeedProfile(
-        category="legal",
-        urgency="within_weeks",
-        family_size=1,
-        income_bracket="15k-30k",
-        location_zip="10001",
-        language="en",
-        details="Need help with eviction defense."
-    );
+    # The only two LLM calls left: the routing fallback (UnderstoodNeed) and
+    # the background narration (Narration). Eligibility is never an LLM type.
+    profile = NeedProfile(category="legal", urgency="within_weeks", family_size=1, location_zip="10001", language="en", details="Need help with eviction defense.");
     assert profile.category == "legal";
-    assert profile.language == "en";
-
-    elig = EligibilityResult(
-        resource_name="LSC",
-        match_score=85,
-        matched_criteria=["income"],
-        missing_criteria=[],
-        is_eligible=True
-    );
-    assert elig.is_eligible;
-    assert elig.match_score == 85;
-
-    step = ActionStep(
-        step_number=1,
-        agency_name="LSC",
-        action_description="Call LSC intake line.",
-        documents_needed=["Photo ID"],
-        deadline_label="Open year-round",
-        contact_info="2-1-1",
-        estimated_minutes=45,
-        online_url=""
-    );
-    plan = ActionPlan(steps=[step], summary="One step plan.");
-    assert len(plan.steps) == 1;
-    assert plan.steps[0].agency_name == "LSC";
-
-    lang = LanguageProfile(detected_language="es", confidence=0.95, translated_intent="I need help.");
-    assert lang.detected_language == "es";
-
-    summary = SessionSummary(
-        approved=["WIC"],
-        pending=["SNAP"],
-        denied=[],
-        next_recommended_step="Follow up on SNAP application."
-    );
-    assert "WIC" in summary.approved;
+    u = UnderstoodNeed(category="food", language="zh", monthly_income=1500, household_size=3, state="TX", english_summary="Needs food.");
+    assert u.monthly_income == 1500 and u.household_size == 3;
+    n = Narration(message="Here is what I found.", chips=["How do I apply for SNAP?"]);
+    assert len(n.chips) == 1;
 }

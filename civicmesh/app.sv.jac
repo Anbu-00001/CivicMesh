@@ -22,3 +22,9 @@ import from walkers.critique { CritiqueWalker, ReflectionReadWalker }
 import from walkers.platform { PlatformWalker }
 import from walkers.local_help { LocalHelpWalker }
 import from walkers.localize { LocalizeWalker }
+import from walkers.forget { ForgetWalker }
+
+# Last: every walker module is loaded, so their `report` can stop echoing
+# answers (with the user's words in them) into the server logs.
+import from walkers.log_privacy { silence_report_logging }
+glob REPORT_LOGGING_SILENCED: int = silence_report_logging();

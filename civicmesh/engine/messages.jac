@@ -59,6 +59,17 @@ def has_messages(lang: str) -> bool {
     return True;
 }
 
+"""Review state of a catalog: "reviewed" once a native speaker or qualified
+translator has checked every string (recorded in its _meta.review), else
+"draft" (machine-drafted); "" when there's no catalog. The client shows a
+may-contain-errors notice and the English original for drafts (HHS Section
+1557 guidance for machine-translated content that hasn't had human review)."""
+def catalog_review(lang: str) -> str {
+    if not has_messages(lang) { return ""; }
+    meta = load_messages().get(str(lang), {}).get("_meta", {});
+    return "reviewed" if str(meta.get("review", "")).lower().startswith("reviewed") else "draft";
+}
+
 """Languages with a complete catalog."""
 def message_languages -> list {
     return [c for c in sorted(load_messages().keys()) if has_messages(c)];
