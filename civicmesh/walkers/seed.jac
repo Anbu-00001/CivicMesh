@@ -100,7 +100,8 @@ walker SeedWalker {
                 age_min=int(elig_raw["age_min"]),
                 age_max=int(elig_raw["age_max"]),
                 exceptions=str(elig_raw["exceptions"]),
-                criteria_summary=str(elig_raw["criteria_summary"])
+                criteria_summary=str(elig_raw["criteria_summary"]),
+                targets=[str(t) for t in list(elig_raw.get("targets", []))]
             );
             resource +>: governed_by() :+> rule;
 
@@ -123,96 +124,15 @@ walker SeedWalker {
         # PathfinderWalker. These are curated real-world transitions that
         # produce multi-step escape paths when direct eligibility fails.
         # Each tuple is (from_agency, to_agency, reason, days, difficulty).
-        pathfinder_edges: list = [
-            # Housing escape chain — names match resources.json exactly so
-            # the seed-pass matcher actually resolves them.
-            ("Emergency Solutions Grant Shelter Network", "Rapid Re-Housing Program",
-             "Emergency shelter intake auto-files a Continuum-of-Care referral; expect rapid re-housing placement within 30 days.",
-             30, "easy"),
-            ("Rapid Re-Housing Program", "Section 8 Housing Choice Voucher Program",
-             "Verified rapid re-housing tenancy moves you up the local Section 8 priority list as a stabilized low-income tenant.",
-             120, "moderate"),
-            ("Emergency Solutions Grant Shelter Network", "Continuum of Care Permanent Supportive Housing",
-             "Shelter-based intake counts as the CoC entry point; long-term supportive housing typically opens within 90 days for verified high-need cases.",
-             90, "moderate"),
-            ("National Domestic Violence Hotline Shelter Referral", "Emergency Solutions Grant Shelter Network",
-             "DV hotline can arrange same-day shelter placement for survivors and their dependents through coordinated entry.",
-             1, "easy"),
-            ("Salvation Army Transitional Housing", "Section 8 Housing Choice Voucher Program",
-             "Twelve-month transitional residency at Salvation Army produces the documented tenancy history Section 8 priority lists weight heavily.",
-             365, "moderate"),
-            ("Catholic Charities Emergency Rental Assistance", "Section 8 Housing Choice Voucher Program",
-             "Catholic Charities case managers routinely escalate ERA recipients into the Section 8 application pipeline.",
-             60, "easy"),
-            ("HUD-VASH (Veterans Affairs Supportive Housing)", "Section 8 Housing Choice Voucher Program",
-             "VASH vouchers are HUD-managed Section 8 with VA case management — converting between them is administrative.",
-             45, "easy"),
-
-            # Food escape chain
-            ("Feeding America Food Bank Network", "SNAP (Supplemental Nutrition Assistance Program)",
-             "Member food banks routinely capture SNAP eligibility data at intake; staff can submit on your behalf with consent.",
-             14, "easy"),
-            ("SNAP (Supplemental Nutrition Assistance Program)", "WIC (Women, Infants and Children)",
-             "Most SNAP-approved households with children under 5 or pregnant members also qualify for WIC; cross-enrollment is automatic in most states.",
-             14, "easy"),
-            ("Meals on Wheels America", "SNAP (Supplemental Nutrition Assistance Program)",
-             "Home-delivered-meal recipients are pre-qualified for expedited SNAP review under elderly/disabled provisions.",
-             21, "easy"),
-            ("TEFAP (The Emergency Food Assistance Program)", "SNAP (Supplemental Nutrition Assistance Program)",
-             "TEFAP distribution sites are SNAP outreach points; staff can complete and submit your application same-day.",
-             14, "easy"),
-            ("Community Fridge Network", "Feeding America Food Bank Network",
-             "Community fridge volunteers maintain warm hand-offs to nearest food bank when sustained food access is needed.",
-             1, "easy"),
-
-            # Healthcare escape chain
-            ("Federally Qualified Health Center Sliding-Scale Care", "Medicaid",
-             "FQHC patient navigators submit Medicaid applications and track them through approval at zero cost.",
-             45, "moderate"),
-            ("Medicaid", "Federally Qualified Health Center Sliding-Scale Care",
-             "Medicaid coverage unlocks the full FQHC sliding-scale clinic network for ongoing primary and specialty care.",
-             7, "easy"),
-            ("988 Suicide and Crisis Lifeline", "Community Mental Health Center Sliding-Scale Therapy",
-             "988 counselors warm-transfer callers to community mental health centers for ongoing care.",
-             3, "easy"),
-            ("NeedyMeds Prescription Assistance", "Federally Qualified Health Center Sliding-Scale Care",
-             "NeedyMeds maintains a national directory of FQHC clinics for users without primary care.",
-             7, "easy"),
-            ("CHIP (Children's Health Insurance Program)", "Medicaid",
-             "CHIP and Medicaid share a single application portal; ineligibility for one auto-routes the other.",
-             14, "easy"),
-
-            # Legal escape chain
-            ("Legal Services Corporation Civil Legal Aid", "Tenant Rights Hotline (National Housing Law Project)",
-             "When LSC programs can't take a tenant case directly, they refer to NHLP-affiliated tenant defender coalitions.",
-             7, "moderate"),
-            ("ABA Free Legal Answers", "Legal Services Corporation Civil Legal Aid",
-             "ABA Free Legal Answers triages cases and refers complex matters to LSC-funded local providers.",
-             7, "easy"),
-            ("National Domestic Violence Legal Advocacy", "Legal Services Corporation Civil Legal Aid",
-             "DV legal advocates connect survivors to LSC for protective orders and custody filings the same week.",
-             3, "easy"),
-            ("Disability Rights Network Protection and Advocacy", "Legal Services Corporation Civil Legal Aid",
-             "Disability rights P&A networks refer non-disability-specific cases to general LSC providers.",
-             14, "easy"),
-
-            # Cross-vertical bridges — the magic that makes pathfinding non-obvious
-            ("Feeding America Food Bank Network", "Section 8 Housing Choice Voucher Program",
-             "Food bank intake captures housing instability data; case managers refer high-risk families to Section 8 priority lists.",
-             45, "moderate"),
-            ("National Domestic Violence Hotline Shelter Referral", "National Domestic Violence Legal Advocacy",
-             "Same-organization warm-handoff: hotline counselor schedules the legal advocate visit while you're still on the call.",
-             1, "easy"),
-            ("Federally Qualified Health Center Sliding-Scale Care", "SNAP (Supplemental Nutrition Assistance Program)",
-             "FQHC social workers screen every patient for food insecurity and submit SNAP applications on their behalf.",
-             14, "easy"),
-            ("988 Suicide and Crisis Lifeline", "Emergency Solutions Grant Shelter Network",
-             "988 counselors maintain shelter-availability tables; can arrange same-night placement for housing-insecure callers.",
-             1, "easy"),
-            ("Tenant Rights Hotline (National Housing Law Project)", "Catholic Charities Emergency Rental Assistance",
-             "Tenant rights advocates refer eviction-defense clients to ERA programs to pay back rent and stop the case.",
-             7, "easy")
-        ];
+        pathfinder_edges: list = [];
+        trans_path = os.path.join(os.path.dirname(path), "transitions.json");
+        if os.path.exists(trans_path) {
+            with open(trans_path, "r") as tf {
+                for t in json.loads(tf.read())["transitions"] {
+                    pathfinder_edges.append((str(t["from"]), str(t["to"]), str(t["reason"]), int(t["days"]), str(t["difficulty"])));
+                }
+            }
+        }
 
         edges_added = 0;
         edges_skipped_missing = 0;

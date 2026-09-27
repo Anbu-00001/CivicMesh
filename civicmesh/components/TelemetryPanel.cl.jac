@@ -75,34 +75,34 @@ def:pub TelemetryPanel(walker_events: list) -> JsxElement {
     # the chat pipeline to round-trip prompt strings.
     walker_calls: dict = {
         "IntakeWalker": {
-            "input": "Raw user message · last-turn prompt",
-            "output": "NeedProfile{category, urgency, details}",
-            "stub": "extract_need_profile()",
+            "input": "Latest message + case carried from earlier turns",
+            "output": "Profile{category, urgency, income, household, age, location, status} + evidence spans",
+            "stub": "engine/parse.jac (regex + EN/ES lexicon) · understand_message() only if unroutable",
             "tools": False
         },
         "EligibilityWalker": {
-            "input": "NeedProfile + 40 seeded ResourceNodes",
-            "output": "EligibilityResult{eligible_count, top_matches[], action_plan}",
-            "stub": "check_eligibility() · score_match()",
-            "tools": True
+            "input": "Profile + 40 Resource→Rule→Form triples from the graph",
+            "output": "Ranked matches{p_eligible, tier, Beta approval CI, criteria, counterfactual} + next question",
+            "stub": "engine/score.jac — logistic income, hard gates, abstention, value of information",
+            "tools": False
         },
         "NavigationWalker": {
-            "input": "Eligible resources ranked by score",
-            "output": "ActionPlan{steps[], summary, next_action}",
-            "stub": "generate_action_plan()",
-            "tools": True
+            "input": "Ranked matches + urgency",
+            "output": "Plan{steps[], shared_documents, total_minutes} + ApplicationNodes",
+            "stub": "engine/plan.jac — Smith's weighted-shortest-processing-time rule",
+            "tools": False
         },
         "MemoryWalker": {
-            "input": "user_id + mode (read_session | write | update_status)",
-            "output": "SessionSnapshot{has_history, next_step, applied[], pending[]}",
-            "stub": "summarize_session()",
+            "input": "user_id + mode (read_session | update_status)",
+            "output": "Session snapshot · Beta posterior before/after an outcome",
+            "stub": "deterministic summary · Bayesian outcome learning",
             "tools": False
         },
         "EscalationWalker": {
-            "input": "NeedProfile when no resource matched",
-            "output": "EscalationMessage{is_emergency, crisis_resources[], appeal_options[], personalized_message}",
-            "stub": "ReAct loop · 3 tools",
-            "tools": True
+            "input": "Risk flags (self-harm, DV) or no credible match",
+            "output": "Crisis lead line + open crisis resources from the graph",
+            "stub": "deterministic — a crisis reply never waits on a model",
+            "tools": False
         }
     };
 

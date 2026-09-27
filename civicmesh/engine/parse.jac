@@ -1,0 +1,518 @@
+"""Deterministic intake parser — the zero-latency front of the pipeline.
+
+Lifts a structured profile out of a free-form message in English or Spanish
+with regex + weighted keyword evidence, in well under a millisecond. Every
+extracted field carries the exact character span it came from, so the UI can
+highlight *why* the agent believes something, and the pipeline gets a routing
+confidence that decides whether the (slow) LLM is needed at all.
+
+Output contract (plain dict so it serialises straight into walker reports):
+  language, language_conf
+  category, secondary, category_scores, category_conf
+  urgency                    immediate | within_days | within_weeks
+  income_annual              int, -1 = unknown (0 = stated no income)
+  household_size, age        int, 0 = unknown
+  state, city, zip
+  citizenship                citizen | eligible_immigrant | non_citizen | ""
+  flags                      senior, veteran, disabled, dv, self_harm, homeless,
+                             children, pregnant, family
+  evidence                   [{field, value, start, end, text}]
+  completeness               share of the 5 eligibility fields that are known
+  needs_llm, llm_reason      routing decision for the one LLM call
+"""
+
+import re;
+
+# ---------- lexicons ----------
+# (pattern, weight). Patterns are regex fragments matched on lowercase text
+# with word boundaries, so "legal" never fires inside "illegally".
+glob CATEGORY_LEXICON: dict = {
+    "food": [
+        ("food", 2.0), ("hungry", 2.0), ("hunger", 2.0), ("starving", 2.5),
+        ("eat", 1.0), ("eaten", 2.0), ("meals?", 1.5), ("grocer(?:y|ies)", 1.5),
+        ("snap", 2.5), ("wic", 2.0), ("food stamps", 2.5), ("pantry", 2.0),
+        ("comida", 2.0), ("comer", 1.5), ("comido", 2.0), ("hambre", 2.5),
+        ("alimentos?", 2.0), ("despensa", 2.0), ("cupones", 1.5),
+        ("cook", 1.5), ("cooking", 1.5), ("cocinar", 1.5)
+    ],
+    "housing": [
+        ("rent", 1.5), ("evict(?:ed|ion|ing)?", 2.5), ("landlord", 1.5),
+        ("homeless", 2.5), ("shelter", 2.0), ("housing", 2.5), ("apartment", 1.0),
+        ("section 8", 2.5), ("mortgage", 1.5), ("foreclos\\w*", 2.0),
+        ("place to (?:stay|live|sleep)", 2.0), ("sleeping in (?:my|our|the) car", 2.5),
+        ("renta", 1.5), ("alquiler", 1.5), ("desalo(?:jo|jar|jan)", 2.5),
+        ("casero", 1.5), ("vivienda", 2.5), ("refugio", 2.0), ("sin hogar", 2.5),
+        ("heating", 2.0), ("electric(?:ity)?", 1.5), ("utilit(?:y|ies)", 2.0),
+        ("power bill", 2.0), ("gas bill", 2.0), ("shut ?off", 1.5),
+        ("calefacci[oó]n", 2.0), ("luz", 1.0)
+    ],
+    "healthcare": [
+        ("doctor", 2.0), ("medicaid", 2.5), ("medicine", 2.0), ("medication", 2.0),
+        ("prescriptions?", 2.0), ("hospital", 2.0), ("clinic", 2.0), ("dental", 2.0),
+        ("dentist", 2.0), ("therapy", 1.5), ("mental health", 2.5), ("sick", 1.5),
+        ("health insurance", 2.5), ("insulin", 2.5), ("depress\\w*", 1.5),
+        ("m[eé]dico", 2.0), ("salud", 2.0), ("medicinas?", 2.0), ("cl[ií]nica", 2.0),
+        ("enferm[oa]", 1.5), ("seguro m[eé]dico", 2.5),
+        ("insurance", 1.0), ("treatment", 1.0), ("alcohol", 2.0), ("drugs?", 1.5),
+        ("addict\\w*", 2.0), ("rehab", 2.0), ("hiv", 2.5), ("aids", 2.0),
+        ("glasses", 2.0), ("eye exam", 2.5), ("vision", 1.5), ("toothache", 2.5),
+        ("drogas", 1.5), ("adicci[oó]n", 2.0), ("lentes", 1.5)
+    ],
+    "legal": [
+        ("lawyer", 2.5), ("attorney", 2.5), ("legal (?:aid|help|advice)", 2.5),
+        ("court", 2.0), ("deport\\w*", 2.5), ("immigration", 2.0), ("asylum", 2.0),
+        ("illegal(?:ly)?", 1.5), ("my rights", 2.0), ("sue", 1.5), ("custody", 2.0),
+        ("protective order", 2.5), ("expunge\\w*", 2.5), ("abogad[oa]", 2.5),
+        ("corte", 2.0), ("tribunal", 2.0), ("deportaci[oó]n", 2.5),
+        ("debt collector", 2.5), ("collectors?", 1.5), ("loan", 1.0), ("scam\\w*", 2.0),
+        ("fraud", 2.0), ("credit report", 2.0), ("cobrador", 2.0), ("estafa", 2.0),
+        ("inmigraci[oó]n", 2.0), ("asilo", 2.0), ("derechos", 1.5)
+    ]
+};
+
+glob FLAG_LEXICON: dict = {
+    "senior": ["senior", "elderly", "retired", "retiree", "social security", "jubilad[oa]", "ancian[oa]", "tercera edad"],
+    "veteran": ["veteran", "army", "navy", "marines?", "air force", "military", "served in", "veteran[oa]"],
+    "disabled": ["disabilit(?:y|ies)", "disabled", "ssi", "ssdi", "wheelchair", "discapacidad", "discapacitad[oa]"],
+    "dv": ["domestic violence", "abus(?:e|ed|ive)", "hits me", "beats me", "hurts me", "safe house", "violencia dom[eé]stica", "maltrato", "me golpea"],
+    "self_harm": ["suicid\\w*", "kill myself", "end my life", "want to die", "self[- ]harm", "hurt myself", "quitarme la vida", "matarme", "no quiero vivir"],
+    "homeless": ["homeless", "on the street", "sleeping in (?:my|our|the) car", "nowhere to (?:go|stay|sleep)", "sin hogar", "en la calle", "sin techo"],
+    "pregnant": ["pregnant", "expecting a baby", "embarazada"],
+    "children": ["kids?", "children", "child", "sons?", "daughters?", "baby", "toddler", "infant", "hij[oa]s?", "ni[nñ][oa]s?", "beb[eé]"],
+    "family": ["my family", "our family", "mi familia", "nuestra familia", "familia"]
+};
+
+glob URGENT_PATTERNS: list = [
+    "tonight", "right now", "today", "emergency", "immediately", "evicted",
+    "eviction notice", "kicked out", "haven'?t eaten", "not eaten", "no food",
+    "starving", "in danger", "no hemos comido", "no he comido", "esta noche",
+    "ahora mismo", "urgente", "emergencia", "hoy"
+];
+glob SOON_PATTERNS: list = [
+    "this week", "few days", "next week", "soon", "court date", "evict",
+    "trying to evict", "behind on rent", "shut ?off", "esta semana", "pronto",
+    "desalojo"
+];
+
+glob NUMBER_WORDS: dict = {
+    "a": 1, "an": 1, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+    "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+    "un": 1, "uno": 1, "una": 1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5,
+    "seis": 6, "siete": 7, "ocho": 8, "nueve": 9, "diez": 10
+};
+
+glob STATES: dict = {
+    "alabama": "AL", "alaska": "AK", "arizona": "AZ", "arkansas": "AR",
+    "california": "CA", "colorado": "CO", "connecticut": "CT", "delaware": "DE",
+    "florida": "FL", "georgia": "GA", "hawaii": "HI", "idaho": "ID",
+    "illinois": "IL", "indiana": "IN", "iowa": "IA", "kansas": "KS",
+    "kentucky": "KY", "louisiana": "LA", "maine": "ME", "maryland": "MD",
+    "massachusetts": "MA", "michigan": "MI", "minnesota": "MN",
+    "mississippi": "MS", "missouri": "MO", "montana": "MT", "nebraska": "NE",
+    "nevada": "NV", "new hampshire": "NH", "new jersey": "NJ",
+    "new mexico": "NM", "new york": "NY", "nueva york": "NY",
+    "north carolina": "NC", "north dakota": "ND", "ohio": "OH",
+    "oklahoma": "OK", "oregon": "OR", "pennsylvania": "PA",
+    "rhode island": "RI", "south carolina": "SC", "south dakota": "SD",
+    "tennessee": "TN", "texas": "TX", "utah": "UT", "vermont": "VT",
+    "virginia": "VA", "washington": "WA", "west virginia": "WV",
+    "wisconsin": "WI", "wyoming": "WY", "puerto rico": "PR"
+};
+
+glob CITIES: dict = {
+    "houston": "TX", "dallas": "TX", "austin": "TX", "san antonio": "TX",
+    "el paso": "TX", "los angeles": "CA", "san francisco": "CA",
+    "san diego": "CA", "san jose": "CA", "oakland": "CA", "fresno": "CA",
+    "nyc": "NY", "brooklyn": "NY", "bronx": "NY", "queens": "NY",
+    "chicago": "IL", "miami": "FL", "orlando": "FL", "tampa": "FL",
+    "phoenix": "AZ", "tucson": "AZ", "atlanta": "GA", "seattle": "WA",
+    "boston": "MA", "philadelphia": "PA", "pittsburgh": "PA",
+    "detroit": "MI", "denver": "CO", "las vegas": "NV", "portland": "OR",
+    "minneapolis": "MN", "nashville": "TN", "memphis": "TN",
+    "baltimore": "MD", "charlotte": "NC", "new orleans": "LA",
+    "cleveland": "OH", "columbus": "OH", "albuquerque": "NM"
+};
+
+glob EN_MARKERS: list = [
+    "i", "i'm", "im", "my", "me", "the", "and", "is", "are", "have", "need",
+    "help", "to", "for", "with", "we", "our", "you", "am", "was", "can",
+    "what", "how", "where", "who", "don't", "haven't", "trying"
+];
+glob ES_MARKERS: list = [
+    "y", "de", "la", "el", "en", "no", "mi", "yo", "para", "con", "que",
+    "los", "las", "una", "un", "estoy", "estamos", "tengo", "tenemos",
+    "necesito", "necesitamos", "ayuda", "hemos", "por", "del", "soy", "somos",
+    "hijos", "familia", "días", "dias", "casa", "trabajo"
+];
+
+glob INCOME_CUES: str = "(?:earn|earning|make|making|income|salary|paid|wage|wages|pension|social security|ssi|ssdi|disability|benefits?|gano|ganamos|ingresos?|sueldo|salario|pensi[oó]n|seguro social)";
+glob EXPENSE_CUES: str = "(?:rent|owe|owed|debt|bill|bills|cost|costs|fee|fine|deposit|renta|alquiler|debo|deuda|factura)";
+glob MONEY_RE: str = "\\$\\s?(\\d[\\d,]*(?:\\.\\d+)?)\\s*(k)?|(\\d[\\d,]*(?:\\.\\d+)?)\\s*(k)?\\s*(?:dollars|d[oó]lares|usd|bucks)";
+glob PERIOD_RE: str = "^\\s*(?:/|a|an|per|every|each|al|por|cada|a la|al a[nñ]o)?\\s*(month|mo|monthly|year|yr|yearly|annually|annual|week|wk|weekly|hour|hr|hourly|mes|mensual(?:es)?|a[nñ]o|anual(?:es)?|semana|semanal(?:es)?|hora)\\b";
+
+# ---------- helpers ----------
+
+"""Append one evidence record for a matched span."""
+def _ev(evidence: list, field: str, value: any, start: int, end: int, text: str) -> None {
+    evidence.append({"field": field, "value": value, "start": start, "end": end, "text": text[start:end]});
+}
+
+"""Resolve a digit string or number word ("two", "dos") to an int, 0 if unknown."""
+def _num(tok: str) -> int {
+    t = tok.strip().lower();
+    if t.isdigit() {
+        return int(t);
+    }
+    return int(NUMBER_WORDS.get(t, 0));
+}
+
+"""Detect the message language from marker-word hits and script.
+
+Returns (code, confidence). "" means neither English nor Spanish — the
+LLM call handles those.
+"""
+def detect_language(text: str) -> tuple {
+    low = text.lower();
+    words = re.findall(r"[a-záéíóúñü']+", low);
+    if not words {
+        return ("", 0.0);
+    }
+    en = 0;
+    es = 0;
+    for w in words {
+        if w in EN_MARKERS { en += 1; }
+        if w in ES_MARKERS { es += 1; }
+    }
+    if re.search(r"[ñ¿¡áéíóú]", low) { es += 2; }
+    non_ascii = len([c for c in text if ord(c) > 127 and c not in "ñ¿¡áéíóúüÑÁÉÍÓÚ$€—–’‘“”"]);
+    if non_ascii > len(text) * 0.2 {
+        return ("", 0.0);
+    }
+    total = en + es;
+    if total == 0 {
+        return ("", 0.0);
+    }
+    if en >= es {
+        return ("en", round(min(1.0, 0.5 + (en - es) / (2.0 * total) + min(en, 4) * 0.1), 2));
+    }
+    return ("es", round(min(1.0, 0.5 + (es - en) / (2.0 * total) + min(es, 4) * 0.1), 2));
+}
+
+"""Score each need category from weighted keyword evidence."""
+def score_categories(low: str, evidence: list, text: str) -> dict {
+    scores: dict = {"food": 0.0, "housing": 0.0, "healthcare": 0.0, "legal": 0.0};
+    for (cat, lex) in CATEGORY_LEXICON.items() {
+        for (pat, w) in lex {
+            for m in re.finditer("\\b" + pat + "\\b", low) {
+                scores[cat] = scores[cat] + w;
+                _ev(evidence, "category", cat, m.start(), m.end(), text);
+            }
+        }
+    }
+    # An *unlawful* eviction is a tenant-rights (legal) problem first; the
+    # housing programs still come along as the secondary category.
+    if re.search(r"\billegal(?:ly)?\b|\bwithout (?:a )?notice\b|\bmy rights\b", low) and scores["housing"] > 0 {
+        scores["legal"] = scores["legal"] + 3.0;
+    }
+    return scores;
+}
+
+"""Extract annual income in USD. Returns (income_annual, evidence_or_None).
+
+Amounts in an expense context ("rent is $900") are ignored; a bare amount
+without a period is read as monthly below $5k and annual above.
+"""
+def parse_income(low: str) -> tuple {
+    if re.search(r"\b(?:no income|zero income|unemployed|lost (?:my|our) jobs?|no job|out of work|sin trabajo|sin empleo|no tengo (?:ingresos|trabajo)|desempleado|desempleada)\b", low) {
+        m0 = re.search(r"\b(?:no income|zero income|unemployed|lost (?:my|our) jobs?|no job|out of work|sin trabajo|sin empleo|no tengo (?:ingresos|trabajo)|desempleado|desempleada)\b", low);
+        return (0, m0);
+    }
+    best: any = None;
+    best_score = -99.0;
+    best_annual = -1;
+    for m in re.finditer(MONEY_RE, low) {
+        raw = m.group(1) or m.group(3);
+        kflag = m.group(2) or m.group(4);
+        try {
+            amount = float(raw.replace(",", ""));
+        } except Exception as _ex {
+            continue;
+        }
+        if kflag { amount = amount * 1000.0; }
+        tail = low[m.end():m.end() + 24];
+        head = low[max(0, m.start() - 40):m.start()];
+        pm = re.match(PERIOD_RE, tail);
+        period = pm.group(1) if pm else "";
+        cue = 0.0;
+        if re.search(INCOME_CUES, head) or re.search(INCOME_CUES, tail) { cue += 2.0; }
+        # Expense words only disqualify an amount inside the same clause
+        # ("rent is $900"), not across a comma ("rent, family of 3, $25k a year").
+        clause = re.split(r"[,.;!?]", head)[-1];
+        if re.search(EXPENSE_CUES, clause) { cue -= 3.0; }
+        if period { cue += 1.0; }
+        if cue < 0 { continue; }
+        annual = amount;
+        if period.startswith("h") or period == "hora" {
+            annual = amount * 2080.0;
+        } elif period.startswith("w") or period.startswith("seman") {
+            annual = amount * 52.0;
+        } elif period.startswith("mo") or period.startswith("mes") or period.startswith("mensual") {
+            annual = amount * 12.0;
+        } elif period == "" and amount < 5000.0 {
+            annual = amount * 12.0;
+        }
+        if cue > best_score {
+            best_score = cue;
+            best = m;
+            best_annual = int(round(annual));
+        }
+    }
+    return (best_annual, best);
+}
+
+"""Household size from explicit counts, children counts and partner mentions."""
+def parse_household(low: str, evidence: list, text: str) -> int {
+    m = re.search(r"\b(?:family|household) of (\d+|\w+)\b|\bfamilia de (\d+|\w+)\b|\bsomos (\d+|\w+)\b|\bwe are (\d+|\w+) (?:people|of us)\b", low);
+    if m {
+        tok = m.group(1) or m.group(2) or m.group(3) or m.group(4);
+        n = _num(tok);
+        if n > 0 and n < 20 {
+            _ev(evidence, "household_size", n, m.start(), m.end(), text);
+            return n;
+        }
+    }
+    kids = 0;
+    km = re.search(r"\b(\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten|un|uno|una|dos|tres|cuatro|cinco|seis)\s+(?:little\s+|young\s+|small\s+)?(?:kids?|children|child|sons?|daughters?|babies|baby|dependents|grandchildren|grandkids|hij[oa]s|ni[nñ][oa]s|niet[oa]s|beb[eé]s?)\b", low);
+    if km {
+        kids = _num(km.group(1));
+        if kids > 0 and kids < 15 {
+            _ev(evidence, "household_size", kids, km.start(), km.end(), text);
+        } else {
+            kids = 0;
+        }
+    }
+    partner = 1 if re.search(r"\b(?:my|our) (?:husband|wife|partner|spouse|boyfriend|girlfriend)\b|\bmi (?:esposo|esposa|pareja|marido|mujer)\b|\bmarried\b|\bcasad[oa]\b", low) else 0;
+    # Someone fleeing an abusive partner is not in that partner's household.
+    if partner and re.search(r"\b(?:hits|beats|hurts|abus\w*|threaten\w*)\b|\bme golpea\b|\bmaltrat\w*", low) {
+        partner = 0;
+    }
+    if kids > 0 {
+        return 1 + kids + partner;
+    }
+    if re.search(r"\b(?:i live alone|live by myself|just me|only me|vivo sol[oa])\b", low) {
+        ma = re.search(r"\b(?:i live alone|live by myself|just me|only me|vivo sol[oa])\b", low);
+        _ev(evidence, "household_size", 1, ma.start(), ma.end(), text);
+        return 1;
+    }
+    if partner {
+        return 2;
+    }
+    return 0;
+}
+
+"""Age from "I'm 72", "72 years old", "tengo 72 años"."""
+def parse_age(low: str, evidence: list, text: str) -> int {
+    for pat in [
+        r"\b(?:i'?m|i am|aged?|age of)\s+(\d{2,3})\b(?!\s*(?:min|minutes|hours|days|months|weeks|dollars|%|k\b))",
+        r"\b(\d{2,3})\s*(?:years? old|yrs? old|y/?o\b|year-old)",
+        r"\btengo\s+(\d{2,3})\s+a[nñ]os\b",
+        r"\b(\d{2,3})\s+a[nñ]os de edad\b"
+    ] {
+        m = re.search(pat, low);
+        if m {
+            a = int(m.group(1));
+            if a >= 14 and a <= 110 {
+                _ev(evidence, "age", a, m.start(), m.end(), text);
+                return a;
+            }
+        }
+    }
+    return 0;
+}
+
+"""State / city / zip. City implies state."""
+def parse_location(text: str, low: str, evidence: list) -> dict {
+    out: dict = {"state": "", "city": "", "zip": ""};
+    for (city, st) in CITIES.items() {
+        m = re.search("\\b" + city + "\\b", low);
+        if m {
+            out["city"] = city.title();
+            out["state"] = st;
+            _ev(evidence, "location", city.title() + ", " + st, m.start(), m.end(), text);
+            break;
+        }
+    }
+    if not out["state"] {
+        for (name, st) in STATES.items() {
+            m = re.search("\\b" + name + "\\b", low);
+            if m {
+                out["state"] = st;
+                _ev(evidence, "location", st, m.start(), m.end(), text);
+                break;
+            }
+        }
+    }
+    if not out["state"] {
+        # Two-letter codes only in their capitalised form after "in" or a
+        # comma, so "in" / "or" / "me" as words never match.
+        m = re.search(r"(?:\bin |, )([A-Z]{2})\b", text);
+        if m and m.group(1) in STATES.values() {
+            out["state"] = m.group(1);
+            _ev(evidence, "location", m.group(1), m.start(1), m.end(1), text);
+        }
+    }
+    z = re.search(r"(?<![\$\d,.])\b(\d{5})\b(?![\d,.]|\s*(?:dollars|a (?:year|month)|/))", text);
+    if z {
+        out["zip"] = z.group(1);
+        _ev(evidence, "location", z.group(1), z.start(1), z.end(1), text);
+    }
+    return out;
+}
+
+"""Citizenship / immigration status hints."""
+def parse_citizenship(low: str, evidence: list, text: str) -> str {
+    rules: list = [
+        (r"\b(?:undocumented|no papers|without papers|no documents|illegal immigrant|not a (?:us )?citizen|out of status|indocumentad[oa]s?|sin papeles|sin documentos)\b", "non_citizen"),
+        (r"\b(?:seeking asylum|asylum seeker|solicitando asilo|pidiendo asilo)\b", "non_citizen"),
+        (r"\b(?:green card|permanent resident|lpr|refugee|asylee|granted asylum|residente permanente|tarjeta verde|refugiad[oa])\b", "eligible_immigrant"),
+        (r"\b(?:daca|dreamer|visa holder|on a visa|work visa|tps)\b", "non_citizen"),
+        (r"\b(?:us citizen|u\.s\. citizen|american citizen|citizen|born here|ciudadan[oa])\b", "citizen")
+    ];
+    for (pat, status) in rules {
+        m = re.search(pat, low);
+        if m {
+            _ev(evidence, "citizenship", status, m.start(), m.end(), text);
+            return status;
+        }
+    }
+    return "";
+}
+
+# ---------- entry point ----------
+
+"""Parse one user message into a structured, evidence-backed profile."""
+def parse_intake(text: str) -> dict {
+    raw = str(text or "");
+    low = raw.lower();
+    evidence: list = [];
+
+    (lang, lang_conf) = detect_language(raw);
+
+    scores = score_categories(low, evidence, raw);
+    ranked = sorted(scores.items(), key=lambda kv: tuple : -kv[1]);
+    top_cat = ranked[0][0] if ranked[0][1] > 0 else "";
+    top_score = float(ranked[0][1]);
+    second_score = float(ranked[1][1]);
+    secondary: list = [c for (c, s) in ranked[1:] if s >= 1.5 and s >= top_score * 0.4];
+    # Confidence: absolute evidence mass, penalised when two categories tie.
+    cat_conf = 0.0;
+    if top_score > 0 {
+        margin = (top_score - second_score) / top_score;
+        cat_conf = round(min(1.0, (top_score / 4.0)) * (0.55 + 0.45 * margin), 2);
+    }
+
+    flags: list = [];
+    for (flag, pats) in FLAG_LEXICON.items() {
+        for pat in pats {
+            m = re.search("\\b" + pat + "\\b", low);
+            if m {
+                flags.append(flag);
+                _ev(evidence, "flag", flag, m.start(), m.end(), raw);
+                break;
+            }
+        }
+    }
+    # Crisis flags override the category router: they always need a human line.
+    if "self_harm" in flags and not top_cat {
+        top_cat = "healthcare";
+        cat_conf = 0.9;
+    }
+    if "dv" in flags and not top_cat {
+        top_cat = "housing";
+        cat_conf = 0.8;
+    }
+
+    urgency = "within_weeks";
+    for pat in URGENT_PATTERNS {
+        m = re.search("\\b" + pat + "\\b", low);
+        if m {
+            urgency = "immediate";
+            _ev(evidence, "urgency", "immediate", m.start(), m.end(), raw);
+            break;
+        }
+    }
+    if urgency != "immediate" {
+        for pat in SOON_PATTERNS {
+            m = re.search("\\b" + pat, low);
+            if m {
+                urgency = "within_days";
+                _ev(evidence, "urgency", "within_days", m.start(), m.end(), raw);
+                break;
+            }
+        }
+    }
+    if "self_harm" in flags or "dv" in flags or "homeless" in flags {
+        urgency = "immediate";
+    }
+    # "haven't eaten in 2 days" / "no hemos comido en 2 días"
+    if re.search(r"\b(?:haven'?t|have not|not) eaten\b|\bno (?:hemos|he) comido\b", low) {
+        urgency = "immediate";
+    }
+
+    (income_annual, im) = parse_income(low);
+    if im {
+        _ev(evidence, "income", income_annual, im.start(), im.end(), raw);
+    }
+    household = parse_household(low, evidence, raw);
+    if household > 1 and "children" not in flags and re.search(r"\b(?:kids?|children|hij[oa]s|ni[nñ][oa]s)\b", low) {
+        flags.append("children");
+    }
+    age = parse_age(low, evidence, raw);
+    if age >= 60 and "senior" not in flags {
+        flags.append("senior");
+    }
+    loc = parse_location(raw, low, evidence);
+    citizenship = parse_citizenship(low, evidence, raw);
+
+    known = 0;
+    if income_annual >= 0 { known += 1; }
+    if household > 0 { known += 1; }
+    if age > 0 { known += 1; }
+    if loc["state"] or loc["zip"] { known += 1; }
+    if citizenship { known += 1; }
+
+    needs_llm = False;
+    llm_reason = "";
+    if not top_cat {
+        needs_llm = True;
+        llm_reason = "no category evidence";
+    } elif cat_conf < 0.35 {
+        needs_llm = True;
+        llm_reason = "ambiguous category";
+    } elif not lang {
+        needs_llm = True;
+        llm_reason = "language outside EN/ES";
+    }
+
+    return {
+        "language": lang if lang else "",
+        "language_conf": lang_conf,
+        "category": top_cat,
+        "secondary": secondary,
+        "category_scores": scores,
+        "category_conf": cat_conf,
+        "urgency": urgency,
+        "income_annual": income_annual,
+        "household_size": household,
+        "age": age,
+        "state": loc["state"],
+        "city": loc["city"],
+        "zip": loc["zip"],
+        "citizenship": citizenship,
+        "flags": flags,
+        "evidence": evidence,
+        "completeness": round(known / 5.0, 2),
+        "needs_llm": needs_llm,
+        "llm_reason": llm_reason
+    };
+}

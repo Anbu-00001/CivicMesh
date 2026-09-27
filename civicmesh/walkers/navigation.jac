@@ -1,198 +1,50 @@
-"""NavigationWalker — builds the user-facing ActionPlan.
+"""NavigationWalker — turns ranked matches into an ordered, persisted plan.
 
-Spawned by EligibilityWalker from the PersonNode. For each eligible
-ResourceNode it walks the requires_form edge through the EligibilityRuleNode
-to gather document and deadline info. Then it calls generate_action_plan() to
-sequence those into an ordered plan, and persists one ApplicationNode per
-step via the applied_to edge so returning users see their state.
+Spawned on the PersonNode. engine/plan.jac orders steps with Smith's
+weighted-shortest-processing-time rule (value ÷ effort, crisis lines pinned
+first) and consolidates documents shared across steps. The plan is persisted
+as one ApplicationNode per step on `applied_to`; untouched "pending" steps
+from earlier turns are archived so the Action Plan tab shows the current case
+rather than every past message. No LLM.
 """
 
 import datetime;
-import os;
-import from graph.nodes { PersonNode, ResourceNode, EligibilityRuleNode, FormNode, ApplicationNode }
-import from graph.edges { governed_by, requires_form, applied_to }
-import from llm.stubs {
-    NeedProfile,
-    ActionPlan,
-    ActionStep,
-    generate_action_plan
-}
+import from graph.nodes { PersonNode, ApplicationNode }
+import from graph.edges { applied_to }
+import from engine.plan { build_plan }
+import from engine.compose { span_begin, span_end }
 
 walker NavigationWalker {
-    has eligible_results: list;
-    has possible_results: list;
-    has profile: NeedProfile;
-    has person_node: PersonNode;
-    # Reports emitted via `report` flow upward into the spawning walker's
-    # report stream — child walkers see their own `.reports` as empty. We
-    # mirror the final payload here so callers can read it after spawn.
+    has ranked: list = [];
+    has urgency: str = "within_weeks";
+    has language: str = "en";
+    has trace: dict = {};
+    has parent_span: str = "";
     has summary: dict = {};
 
     can plan with PersonNode entry {
+        sp = span_begin(self.trace, "NavigationWalker plan", "INTERNAL", self.parent_span, {"gen_ai.agent.name": "NavigationWalker"});
         ts = datetime.datetime.utcnow().isoformat();
+        plan = build_plan(list(self.ranked), self.urgency, self.language);
 
-        # Step 1: idiomatic Jac walk. Each eligible result triggers a single
-        # edge-filter expression that fetches the ResourceNode by agency
-        # name, then a second chained-traversal expression that walks
-        # governed_by → EligibilityRuleNode → requires_form → FormNode in
-        # one shot. No nested for-loops, no break flags — the graph is the
-        # control flow.
-        resource_form_data: list = [];
-        eligible_names: list = [];
-
-        # Combine eligible + possible into one ranked pool. The previous
-        # code only iterated eligible_results; when EligibilityWalker's
-        # rescue tier promoted everything into `possible` we'd silently
-        # produce an empty action plan. Both tiers carry the same shape
-        # so a single loop handles them.
-        combined_results: list = list(self.eligible_results) + list(self.possible_results);
-
-        for result in combined_results {
-            name = str(result["resource_name"]);
-            eligible_names.append(name);
-            resource_matches = [root --> [?:ResourceNode, agency_name == name]];
-            if not resource_matches {
-                continue;
-            }
-            resource: ResourceNode = resource_matches[0];
-            # Two-hop traversal expressed as a single Jac edge-walk: from
-            # the ResourceNode, traverse governed_by edges to any
-            # EligibilityRuleNode, then from each of those traverse
-            # requires_form edges to any FormNode. Returns a flat list of
-            # FormNode references — no intermediate variables, no nested
-            # loops. This is the OSP pattern judges look for.
-            rule_matches = [resource ->:governed_by:-> [?:EligibilityRuleNode]];
-            if not rule_matches {
-                continue;
-            }
-            rule: EligibilityRuleNode = rule_matches[0];
-            form_nodes = [rule ->:requires_form:-> [?:FormNode]];
-            if not form_nodes {
-                continue;
-            }
-            form: FormNode = form_nodes[0];
-            resource_form_data.append({
-                "agency_name": name,
-                "match_score": int(result["match_score"]),
-                "required_documents": list(form.required_documents),
-                "deadline_type": str(form.deadline_type),
-                "submission_method": str(form.submission_method),
-                "estimated_minutes": int(form.estimated_minutes),
-                "form_url": str(form.url),
-                "contact_phone": str(result["contact_phone"]),
-                "address": str(result["address"]),
-                "online_url": str(result["online_url"])
-            });
+        archived = 0;
+        for app in [here ->:applied_to:-> [?:ApplicationNode, status == "pending"]] {
+            setattr(app, "status", "archived");
+            setattr(app, "updated_at", ts);
+            archived += 1;
         }
-
-        # Step 2: ask the LLM to sequence the eligible resources into a plan.
-        # DEMO_MODE or LLM failure → synthesize a deterministic plan from
-        # resource_form_data. This means NavigationWalker always produces
-        # a usable plan even when NVIDIA NIM is unreachable.
-        demo_mode = False;
-        try {
-            demo_mode = (str(os.environ.get("CIVICMESH_DEMO_MODE", "0")) == "1");
-        } except Exception as _ex {}
-
-        action_plan: ActionPlan;
-        if demo_mode {
-            synth_steps: list = [];
-            i = 0;
-            for rfd in resource_form_data {
-                i = i + 1;
-                synth_steps.append(ActionStep(
-                    step_number=i,
-                    agency_name=str(rfd["agency_name"]),
-                    action_description="Contact " + str(rfd["agency_name"]) + " to apply.",
-                    documents_needed=list(rfd["required_documents"]),
-                    deadline_label=str(rfd["deadline_type"]),
-                    contact_info=str(rfd["contact_phone"]),
-                    estimated_minutes=int(rfd["estimated_minutes"]),
-                    online_url=str(rfd["online_url"])
-                ));
-            }
-            action_plan = ActionPlan(
-                steps=synth_steps,
-                summary="Here are the programs you likely qualify for. Call each one to confirm eligibility and start an application."
-            );
-        } else {
-            try {
-                action_plan = generate_action_plan(
-                    eligible_resources=eligible_names,
-                    profile=self.profile
-                );
-            } except Exception as _ex {
-                # LLM hung or errored. Synthesize the plan from the form
-                # metadata we already gathered — every field is real.
-                synth_steps: list = [];
-                i = 0;
-                for rfd in resource_form_data {
-                    i = i + 1;
-                    synth_steps.append(ActionStep(
-                        step_number=i,
-                        agency_name=str(rfd["agency_name"]),
-                        action_description="Contact " + str(rfd["agency_name"]) + " to apply.",
-                        documents_needed=list(rfd["required_documents"]),
-                        deadline_label=str(rfd["deadline_type"]),
-                        contact_info=str(rfd["contact_phone"]),
-                        estimated_minutes=int(rfd["estimated_minutes"]),
-                        online_url=str(rfd["online_url"])
-                    ));
-                }
-                action_plan = ActionPlan(
-                    steps=synth_steps,
-                    summary="Here are the programs that match your situation. Call each one to confirm eligibility and start an application."
-                );
-            }
-        }
-
-        # Step 3: persist one ApplicationNode per planned step via applied_to.
-        for step in action_plan.steps {
-            agency = str(step.agency_name);
+        for step in plan["steps"] {
+            agency = str(step["agency_name"]);
             here +>: applied_to() :+> ApplicationNode(
                 application_id=agency + "::" + ts,
                 status="pending",
                 resource_name=agency,
-                applied_at="",
-                updated_at=ts,
-                denial_reason="",
-                next_step_hint="",
-                notes=""
+                updated_at=ts
             );
         }
-
-        # Step 4: shape the response. We pull each ActionStep back into a dict
-        # so downstream JSON serialization works the same as the LLM payload.
-        step_dicts: list = [];
-        for s in action_plan.steps {
-            step_dicts.append({
-                "step_number": int(s.step_number),
-                "agency_name": str(s.agency_name),
-                "action_description": str(s.action_description),
-                "documents_needed": list(s.documents_needed),
-                "deadline_label": str(s.deadline_label),
-                "contact_info": str(s.contact_info),
-                "estimated_minutes": int(s.estimated_minutes),
-                "online_url": str(s.online_url)
-            });
-        }
-
-        payload = {
-            "action_plan": {
-                "summary": str(action_plan.summary),
-                "steps": step_dicts
-            },
-            "resource_form_data": resource_form_data,
-            "application_nodes_created": len(action_plan.steps)
-        };
-        self.summary = payload;
-        report payload;
+        span_end(self.trace, sp, {"civicmesh.steps": len(plan["steps"]), "civicmesh.archived": archived});
+        self.summary = plan;
     }
 }
 
-sem NavigationWalker is "Builds the user-facing ActionPlan. For every eligible ResourceNode it walks Resource -> EligibilityRuleNode -> FormNode to gather form metadata, calls generate_action_plan() to sequence steps, and persists one ApplicationNode per step.";
-sem NavigationWalker.eligible_results is "List of EligibilityResult dicts that passed the >= 40 match-score threshold. Source of the eligible_names fed into generate_action_plan().";
-sem NavigationWalker.possible_results is "List of EligibilityResult dicts in the 20-40 borderline tier. Surfaced to the user as fallback options but not yet planned for application.";
-sem NavigationWalker.profile is "The user's NeedProfile. Drives ActionStep ordering by urgency and shapes language / contact preferences.";
-sem NavigationWalker.person_node is "Root PersonNode of the session. The applied_to edges land on this node so returning users see their history.";
-sem NavigationWalker.summary is "Mirror of the walker's final report payload so the spawning EligibilityWalker can read the plan back without going through .reports.";
+sem NavigationWalker is "Orders ranked matches into an action plan (Smith's rule), consolidates shared documents, and persists ApplicationNodes on applied_to edges.";

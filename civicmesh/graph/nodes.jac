@@ -77,7 +77,8 @@ node EligibilityRuleNode {
         # from real outcomes.
         prior_success_rate: float = 0.5,
         prior_attempts: int = 0,
-        prior_approvals: int = 0;
+        prior_approvals: int = 0,
+        targets: list[str] = [];
 }
 
 sem EligibilityRuleNode is "The structured eligibility criteria for a ResourceNode. Read by check_eligibility() to score how well a PersonNode's profile matches.";
@@ -165,3 +166,5 @@ sem ApplicationNode.updated_at is "ISO 8601 timestamp of the most recent status 
 sem ApplicationNode.denial_reason is "Free-form reason text populated only when status='denied'. Read by generate_denial_next_step() to produce an empathetic, actionable response.";
 sem ApplicationNode.next_step_hint is "LLM-generated guidance describing what the user should do next given the current status. Refreshed each time the status updates.";
 sem ApplicationNode.notes is "Free-form notes the user or caseworker has attached to this application. Preserved verbatim; the LLM may reference it but never overwrites it.";
+
+sem EligibilityRuleNode.targets is "Curated situation tags this program is built for (homeless, veteran, dv, young_child, ...). The eligibility engine requires evidence of every tag in the user's words before calling a targeted program a fit.";

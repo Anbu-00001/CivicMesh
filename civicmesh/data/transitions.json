@@ -1,0 +1,186 @@
+{
+ "transitions": [
+  {
+   "from": "Emergency Solutions Grant Shelter Network",
+   "to": "Rapid Re-Housing Program",
+   "reason": "Emergency shelter intake auto-files a Continuum-of-Care referral; expect rapid re-housing placement within 30 days.",
+   "days": 30,
+   "difficulty": "easy"
+  },
+  {
+   "from": "Rapid Re-Housing Program",
+   "to": "Section 8 Housing Choice Voucher Program",
+   "reason": "Verified rapid re-housing tenancy moves you up the local Section 8 priority list as a stabilized low-income tenant.",
+   "days": 120,
+   "difficulty": "moderate"
+  },
+  {
+   "from": "Emergency Solutions Grant Shelter Network",
+   "to": "Continuum of Care Permanent Supportive Housing",
+   "reason": "Shelter-based intake counts as the CoC entry point; long-term supportive housing typically opens within 90 days for verified high-need cases.",
+   "days": 90,
+   "difficulty": "moderate"
+  },
+  {
+   "from": "National Domestic Violence Hotline Shelter Referral",
+   "to": "Emergency Solutions Grant Shelter Network",
+   "reason": "DV hotline can arrange same-day shelter placement for survivors and their dependents through coordinated entry.",
+   "days": 1,
+   "difficulty": "easy"
+  },
+  {
+   "from": "Salvation Army Transitional Housing",
+   "to": "Section 8 Housing Choice Voucher Program",
+   "reason": "Twelve-month transitional residency at Salvation Army produces the documented tenancy history Section 8 priority lists weight heavily.",
+   "days": 365,
+   "difficulty": "moderate"
+  },
+  {
+   "from": "Catholic Charities Emergency Rental Assistance",
+   "to": "Section 8 Housing Choice Voucher Program",
+   "reason": "Catholic Charities case managers routinely escalate ERA recipients into the Section 8 application pipeline.",
+   "days": 60,
+   "difficulty": "easy"
+  },
+  {
+   "from": "HUD-VASH (Veterans Affairs Supportive Housing)",
+   "to": "Section 8 Housing Choice Voucher Program",
+   "reason": "VASH vouchers are HUD-managed Section 8 with VA case management — converting between them is administrative.",
+   "days": 45,
+   "difficulty": "easy"
+  },
+  {
+   "from": "Feeding America Food Bank Network",
+   "to": "SNAP (Supplemental Nutrition Assistance Program)",
+   "reason": "Member food banks routinely capture SNAP eligibility data at intake; staff can submit on your behalf with consent.",
+   "days": 14,
+   "difficulty": "easy"
+  },
+  {
+   "from": "SNAP (Supplemental Nutrition Assistance Program)",
+   "to": "WIC (Women, Infants and Children)",
+   "reason": "Most SNAP-approved households with children under 5 or pregnant members also qualify for WIC; cross-enrollment is automatic in most states.",
+   "days": 14,
+   "difficulty": "easy"
+  },
+  {
+   "from": "Meals on Wheels America",
+   "to": "SNAP (Supplemental Nutrition Assistance Program)",
+   "reason": "Home-delivered-meal recipients are pre-qualified for expedited SNAP review under elderly/disabled provisions.",
+   "days": 21,
+   "difficulty": "easy"
+  },
+  {
+   "from": "TEFAP (The Emergency Food Assistance Program)",
+   "to": "SNAP (Supplemental Nutrition Assistance Program)",
+   "reason": "TEFAP distribution sites are SNAP outreach points; staff can complete and submit your application same-day.",
+   "days": 14,
+   "difficulty": "easy"
+  },
+  {
+   "from": "Community Fridge Network",
+   "to": "Feeding America Food Bank Network",
+   "reason": "Community fridge volunteers maintain warm hand-offs to nearest food bank when sustained food access is needed.",
+   "days": 1,
+   "difficulty": "easy"
+  },
+  {
+   "from": "Federally Qualified Health Center Sliding-Scale Care",
+   "to": "Medicaid",
+   "reason": "FQHC patient navigators submit Medicaid applications and track them through approval at zero cost.",
+   "days": 45,
+   "difficulty": "moderate"
+  },
+  {
+   "from": "Medicaid",
+   "to": "Federally Qualified Health Center Sliding-Scale Care",
+   "reason": "Medicaid coverage unlocks the full FQHC sliding-scale clinic network for ongoing primary and specialty care.",
+   "days": 7,
+   "difficulty": "easy"
+  },
+  {
+   "from": "988 Suicide and Crisis Lifeline",
+   "to": "Community Mental Health Center Sliding-Scale Therapy",
+   "reason": "988 counselors warm-transfer callers to community mental health centers for ongoing care.",
+   "days": 3,
+   "difficulty": "easy"
+  },
+  {
+   "from": "NeedyMeds Prescription Assistance",
+   "to": "Federally Qualified Health Center Sliding-Scale Care",
+   "reason": "NeedyMeds maintains a national directory of FQHC clinics for users without primary care.",
+   "days": 7,
+   "difficulty": "easy"
+  },
+  {
+   "from": "CHIP (Children's Health Insurance Program)",
+   "to": "Medicaid",
+   "reason": "CHIP and Medicaid share a single application portal; ineligibility for one auto-routes the other.",
+   "days": 14,
+   "difficulty": "easy"
+  },
+  {
+   "from": "Legal Services Corporation Civil Legal Aid",
+   "to": "Tenant Rights Hotline (National Housing Law Project)",
+   "reason": "When LSC programs can't take a tenant case directly, they refer to NHLP-affiliated tenant defender coalitions.",
+   "days": 7,
+   "difficulty": "moderate"
+  },
+  {
+   "from": "ABA Free Legal Answers",
+   "to": "Legal Services Corporation Civil Legal Aid",
+   "reason": "ABA Free Legal Answers triages cases and refers complex matters to LSC-funded local providers.",
+   "days": 7,
+   "difficulty": "easy"
+  },
+  {
+   "from": "National Domestic Violence Legal Advocacy",
+   "to": "Legal Services Corporation Civil Legal Aid",
+   "reason": "DV legal advocates connect survivors to LSC for protective orders and custody filings the same week.",
+   "days": 3,
+   "difficulty": "easy"
+  },
+  {
+   "from": "Disability Rights Network Protection and Advocacy",
+   "to": "Legal Services Corporation Civil Legal Aid",
+   "reason": "Disability rights P&A networks refer non-disability-specific cases to general LSC providers.",
+   "days": 14,
+   "difficulty": "easy"
+  },
+  {
+   "from": "Feeding America Food Bank Network",
+   "to": "Section 8 Housing Choice Voucher Program",
+   "reason": "Food bank intake captures housing instability data; case managers refer high-risk families to Section 8 priority lists.",
+   "days": 45,
+   "difficulty": "moderate"
+  },
+  {
+   "from": "National Domestic Violence Hotline Shelter Referral",
+   "to": "National Domestic Violence Legal Advocacy",
+   "reason": "Same-organization warm-handoff: hotline counselor schedules the legal advocate visit while you're still on the call.",
+   "days": 1,
+   "difficulty": "easy"
+  },
+  {
+   "from": "Federally Qualified Health Center Sliding-Scale Care",
+   "to": "SNAP (Supplemental Nutrition Assistance Program)",
+   "reason": "FQHC social workers screen every patient for food insecurity and submit SNAP applications on their behalf.",
+   "days": 14,
+   "difficulty": "easy"
+  },
+  {
+   "from": "988 Suicide and Crisis Lifeline",
+   "to": "Emergency Solutions Grant Shelter Network",
+   "reason": "988 counselors maintain shelter-availability tables; can arrange same-night placement for housing-insecure callers.",
+   "days": 1,
+   "difficulty": "easy"
+  },
+  {
+   "from": "Tenant Rights Hotline (National Housing Law Project)",
+   "to": "Catholic Charities Emergency Rental Assistance",
+   "reason": "Tenant rights advocates refer eviction-defense clients to ERA programs to pay back rent and stop the case.",
+   "days": 7,
+   "difficulty": "easy"
+  }
+ ]
+}

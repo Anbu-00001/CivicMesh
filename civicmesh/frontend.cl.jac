@@ -6,10 +6,11 @@ sv-side walker imports (in app.jac) never collide with the client-side
 
 cl import ".assets/index.css";
 
-# Stable demo identity — must be in .cl.jac so the production client
-# bundle (jac build --client web) can resolve them at compile time.
-glob DEMO_USER_ID: str = "demo_user";
-glob DEMO_USER_PASSWORD: str = "civicmesh2026";
+# Each browser gets its own account (random id + secret in localStorage), so
+# visitors never share one graph. Globs must live in the .cl.jac to reach the
+# production client bundle.
+glob VISITOR_KEY: str = "cm_uid";
+glob VISITOR_SECRET_KEY: str = "cm_pw";
 
 import from "@jac/runtime" { jacLogin, jacSignup, jacIsLoggedIn }
 import from .components.ChatPane { ChatPane }
@@ -26,7 +27,7 @@ sv import from walkers.seed { SeedWalker }
 def:pub ClientApp -> JsxElement {
     has active_tab: str = "chat",
         is_authed: bool = False,
-        user_id: str = "demo_user",
+        user_id: str = "",
         session_data: Any = {},
         walker_events: list = [],
         show_landing: bool = True,
@@ -55,11 +56,9 @@ def:pub ClientApp -> JsxElement {
     def renderPalette -> JsxElement;
 
     can with entry {
-        authed_now = jacIsLoggedIn();
-        is_authed = authed_now;
-        if not authed_now {
-            initAuth();
-        }
+        # Always run initAuth: it also migrates browsers still holding the
+        # old shared demo token onto their own visitor account.
+        initAuth();
         # Global Cmd/Ctrl+K listener wired at the document level so the
         # palette is reachable from any tab without per-component plumbing.
         try {
@@ -92,6 +91,7 @@ def:pub ClientApp -> JsxElement {
     }
 
     async def initAuth -> None;
+    def visitorCreds -> list;
     async def loadSession -> None;
     def pushWalkerEvent(events: list) -> None;
     def navTab(tab_id: str, label: str) -> JsxElement;
@@ -213,7 +213,7 @@ def:pub ClientApp -> JsxElement {
                         }}
                     />
                     <span style={{"fontSize": "12px", "color": "rgba(255,255,255,0.4)"}}>
-                        {("mistral-nemotron · connected" if is_authed else "connecting...")}
+                        {("engine ready · LLM narrator" if is_authed else "connecting...")}
                     </span>
                 </div>
             </header>

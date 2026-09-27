@@ -43,7 +43,7 @@ def:pub GraphViz(walker_events: list) -> JsxElement {
         {"id": "r5",      "type": "ResourceNode",          "label": "HCH",       "x": 570, "y": 330,
          "walker": "EligibilityWalker","tooltip": "Health Care for the Homeless · free clinic."},
         {"id": "e1",      "type": "EligibilityRuleNode",   "label": "Rule §8",   "x": 100, "y": 430,
-         "walker": "EligibilityWalker","tooltip": "Rule: income < 50% AMI · family size ≥ 1 · check_eligibility() match."},
+         "walker": "EligibilityWalker","tooltip": "Rule: income limit · age · status · situation targets — scored in closed form by engine/score.jac."},
         {"id": "e2",      "type": "EligibilityRuleNode",   "label": "Rule SNAP", "x": 210, "y": 430,
          "walker": "EligibilityWalker","tooltip": "Rule: gross income ≤ 130% FPL · resource limit applies."},
         {"id": "e3",      "type": "EligibilityRuleNode",   "label": "Rule WIC",  "x": 340, "y": 430,

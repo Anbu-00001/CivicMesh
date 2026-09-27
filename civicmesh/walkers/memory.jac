@@ -14,15 +14,12 @@ inside the entry ability so `here` is typed as `PersonNode`.
 """
 
 import datetime;
-import from graph.nodes { PersonNode, ApplicationNode }
-import from graph.edges { applied_to }
-import from llm.stubs {
-    NeedProfile,
-    EscalationContext,
-    summarize_session,
-    generate_denial_next_step
-}
+import from graph.nodes { PersonNode, ApplicationNode, ResourceNode, EligibilityRuleNode }
+import from graph.edges { applied_to, governed_by }
+import from llm.stubs { NeedProfile, EscalationContext }
 import from walkers.escalation { EscalationWalker }
+import from engine.score { beta_posterior }
+import from walkers.eligibility { invalidate_catalog }
 
 walker MemoryWalker {
     has user_id: str;
@@ -74,18 +71,18 @@ walker MemoryWalker {
                 }
             }
 
+            # Deterministic welcome-back line (was an LLM call on every page load).
             session_summary: any = None;
             if approved or pending or denied {
-                # A failed summary must not 500 the page-load session fetch;
-                # the client already handles a missing session_summary.
-                try {
-                    session_summary = summarize_session(
-                        approved=approved,
-                        pending=pending,
-                        denied=denied,
-                        profile=profile_stub
-                    );
-                } except Exception as _ex {}
+                nxt = "";
+                if pending {
+                    nxt = "Follow up with " + str(pending[0]) + " — ask where your application stands.";
+                } elif denied {
+                    nxt = "Ask " + str(denied[0]) + " for the denial reason in writing; most programs allow an appeal within 30 days.";
+                } else {
+                    nxt = "Great news on " + str(approved[0]) + " — tell me what else you need help with.";
+                }
+                session_summary = {"approved": approved, "pending": pending, "denied": denied, "next_recommended_step": nxt};
             }
 
             report {
@@ -104,6 +101,7 @@ walker MemoryWalker {
         ts = datetime.datetime.utcnow().isoformat();
         apps = [here ->:applied_to:-> [?:ApplicationNode, status != "archived"]];
         updated = False;
+        posterior_out: dict = {};
 
         for app in apps {
             if str(app.resource_name) != self.resource_name {
@@ -113,14 +111,7 @@ walker MemoryWalker {
             setattr(app, "updated_at", ts);
             if self.new_status == "denied" and self.denial_reason {
                 setattr(app, "denial_reason", self.denial_reason);
-                hint = "Ask " + self.resource_name + " how to appeal, or call 2-1-1 for similar programs.";
-                try {
-                    hint = generate_denial_next_step(
-                        resource_name=self.resource_name,
-                        denial_reason=self.denial_reason,
-                        profile=profile_stub
-                    );
-                } except Exception as _ex {}
+                hint = "Ask " + self.resource_name + " for the denial reason in writing and whether you can appeal (usually within 30 days), or call 2-1-1 for similar programs.";
                 setattr(app, "next_step_hint", str(hint));
             }
             if self.new_status == "applied" {
@@ -157,6 +148,10 @@ walker MemoryWalker {
                         # on the first few datapoints — gives every rule a
                         # graceful warm-up before its prior moves significantly.
                         new_rate = (float(new_approvals) + 1.0) / (float(new_attempts) + 2.0);
+                        cap = str(res_matches[0].capacity);
+                        posterior_out = beta_posterior(new_approvals, new_attempts, cap);
+                        posterior_out["before"] = beta_posterior(old_approvals, old_attempts, cap)["mean"];
+                        invalidate_catalog(self.user_id);
                         setattr(rule_node, "prior_attempts", new_attempts);
                         setattr(rule_node, "prior_approvals", new_approvals);
                         setattr(rule_node, "prior_success_rate", new_rate);
@@ -171,7 +166,7 @@ walker MemoryWalker {
         # If every application is now denied, escalate so the user never
         # ends up at a dead end with no further guidance.
         if updated and self.new_status == "denied" {
-            refreshed = [here ->:applied_to:-> [?:ApplicationNode]];
+            refreshed = [here ->:applied_to:-> [?:ApplicationNode, status != "archived"]];
             all_denied = len(refreshed) > 0 and all(str(a.status) == "denied" for a in refreshed);
             if all_denied {
                 reasons: list = [];
@@ -186,7 +181,7 @@ walker MemoryWalker {
                 );
                 esc_walker = here spawn EscalationWalker(
                     context=esc_context,
-                    person_node=here
+                    language=str(here.language)
                 );
                 esc_payload: dict = esc_walker.summary;
                 report {
@@ -194,7 +189,8 @@ walker MemoryWalker {
                     "resource": self.resource_name,
                     "new_status": self.new_status,
                     "escalated": True,
-                    "escalation": esc_payload
+                    "escalation": esc_payload,
+                    "posterior": posterior_out
                 };
                 return;
             }
@@ -204,7 +200,8 @@ walker MemoryWalker {
             "updated": updated,
             "resource": self.resource_name,
             "new_status": self.new_status,
-            "escalated": False
+            "escalated": False,
+            "posterior": posterior_out
         };
     }
 }
@@ -214,4 +211,4 @@ sem MemoryWalker.user_id is "Stable identifier used to locate the existing Perso
 sem MemoryWalker.mode is "Operating mode. One of: 'read_session' (return a SessionSummary), 'update_status' (mutate one ApplicationNode). Branched on inside the PersonNode entry ability.";
 sem MemoryWalker.resource_name is "ApplicationNode.resource_name to mutate when mode='update_status'. Ignored in read_session mode.";
 sem MemoryWalker.new_status is "Target ApplicationNode.status when mode='update_status'. One of: 'pending', 'applied', 'approved', 'denied', 'withdrawn'.";
-sem MemoryWalker.denial_reason is "Free-form denial reason text. Populated only when new_status='denied'; drives generate_denial_next_step() to refresh next_step_hint.";
+sem MemoryWalker.denial_reason is "Free-form denial reason text. Populated only when new_status='denied'; refreshes next_step_hint.";

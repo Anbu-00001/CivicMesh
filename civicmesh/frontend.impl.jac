@@ -1,36 +1,27 @@
 """Async implementations for the ClientApp root component."""
 
-# DEMO_USER_ID and DEMO_USER_PASSWORD are defined as globs in
-# frontend.cl.jac so the production client bundle resolves them.
+
+impl ClientApp.visitorCreds -> list {
+    uid = localStorage.getItem(VISITOR_KEY);
+    pw = localStorage.getItem(VISITOR_SECRET_KEY);
+    if (not uid) or (not pw) {
+        uid = "visitor_" + Math.random().toString(36).substring(2, 10);
+        pw = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+        localStorage.setItem(VISITOR_KEY, uid);
+        localStorage.setItem(VISITOR_SECRET_KEY, pw);
+        # A token from the old shared demo account must not be reused.
+        localStorage.removeItem("jac_token");
+    }
+    return [uid, pw];
+}
 
 impl ClientApp.initAuth -> None {
-    # Auth bootstrap that survives Factory rebuilds on free HF Spaces.
-    #
-    # Two compounding failure modes we have to handle:
-    #
-    # 1) On a fresh container, demo_user does not exist yet. The old
-    #    code did login-first / signup-on-failure, but
-    #    `ok = await jacLogin(...)` returns an object `{success: false, ...}`
-    #    on failure — and `if not ok` is `false` for a truthy object,
-    #    so the signup branch never fired. Fix: signup first (idempotent
-    #    — 409 if user exists, fine), then login, then verify with
-    #    `jacIsLoggedIn()` (the only reliable truthiness signal because
-    #    it checks the actual stored token).
-    #
-    # 2) When the container restarts but the browser keeps the old token
-    #    in localStorage, jacIsLoggedIn() returns true but the token
-    #    references a user that no longer exists. Walker calls then 500
-    #    with "User not found". Fix: probe /user/me with the stored
-    #    token; if it 401s, clear it so the signup+login below runs.
-    #
-    # The runtime's __normalizeIdentity wraps the username string into
-    # the correct flat {type, value} shape the server expects, so plain
-    # string args to jacSignup/jacLogin are correct — verified via curl
-    # against the deployed openapi.json schema.
-
+    # Auth bootstrap that survives container rebuilds on free HF Spaces:
+    # 1) drop a stale token (the users DB is wiped on redeploy) by probing
+    #    /user/me; 2) signup is idempotent (409 if the visitor exists), then
+    #    login; 3) seed this visitor's graph.
+    creds = visitorCreds();
     is_authed = False;
-
-    # Stale-token check
     if jacIsLoggedIn() {
         try {
             probe = await fetch("/user/me", {
@@ -43,82 +34,32 @@ impl ClientApp.initAuth -> None {
             localStorage.removeItem("jac_token");
         }
     }
-
-    if jacIsLoggedIn() {
-        is_authed = True;
-    } else {
-        try {
-            await jacSignup(DEMO_USER_ID, DEMO_USER_PASSWORD);
-        } except Exception as _ex {}
-        try {
-            await jacLogin(DEMO_USER_ID, DEMO_USER_PASSWORD);
-        } except Exception as _ex {}
-        is_authed = jacIsLoggedIn();
+    if not jacIsLoggedIn() {
+        try { await jacSignup(creds[0], creds[1]); } except Exception as _ex {}
+        try { await jacLogin(creds[0], creds[1]); } except Exception as _ex {}
     }
-
-    if is_authed {
-        user_id = DEMO_USER_ID;
+    if jacIsLoggedIn() {
+        user_id = creds[0];
         try {
-            await root spawn SeedWalker(user_id=DEMO_USER_ID);
+            await root spawn SeedWalker(user_id=creds[0]);
         } except Exception as _ex {}
+        is_authed = True;
     }
 }
 
 impl ClientApp.loadSession -> None {
-    # Defensive gate — loadSession should only run after initAuth has
-    # confirmed jacIsLoggedIn(). On a stale browser session whose token
-    # has been revoked by a Factory rebuild, the cached app state will
-    # still think we're authed; spawning walkers without a fresh login
-    # gives the same "User not found" 500s. We re-run the same direct-
-    # fetch auth flow as initAuth (see comments above) rather than the
-    # @jac/runtime helpers, which silently no-op on shape mismatch.
-    # Same stale-token probe as initAuth — guards against the case where
-    # a Factory rebuild deleted the user but the browser still has the
-    # old token. Without this, walker spawns below 500 with "User not
-    # found" and we never recover.
-    if jacIsLoggedIn() {
-        try {
-            probe = await fetch("/user/me", {
-                "headers": {"Authorization": "Bearer " + localStorage.getItem("jac_token")}
-            });
-            if probe.status >= 400 {
-                localStorage.removeItem("jac_token");
-            }
-        } except Exception as _ex {
-            localStorage.removeItem("jac_token");
-        }
-    }
-
     if not jacIsLoggedIn() {
-        try { await jacSignup(DEMO_USER_ID, DEMO_USER_PASSWORD); } except Exception as _ex {}
-        try { await jacLogin(DEMO_USER_ID, DEMO_USER_PASSWORD); } except Exception as _ex {}
-        if not jacIsLoggedIn() {
-            session_data = {};
-            return;
-        }
-        user_id = DEMO_USER_ID;
+        session_data = {};
+        return;
     }
-
-    # Always re-run SeedWalker on session load so an already-authed user
-    # whose root predates the demo-apps feature still picks them up on
-    # next refresh. SeedWalker is idempotent — duplicate resource and
-    # leads_to insertion is guarded; demo apps only seed when the
-    # PersonNode has zero existing ApplicationNodes attached.
-    try {
-        await root spawn SeedWalker(user_id=user_id);
-    } except Exception as _ex {}
-
+    uid = user_id if user_id else visitorCreds()[0];
     try {
         result = await root spawn MemoryWalker(
-            user_id=user_id,
+            user_id=uid,
             mode="read_session"
         );
         raw = result.reports[0] if result.reports else None;
-        if raw {
-            session_data = raw;
-        } else {
-            session_data = {};
-        }
+        session_data = raw if raw else {};
     } except Exception as e {
         session_data = {};
     }

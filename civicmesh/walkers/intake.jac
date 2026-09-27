@@ -1,341 +1,182 @@
-"""IntakeWalker — entry point for the CivicMesh pipeline.
+"""IntakeWalker — entry point and orchestrator for one chat turn.
 
-Spawns at root, detects the user's language, finds or creates the PersonNode,
-extracts a NeedProfile from the conversation, attaches a NeedNode via the
-typed has_need edge, and then spawns EligibilityWalker against the NeedNode.
+Math-first pipeline, traced end to end:
 
-All cross-walker state flows through walker `has` fields; the graph itself
-remains the single source of truth for persisted user state.
+  1. intake.parse     deterministic EN/ES parser (engine/parse.jac), < 1 ms,
+                      merged with the profile carried from earlier turns
+  2. gen_ai.chat      ONLY if the parser can't route the message: one typed
+                      LLM call (understand_message), 6 s budget, then fall back
+  3. graph.write      find-or-create PersonNode, attach NeedNode (has_need)
+  4. EligibilityWalker → Navigation / Pathfinder / Escalation (all deterministic)
+  5. CritiqueWalker   Reflexion write-back (SessionInsight on reflected_on)
+
+The report carries the answer, the explainable match cards, the plan, the
+escape routes, and an OpenTelemetry-shaped span list for the latency
+waterfall. The client then calls NarrateWalker (the one LLM call) in the
+background to localize and warm up the wording.
 """
 
 import datetime;
-import from graph.nodes { PersonNode, NeedNode, SessionInsight }
-import from graph.edges { has_need, reflected_on }
-import from llm.stubs {
-    NeedProfile,
-    LanguageProfile,
-    extract_need_profile,
-    detect_language_and_extract
-}
+import from graph.nodes { PersonNode, NeedNode }
+import from graph.edges { has_need }
+import from llm.stubs { understand_message, pool_model_names }
+import from engine.parse { parse_intake }
+import from engine.compose { merge_profiles, new_trace, span_begin, span_end, export_spans }
 import from walkers.eligibility { EligibilityWalker }
 import from walkers.critique { CritiqueWalker }
+
+glob CATEGORIES: list = ["housing", "food", "healthcare", "legal"];
 
 walker IntakeWalker {
     has conversation: str;
     has user_id: str;
-    # Walker chain event accumulator. Populated by the chain itself as
-    # children fire (they `append` here through the spawning walker's
-    # report payload), then handed to CritiqueWalker at the end so the
-    # post-turn self-reflection has the same picture the client sees.
+    # Profile from the previous turn (client-held), so an answer to the
+    # agent's follow-up question refines the same case.
+    has prior: dict = {};
+    # Key of the follow-up question this message answers (yes/no answers).
+    has answering: str = "";
     has chain_events: list = [];
 
     can intake with `Root entry {
+        tr = new_trace();
+        root_span = span_begin(tr, "invoke_agent CivicMesh", "SERVER", "", {"gen_ai.operation.name": "invoke_agent", "gen_ai.agent.name": "CivicMesh"});
+        rid = root_span["span_id"];
         ts = datetime.datetime.utcnow().isoformat();
+        text = str(self.conversation);
 
-        # Step 0 — Reflexion read-back. Before any LLM call, walk to the
-        # existing PersonNode (if any) and pull the last 2 SessionInsight
-        # headlines off the reflected_on edges. Prepended as a one-line
-        # context prefix to the LLM input. Zero extra LLM cost; the
-        # agent literally reads its own past performance as memory.
-        reflection_prefix = "";
-        prior_match = [root --> [?:PersonNode, user_id == self.user_id]];
-        if prior_match {
-            prior_person: Any = prior_match[0];
-            past_insights = [prior_person ->:reflected_on:-> [?:SessionInsight]];
-            if past_insights {
-                # Sort by ISO timestamp descending — newest first.
-                sorted_insights: list = list(past_insights);
-                try {
-                    sorted_insights.sort(key=lambda x : str(x.ts), reverse=True);
-                } except Exception as _ex {}
-                # Take last 2, build a one-line context prefix the LLM
-                # treats as session history. Keeps token cost negligible.
-                ctx_lines: list[str] = [];
-                ci = 0;
-                while ci < len(sorted_insights) and ci < 2 {
-                    try {
-                        ctx_lines = ctx_lines + [str(sorted_insights[ci].headline)];
-                    } except Exception as _ex {}
-                    ci = ci + 1;
-                }
-                if ctx_lines {
-                    reflection_prefix = "[Context from agent self-reflection: " + " ".join(ctx_lines) + "] ";
-                }
-            }
-        }
-        # Reflexion headlines stay OUT of LLM inputs — they kept poisoning
-        # category extraction (a prior housing turn would make food prompts
-        # come back as "housing") and language detection (prior Spanish
-        # text would make English prompts come back as "es"). The Reflexion
-        # WRITE-back to SessionInsight is still useful for the telemetry
-        # chart, but we no longer READ it into prompts for the live turn.
-        # reflection_prefix remains computed above purely so the report
-        # payload still surfaces whether prior insights existed.
+        sp = span_begin(tr, "intake.parse", "INTERNAL", rid);
+        parsed = parse_intake(text);
+        profile = merge_profiles(dict(self.prior) if self.prior else {}, parsed, text, str(self.answering));
+        span_end(tr, sp, {"civicmesh.category": profile["category"], "civicmesh.category_conf": profile["category_conf"], "civicmesh.language": profile["language"], "civicmesh.fields_known": profile["completeness"], "civicmesh.evidence_spans": len(parsed["evidence"])});
 
-        # Step 1a — heuristic language lock. If the prompt is overwhelmingly
-        # ASCII with multiple English stopwords, force "en". Llama-3.1-8b
-        # on NIM intermittently returns "es" for short, unambiguous English
-        # questions (e.g. "Who do I call for a domestic-violence safe
-        # house?") which then makes downstream LLMs reply in Spanish. The
-        # heuristic eliminates that failure mode for English. Non-English
-        # prompts fall through to the LLM detector unchanged.
-        heuristic_lang = "";
-        raw = str(self.conversation);
-        if raw {
-            # Pad with spaces so token-boundary substring checks like " i "
-            # also catch words at the very start and end of the prompt.
-            lowered = " " + raw.lower() + " ";
-            ascii_count = 0;
-            total_count = 0;
-            for c in raw {
-                total_count = total_count + 1;
-                if ord(c) < 128 { ascii_count = ascii_count + 1; }
-            }
-            ascii_ratio = 0.0;
-            if total_count > 0 {
-                ascii_ratio = float(ascii_count) / float(total_count);
-            }
-            # English-distinctive markers — surrounded by spaces / punctuation
-            # so we don't false-match inside Spanish or French words. These
-            # spellings are essentially non-existent in major non-English
-            # target languages (es / fr / de / pt / it / vi / hi-romanized).
-            # Substring matching is bulletproof — no tokenize/strip step
-            # that could break under jac's str semantics.
-            en_markers = [
-                " i ", " i'm ", " i've ", " i'll ", " i'd ", "i'm ", "i've ",
-                " the ", " a ", " an ", " is ", " are ", " was ", " were ",
-                " my ", " your ", " our ", " their ", " his ", " her ",
-                " you ", " we ", " they ", " he ", " she ",
-                " and ", " or ", " but ", " not ", " no ",
-                " for ", " to ", " of ", " in ", " on ", " at ", " with ",
-                " from ", " by ", " about ", " into ",
-                " do ", " does ", " did ", " have ", " has ", " had ",
-                " can ", " could ", " would ", " should ", " will ", " might ",
-                " need ", " needed ", " want ", " wants ", " wanted ",
-                " what ", " where ", " when ", " who ", " how ", " why ",
-                " right ", " now ", " tonight ", " today ", " yesterday ",
-                " help ", " call ", " find ", " lost ", " job ", " jobless ",
-                " food ", " rent ", " house ", " home ", " shelter ",
-                " family ", " kids ", " children ", " son ", " daughter ",
-                " doctor ", " medicine ", " legal ", " lawyer ", " court ",
-                " eviction ", " evicted ", " evict ",
-                " domestic ", " violence ", " safe ", " emergency ",
-                "?", " avoid "
-            ];
-            hit_count = 0;
-            for m in en_markers {
-                if m in lowered { hit_count = hit_count + 1; }
-            }
-            # Two independent signals must agree: prompt is overwhelmingly
-            # ASCII AND contains multiple English-distinctive markers.
-            if ascii_ratio >= 0.92 and hit_count >= 2 {
-                heuristic_lang = "en";
-            }
-        }
-
-        # Step 1b — LLM detection (only consulted when the heuristic is
-        # not confident it's English).
-        detected_lang_str: str = "";
-        lang_profile: LanguageProfile;
-        if heuristic_lang {
-            detected_lang_str = heuristic_lang;
-            lang_profile = LanguageProfile(detected_language=heuristic_lang, confidence=1.0, translated_intent=raw);
-        } else {
-            # Unguarded, this 500'd every non-English turn during an LLM
-            # outage. Fall back to English so the chain still completes.
+        llm_sync = False;
+        llm_reason = str(profile.get("llm_reason", ""));
+        llm_error = "";
+        if profile.get("needs_llm", False) {
+            llm_sync = True;
+            models = pool_model_names();
+            sp = span_begin(tr, "chat understand_message", "CLIENT", rid, {"gen_ai.operation.name": "chat", "gen_ai.request.model": models[0] if models else "", "gen_ai.system": "litellm", "civicmesh.reason": llm_reason});
             try {
-                lang_profile = detect_language_and_extract(message=self.conversation);
-            } except Exception as _ex {
-                lang_profile = LanguageProfile(detected_language="en", confidence=0.0, translated_intent=raw);
+                u = understand_message(message=text);
+                cat = str(u.category).strip().lower();
+                if cat in CATEGORIES {
+                    profile["category"] = cat;
+                    profile["category_conf"] = 0.7;
+                }
+                lang = str(u.language).strip().lower()[:2];
+                if lang and not profile.get("language") { profile["language"] = lang; }
+                if int(profile.get("income_annual", -1)) < 0 and int(u.monthly_income) >= 0 { profile["income_annual"] = int(u.monthly_income) * 12; }
+                if int(profile.get("household_size", 0)) <= 0 and int(u.household_size) > 0 { profile["household_size"] = int(u.household_size); }
+                if int(profile.get("age", 0)) <= 0 and int(u.age) > 0 { profile["age"] = int(u.age); }
+                if not profile.get("state") and len(str(u.state)) == 2 { profile["state"] = str(u.state).upper(); }
+                if not profile.get("citizenship") and str(u.citizenship) in ["citizen", "eligible_immigrant", "non_citizen"] { profile["citizenship"] = str(u.citizenship); }
+                if str(u.urgency) == "immediate" { profile["urgency"] = "immediate"; }
+                profile["llm_summary"] = str(u.english_summary);
+                span_end(tr, sp, {"civicmesh.category": profile["category"]});
+            } except Exception as ex {
+                llm_error = str(ex)[:160];
+                span_end(tr, sp, {"error.type": type(ex).__name__}, "ERROR");
             }
-            detected_lang_str = str(lang_profile.detected_language);
+        }
+        lang_out = str(profile.get("language", "") or "en");
+        if not profile.get("category") {
+            # Still nothing to route on: default to the broadest safety net
+            # and let the follow-up question narrow it down.
+            profile["category"] = "food" if ("hungry" in text.lower()) else "housing";
+            profile["category_conf"] = 0.1;
+            profile["defaulted_category"] = True;
         }
 
-        # Step 2: find existing PersonNode by user_id (idempotent across sessions)
+        sp = span_begin(tr, "graph.write person+need", "INTERNAL", rid);
         existing = [root --> [?:PersonNode, user_id == self.user_id]];
         person_node: PersonNode;
         if existing {
             person_node = existing[0];
         } else {
-            created = root ++> PersonNode(
-                user_id=self.user_id,
-                language=detected_lang_str,
-                location_zip="",
-                income_bracket="",
-                family_size=0,
-                preferred_contact="online",
-                created_at=ts
-            );
+            created = root ++> PersonNode(user_id=self.user_id, language=lang_out, created_at=ts);
             person_node = created[0];
         }
-        # setattr is used in place of dotted assignment so the jaclang type
-        # checker doesn't reject cross-file `has` writes — semantically the
-        # same store, just opaque to the static analyzer.
-        setattr(person_node, "language", detected_lang_str);
-
-        # Step 3: extract structured NeedProfile from the RAW user prompt.
-        # We deliberately do NOT prepend the Reflexion prefix here — see
-        # the comment above. Past-session headlines were polluting category
-        # extraction. Wrapped in try/except so a NIM timeout doesn't hang
-        # the chain — the keyword-category step below provides a real
-        # category anyway, so a degraded NeedProfile is still useful.
-        profile: NeedProfile;
-        try {
-            profile = extract_need_profile(conversation=self.conversation);
-        } except Exception as _ex {
-            profile = NeedProfile(
-                category="",
-                urgency="immediate",
-                family_size=1,
-                income_bracket="",
-                location_zip="",
-                language=detected_lang_str,
-                details=str(self.conversation)
-            );
-        }
-
-        # Step 3b — keyword-based category override. The LLM's category
-        # extraction is the single biggest failure mode in the chain: a
-        # prompt like "I need food assistance for my family" sometimes
-        # comes back classified as "housing" because the LLM latches onto
-        # "family" and historical context. We deterministically override
-        # whenever the raw prompt contains an unambiguous category keyword.
-        # First match wins — checked in urgency order (food before housing
-        # so "food shelter" stays food, etc).
-        kw_lower = str(self.conversation).lower();
-        kw_category = "";
-        food_kw = ["food", "snap", "wic", "groceries", "grocery", "hungry", "hunger", "meal", "meals", "eat", "pantry", "feeding", "nutrition"];
-        legal_kw = ["lawyer", "attorney", "legal", "court", "deport", "immigration", "asylum", "expunge", "appeal", "tenant rights"];
-        healthcare_kw = ["doctor", "medicaid", "medicine", "prescription", "hospital", "dental", "therapy", "medical", "988", "mental health", "clinic", "checkup"];
-        housing_kw = ["rent", "evict", "eviction", "shelter", "homeless", "housing", "section 8", "section8", "apartment", "landlord", "safe house", "safe-house", "safehouse", "domestic violence", "domestic-violence"];
-        for k in food_kw {
-            if k in kw_lower { kw_category = "food"; break; }
-        }
-        if not kw_category {
-            for k in legal_kw {
-                if k in kw_lower { kw_category = "legal"; break; }
-            }
-        }
-        if not kw_category {
-            for k in healthcare_kw {
-                if k in kw_lower { kw_category = "healthcare"; break; }
-            }
-        }
-        if not kw_category {
-            for k in housing_kw {
-                if k in kw_lower { kw_category = "housing"; break; }
-            }
-        }
-        if kw_category {
-            try { setattr(profile, "category", kw_category); } except Exception as _ex {}
-        }
-
-        # Lock NeedProfile.language to the heuristic-validated detection
-        # result. Downstream byllm calls (compose_escalation_message,
-        # generate_action_plan) read context.profile.language as the
-        # target language directive.
-        try {
-            setattr(profile, "language", detected_lang_str);
-        } except Exception as _ex {}
-
-        # Step 4: attach the NeedNode via the typed has_need edge
+        setattr(person_node, "language", lang_out);
+        if int(profile.get("household_size", 0)) > 0 { setattr(person_node, "family_size", int(profile["household_size"])); }
+        if profile.get("zip") { setattr(person_node, "location_zip", str(profile["zip"])); }
+        if int(profile.get("income_annual", -1)) >= 0 { setattr(person_node, "income_bracket", str(profile["income_annual"])); }
         attached = person_node +>: has_need() :+> NeedNode(
-            category=str(profile.category),
-            urgency=str(profile.urgency),
-            details=str(profile.details),
+            category=str(profile["category"]),
+            urgency=str(profile["urgency"]),
+            details=text[:500],
             created_at=ts
         );
         need_node: NeedNode = attached[0];
+        span_end(tr, sp);
 
-        # Step 5: backfill demographic fields the extractor surfaced
-        if profile.income_bracket {
-            setattr(person_node, "income_bracket", str(profile.income_bracket));
-        }
-        if int(profile.family_size) > 0 {
-            setattr(person_node, "family_size", int(profile.family_size));
-        }
-        if profile.location_zip {
-            setattr(person_node, "location_zip", str(profile.location_zip));
-        }
-
-        # Step 6: hand off to EligibilityWalker from the NeedNode. `report`
-        # payloads only flow into the outermost walker's `.reports` list, so
-        # child walkers mirror their final payload to `.summary` for us to
-        # read after spawn.
-        elig_walker = need_node spawn EligibilityWalker(
+        elig = need_node spawn EligibilityWalker(
             profile=profile,
-            person_node=person_node
+            person_node=person_node,
+            message=str(profile.get("case_text", text)),
+            language=lang_out,
+            trace=tr,
+            parent_span=rid
         );
-        elig_payload: dict = elig_walker.summary;
+        result: dict = elig.summary;
 
-        # Step 7 — Reflexion write. CritiqueWalker reads the chain's
-        # outcomes (eligible count, escalation/pathfinder/nav flags) and
-        # writes a SessionInsight to the PersonNode. Zero LLM cost. Future
-        # IntakeWalker turns read the most recent SessionInsight nodes
-        # back as conversation prefix (see Step 0 above).
-        eligible_count_out = 0;
-        escalated_out = False;
-        pathfinder_used_out = False;
-        navigation_used_out = False;
-        top_resource_out = "";
-        try { eligible_count_out = int(elig_payload["eligible_count"]); } except Exception as _ex {}
-        try { escalated_out = bool(elig_payload["escalated"]); } except Exception as _ex {}
-        try { pathfinder_used_out = bool(elig_payload["pathfinder_used"]); } except Exception as _ex {}
+        sp = span_begin(tr, "reflexion.critique", "INTERNAL", rid);
         try {
-            ap = elig_payload["action_plan"];
-            if ap {
-                navigation_used_out = True;
-            }
-        } except Exception as _ex {}
-        # Pluck the highest-scored resource name so the SessionInsight
-        # headline can name it. Anchors the reflection to a concrete
-        # outcome, not just a count.
-        try {
-            top_matches_raw = elig_payload["top_matches"];
-            if top_matches_raw and len(list(top_matches_raw)) > 0 {
-                top_m: Any = list(top_matches_raw)[0];
-                top_resource_out = str(top_m["resource"]);
-            }
-        } except Exception as _ex {}
-
-        try {
-            # Spawn from person_node (not root) so the walker enters
-            # directly via PersonNode entry. Spawning from `root` ran into
-            # a per-user-root scope issue where the freshly-created
-            # PersonNode wasn't visible to a sibling walker's [root --> ...]
-            # query.
-            critique_walker = person_node spawn CritiqueWalker(
+            ranked = list(result.get("matches", []));
+            critique = person_node spawn CritiqueWalker(
                 user_id=self.user_id,
                 walker_events=list(self.chain_events),
-                user_prompt=str(self.conversation),
-                eligible_count=eligible_count_out,
-                escalated=escalated_out,
-                pathfinder_used=pathfinder_used_out,
-                navigation_used=navigation_used_out,
-                need_category=str(profile.category) if profile.category else "",
-                need_urgency=str(profile.urgency) if profile.urgency else "",
-                top_resource=top_resource_out
+                user_prompt=text,
+                eligible_count=int(result.get("tiers", {}).get("likely", 0)),
+                escalated=bool(result.get("escalation")),
+                pathfinder_used=len(list(result.get("routes", []))) > 0,
+                navigation_used=len(list(result.get("plan", {}).get("steps", []))) > 0,
+                need_category=str(profile["category"]),
+                need_urgency=str(profile["urgency"]),
+                top_resource=str(ranked[0]["resource_name"]) if ranked else ""
             );
-        } except Exception as _ex {
-            # Critique failure is non-fatal — the user's reply still
-            # goes through. We just lose this turn's self-reflection
-            # record for the rolling Telemetry chart.
+            span_end(tr, sp);
+        } except Exception as ex {
+            span_end(tr, sp, {"error.type": type(ex).__name__}, "ERROR");
         }
 
+        span_end(tr, root_span, {"civicmesh.llm_calls_sync": 1 if llm_sync else 0});
+        spans = export_spans(tr);
+
+        public_profile = {k: v for (k, v) in profile.items() if k not in ["evidence", "category_scores"]};
+        # Sorted, non-overlapping evidence spans so the client can highlight
+        # the user's own words inline in a single linear pass.
+        ev_sorted = sorted(list(parsed["evidence"]), key=lambda e: dict : (int(e["start"]), -int(e["end"])));
+        highlights: list = [];
+        last_end = -1;
+        for e in ev_sorted {
+            if int(e["start"]) >= last_end {
+                highlights.append(e);
+                last_end = int(e["end"]);
+            }
+        }
         report {
-            "language": detected_lang_str,
-            "profile": {
-                "category": str(profile.category),
-                "urgency": str(profile.urgency),
-                "details": str(profile.details)
-            },
-            "person_id": self.user_id,
-            "eligibility_results": elig_payload,
-            "reflection_prefix_used": bool(reflection_prefix)
+            "version": 2,
+            "language": lang_out,
+            "profile": public_profile,
+            "evidence": highlights,
+            "category_scores": parsed["category_scores"],
+            "reply": result.get("reply", ""),
+            "question": result.get("question", {}),
+            "matches": result.get("matches", []),
+            "tiers": result.get("tiers", {}),
+            "near_misses": result.get("near_misses", []),
+            "plan": result.get("plan", {}),
+            "routes": result.get("routes", []),
+            "escalation": result.get("escalation", {}),
+            "chips": result.get("chips", []),
+            "facts": result.get("facts", ""),
+            "llm": {"sync_used": llm_sync, "reason": llm_reason, "error": llm_error, "models": pool_model_names(), "narrate": not llm_sync},
+            "trace": {"trace_id": tr["trace_id"], "total_ms": root_span.get("duration_ms", 0.0), "spans": spans}
         };
     }
 }
 
-sem IntakeWalker is "Entry-point walker for every chat turn. Detects language, finds-or-creates a PersonNode under root, lifts a NeedProfile from the transcript, attaches a NeedNode, then spawns EligibilityWalker against that NeedNode.";
-sem IntakeWalker.conversation is "Full free-form chat transcript so far, in whatever language the user typed. Passed verbatim into detect_language_and_extract() and extract_need_profile().";
-sem IntakeWalker.user_id is "Stable session identifier. Used to look up an existing PersonNode (returning user) or to seed PersonNode.user_id for a new one.";
+sem IntakeWalker is "Entry walker for every chat turn: deterministic parse (plus one LLM call only if the message can't be routed), graph write, then the eligibility chain; returns explainable matches, a plan, routes and trace spans.";
+sem IntakeWalker.conversation is "The user's latest message, in any language.";
+sem IntakeWalker.user_id is "Stable per-visitor id; finds or creates the PersonNode.";
+sem IntakeWalker.prior is "Profile returned on the previous turn, merged so follow-up answers refine the same case.";

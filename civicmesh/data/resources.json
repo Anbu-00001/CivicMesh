@@ -19,7 +19,8 @@
         "age_min": 18,
         "age_max": 0,
         "exceptions": "Non-citizens with eligible immigration status (LPR, refugee, asylee) qualify. Mixed-status households receive prorated assistance.",
-        "criteria_summary": "Very low income (under 50% AMI), age 18+, citizen or eligible immigrant, no recent drug-related or violent crime convictions."
+        "criteria_summary": "Very low income (under 50% AMI), age 18+, citizen or eligible immigrant, no recent drug-related or violent crime convictions.",
+        "targets": []
       },
       "form": {
         "form_id": "hud-50058",
@@ -50,7 +51,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Sober shelters require active sobriety; LGBTQ+ youth shelters serve ages 14-24 only; DV shelters serve survivors of intimate partner violence regardless of gender.",
-        "criteria_summary": "Anyone experiencing literal homelessness tonight; no income or documentation requirement."
+        "criteria_summary": "Anyone experiencing literal homelessness tonight; no income or documentation requirement.",
+        "targets": ["homeless"]
       },
       "form": {
         "form_id": "esg-intake",
@@ -81,7 +83,8 @@
         "age_min": 18,
         "age_max": 0,
         "exceptions": "Some RRH providers prioritize veterans, families with children, or chronically homeless individuals based on local CoC priorities.",
-        "criteria_summary": "Literally homeless per HUD definition; very low income; able to sustain rent after assistance ends."
+        "criteria_summary": "Literally homeless per HUD definition; very low income; able to sustain rent after assistance ends.",
+        "targets": ["homeless"]
       },
       "form": {
         "form_id": "rrh-vi-spdat",
@@ -112,7 +115,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "At least one household member must be a US citizen or qualified non-citizen; mixed-status households are eligible.",
-        "criteria_summary": "Household income at or below 150 percent of federal poverty level (varies by state). Responsible for home energy costs."
+        "criteria_summary": "Household income at or below 150 percent of federal poverty level (varies by state). Responsible for home energy costs.",
+        "targets": ["energy"]
       },
       "form": {
         "form_id": "liheap-application",
@@ -143,7 +147,8 @@
         "age_min": 18,
         "age_max": 0,
         "exceptions": "Income limits vary by city (low income = 80% AMI). Non-citizens with eligible immigration status qualify; mixed-status households get prorated assistance.",
-        "criteria_summary": "Low income (under 80% AMI); citizen or eligible immigrant; pass criminal background check (no recent violent or drug-related felonies)."
+        "criteria_summary": "Low income (under 80% AMI); citizen or eligible immigrant; pass criminal background check (no recent violent or drug-related felonies).",
+        "targets": []
       },
       "form": {
         "form_id": "public-housing-app",
@@ -174,7 +179,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Most shelters accept survivors regardless of gender, citizenship status, or substance use history. Pets may need separate arrangements via Safe Haven for Pets program.",
-        "criteria_summary": "Anyone fleeing or experiencing intimate partner violence. No income, ID, or residency requirement."
+        "criteria_summary": "Anyone fleeing or experiencing intimate partner violence. No income, ID, or residency requirement.",
+        "targets": ["dv"]
       },
       "form": {
         "form_id": "dv-intake",
@@ -205,7 +211,8 @@
         "age_min": 18,
         "age_max": 0,
         "exceptions": "Chronically homeless is defined as homeless for 12 months continuously or 4 episodes in 3 years, with a documented disabling condition.",
-        "criteria_summary": "Chronically homeless individual or family with a disabling condition; extremely low income."
+        "criteria_summary": "Chronically homeless individual or family with a disabling condition; extremely low income.",
+        "targets": ["homeless", "disability"]
       },
       "form": {
         "form_id": "coc-coordinated-entry",
@@ -236,7 +243,8 @@
         "age_min": 18,
         "age_max": 0,
         "exceptions": "Other-than-honorable discharges may still qualify; VA evaluates on a case-by-case basis.",
-        "criteria_summary": "Homeless veteran eligible for VA healthcare; very low income; case-management willing."
+        "criteria_summary": "Homeless veteran eligible for VA healthcare; very low income; case-management willing.",
+        "targets": ["veteran", "homeless"]
       },
       "form": {
         "form_id": "hud-vash-app",
@@ -267,7 +275,8 @@
         "age_min": 18,
         "age_max": 0,
         "exceptions": "Faith-based but does not require religious participation. Some sites are sober-only; others are recovery-friendly.",
-        "criteria_summary": "Homeless or unstably housed; willing to engage with case management and employment program; sober if site requires."
+        "criteria_summary": "Homeless or unstably housed; willing to engage with case management and employment program; sober if site requires.",
+        "targets": ["housing_crisis"]
       },
       "form": {
         "form_id": "sa-th-app",
@@ -298,7 +307,8 @@
         "age_min": 18,
         "age_max": 0,
         "exceptions": "Open to all faiths and no faith; service is not contingent on religious participation. Undocumented residents are typically eligible.",
-        "criteria_summary": "At immediate risk of eviction or utility shutoff; income within program limit; can demonstrate ability to maintain rent after assistance."
+        "criteria_summary": "At immediate risk of eviction or utility shutoff; income within program limit; can demonstrate ability to maintain rent after assistance.",
+        "targets": ["eviction_risk"]
       },
       "form": {
         "form_id": "cc-era-app",
@@ -329,7 +339,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "US citizens and certain qualified non-citizens (LPR with 5-year residency, refugees, asylees) are eligible. Children of immigrants may qualify even if parents do not. ABAWDs face time limits unless exempted.",
-        "criteria_summary": "Gross monthly income at or below 130 percent of federal poverty level; net at or below 100 percent; assets under $2,750 ($4,250 if elderly or disabled)."
+        "criteria_summary": "Gross monthly income at or below 130 percent of federal poverty level; net at or below 100 percent; assets under $2,750 ($4,250 if elderly or disabled).",
+        "targets": []
       },
       "form": {
         "form_id": "snap-application",
@@ -360,7 +371,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Income test waived if already enrolled in Medicaid, SNAP, or TANF. Open to all immigration statuses; use of WIC does not affect public charge determinations.",
-        "criteria_summary": "Pregnant, postpartum (up to 6 months), breastfeeding (up to 1 year), or have a child under 5; income at or below 185 percent FPL; nutritional risk assessment."
+        "criteria_summary": "Pregnant, postpartum (up to 6 months), breastfeeding (up to 1 year), or have a child under 5; income at or below 185 percent FPL; nutritional risk assessment.",
+        "targets": ["young_child"]
       },
       "form": {
         "form_id": "wic-app",
@@ -391,7 +403,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Some pantries cap visit frequency per month; most accept walk-ins regardless of ID.",
-        "criteria_summary": "Anyone with food insecurity; no income proof or ID typically required."
+        "criteria_summary": "Anyone with food insecurity; no income proof or ID typically required.",
+        "targets": []
       },
       "form": {
         "form_id": "fa-pantry-intake",
@@ -422,7 +435,8 @@
         "age_min": 5,
         "age_max": 18,
         "exceptions": "Children in households receiving SNAP, TANF, or FDPIR are automatically eligible (direct certification). Foster, homeless, and migrant children are categorically eligible regardless of income.",
-        "criteria_summary": "Free meals at or below 130 percent FPL; reduced-price at 130-185 percent FPL; categorical eligibility for SNAP/TANF/foster/homeless/migrant children."
+        "criteria_summary": "Free meals at or below 130 percent FPL; reduced-price at 130-185 percent FPL; categorical eligibility for SNAP/TANF/foster/homeless/migrant children.",
+        "targets": ["children"]
       },
       "form": {
         "form_id": "nslp-app",
@@ -453,7 +467,8 @@
         "age_min": 60,
         "age_max": 0,
         "exceptions": "Many providers serve adults under 60 with disabilities. Veterans may qualify regardless of age via VA support.",
-        "criteria_summary": "Age 60 or older (some sites accept disabled adults under 60); homebound; unable to prepare meals or shop independently."
+        "criteria_summary": "Age 60 or older (some sites accept disabled adults under 60); homebound; unable to prepare meals or shop independently.",
+        "targets": ["homebound"]
       },
       "form": {
         "form_id": "mow-app",
@@ -484,7 +499,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Self-declaration of income at most sites; no proof required at distribution. Open to all immigration statuses.",
-        "criteria_summary": "Income at or below 130-200 percent FPL (varies by state). Residence in the state."
+        "criteria_summary": "Income at or below 130-200 percent FPL (varies by state). Residence in the state.",
+        "targets": []
       },
       "form": {
         "form_id": "tefap-intake",
@@ -515,7 +531,8 @@
         "age_min": 0,
         "age_max": 18,
         "exceptions": "At open sites, any child 18 or under can walk up and eat. Closed-enrolled sites (camps) require registration.",
-        "criteria_summary": "Children 18 and under; meals served at open community sites during summer months."
+        "criteria_summary": "Children 18 and under; meals served at open community sites during summer months.",
+        "targets": ["children"]
       },
       "form": {
         "form_id": "sfsp-walkup",
@@ -546,7 +563,8 @@
         "age_min": 60,
         "age_max": 0,
         "exceptions": "Income limit is 185 percent FPL; varies by state. Distribution often first-come during summer.",
-        "criteria_summary": "Age 60 or older; income at or below 185 percent FPL."
+        "criteria_summary": "Age 60 or older; income at or below 185 percent FPL.",
+        "targets": []
       },
       "form": {
         "form_id": "sfmnp-app",
@@ -577,7 +595,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "No eligibility check whatsoever; mutual-aid model.",
-        "criteria_summary": "Anyone in need can take food; no ID, registration, or income required."
+        "criteria_summary": "Anyone in need can take food; no ID, registration, or income required.",
+        "targets": []
       },
       "form": {
         "form_id": "fridge-walkup",
@@ -608,7 +627,8 @@
         "age_min": 60,
         "age_max": 0,
         "exceptions": "Income limit is 130 percent FPL. Open to all immigration statuses.",
-        "criteria_summary": "Age 60 or older; income at or below 130 percent FPL; residency in state."
+        "criteria_summary": "Age 60 or older; income at or below 130 percent FPL; residency in state.",
+        "targets": []
       },
       "form": {
         "form_id": "csfp-app",
@@ -639,7 +659,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Pregnant people and children of any immigration status qualify in many states. Emergency Medicaid covers emergency care for undocumented immigrants. Expansion states use 138 percent FPL; non-expansion states have lower limits.",
-        "criteria_summary": "Income at or below 138 percent FPL (expansion states) or lower; state residency; US citizen or qualified non-citizen (with exceptions for children and pregnancy)."
+        "criteria_summary": "Income at or below 138 percent FPL (expansion states) or lower; state residency; US citizen or qualified non-citizen (with exceptions for children and pregnancy).",
+        "targets": []
       },
       "form": {
         "form_id": "medicaid-app",
@@ -670,7 +691,8 @@
         "age_min": 0,
         "age_max": 19,
         "exceptions": "Lawfully residing immigrant children qualify in 35+ states without the 5-year wait. Some states cover children regardless of status.",
-        "criteria_summary": "Children under 19; family income above Medicaid limit but at or below 200-400 percent FPL (varies by state); citizen or qualified immigrant."
+        "criteria_summary": "Children under 19; family income above Medicaid limit but at or below 200-400 percent FPL (varies by state); citizen or qualified immigrant.",
+        "targets": ["children"]
       },
       "form": {
         "form_id": "chip-app",
@@ -701,7 +723,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Open to uninsured and undocumented patients. Sliding scale goes down to nominal fees (sometimes $0) at or below 100 percent FPL.",
-        "criteria_summary": "Anyone needing primary care; uninsured and low-income patients pay reduced fees on a sliding scale."
+        "criteria_summary": "Anyone needing primary care; uninsured and low-income patients pay reduced fees on a sliding scale.",
+        "targets": []
       },
       "form": {
         "form_id": "fqhc-intake",
@@ -732,7 +755,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Press 1 for Veterans Crisis Line; press 3 for LGBTQI+ specialized support.",
-        "criteria_summary": "Anyone in mental health crisis or supporting someone in crisis. No eligibility check."
+        "criteria_summary": "Anyone in mental health crisis or supporting someone in crisis. No eligibility check.",
+        "targets": ["crisis"]
       },
       "form": {
         "form_id": "988-call",
@@ -763,7 +787,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Helpline is free regardless of insurance; many referrals include sliding-scale and free programs.",
-        "criteria_summary": "Anyone facing substance use issues or supporting someone who is. No eligibility check at the helpline."
+        "criteria_summary": "Anyone facing substance use issues or supporting someone who is. No eligibility check at the helpline.",
+        "targets": ["substance"]
       },
       "form": {
         "form_id": "samhsa-call",
@@ -794,7 +819,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Income limit varies by state (typically 400-500 percent FPL). Available regardless of immigration status. Pairs with AIDS Drug Assistance Program (ADAP) for medication coverage.",
-        "criteria_summary": "Documented HIV diagnosis; uninsured or underinsured; income at or below program limit; state residency."
+        "criteria_summary": "Documented HIV diagnosis; uninsured or underinsured; income at or below program limit; state residency.",
+        "targets": ["hiv"]
       },
       "form": {
         "form_id": "ryan-white-app",
@@ -825,7 +851,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Each PAP has its own rules; NeedyMeds aggregates and helps users apply. Discount card is free and works at most pharmacies.",
-        "criteria_summary": "Anyone needing help affording medications. Specific PAPs have their own income/insurance limits."
+        "criteria_summary": "Anyone needing help affording medications. Specific PAPs have their own income/insurance limits.",
+        "targets": ["medication"]
       },
       "form": {
         "form_id": "needymeds-pap",
@@ -856,7 +883,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Dental school clinics charge reduced fees and are open to all. Donated Dental Services serves elderly, disabled, and medically fragile patients.",
-        "criteria_summary": "Low-income adult without dental insurance; specific limits vary by clinic; some sites prioritize emergency cases."
+        "criteria_summary": "Low-income adult without dental insurance; specific limits vary by clinic; some sites prioritize emergency cases.",
+        "targets": ["dental"]
       },
       "form": {
         "form_id": "dental-intake",
@@ -887,7 +915,8 @@
         "age_min": 65,
         "age_max": 0,
         "exceptions": "Must be legally residing in the US. No HMO insurance restriction.",
-        "criteria_summary": "Age 65 or older; US legal resident or citizen; no ophthalmologist visit in last 3 years."
+        "criteria_summary": "Age 65 or older; US legal resident or citizen; no ophthalmologist visit in last 3 years.",
+        "targets": ["vision"]
       },
       "form": {
         "form_id": "eyecare-america-app",
@@ -918,7 +947,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Some CMHCs prioritize severe and persistent mental illness; emergency walk-ins are usually accepted.",
-        "criteria_summary": "Anyone needing mental health services; sliding-fee scale based on household income; reduced or no cost for low-income patients."
+        "criteria_summary": "Anyone needing mental health services; sliding-fee scale based on household income; reduced or no cost for low-income patients.",
+        "targets": ["mental_health"]
       },
       "form": {
         "form_id": "cmhc-intake",
@@ -949,7 +979,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Income limit is 125 percent FPL (200 percent for some asset cases). Certain immigrants face restrictions on LSC-funded representation, but exceptions exist for VAWA, T-visa, and U-visa applicants.",
-        "criteria_summary": "Income at or below 125 percent FPL; civil case in scope (no criminal defense, no fee-generating cases); state residency."
+        "criteria_summary": "Income at or below 125 percent FPL; civil case in scope (no criminal defense, no fee-generating cases); state residency.",
+        "targets": []
       },
       "form": {
         "form_id": "lsc-intake",
@@ -980,7 +1011,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Each provider has its own intake criteria; many prioritize detained individuals, asylum seekers, and unaccompanied children.",
-        "criteria_summary": "Anyone needing immigration legal help; intake limits and case-type focus vary by provider."
+        "criteria_summary": "Anyone needing immigration legal help; intake limits and case-type focus vary by provider.",
+        "targets": ["immigration"]
       },
       "form": {
         "form_id": "imm-intake",
@@ -1011,7 +1043,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Income limits vary by jurisdiction. The court determines indigence; some defendants pay a partial application fee.",
-        "criteria_summary": "Criminal defendant unable to afford counsel; income screened by court; case carries potential incarceration."
+        "criteria_summary": "Criminal defendant unable to afford counsel; income screened by court; case carries potential incarceration.",
+        "targets": ["criminal"]
       },
       "form": {
         "form_id": "pd-financial-aff",
@@ -1042,7 +1075,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Self-help materials are free to all; direct representation is via local legal aid, not NHLP itself.",
-        "criteria_summary": "Any renter facing eviction, lease problems, or habitability issues; referral and self-help focused."
+        "criteria_summary": "Any renter facing eviction, lease problems, or habitability issues; referral and self-help focused.",
+        "targets": ["tenant"]
       },
       "form": {
         "form_id": "nhlp-referral",
@@ -1073,7 +1107,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Available regardless of gender, immigration status, or whether the survivor has left the relationship.",
-        "criteria_summary": "Survivor of intimate-partner violence needing civil legal help; no income or status check for the referral itself."
+        "criteria_summary": "Survivor of intimate-partner violence needing civil legal help; no income or status check for the referral itself.",
+        "targets": ["dv"]
       },
       "form": {
         "form_id": "dv-legal-intake",
@@ -1104,7 +1139,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "Each state P&A sets case priorities; many prioritize abuse and neglect investigations, education access, and employment discrimination.",
-        "criteria_summary": "Person with a disability needing advocacy or legal representation on disability-related issues; state residency."
+        "criteria_summary": "Person with a disability needing advocacy or legal representation on disability-related issues; state residency.",
+        "targets": ["disability"]
       },
       "form": {
         "form_id": "dr-intake",
@@ -1135,7 +1171,8 @@
         "age_min": 0,
         "age_max": 0,
         "exceptions": "CFPB does not represent individuals in court; it pressures companies to respond and tracks systemic issues.",
-        "criteria_summary": "Any consumer with a complaint about a covered financial product or service."
+        "criteria_summary": "Any consumer with a complaint about a covered financial product or service.",
+        "targets": ["consumer"]
       },
       "form": {
         "form_id": "cfpb-complaint",
@@ -1166,7 +1203,8 @@
         "age_min": 18,
         "age_max": 0,
         "exceptions": "Eligibility depends on offense type, time since conviction, and state law. Some convictions never expungeable; others may be sealed.",
-        "criteria_summary": "Adult with eligible past conviction; income-qualifying for legal aid; state-specific waiting period satisfied."
+        "criteria_summary": "Adult with eligible past conviction; income-qualifying for legal aid; state-specific waiting period satisfied.",
+        "targets": ["conviction"]
       },
       "form": {
         "form_id": "expungement-petition",
@@ -1197,7 +1235,8 @@
         "age_min": 18,
         "age_max": 0,
         "exceptions": "Income limit is 250 percent FPL. Civil matters only (no criminal cases). Cannot replace ongoing representation.",
-        "criteria_summary": "Adult with civil legal question; income at or below 250 percent FPL; resident of a participating state."
+        "criteria_summary": "Adult with civil legal question; income at or below 250 percent FPL; resident of a participating state.",
+        "targets": []
       },
       "form": {
         "form_id": "aba-fla-question",
@@ -1228,7 +1267,8 @@
         "age_min": 18,
         "age_max": 0,
         "exceptions": "Each clinic sets its own intake; cases are often selected for educational value as well as merit.",
-        "criteria_summary": "Low-income person whose case matches the clinic's practice area; intake windows align with academic semester."
+        "criteria_summary": "Low-income person whose case matches the clinic's practice area; intake windows align with academic semester.",
+        "targets": []
       },
       "form": {
         "form_id": "law-clinic-intake",

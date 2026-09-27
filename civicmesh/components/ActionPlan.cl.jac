@@ -2,11 +2,13 @@
 Data sourced entirely from real MemoryWalker calls — no fake steps.
 """
 sv import from walkers.memory { MemoryWalker }
+import from "@jac/runtime" { jacSpawn }
 
 def:pub ActionPlan(user_id: str, walker_events: list = []) -> JsxElement {
     has steps: list = [],
         loading: bool = True,
-        done_count: int = 0;
+        done_count: int = 0,
+        outcome_note: str = "";
 
     # Detect whether the current session routed to EscalationWalker — if
     # so, the empty state should explain why no apps were written and
@@ -32,6 +34,7 @@ def:pub ActionPlan(user_id: str, walker_events: list = []) -> JsxElement {
 
     async def loadPlan -> None;
     async def markApplied(resource_name: str, idx: int) -> None;
+    async def markOutcome(resource_name: str, idx: int, outcome: str) -> None;
     def statusColor(status: str) -> str;
     def statusIcon(status: str, color: str) -> JsxElement;
     def impactValue(resource_name: str) -> int;
@@ -304,16 +307,17 @@ def:pub ActionPlan(user_id: str, walker_events: list = []) -> JsxElement {
                     }}
                 >
                     <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.35)"}}>
-                        LLM cost
+                        LLM on critical path
                     </div>
                     <div style={{"fontSize": "15px", "fontWeight": "600", "color": "#FFE500"}}>
-                        $0.029
+                        0 calls
                     </div>
                     <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.35)"}}>
-                        14 calls · 4.2s
+                        engine decides · LLM narrates
                     </div>
                 </div>
             </div>
+            {outcome_note and <div className="cm-shared" style={{"marginBottom": "8px"}}>{outcome_note}</div>}
             {[renderStep(steps[j], j) for j in range(len(steps))]}
         </div>;
 }

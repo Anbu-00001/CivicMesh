@@ -297,6 +297,20 @@ impl ActionPlan.renderStep(s: Any, i: int) -> JsxElement {
                 >
                     Mark applied
                 </button>}
+                {(st == "pending" or st == "applied") and <button
+                    onClick={lambda _e: MouseEvent { markOutcome(nm, i, "approved"); }}
+                    title="Record the real outcome — updates this program's Beta approval posterior"
+                    style={{"padding": "5px 9px", "background": "rgba(0,224,138,0.08)", "border": "0.5px solid rgba(0,224,138,0.3)", "borderRadius": "7px", "color": "#00E08A", "fontSize": "11px", "cursor": "pointer"}}
+                >
+                    Approved
+                </button>}
+                {(st == "pending" or st == "applied") and <button
+                    onClick={lambda _e: MouseEvent { markOutcome(nm, i, "denied"); }}
+                    title="Record the real outcome — updates this program's Beta approval posterior"
+                    style={{"padding": "5px 9px", "background": "rgba(255,107,107,0.08)", "border": "0.5px solid rgba(255,107,107,0.3)", "borderRadius": "7px", "color": "#FF6B6B", "fontSize": "11px", "cursor": "pointer"}}
+                >
+                    Denied
+                </button>}
             </div>
         </div>;
 }
@@ -347,4 +361,26 @@ impl ActionPlan.markApplied(resource_name: str, idx: int) -> None {
         steps[idx]["status"] = "applied";
         done_count = done_count + 1;
     } except Exception as _ex {}
+}
+
+impl ActionPlan.markOutcome(resource_name: str, idx: int, outcome: str) -> None {
+    res = await jacSpawn("MemoryWalker", "", {
+        "user_id": user_id,
+        "mode": "update_status",
+        "resource_name": resource_name,
+        "new_status": outcome,
+        "denial_reason": ("Application denied" if outcome == "denied" else "")
+    }).catch(lambda err: Any -> dict { return {"reports": []}; });
+    reps = res["reports"];
+    if reps and len(reps) > 0 {
+        r = reps[len(reps) - 1];
+        post = r["posterior"] if r else None;
+        if post and post["mean"] != None {
+            outcome_note = "Recorded: " + resource_name + " " + outcome + ". Approval odds " + str(Math.round(Number(post["before"]) * 100)) + "% → " + str(Math.round(Number(post["mean"]) * 100)) + "% (Beta posterior, " + str(post["observed"]) + " real outcome" + ("s" if post["observed"] != 1 else "") + "). Future rankings use it.";
+        } else {
+            outcome_note = "Recorded: " + resource_name + " " + outcome + ".";
+        }
+    }
+    steps[idx]["status"] = outcome;
+    steps = list(steps);
 }
