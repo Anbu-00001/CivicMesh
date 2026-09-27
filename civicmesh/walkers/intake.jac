@@ -60,6 +60,14 @@ walker IntakeWalker {
 
         sp = span_begin(tr, "intake.parse", "INTERNAL", rid);
         parsed = parse_intake(text);
+        # A picked (or pinned-by-chip) language is the case language: an
+        # English chip tapped in a Chinese conversation must not look like a
+        # language switch and start a new case.
+        pin = str(self.preferred_language or "").strip();
+        if pin and pin != "auto" {
+            parsed["language"] = pin;
+            parsed["language_conf"] = 1.0;
+        }
         profile = merge_profiles(dict(self.prior) if self.prior else {}, parsed, text, str(self.answering));
         span_end(tr, sp, {"civicmesh.category": profile["category"], "civicmesh.category_conf": profile["category_conf"], "civicmesh.language": profile["language"], "civicmesh.fields_known": profile["completeness"], "civicmesh.evidence_spans": len(parsed["evidence"])});
 

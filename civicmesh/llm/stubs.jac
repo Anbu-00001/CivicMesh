@@ -15,7 +15,40 @@ return object + `sem` strings are the prompt, byllm enforces the schema.
 """
 
 import os;
+import openai;
 import from byllm.lib { Model, ModelPool }
+
+# ---------- no hidden SDK retries ----------
+# litellm's NVIDIA NIM provider drops `max_retries` as an unsupported param,
+# so every OpenAI SDK client it builds falls back to the SDK default of 2
+# retries — a 5 s timeout became 3 × 5 s per model, and a failing endpoint got
+# 3 requests per attempt (reproduced against a fake HTTP-500 endpoint: 6
+# requests for one 2-model call). Resilience here comes from the model
+# fallback chain and walker deadlines, so SDK clients are pinned to 0 retries
+# at construction, for every provider, before any pool exists.
+
+"""Wrap an SDK client __init__ so it always gets max_retries=0."""
+def _zero_retries(orig: Any) -> Any {
+    def init(self: Any, *args: Any, **kwargs: Any) -> None {
+        kwargs["max_retries"] = 0;
+        orig(self, *args, **kwargs);
+    }
+    init._civicmesh_zero_retries = True;
+    return init;
+}
+
+"""Pin OpenAI / AsyncOpenAI (and Azure variants) to zero retries. Idempotent."""
+def pin_sdk_retries -> bool {
+    for name in ["OpenAI", "AsyncOpenAI", "AzureOpenAI", "AsyncAzureOpenAI"] {
+        cls = getattr(openai, name, None);
+        if cls is not None and not getattr(cls.__init__, "_civicmesh_zero_retries", False) {
+            cls.__init__ = _zero_retries(cls.__init__);
+        }
+    }
+    return True;
+}
+
+glob SDK_RETRIES_PINNED: bool = pin_sdk_retries();
 
 # Tried in order (litellm Router fallback). NVIDIA retired
 # meta/llama-3.1-8b-instruct on 2026-08-26 and nv-mistralai/mistral-nemo-12b
@@ -55,14 +88,10 @@ def pool_model_names -> list {
     return [str(m.model_name) for m in build_pool_models()];
 }
 
-"""Turn off the provider SDK's hidden retries on every pool member.
+"""Belt and braces: also pin max_retries=0 in each deployment's litellm_params.
 
-Router(num_retries=0) only stops the Router. Each deployment's OpenAI-
-compatible client still retries twice after a timeout, because litellm's
-handler defaults `max_retries` to 2 when the call doesn't carry one. A
-6 s timeout became 3 × 6 s per model (the 31 s Tamil turn in the logs).
-The Router merges a deployment's litellm_params into every call, so pinning
-max_retries=0 there reaches the SDK.
+(Not sufficient on its own for NIM — the provider drops the param; see
+pin_sdk_retries above, which is what actually stops the retries.)
 """
 def without_sdk_retries(pool: Any) -> Any {
     try {

@@ -21,8 +21,15 @@ overall budget.
 import os;
 import re;
 import time;
+import concurrent.futures;
 import litellm;
 import from engine.i18n { language_info, ascii_digits, RIVA_CODES }
+import from llm.stubs { SDK_RETRIES_PINNED }
+
+# Riva translates one segment per request (a multi-paragraph input came back
+# as its first paragraph only), so paragraphs go out in parallel.
+glob SEG_POOL: Any = concurrent.futures.ThreadPoolExecutor(max_workers=8, thread_name_prefix="cm-mt");
+glob MAX_SEGMENTS: int = 8;
 
 glob RIVA_MODEL: str = "nvidia_nim/nvidia/riva-translate-4b-instruct-v2";
 glob POLYGLOT_TRANSLATE_MODEL: str = "nvidia_nim/google/gemma-4-31b-it";
@@ -45,7 +52,29 @@ def llm_prompt(text: str, name: str, code: str) -> str {
     );
 }
 
-"""Translate English text into `code`. Returns {ok, text, model, latency_ms, error, attempts}."""
+"""One chat-completion call; returns stripped text ('' on error)."""
+def _call(model: str, messages: list, max_tokens: int = 900) -> str {
+    resp = litellm.completion(model=model, messages=messages, temperature=0.1, max_tokens=max_tokens, timeout=TRANSLATE_TIMEOUT_S, max_retries=0);
+    txt = str(resp.choices[0].message.content or "").strip();
+    return re.sub(r"^<text>\s*|\s*</text>$", "", txt).strip();
+}
+
+"""Riva, one segment: system message carries the direction ("en-zh-tw")."""
+def _riva_segment(seg: str, riva: str) -> str {
+    return _call(RIVA_MODEL, [{"role": "system", "content": "en-" + riva}, {"role": "user", "content": seg}], 600);
+}
+
+"""True when `out` carries no 3+ digit number that `src` doesn't."""
+def numbers_ok(src: str, out: str) -> bool {
+    allowed = number_set(src);
+    return len([n for n in number_set(out) if n not in allowed]) == 0;
+}
+
+"""Translate English text into `code`. Returns {ok, text, model, latency_ms, error, attempts}.
+
+Riva: every paragraph in parallel, joined back in order. Otherwise (or if
+any paragraph fails) one LLM call for the whole text.
+"""
 def translate_text(text: str, code: str) -> dict {
     t0 = time.perf_counter();
     info = language_info(code);
@@ -56,35 +85,44 @@ def translate_text(text: str, code: str) -> dict {
         out["error"] = "empty text";
         return out;
     }
-    plan: list = [];
     riva = str(RIVA_CODES.get(str(code), ""));
     if riva {
-        plan.append([RIVA_MODEL, [{"role": "system", "content": "en-" + riva}, {"role": "user", "content": src}]]);
-    }
-    prompt = llm_prompt(src, name, str(code));
-    plan.append([POLYGLOT_TRANSLATE_MODEL, [{"role": "user", "content": prompt}]]);
-    plan.append([FALLBACK_TRANSLATE_MODEL, [{"role": "user", "content": prompt}]]);
-    allowed = number_set(src);
-    for step in plan {
-        if (time.perf_counter() - t0) > TRANSLATE_BUDGET_S { break; }
-        model = str(step[0]);
-        try {
-            resp = litellm.completion(model=model, messages=step[1], temperature=0.1, max_tokens=1200, timeout=TRANSLATE_TIMEOUT_S, max_retries=0);
-            txt = str(resp.choices[0].message.content or "").strip();
-            txt = re.sub(r"^<text>\s*|\s*</text>$", "", txt).strip();
-            extra = [n for n in number_set(txt) if n not in allowed];
-            if not txt {
-                out["attempts"].append(model + ": empty");
-            } elif extra {
-                out["attempts"].append(model + ": guard (new numbers " + ",".join(extra[:3]) + ")");
-            } else {
-                out["ok"] = True;
-                out["text"] = txt;
-                out["model"] = model;
-                break;
+        paras = [p.strip() for p in re.split(r"\n\s*\n", src) if p.strip()][:MAX_SEGMENTS];
+        futs = [SEG_POOL.submit(_riva_segment, p, riva) for p in paras];
+        got: list = [];
+        for (i, f) in enumerate(futs) {
+            try {
+                seg = str(f.result(timeout=TRANSLATE_TIMEOUT_S + 1.0));
+                got.append(seg if (seg and numbers_ok(paras[i], seg)) else "");
+            } except Exception as ex {
+                got.append("");
+                out["attempts"].append("riva segment " + str(i) + ": " + type(ex).__name__);
             }
-        } except Exception as ex {
-            out["attempts"].append(model + ": " + type(ex).__name__);
+        }
+        if got and all([g != "" for g in got]) {
+            out["ok"] = True;
+            out["text"] = "\n\n".join(got);
+            out["model"] = RIVA_MODEL;
+        } else {
+            out["attempts"].append("riva: " + str(len([g for g in got if g])) + "/" + str(len(got)) + " segments");
+        }
+    }
+    if not out["ok"] {
+        prompt = llm_prompt(src, name, str(code));
+        for model in [POLYGLOT_TRANSLATE_MODEL, FALLBACK_TRANSLATE_MODEL] {
+            if (time.perf_counter() - t0) > TRANSLATE_BUDGET_S { break; }
+            try {
+                txt = _call(model, [{"role": "user", "content": prompt}], 1400);
+                if txt and numbers_ok(src, txt) {
+                    out["ok"] = True;
+                    out["text"] = txt;
+                    out["model"] = model;
+                    break;
+                }
+                out["attempts"].append(model + (": guard" if txt else ": empty"));
+            } except Exception as ex {
+                out["attempts"].append(model + ": " + type(ex).__name__);
+            }
         }
     }
     if not out["ok"] {
@@ -92,4 +130,62 @@ def translate_text(text: str, code: str) -> dict {
     }
     out["latency_ms"] = round((time.perf_counter() - t0) * 1000.0, 1);
     return out;
+}
+
+"""Translate short UI strings (follow-up question, quick replies, chips).
+
+One LLM call with numbered lines (cheap on rate limits), parsed back by
+number; any missing or number-changing line falls back to Riva for that
+line (if Riva covers the language), else stays English. Order preserved.
+"""
+def translate_strings(strings: list, code: str) -> dict {
+    t0 = time.perf_counter();
+    items = [str(x) for x in strings];
+    res: dict = {"ok": False, "strings": list(items), "model": "", "translated": 0};
+    if not items {
+        return res;
+    }
+    info = language_info(code);
+    numbered = "\n".join([str(i + 1) + ". " + items[i] for i in range(len(items))]);
+    prompt = (
+        "Translate each numbered line from English into " + str(info["name"]) + " (" + str(code) + "). "
+        + "Keep the numbering: exactly one output line per input line, same count, same order. "
+        + "Keep numbers, dollar amounts and program names (SNAP, WIC, Medicaid, CHIP, Section 8) unchanged. "
+        + "These are buttons and questions shown to a person asking for help; keep them short and natural. "
+        + "Output only the numbered lines.\n\n" + numbered
+    );
+    got: dict = {};
+    for model in [POLYGLOT_TRANSLATE_MODEL, FALLBACK_TRANSLATE_MODEL] {
+        try {
+            txt = _call(model, [{"role": "user", "content": prompt}], 700);
+            for line in txt.splitlines() {
+                m = re.match(r"^\s*(\d+)[\.\)、:]\s*(.+?)\s*$", line);
+                if m {
+                    i = int(m.group(1)) - 1;
+                    if 0 <= i and i < len(items) and numbers_ok(items[i], m.group(2)) { got[i] = m.group(2); }
+                }
+            }
+            if len(got) >= len(items) {
+                res["model"] = model;
+                break;
+            }
+        } except Exception as _ex {}
+    }
+    riva = str(RIVA_CODES.get(str(code), ""));
+    missing = [i for i in range(len(items)) if i not in got];
+    if missing and riva {
+        futs = {i: SEG_POOL.submit(_riva_segment, items[i], riva) for i in missing};
+        for (i, f) in futs.items() {
+            try {
+                seg = str(f.result(timeout=TRANSLATE_TIMEOUT_S + 1.0));
+                if seg and numbers_ok(items[i], seg) { got[i] = seg; }
+            } except Exception as _ex {}
+        }
+        if not res["model"] { res["model"] = RIVA_MODEL; }
+    }
+    res["strings"] = [str(got.get(i, items[i])) for i in range(len(items))];
+    res["translated"] = len(got);
+    res["ok"] = len(got) > 0;
+    res["latency_ms"] = round((time.perf_counter() - t0) * 1000.0, 1);
+    return res;
 }

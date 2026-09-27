@@ -64,14 +64,19 @@ impl ChatPane.spansToEvents(spans: list) -> list {
     return out;
 }
 
-impl ChatPane.sendMessage(text_override: str = "", answering: str = "") -> None {
+impl ChatPane.sendMessage(text_override: str = "", answering: str = "", display: str = "", pin: bool = False) -> None {
     if is_loading { return; }
     effective = text_override if text_override else input_val;
     if not effective.strip() { return; }
     user_text = effective;
     input_val = "";
     ans = answering if answering else pending_question;
-    user_msg = {"role": "user", "kind": "text", "id": "u" + str(Math.random()), "text": user_text, "evidence": []};
+    # A tapped chip shows its (translated) label but sends the English
+    # payload; the case language is pinned so the reply stays in it.
+    case_lang = str(profile_ctx["language"]) if (profile_ctx and profile_ctx["language"]) else "";
+    send_lang = pref_lang if pref_lang != "auto" else ((case_lang if (pin and case_lang) else "auto"));
+    shown = display if display else user_text;
+    user_msg = {"role": "user", "kind": "text", "id": "u" + str(Math.random()), "text": shown, "evidence": []};
     new_messages = messages + [user_msg];
     messages = new_messages;
     is_loading = True;
@@ -82,7 +87,7 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "") -> None 
         "user_id": user_id,
         "prior": profile_ctx if profile_ctx else {},
         "answering": ans,
-        "preferred_language": pref_lang
+        "preferred_language": send_lang
     });
     rtt = window.performance.now() - t0;
 
@@ -96,7 +101,7 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "") -> None 
         return;
     }
 
-    user_msg["evidence"] = data["evidence"] if data["evidence"] else [];
+    user_msg["evidence"] = (data["evidence"] if data["evidence"] else []) if shown == user_text else [];
     bot_id = "b" + str(Math.random());
     new_messages = new_messages + [{"role": "bot", "kind": "result", "id": bot_id, "data": data, "rtt_ms": rtt}];
     messages = new_messages;
@@ -143,10 +148,24 @@ impl ChatPane.findLocal(msg_id: str, data: Any) -> None {
 impl ChatPane.localize(msg_id: str, data: Any) -> None {
     localized[msg_id] = {"status": "pending"};
     narr_tick = Math.random();
-    res = await safeSpawn("LocalizeWalker", {"text": str(data["reply"]), "language": str(data["language_info"]["code"])});
+    q = data["question"];
+    q_text = str(q["text"]) if (q and q["text"]) else "";
+    quick: list = quickOptions(str(q["key"]), False) if (q and q["key"]) else [];
+    chips_en: list = list(data["chips"]) if data["chips"] else [];
+    affects_en = ("affects " + str(q["affects"]) + " matches") if (q and Number(q["affects"]) > 0) else "";
+    strings: list = [q_text, affects_en] + [str(o[0]) for o in quick] + [str(c) for c in chips_en];
+    res = await safeSpawn("LocalizeWalker", {"text": str(data["reply"]), "language": str(data["language_info"]["code"]), "strings": strings});
     reps = res["reports"];
     r = reps[len(reps) - 1] if (reps and len(reps) > 0) else None;
-    localized[msg_id] = {"status": ("ok" if (r and r["ok"]) else "failed"), "data": r};
+    ls: list = list(r["strings"]) if (r and r["strings"]) else [];
+    n_quick = len(quick);
+    localized[msg_id] = {
+        "status": ("ok" if (r and r["ok"]) else "failed"), "data": r,
+        "q_text": (str(ls[0]) if (len(ls) == len(strings) and r["strings_translated"] > 0) else ""),
+        "affects": (str(ls[1]) if (len(ls) == len(strings) and affects_en) else ""),
+        "quick": (ls.slice(2, 2 + n_quick) if len(ls) == len(strings) else []),
+        "chips": (ls.slice(2 + n_quick) if len(ls) == len(strings) else [])
+    };
     narr_tick = Math.random();
 }
 
@@ -280,16 +299,14 @@ impl ChatPane.renderChip(label: str, payload: str, answering: str) -> JsxElement
         <button
             key={"chip-" + label}
             className={("cm-chip cm-chip-answer" if answering else "cm-chip")}
-            onClick={lambda _e: MouseEvent { sendMessage(payload, answering); }}
+            onClick={lambda _e: MouseEvent { sendMessage(payload, answering, label, True); }}
             disabled={is_loading}
         >
             {label}
         </button>;
 }
 
-impl ChatPane.renderQuickReplies(q: Any, lang: str) -> JsxElement {
-    key = str(q["key"]);
-    es = lang == "es";
+impl ChatPane.quickOptions(key: str, es: bool) -> list {
     opts: list = [];
     if YES_NO_KEYS.includes(key) {
         opts = [["Sí" if es else "Yes", "sí" if es else "yes"], ["No", "no"]];
@@ -318,15 +335,26 @@ impl ChatPane.renderQuickReplies(q: Any, lang: str) -> JsxElement {
             opts = [["U.S. citizen", "I'm a US citizen"], ["Green card", "I have a green card"], ["Refugee / asylee", "I'm a refugee"], ["No status", "I'm undocumented"]];
         }
     }
+    return opts;
+}
+
+impl ChatPane.renderQuickReplies(q: Any, lang: str, labels: list, q_text: str, affects_text: str) -> JsxElement {
+    key = str(q["key"]);
+    es = lang == "es";
+    opts: list = quickOptions(key, es);
+    # Localized labels (same order) when the translator has returned them;
+    # the payload stays English so the engine reads it, with the case
+    # language pinned so it isn't mistaken for a language switch.
+    has_local = labels and len(labels) == len(opts);
     return
         <div className="cm-question">
             <div className="cm-question-text">
                 <span className="cm-q-mark">?</span>
-                <span>{str(q["text"])}</span>
-                {Number(q["affects"]) > 0 and <span className="cm-q-gain">{("afecta " if es else "affects ") + str(q["affects"]) + (" programas" if es else " matches")}</span>}
+                <span>{q_text if q_text else str(q["text"])}</span>
+                {Number(q["affects"]) > 0 and <span className="cm-q-gain">{affects_text if affects_text else (("afecta " if es else "affects ") + str(q["affects"]) + (" programas" if es else " matches"))}</span>}
             </div>
             {len(opts) > 0 and <div className="cm-chips">
-                {[renderChip(str(o[0]), str(o[1]), key) for o in opts]}
+                {[renderChip((str(labels[i]) if has_local else str(opts[i][0])), str(opts[i][1]), key) for i in range(len(opts))]}
             </div>}
         </div>;
 }
@@ -495,7 +523,8 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
     q: Any = d["question"] if d["question"] else {};
     trace: Any = d["trace"];
     prof: Any = d["profile"] if d["profile"] else {};
-    chips: list = list(narr["chips"]) if (narr and narr["status"] == "ok" and narr["chips"]) else (list(d["chips"]) if d["chips"] else []);
+    loc_c: Any = localized[msg["id"]];
+    chips: list = list(loc_c["chips"]) if (loc_c and loc_c["chips"] and len(loc_c["chips"]) > 0) else (list(narr["chips"]) if (narr and narr["status"] == "ok" and narr["chips"]) else (list(d["chips"]) if d["chips"] else []));
     en_chips: list = list(d["chips"]) if d["chips"] else [];
     llm: Any = d["llm"] if d["llm"] else {};
 
@@ -553,7 +582,7 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                     </div>
                     {[renderRoute(routes[r], r) for r in range(len(routes) if len(routes) < 2 else 2)]}
                 </div>}
-                {(is_last and q["text"]) and renderQuickReplies(q, lang)}
+                {(is_last and q["text"]) and renderQuickReplies(q, lang, (list(loc_c["quick"]) if (loc_c and loc_c["quick"]) else []), (str(loc_c["q_text"]) if (loc_c and loc_c["q_text"]) else ""), (str(loc_c["affects"]) if (loc_c and loc_c["affects"]) else ""))}
                 {(is_last and len(chips) > 0) and <div className="cm-chips">
                     {[renderChip(str(chips[c]), str(en_chips[c]) if c < len(en_chips) else str(chips[c]), "") for c in range(len(chips))]}
                 </div>}

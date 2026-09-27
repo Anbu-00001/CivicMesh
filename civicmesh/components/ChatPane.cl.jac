@@ -83,7 +83,7 @@ def:pub ChatPane(
         } except Exception as _ex {}
     }
 
-    async def sendMessage(text_override: str = "", answering: str = "") -> None;
+    async def sendMessage(text_override: str = "", answering: str = "", display: str = "", pin: bool = False) -> None;
     async def safeSpawn(walker_name: str, fields: dict) -> Any;
     async def narrate(msg_id: str, data: Any, user_text: str) -> None;
     async def findLocal(msg_id: str, data: Any) -> None;
@@ -103,7 +103,8 @@ def:pub ChatPane(
     def renderPlan(plan: Any) -> JsxElement;
     def renderRoute(route: Any, idx: int) -> JsxElement;
     def renderWaterfall(trace: Any, narration: Any, idx: int) -> JsxElement;
-    def renderQuickReplies(q: Any, lang: str) -> JsxElement;
+    def quickOptions(key: str, es: bool) -> list;
+    def renderQuickReplies(q: Any, lang: str, labels: list, q_text: str, affects_text: str) -> JsxElement;
     def renderChip(label: str, payload: str, answering: str) -> JsxElement;
     def renderProfilePanel -> JsxElement;
     def renderPipeline -> JsxElement;

@@ -28,6 +28,52 @@ glob CHIPS: dict = {
     "legal": ["Can a free lawyer help with my eviction?", "What are my rights as a tenant?", "How do I find free immigration legal help?"]
 };
 
+"""Short program name for chip text: the acronym in parentheses, else the name."""
+def chip_name(name: str) -> str {
+    n = str(name);
+    if "(" in n and ")" in n {
+        inner = n[n.index("(") + 1:n.index(")")];
+        if len(inner) <= 12 and " " not in inner.strip() { return inner; }
+        return n[:n.index("(")].strip();
+    }
+    return n;
+}
+
+"""Follow-up suggestions that fit this case, not a fixed list per category.
+
+"How do I apply for X?" for the best match; a situation chip only when a
+program is waiting on exactly that fact (a child under 5 for WIC, children
+for school meals); the category defaults fill the rest, minus any that
+assume facts the person hasn't mentioned (kids, a tenancy).
+"""
+def chips_for(ranked: list, profile: dict) -> list {
+    flags = list(profile.get("flags", []));
+    out: list = [];
+    # "How do I apply for X?" only for programs with a real application
+    # (a food bank or community fridge has nothing to apply for).
+    likely = [s for s in ranked if s["tier"] in ["likely", "possible", "needs_info"] and not s.get("pinned", False)
+              and int(dict(s.get("form", {}) or {}).get("estimated_minutes", 0) or 0) >= 20];
+    if likely {
+        out.append("How do I apply for " + chip_name(likely[0]["resource_name"]) + "?");
+    }
+    asks: list = [];
+    for s in ranked[:6] {
+        for a in list(s.get("asks", [])) {
+            if a not in asks { asks.append(a); }
+        }
+    }
+    if "young_child" in asks and "children" not in flags { out.append("I have a child under 5 or I'm pregnant"); }
+    elif "children" in asks and "children" not in flags { out.append("I have children at home"); }
+    if "homeless" in asks and "homeless" not in flags { out.append("We have nowhere to stay tonight"); }
+    for c in list(CHIPS.get(str(profile.get("category", "")), CHIPS["housing"])) {
+        if len(out) >= 3 { break; }
+        if ("kids" in c or "children" in c) and "children" not in flags { continue; }
+        if likely and chip_name(likely[0]["resource_name"]) in c { continue; }
+        if c not in out { out.append(c); }
+    }
+    return out[:3];
+}
+
 """Snapshot a node's fields into a plain dict for the pure engine."""
 def resource_dict(r: ResourceNode) -> dict {
     return {
@@ -182,7 +228,7 @@ walker EligibilityWalker {
         }
 
         reply = compose_reply(lang, self.profile, ranking, plan, routes, question);
-        chips = list(CHIPS.get(str(self.profile.get("category", "")), CHIPS["housing"]));
+        chips = chips_for(ranked, self.profile);
         self.summary = {
             "reply": reply,
             "question": {"key": str(ask["key"]), "text": question, "affects": int(ask["affects"]), "gain": float(ask["gain"])},
