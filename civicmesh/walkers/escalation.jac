@@ -10,6 +10,8 @@ on this path — a crisis reply can't wait on, or be improvised by, a model.
 import from graph.nodes { PersonNode, ResourceNode }
 import from llm.stubs { EscalationContext }
 import from engine.compose { span_begin, span_end }
+import from engine.messages { msg, has_messages }
+import from engine.i18n { language_info }
 
 glob LEADS: dict = {
     "self_harm": ("988 Suicide and Crisis Lifeline", "988", "free, 24/7, confidential crisis counseling", "consejería de crisis gratuita, 24/7 y confidencial"),
@@ -39,6 +41,14 @@ walker EscalationWalker {
         lead = LEADS[key];
         es = self.language == "es";
         lead_line = ("Llame a " if es else "Call ") + lead[0] + ": " + lead[1] + " — " + (lead[3] if es else lead[2]) + ".";
+        if self.language not in ["en", "es"] and has_messages(self.language) {
+            lead_line = msg(self.language, "esc.call", {"name": lead[0], "phone": lead[1], "what": msg(self.language, "esc." + key)});
+            # 988 and the DV hotline interpret 200+ languages for free
+            # (988lifeline.org/interpretation-services; thehotline.org).
+            if key in ["self_harm", "dv"] {
+                lead_line = lead_line + " " + msg(self.language, "esc.interp", {"language": str(language_info(self.language)["name"])});
+            }
+        }
 
         crisis: list = [];
         for r in [root --> [?:ResourceNode]] {

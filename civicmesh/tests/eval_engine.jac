@@ -3,7 +3,9 @@
 Runs every case in tests/golden.json (EN/ES, full pipeline) and
 tests/golden_i18n.json (language ID + routing in 70+ more languages) and
 tests/golden_adversarial.json (negation, idioms, cross-category traps,
-crisis, code-switching, romanized scripts, no-signal input) through
+crisis, code-switching, romanized scripts, no-signal input) and
+tests/golden_facts_i18n.json (income, household, age, status and location
+stated in 20 other languages, with traps) through
 parse → rank → plan → routes
 and reports field-extraction accuracy, top-3 recommendation hit rate,
 exclusion violations, LLM-routing precision, and latency percentiles.
@@ -47,7 +49,9 @@ with entry {
     for c in adv_cases { c["suite"] = "adversarial"; }
     hold_cases = json.load(open("tests/golden_holdout.json", encoding="utf-8"))["cases"];
     for c in hold_cases { c["suite"] = "holdout"; }
-    cases = cases + i18n_cases + adv_cases + hold_cases;
+    fact_cases = json.load(open("tests/golden_facts_i18n.json", encoding="utf-8"))["cases"];
+    for c in fact_cases { c["suite"] = "facts"; }
+    cases = cases + i18n_cases + adv_cases + hold_cases + fact_cases;
     suite_tot: dict = {};
     suite_ok: dict = {};
     langs_ok: dict = {};

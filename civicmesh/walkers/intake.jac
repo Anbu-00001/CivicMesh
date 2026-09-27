@@ -214,6 +214,11 @@ walker IntakeWalker {
             "evidence": highlights,
             "category_scores": parsed["category_scores"],
             "reply": result.get("reply", ""),
+            # The language `reply`, question, chips and plan text are in
+            # (the user's when a message catalog covers it, else English).
+            "reply_language": result.get("reply_language", "en"),
+            "chip_labels": result.get("chip_labels", []),
+            "ui": result.get("ui", {}),
             "question": result.get("question", {}),
             "matches": result.get("matches", []),
             "tiers": result.get("tiers", {}),

@@ -14,6 +14,7 @@ import re;
 import time;
 import uuid;
 import from engine.i18n { yes_no, unspaced_chars }
+import from engine.messages { msg, has_messages }
 
 glob MERGE_FIELDS: list = ["income_annual", "household_size", "age", "state", "city", "zip", "citizenship"];
 
@@ -112,8 +113,55 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
     return out;
 }
 
-"""Deterministic reply text (EN/ES). Real newlines; **bold** is rendered by the UI."""
+"""Language the reply is composed in: the user's when a catalog covers it."""
+def reply_language(lang: str) -> str {
+    if lang in ["en", "es"] or has_messages(lang) { return lang; }
+    return "en";
+}
+
+"""Reply from the message catalog: the same sentences as EN/ES, in `lang`."""
+def compose_catalog(lang: str, profile: dict, ranking: dict, plan: dict, routes: list, question: str) -> str {
+    ranked = list(ranking.get("ranked", []));
+    likely = [s for s in ranked if s["tier"] == "likely"];
+    maybe = [s for s in ranked if s["tier"] in ["possible", "needs_info"]];
+    steps = list(plan.get("steps", []));
+    pinned = [s for s in ranked if s.get("pinned", False)];
+    if profile.get("defaulted_category") and not pinned {
+        return msg(lang, "r.unsure");
+    }
+    lines: list = [];
+    if pinned {
+        lines.append(msg(lang, "r.safety", {"name": pinned[0]["resource_name"], "phone": pinned[0]["contact_phone"]}));
+    }
+    if likely and maybe {
+        lines.append(msg(lang, "r.found_more", {"n": len(likely), "m": len(maybe)}));
+    } elif likely {
+        lines.append(msg(lang, "r.found", {"n": len(likely)}));
+    } elif maybe {
+        lines.append(msg(lang, "r.maybe", {"m": len(maybe)}));
+    } else {
+        lines.append(msg(lang, "r.none"));
+    }
+    if steps {
+        lines.append(msg(lang, "r.start", {"agency": steps[0]["agency_name"], "action": steps[0]["action_description"]}));
+    }
+    if routes {
+        r = routes[0];
+        lines.append(msg(lang, "r.route", {"start": r["start"], "end": r["end"], "days": r["total_days"]}));
+    }
+    if question {
+        lines.append(msg(lang, "r.question", {"question": question}));
+    }
+    return "\n\n".join(lines);
+}
+
+"""Deterministic reply text. EN/ES here; other catalog languages via
+compose_catalog; anything else in English (translated after, off the
+critical path). Real newlines; **bold** is rendered by the UI."""
 def compose_reply(lang: str, profile: dict, ranking: dict, plan: dict, routes: list, question: str) -> str {
+    if reply_language(lang) not in ["en", "es"] {
+        return compose_catalog(lang, profile, ranking, plan, routes, question);
+    }
     es = lang == "es";
     ranked = list(ranking.get("ranked", []));
     likely = [s for s in ranked if s["tier"] == "likely"];

@@ -23,7 +23,8 @@ Output contract (plain dict so it serialises straight into walker reports):
 """
 
 import re;
-import from engine.i18n { detect_script, detect_latin_other, route_i18n, negated, need_focus }
+import from engine.i18n { detect_script, detect_latin_other, route_i18n, negated, need_focus, LATIN_MARKERS }
+import from engine.facts_i18n { facts_i18n }
 
 # ---------- lexicons ----------
 # (pattern, weight). Patterns are regex fragments matched on lowercase text
@@ -152,7 +153,20 @@ glob CITIES: dict = {
     "detroit": "MI", "denver": "CO", "las vegas": "NV", "portland": "OR",
     "minneapolis": "MN", "nashville": "TN", "memphis": "TN",
     "baltimore": "MD", "charlotte": "NC", "new orleans": "LA",
-    "cleveland": "OH", "columbus": "OH", "albuquerque": "NM"
+    "cleveland": "OH", "columbus": "OH", "albuquerque": "NM",
+    # Cities many immigrant and refugee communities call home.
+    "saint paul": "MN", "st. paul": "MN", "st paul": "MN", "sacramento": "CA",
+    "dearborn": "MI", "hamtramck": "MI", "lowell": "MA", "long beach": "CA",
+    "flushing": "NY", "edison": "NJ", "jersey city": "NJ", "newark": "NJ",
+    "paterson": "NJ", "anaheim": "CA", "santa ana": "CA", "garden grove": "CA",
+    "san gabriel": "CA", "fort worth": "TX", "silver spring": "MD",
+    "falls church": "VA", "fairfax": "VA", "st. louis": "MO", "saint louis": "MO",
+    "kansas city": "MO", "salt lake city": "UT", "boise": "ID", "omaha": "NE",
+    "louisville": "KY", "indianapolis": "IN", "milwaukee": "WI", "buffalo": "NY",
+    "syracuse": "NY", "utica": "NY", "providence": "RI", "hartford": "CT",
+    "raleigh": "NC", "honolulu": "HI", "anchorage": "AK", "stockton": "CA",
+    "modesto": "CA", "bakersfield": "CA", "riverside": "CA", "yuba city": "CA",
+    "lewiston": "ME", "clarkston": "GA", "fargo": "ND", "sioux falls": "SD"
 };
 
 glob EN_MARKERS: list = [
@@ -209,9 +223,22 @@ def detect_language(text: str) -> tuple {
         if w in EN_MARKERS { en += 1; }
         if w in ES_MARKERS { es += 1; }
     }
-    if re.search(r"[ñ¿¡áéíóú]", low) { es += 2; }
+    # Accents are Spanish evidence only without letters Spanish never uses
+    # (Portuguese ã õ ç ê ô, French è à ù î û ë ï œ).
+    # An accented word that is a Portuguese marker ("família", "está") is not
+    # Spanish evidence either.
+    pt_words = set(LATIN_MARKERS.get("pt", []));
+    accented = [w for w in words if re.search(r"[áéíóú]", w) and w not in pt_words];
+    accent_es = (bool(re.search(r"[ñ¿¡]", low)) or len(accented) > 0) and not re.search(r"[ãõçêôâèàùîûëïœ]", low);
+    if accent_es { es += 2; }
     (other, other_hits) = detect_latin_other(low);
-    if other and other_hits >= 2 and other_hits > max(en, es) {
+    # Other languages are scored on distinct marker words, so compare them
+    # with distinct EN/ES markers too — a long French text repeats "de",
+    # "en", "la" often enough to out-count its own markers otherwise.
+    wset = set(words);
+    en_u = len([w for w in wset if w in EN_MARKERS]);
+    es_u = len([w for w in wset if w in ES_MARKERS]) + (2 if accent_es else 0);
+    if other and other_hits >= 2 and other_hits > max(en_u, es_u) {
         return (other, round(min(0.95, 0.5 + 0.08 * other_hits), 2));
     }
     total = en + es;
@@ -369,8 +396,10 @@ def parse_age(low: str, evidence: list, text: str) -> int {
 """State / city / zip. City implies state."""
 def parse_location(text: str, low: str, evidence: list) -> dict {
     out: dict = {"state": "", "city": "", "zip": ""};
+    # Letter lookarounds, not \b: CJK and other scripts count as word
+    # characters, so "我住在Houston" has no \b before the H.
     for (city, st) in CITIES.items() {
-        m = re.search("\\b" + city + "\\b", low);
+        m = re.search("(?<![a-z])" + re.escape(city) + "(?![a-z])", low);
         if m {
             out["city"] = city.title();
             out["state"] = st;
@@ -380,7 +409,7 @@ def parse_location(text: str, low: str, evidence: list) -> dict {
     }
     if not out["state"] {
         for (name, st) in STATES.items() {
-            m = re.search("\\b" + name + "\\b", low);
+            m = re.search("(?<![a-z])" + re.escape(name) + "(?![a-z])", low);
             if m {
                 out["state"] = st;
                 _ev(evidence, "location", st, m.start(), m.end(), text);
@@ -529,6 +558,37 @@ def parse_intake(text: str) -> dict {
     }
     loc = parse_location(raw, low, evidence);
     citizenship = parse_citizenship(low, evidence, raw);
+
+    # Other languages: the same five facts from per-language tables
+    # (engine/facts_i18n.jac), filling whatever the EN/ES patterns missed.
+    if lang and lang not in ["en", "es"] {
+        fx = facts_i18n(lang, low, flags);
+        if income_annual < 0 and int(fx["income_annual"]) >= 0 {
+            income_annual = int(fx["income_annual"]);
+            _ev(evidence, "income", income_annual, int(fx["income_span"][0]), int(fx["income_span"][1]), raw);
+        }
+        if household == 0 and int(fx["household_size"]) > 0 {
+            household = int(fx["household_size"]);
+            if int(fx["household_span"][0]) >= 0 {
+                _ev(evidence, "household_size", household, int(fx["household_span"][0]), int(fx["household_span"][1]), raw);
+            }
+        }
+        if int(fx["kids"]) > 0 and "children" not in flags { flags.append("children"); }
+        if age == 0 and int(fx["age"]) > 0 {
+            age = int(fx["age"]);
+            _ev(evidence, "age", age, int(fx["age_span"][0]), int(fx["age_span"][1]), raw);
+            if age >= 60 and "senior" not in flags { flags.append("senior"); }
+        }
+        if not citizenship and fx["citizenship"] {
+            citizenship = str(fx["citizenship"]);
+            _ev(evidence, "citizenship", citizenship, int(fx["citizenship_span"][0]), int(fx["citizenship_span"][1]), raw);
+        }
+        if not loc["state"] and fx["state"] {
+            loc["state"] = str(fx["state"]);
+            loc["city"] = str(fx["city"]);
+            _ev(evidence, "location", ((str(fx["city"]) + ", ") if fx["city"] else "") + str(fx["state"]), int(fx["place_span"][0]), int(fx["place_span"][1]), raw);
+        }
+    }
 
     known = 0;
     if income_annual >= 0 { known += 1; }

@@ -27,11 +27,15 @@ impl ChatPane.fmtMs(ms: float) -> str {
     return v.toFixed(1) + " ms";
 }
 
-impl ChatPane.tierStyle(tier: str) -> dict {
-    if tier == "likely" { return {"label": "Likely eligible", "color": "#00E08A", "bg": "rgba(0,224,138,0.12)"}; }
-    if tier == "possible" { return {"label": "Possible", "color": "#5AA2FF", "bg": "rgba(90,162,255,0.12)"}; }
-    if tier == "needs_info" { return {"label": "Needs info", "color": "#FFB344", "bg": "rgba(255,179,68,0.12)"}; }
-    return {"label": "Unlikely", "color": "rgba(255,255,255,0.45)", "bg": "rgba(255,255,255,0.06)"};
+impl ChatPane.L(ui: Any, key: str, fallback: str) -> str {
+    return str(ui[key]) if (ui and ui[key]) else fallback;
+}
+
+impl ChatPane.tierStyle(tier: str, ui: Any) -> dict {
+    if tier == "likely" { return {"label": L(ui, "ui.likely", "Likely eligible"), "color": "#00E08A", "bg": "rgba(0,224,138,0.12)"}; }
+    if tier == "possible" { return {"label": L(ui, "ui.possible", "Possible"), "color": "#5AA2FF", "bg": "rgba(90,162,255,0.12)"}; }
+    if tier == "needs_info" { return {"label": L(ui, "ui.needs_info", "Needs info"), "color": "#FFB344", "bg": "rgba(255,179,68,0.12)"}; }
+    return {"label": L(ui, "ui.unlikely", "Unlikely"), "color": "rgba(255,255,255,0.45)", "bg": "rgba(255,255,255,0.06)"};
 }
 
 impl ChatPane.resetCase -> None {
@@ -120,7 +124,11 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "", display:
     }
     li = data["language_info"];
     code = str(li["code"]) if li else "";
-    if code and code != "en" and code != "es" and li["tier"] != "interpreter" {
+    # A language with a message catalog gets its answer, question, chips and
+    # labels composed natively by the server: nothing to translate. Others get
+    # the short strings (fast) and the full answer (slower) translated after.
+    if code and code != "en" and code != "es" and li["tier"] != "interpreter" and str(data["reply_language"]) != code {
+        localizeStrings(bot_id, data);
         localize(bot_id, data);
     }
     prof = data["profile"];
@@ -148,23 +156,31 @@ impl ChatPane.findLocal(msg_id: str, data: Any) -> None {
 impl ChatPane.localize(msg_id: str, data: Any) -> None {
     localized[msg_id] = {"status": "pending"};
     narr_tick = Math.random();
+    res = await safeSpawn("LocalizeWalker", {"text": str(data["reply"]), "language": str(data["language_info"]["code"]), "strings": []});
+    reps = res["reports"];
+    r = reps[len(reps) - 1] if (reps and len(reps) > 0) else None;
+    localized[msg_id] = {"status": ("ok" if (r and r["ok"]) else "failed"), "data": r};
+    narr_tick = Math.random();
+}
+
+impl ChatPane.localizeStrings(msg_id: str, data: Any) -> None {
     q = data["question"];
     q_text = str(q["text"]) if (q and q["text"]) else "";
-    quick: list = quickOptions(str(q["key"]), False) if (q and q["key"]) else [];
+    quick: list = list(q["options"]) if (q and q["options"]) else [];
     chips_en: list = list(data["chips"]) if data["chips"] else [];
-    affects_en = ("affects " + str(q["affects"]) + " matches") if (q and Number(q["affects"]) > 0) else "";
+    affects_en = str(q["affects_label"]) if (q and q["affects_label"]) else "";
     strings: list = [q_text, affects_en] + [str(o[0]) for o in quick] + [str(c) for c in chips_en];
-    res = await safeSpawn("LocalizeWalker", {"text": str(data["reply"]), "language": str(data["language_info"]["code"]), "strings": strings});
+    res = await safeSpawn("LocalizeWalker", {"text": "", "language": str(data["language_info"]["code"]), "strings": strings});
     reps = res["reports"];
     r = reps[len(reps) - 1] if (reps and len(reps) > 0) else None;
     ls: list = list(r["strings"]) if (r and r["strings"]) else [];
+    ok = len(ls) == len(strings) and r["strings_translated"] > 0;
     n_quick = len(quick);
-    localized[msg_id] = {
-        "status": ("ok" if (r and r["ok"]) else "failed"), "data": r,
-        "q_text": (str(ls[0]) if (len(ls) == len(strings) and r["strings_translated"] > 0) else ""),
-        "affects": (str(ls[1]) if (len(ls) == len(strings) and affects_en) else ""),
-        "quick": (ls.slice(2, 2 + n_quick) if len(ls) == len(strings) else []),
-        "chips": (ls.slice(2 + n_quick) if len(ls) == len(strings) else [])
+    localized[msg_id + ":s"] = {
+        "q_text": (str(ls[0]) if ok else ""),
+        "affects": (str(ls[1]) if (ok and affects_en) else ""),
+        "quick": (ls.slice(2, 2 + n_quick) if ok else []),
+        "chips": (ls.slice(2 + n_quick) if ok else [])
     };
     narr_tick = Math.random();
 }
@@ -186,7 +202,9 @@ impl ChatPane.renderInterpreter(card: Any, open_default: bool) -> JsxElement {
 
 impl ChatPane.renderLangPicker -> JsxElement {
     langs: list = list(platform["languages"]) if (platform and platform["languages"]) else [];
-    tier_mark: dict = {"instant": "", "translate": " ·  translated", "llm": " · AI", "interpreter": " · interpreter card"};
+    # Unmarked: the whole answer is composed in that language (message
+    # catalog). Others are translated after the answer arrives.
+    tier_mark: dict = {"instant": " · translated", "translate": " · translated", "llm": " · AI-translated", "interpreter": " · interpreter card"};
     return
         <select
             className="cm-lang-select"
@@ -199,7 +217,7 @@ impl ChatPane.renderLangPicker -> JsxElement {
             }}
         >
             <option value="auto">🌐 Auto-detect language</option>
-            {[<option key={str(l["code"])} value={str(l["code"])}>{str(l["endonym"]) + (" — " + str(l["name"]) if str(l["endonym"]) != str(l["name"]) else "") + str(tier_mark[str(l["tier"])])}</option> for l in langs]}
+            {[<option key={str(l["code"])} value={str(l["code"])}>{str(l["endonym"]) + (" — " + str(l["name"]) if str(l["endonym"]) != str(l["name"]) else "") + ("" if l["catalog"] else str(tier_mark[str(l["tier"])]))}</option> for l in langs]}
         </select>;
 }
 
@@ -341,7 +359,8 @@ impl ChatPane.quickOptions(key: str, es: bool) -> list {
 impl ChatPane.renderQuickReplies(q: Any, lang: str, labels: list, q_text: str, affects_text: str) -> JsxElement {
     key = str(q["key"]);
     es = lang == "es";
-    opts: list = quickOptions(key, es);
+    # Server options: [label in the reply language, English payload].
+    opts: list = list(q["options"]) if (q["options"] and len(q["options"]) > 0) else quickOptions(key, es);
     # Localized labels (same order) when the translator has returned them;
     # the payload stays English so the engine reads it, with the case
     # language pinned so it isn't mistaken for a language switch.
@@ -350,8 +369,8 @@ impl ChatPane.renderQuickReplies(q: Any, lang: str, labels: list, q_text: str, a
         <div className="cm-question">
             <div className="cm-question-text">
                 <span className="cm-q-mark">?</span>
-                <span>{q_text if q_text else str(q["text"])}</span>
-                {Number(q["affects"]) > 0 and <span className="cm-q-gain">{affects_text if affects_text else (("afecta " if es else "affects ") + str(q["affects"]) + (" programas" if es else " matches"))}</span>}
+                <span dir="auto">{q_text if q_text else str(q["text"])}</span>
+                {Number(q["affects"]) > 0 and <span className="cm-q-gain">{affects_text if affects_text else (str(q["affects_label"]) if q["affects_label"] else (("afecta " if es else "affects ") + str(q["affects"]) + (" programas" if es else " matches")))}</span>}
             </div>
             {len(opts) > 0 and <div className="cm-chips">
                 {[renderChip((str(labels[i]) if has_local else str(opts[i][0])), str(opts[i][1]), key) for i in range(len(opts))]}
@@ -359,8 +378,9 @@ impl ChatPane.renderQuickReplies(q: Any, lang: str, labels: list, q_text: str, a
         </div>;
 }
 
-impl ChatPane.renderMatchCard(m: Any, idx: int, j: int) -> JsxElement {
-    ts = tierStyle(str(m["tier"]));
+impl ChatPane.renderMatchCard(m: Any, idx: int, j: int, ui: Any) -> JsxElement {
+    ts = tierStyle(str(m["tier"]), ui);
+    cat_key = {"food": "opt.food", "housing": "opt.housing", "healthcare": "opt.health", "legal": "opt.legal"}[str(m["category"])];
     card_key = str(idx) + ":" + str(j);
     is_open = open_key == card_key;
     pct = Math.round(Number(m["p_eligible"]) * 100);
@@ -380,16 +400,16 @@ impl ChatPane.renderMatchCard(m: Any, idx: int, j: int) -> JsxElement {
         <div key={"card-" + card_key} className="cm-card card-enter">
             <div className="cm-card-top">
                 <span className="cm-tier" style={{"color": ts["color"], "background": ts["bg"]}}>{ts["label"]}</span>
-                <span className="cm-cap">{("Open now" if cap == "open" else ("Waitlist" if cap == "waitlist" else cap)) + " · " + str(m["category"])}</span>
+                <span className="cm-cap">{(L(ui, "ui.open_now", "Open now") if cap == "open" else (L(ui, "ui.waitlist", "Waitlist") if cap == "waitlist" else cap)) + " · " + (L(ui, cat_key, str(m["category"])) if cat_key else str(m["category"]))}</span>
             </div>
             <div className="cm-card-name">{str(m["resource_name"])}</div>
             <div className="cm-meter-row">
-                <span>Eligibility</span>
+                <span>{L(ui, "ui.eligibility", "Eligibility")}</span>
                 <span style={{"color": ts["color"]}}>{str(pct) + "%"}</span>
             </div>
             <div className="cm-meter"><div style={{"width": str(pct) + "%", "background": ts["color"]}}/></div>
             <div className="cm-meter-row" title="Beta-Binomial posterior over recorded approvals/denials (capacity-informed prior)">
-                <span>Approval odds</span>
+                <span>{L(ui, "ui.approval", "Approval odds")}</span>
                 <span>{str(mean) + "% · 90% CI " + str(lo) + "–" + str(hi) + "%"}</span>
             </div>
             <div className="cm-ci">
@@ -419,20 +439,20 @@ impl ChatPane.renderMatchCard(m: Any, idx: int, j: int) -> JsxElement {
                 <div className="cm-crit-foot">{"Criteria confirmed: " + str(Math.round(Number(m["coverage"]) * 100)) + "% · score = hard gates × weighted soft criteria · rules as of Sep 27, 2026"}</div>
             </div>}
             <div className="cm-card-actions">
-                {phone and <a className="cm-call" href={"tel:" + phone}>{"Call " + phone}</a>}
-                {url and <a className="cm-link" href={url} target="_blank" rel="noreferrer">Website</a>}
-                <button className="cm-why" onClick={lambda _e: MouseEvent { open_key = ("" if is_open else card_key); }}>{("Hide reasons" if is_open else "Why?")}</button>
+                {phone and <a className="cm-call" href={"tel:" + phone}>{L(ui, "ui.call", "Call") + " "}<bdi dir="ltr">{phone}</bdi></a>}
+                {url and <a className="cm-link" href={url} target="_blank" rel="noreferrer">{L(ui, "ui.website", "Website")}</a>}
+                <button className="cm-why" onClick={lambda _e: MouseEvent { open_key = ("" if is_open else card_key); }}>{(L(ui, "ui.hide", "Hide reasons") if is_open else L(ui, "ui.why", "Why?"))}</button>
             </div>
         </div>;
 }
 
-impl ChatPane.renderPlan(plan: Any) -> JsxElement {
+impl ChatPane.renderPlan(plan: Any, ui: Any) -> JsxElement {
     steps: list = list(plan["steps"]) if plan["steps"] else [];
     shared: list = list(plan["shared_documents"]) if plan["shared_documents"] else [];
     return
         <div className="cm-block">
             <div className="cm-block-title">
-                <span>Your plan</span>
+                <span>{L(ui, "ui.plan", "Your plan")}</span>
                 <span className="cm-muted">{"ordered by value ÷ effort (Smith's rule) · ~" + str(plan["total_minutes"]) + " min of paperwork"}</span>
             </div>
             {[
@@ -441,7 +461,7 @@ impl ChatPane.renderPlan(plan: Any) -> JsxElement {
                     <div style={{"flex": "1", "minWidth": "0"}}>
                         <div className="cm-step-name">{str(steps[i]["agency_name"])}</div>
                         <div className="cm-step-act">{str(steps[i]["action_description"]) + " · " + str(steps[i]["deadline_label"]) + " · ~" + str(steps[i]["estimated_minutes"]) + " min"}</div>
-                        {len(steps[i]["documents_needed"]) > 0 and <div className="cm-step-docs">{"Bring: " + ", ".join(list(steps[i]["documents_needed"]).slice(0, 3))}</div>}
+                        {len(steps[i]["documents_needed"]) > 0 and <div className="cm-step-docs">{L(ui, "ui.bring", "Bring") + ": " + ", ".join(list(steps[i]["documents_needed"]).slice(0, 3))}</div>}
                     </div>
                 </div>
                 for i in range(len(steps))
@@ -509,9 +529,13 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
     narr: Any = narrations[msg["id"]];
     lang = str(d["language"]) if d["language"] else "en";
     lname: list = list(d["language_name"]) if d["language_name"] else ["English", "English"];
-    # Outside English/Spanish the deterministic text is English, so the
-    # narration IS the answer: label it with the language's own name.
-    foreign = lang != "en" and lang != "es";
+    # With a message catalog the server composed the answer in the user's
+    # language (native). Without one the engine text is English, so the
+    # narration IS the answer until the full translation arrives.
+    reply_lang = str(d["reply_language"]) if d["reply_language"] else "en";
+    foreign = lang != "en" and lang != "es" and reply_lang != lang;
+    native_chips = lang != "en" and reply_lang == lang;
+    ui: Any = d["ui"] if d["ui"] else {};
     loc_t: Any = localized[msg["id"]];
     linfo: Any = d["language_info"] if d["language_info"] else {};
     interp_tier = linfo["tier"] == "interpreter";
@@ -523,9 +547,10 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
     q: Any = d["question"] if d["question"] else {};
     trace: Any = d["trace"];
     prof: Any = d["profile"] if d["profile"] else {};
-    loc_c: Any = localized[msg["id"]];
-    chips: list = list(loc_c["chips"]) if (loc_c and loc_c["chips"] and len(loc_c["chips"]) > 0) else (list(narr["chips"]) if (narr and narr["status"] == "ok" and narr["chips"]) else (list(d["chips"]) if d["chips"] else []));
+    loc_c: Any = localized[msg["id"] + ":s"];
     en_chips: list = list(d["chips"]) if d["chips"] else [];
+    chip_labels: list = list(d["chip_labels"]) if (d["chip_labels"] and len(d["chip_labels"]) == len(en_chips)) else [];
+    chips: list = chip_labels if (native_chips and len(chip_labels) > 0) else (list(loc_c["chips"]) if (loc_c and loc_c["chips"] and len(loc_c["chips"]) > 0) else (list(narr["chips"]) if (narr and narr["status"] == "ok" and narr["chips"] and len(narr["chips"]) == len(en_chips)) else en_chips));
     llm: Any = d["llm"] if d["llm"] else {};
 
     facts: list = [];
@@ -555,14 +580,18 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                     <div style={{"whiteSpace": "pre-wrap"}}>{str(loc_t["data"]["text"])}</div>
                 </div>}
                 {(loc_t and loc_t["status"] == "pending") and <div className="cm-narration cm-narration-pending">{"Translating the full answer into " + str(lname[1]) + "…"}</div>}
-                <div className={"cm-bubble" + (" cm-bubble-en" if foreign else "")}>
+                {(loc_t and loc_t["status"] == "failed") and <div className="cm-narration cm-narration-pending">
+                    <span>{"The full translation into " + str(lname[1]) + " didn't arrive in time — the answer below is in English. "}</span>
+                    <button className="cm-why" onClick={lambda _e: MouseEvent { localize(msg["id"], d); }}>Try again</button>
+                </div>}
+                <div className={"cm-bubble" + (" cm-bubble-en" if foreign else "")} lang={reply_lang} dir="auto">
                     {foreign and <div className="cm-muted cm-bubble-label">Engine answer · English</div>}
                     {interp_tier and <div className="cm-muted cm-bubble-label">{"Answer in " + ("Spanish" if lang == "es" else "English") + " — text translation for " + str(linfo["name"]) + " isn't reliable yet"}</div>}
                     {renderRich(str(d["reply"]))}
                 </div>
                 {((not interp_tier) and foreign) and renderInterpreter(card, False)}
                 {len(facts) > 0 and <div className="cm-understood">
-                    <span className="cm-muted">Understood</span>
+                    <span className="cm-muted">{L(ui, "ui.understood", "Understood")}</span>
                     {[<span key={"f" + str(i)} className="cm-fact">{facts[i]}</span> for i in range(len(facts))]}
                     {prof["carried_category"] and <span className="cm-fact cm-fact-dim">carried from earlier</span>}
                 </div>}
@@ -571,19 +600,19 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                     {[<div key={"cr" + str(i)} className="cm-crisis-item">{str(esc["crisis_resources"][i])}</div> for i in range(len(esc["crisis_resources"]) if esc["crisis_resources"] else 0)]}
                 </div>}
                 {len(matches) > 0 and <div className="cm-cards">
-                    {[renderMatchCard(matches[j], idx, j) for j in range(len(matches) if len(matches) < 4 else 4)]}
+                    {[renderMatchCard(matches[j], idx, j, ui) for j in range(len(matches) if len(matches) < 4 else 4)]}
                 </div>}
-                {(plan["steps"] and len(plan["steps"]) > 0) and renderPlan(plan)}
+                {(plan["steps"] and len(plan["steps"]) > 0) and renderPlan(plan, ui)}
                 {renderLocal(locals[msg["id"]])}
                 {len(routes) > 0 and <div className="cm-block">
                     <div className="cm-block-title">
-                        <span>Longer-term routes</span>
+                        <span>{L(ui, "ui.routes", "Longer-term routes")}</span>
                         <span className="cm-muted">Yen k-shortest paths · cost = days + λ·difficulty − μ·ln P(yes)</span>
                     </div>
                     {[renderRoute(routes[r], r) for r in range(len(routes) if len(routes) < 2 else 2)]}
                 </div>}
                 {(is_last and q["text"]) and renderQuickReplies(q, lang, (list(loc_c["quick"]) if (loc_c and loc_c["quick"]) else []), (str(loc_c["q_text"]) if (loc_c and loc_c["q_text"]) else ""), (str(loc_c["affects"]) if (loc_c and loc_c["affects"]) else ""))}
-                {(is_last and len(chips) > 0) and <div className="cm-chips">
+                {(is_last and len(chips) > 0) and <div className="cm-chips" dir="auto">
                     {[renderChip(str(chips[c]), str(en_chips[c]) if c < len(en_chips) else str(chips[c]), "") for c in range(len(chips))]}
                 </div>}
                 <div className="cm-hud">

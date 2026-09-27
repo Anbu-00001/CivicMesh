@@ -10,6 +10,8 @@ The top steps are chosen by w (value), then sequenced by w/p. Crisis lines are p
 once ("bring your photo ID — needed by 3 of 4 steps").
 """
 
+import from engine.messages { msg, has_messages }
+
 glob URGENCY_W: dict = {"immediate": 3.0, "within_days": 2.0, "within_weeks": 1.0};
 glob WAITLIST_MINUTES: float = 240.0;
 glob DEADLINE_LABEL: dict = {
@@ -19,12 +21,22 @@ glob DEADLINE_LABEL: dict = {
 
 """Imperative first action for a step, by submission method."""
 def action_text(name: str, method: str, phone: str, url: str, lang: str) -> str {
+    if lang not in ["en", "es"] and has_messages(lang) {
+        if method == "phone" and phone { return msg(lang, "act.call", {"phone": phone}); }
+        if method == "online" and url { return msg(lang, "act.online"); }
+        if method == "in_person" { return msg(lang, "act.in_person", {"phone": phone}) if phone else msg(lang, "act.visit"); }
+        if phone { return msg(lang, "act.call", {"phone": phone}); }
+        return msg(lang, "act.contact", {"name": name});
+    }
     es = lang == "es";
     if method == "phone" and phone {
         return ("Llame al " + phone) if es else ("Call " + phone);
     }
     if method == "online" and url {
         return "Solicite en línea" if es else "Apply online";
+    }
+    if method == "in_person" and not phone {
+        return "Vaya en persona" if es else "Go in person";
     }
     if method == "in_person" {
         return ("Vaya en persona — llame antes al " + phone) if es else ("Go in person — call " + phone + " first");
@@ -62,6 +74,9 @@ def build_plan(ranked: list, urgency: str, lang: str, max_steps: int = 4) -> dic
     jobs.sort(key=lambda j: tuple : -j[0]);
 
     labels = DEADLINE_LABEL.get(lang if lang in ["en", "es"] else "en", DEADLINE_LABEL["en"]);
+    if lang not in ["en", "es"] and has_messages(lang) {
+        labels = {k: msg(lang, "dl." + k) for k in DEADLINE_LABEL["en"].keys()};
+    }
     steps: list = [];
     doc_count: dict = {};
     total_minutes = 0;

@@ -25,6 +25,7 @@ data (EligibilityRuleNode fields + resource descriptions):
 import math;
 import re;
 import from engine.policy { income_limit, status_rule, snap_estimate, season_rule }
+import from engine.messages { msg, has_messages }
 
 glob INCOME_K: float = 12.0;
 glob W_INCOME: float = 0.45;
@@ -509,6 +510,9 @@ def rank_resources(items: list, profile: dict, message: str, limit: int = 6, lan
 
 """Question text for a value-of-information key in the user's language."""
 def question_for(key: str, lang: str) -> str {
+    if lang not in ["en", "es"] and key and has_messages(lang) {
+        return msg(lang, "q." + key);
+    }
     table = QUESTIONS.get(lang if lang in ["en", "es"] else "en", QUESTIONS["en"]);
     return str(table.get(key, ""));
 }

@@ -648,6 +648,22 @@
     "needs_llm": true
    },
    "_note": "Mayan orthography heuristic (glottal apostrophes) -> interpreter tier, Spanish answer"
+  },
+  {
+   "text": "Preciso de comida para minha família",
+   "expect": {
+    "language": "pt",
+    "category": "food"
+   },
+   "_note": "í in família is Portuguese, not a Spanish accent"
+  },
+  {
+   "text": "Waxaan u baahanahay cunto qoyskayga",
+   "expect": {
+    "language": "so",
+    "category": "food"
+   },
+   "_note": "inflected Somali (baahanahay) still identified"
   }
  ]
 }

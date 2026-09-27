@@ -1,8 +1,9 @@
-"""Full-answer translation — a translation model first, an LLM second.
+"""Runtime translation — for languages without a message catalog.
 
-The narrator writes a short summary; this translates the engine's whole
-answer (every program, step and the follow-up question), so a user who reads
-no English still gets all of it. Routing by language:
+Languages with a catalog (engine/messages.jac, data/i18n) get the whole
+answer composed natively and never come here. For the rest, this translates
+the engine's English answer and its short UI strings after the answer is on
+screen. Routing by language:
 
   1. NVIDIA Riva Translate 4B Instruct v2 (NIM) for the 36 languages it was
      trained on (English → es-US, pt-BR, zh-CN/zh-TW, vi, ar, hi, ko, ja, ru,
@@ -34,8 +35,14 @@ glob MAX_SEGMENTS: int = 8;
 glob RIVA_MODEL: str = "nvidia_nim/nvidia/riva-translate-4b-instruct-v2";
 glob POLYGLOT_TRANSLATE_MODEL: str = "nvidia_nim/google/gemma-4-31b-it";
 glob FALLBACK_TRANSLATE_MODEL: str = "nvidia_nim/mistralai/mistral-nemotron";
-glob TRANSLATE_TIMEOUT_S: float = 9.0;
-glob TRANSLATE_BUDGET_S: float = 16.0;
+# Measured on the live Space (NIM free tier, 2026-09-27): Riva ~8-10 s per
+# segment and >9 s with four in parallel; Gemma 4 took <9 s for the numbered
+# strings batch but >9 s for a whole answer. This path is off the critical
+# path (the answer is already on screen), so the limits fit those numbers.
+glob TRANSLATE_TIMEOUT_S: float = 15.0;
+glob TEXT_TIMEOUT_S: float = 22.0;
+glob STRINGS_TIMEOUT_S: float = 12.0;
+glob TRANSLATE_BUDGET_S: float = 35.0;
 
 """3+ digit runs after joining separators and mapping other scripts' digits."""
 def number_set(t: str) -> set {
@@ -53,15 +60,15 @@ def llm_prompt(text: str, name: str, code: str) -> str {
 }
 
 """One chat-completion call; returns stripped text ('' on error)."""
-def _call(model: str, messages: list, max_tokens: int = 900) -> str {
-    resp = litellm.completion(model=model, messages=messages, temperature=0.1, max_tokens=max_tokens, timeout=TRANSLATE_TIMEOUT_S, max_retries=0);
+def _call(model: str, messages: list, max_tokens: int = 900, timeout: float = 15.0) -> str {
+    resp = litellm.completion(model=model, messages=messages, temperature=0.1, max_tokens=max_tokens, timeout=timeout, max_retries=0);
     txt = str(resp.choices[0].message.content or "").strip();
     return re.sub(r"^<text>\s*|\s*</text>$", "", txt).strip();
 }
 
 """Riva, one segment: system message carries the direction ("en-zh-tw")."""
 def _riva_segment(seg: str, riva: str) -> str {
-    return _call(RIVA_MODEL, [{"role": "system", "content": "en-" + riva}, {"role": "user", "content": seg}], 600);
+    return _call(RIVA_MODEL, [{"role": "system", "content": "en-" + riva}, {"role": "user", "content": seg}], 600, TRANSLATE_TIMEOUT_S);
 }
 
 """True when `out` carries no 3+ digit number that `src` doesn't."""
@@ -112,7 +119,7 @@ def translate_text(text: str, code: str) -> dict {
         for model in [POLYGLOT_TRANSLATE_MODEL, FALLBACK_TRANSLATE_MODEL] {
             if (time.perf_counter() - t0) > TRANSLATE_BUDGET_S { break; }
             try {
-                txt = _call(model, [{"role": "user", "content": prompt}], 1400);
+                txt = _call(model, [{"role": "user", "content": prompt}], 1400, TEXT_TIMEOUT_S);
                 if txt and numbers_ok(src, txt) {
                     out["ok"] = True;
                     out["text"] = txt;
@@ -157,7 +164,8 @@ def translate_strings(strings: list, code: str) -> dict {
     got: dict = {};
     for model in [POLYGLOT_TRANSLATE_MODEL, FALLBACK_TRANSLATE_MODEL] {
         try {
-            txt = _call(model, [{"role": "user", "content": prompt}], 700);
+            if (time.perf_counter() - t0) > TRANSLATE_BUDGET_S { break; }
+            txt = _call(model, [{"role": "user", "content": prompt}], 700, STRINGS_TIMEOUT_S);
             for line in txt.splitlines() {
                 m = re.match(r"^\s*(\d+)[\.\)、:]\s*(.+?)\s*$", line);
                 if m {

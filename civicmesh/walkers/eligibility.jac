@@ -16,24 +16,27 @@ It then hands off, all deterministic:
 import from graph.nodes { PersonNode, NeedNode, ResourceNode, EligibilityRuleNode, FormNode }
 import from graph.edges { governed_by, requires_form, eligible_for }
 import from engine.score { rank_resources, question_for }
-import from engine.compose { span_begin, span_end, compose_reply }
+import from engine.compose { span_begin, span_end, compose_reply, reply_language }
+import from engine.messages { msg, quick_options, ui_labels }
 import from walkers.navigation { NavigationWalker }
 import from walkers.pathfinder { PathfinderWalker }
 import from walkers.escalation { EscalationWalker }
 
+# Category defaults, as message keys (data/i18n): the English text is the
+# payload the engine parses, the label is shown in the user's language.
 glob CHIPS: dict = {
-    "housing": ["What documents do I need for Section 8?", "Is there emergency shelter I can reach tonight?", "Can I get help with a past-due rent bill?"],
-    "food": ["Where is the nearest food bank open today?", "How do I apply for SNAP?", "Can my kids get free school meals?"],
-    "healthcare": ["How do I apply for Medicaid?", "Is there a sliding-scale clinic near me?", "How can I get cheaper prescriptions?"],
-    "legal": ["Can a free lawyer help with my eviction?", "What are my rights as a tenant?", "How do I find free immigration legal help?"]
+    "housing": ["chip.housing.0", "chip.housing.1", "chip.housing.2"],
+    "food": ["chip.food.0", "chip.food.1", "chip.food.2"],
+    "healthcare": ["chip.healthcare.0", "chip.healthcare.1", "chip.healthcare.2"],
+    "legal": ["chip.legal.0", "chip.legal.1", "chip.legal.2"]
 };
 
-"""Short program name for chip text: the acronym in parentheses, else the name."""
+"""Short program name for chip text: the name before any parenthesis
+("SNAP (Supplemental …)" → SNAP, "Public Housing (HUD)" → Public Housing —
+the parenthesis holds an expansion or the agency, never the program)."""
 def chip_name(name: str) -> str {
     n = str(name);
-    if "(" in n and ")" in n {
-        inner = n[n.index("(") + 1:n.index(")")];
-        if len(inner) <= 12 and " " not in inner.strip() { return inner; }
+    if "(" in n and n.index("(") > 0 {
         return n[:n.index("(")].strip();
     }
     return n;
@@ -46,15 +49,15 @@ program is waiting on exactly that fact (a child under 5 for WIC, children
 for school meals); the category defaults fill the rest, minus any that
 assume facts the person hasn't mentioned (kids, a tenancy).
 """
-def chips_for(ranked: list, profile: dict) -> list {
+def chips_for(ranked: list, profile: dict, lang: str = "en") -> list {
     flags = list(profile.get("flags", []));
-    out: list = [];
+    keyed: list = [];
     # "How do I apply for X?" only for programs with a real application
     # (a food bank or community fridge has nothing to apply for).
     likely = [s for s in ranked if s["tier"] in ["likely", "possible", "needs_info"] and not s.get("pinned", False)
               and int(dict(s.get("form", {}) or {}).get("estimated_minutes", 0) or 0) >= 20];
     if likely {
-        out.append("How do I apply for " + chip_name(likely[0]["resource_name"]) + "?");
+        keyed.append(["chip.apply", {"program": chip_name(likely[0]["resource_name"])}]);
     }
     asks: list = [];
     for s in ranked[:6] {
@@ -62,15 +65,18 @@ def chips_for(ranked: list, profile: dict) -> list {
             if a not in asks { asks.append(a); }
         }
     }
-    if "young_child" in asks and "children" not in flags { out.append("I have a child under 5 or I'm pregnant"); }
-    elif "children" in asks and "children" not in flags { out.append("I have children at home"); }
-    if "homeless" in asks and "homeless" not in flags { out.append("We have nowhere to stay tonight"); }
-    for c in list(CHIPS.get(str(profile.get("category", "")), CHIPS["housing"])) {
+    if "young_child" in asks and "children" not in flags { keyed.append(["chip.young_child", {}]); }
+    elif "children" in asks and "children" not in flags { keyed.append(["chip.children", {}]); }
+    if "homeless" in asks and "homeless" not in flags { keyed.append(["chip.homeless", {}]); }
+    out: list = [[msg("en", k[0], k[1]), msg(lang, k[0], k[1])] for k in keyed];
+    for key in list(CHIPS.get(str(profile.get("category", "")), CHIPS["housing"])) {
         if len(out) >= 3 { break; }
+        c = msg("en", key);
         if ("kids" in c or "children" in c) and "children" not in flags { continue; }
         if likely and chip_name(likely[0]["resource_name"]) in c { continue; }
-        if c not in out { out.append(c); }
+        if c not in [o[0] for o in out] { out.append([c, msg(lang, key)]); }
     }
+    # [English payload, label in the user's language]
     return out[:3];
 }
 
@@ -145,6 +151,9 @@ walker EligibilityWalker {
     can check with NeedNode entry {
         tr = self.trace;
         lang = self.language if self.language in ["en", "es"] else "en";
+        # Sentences shown to the user: their language when a message catalog
+        # covers it (the scoring text underneath stays EN/ES).
+        ui_lang = reply_language(self.language);
 
         cache_key = str(self.person_node.user_id);
         items: list = list(CATALOG_CACHE.get(cache_key, []));
@@ -170,7 +179,7 @@ walker EligibilityWalker {
             # presenting a guess (housing) as if it were understood.
             ask = {"key": "need", "gain": 1.0, "affects": int(ranking["all_count"])};
         }
-        question = question_for(str(ask["key"]), lang) if ask["key"] else "";
+        question = question_for(str(ask["key"]), ui_lang) if ask["key"] else "";
         span_end(tr, sp, {"civicmesh.scored": ranking["all_count"], "civicmesh.likely": ranking["tiers"]["likely"], "civicmesh.ask": str(ask["key"])});
 
         ranked = list(ranking["ranked"]);
@@ -196,7 +205,7 @@ walker EligibilityWalker {
 
         nav = self.person_node spawn NavigationWalker(
             ranked=ranked, urgency=str(self.profile.get("urgency", "within_weeks")),
-            language=lang, trace=tr, parent_span=self.parent_span
+            language=ui_lang, trace=tr, parent_span=self.parent_span
         );
         plan: dict = nav.summary;
 
@@ -222,23 +231,31 @@ walker EligibilityWalker {
         if credible == 0 or "self_harm" in flags or "dv" in flags {
             esc = self.person_node spawn EscalationWalker(
                 category=str(self.profile.get("category", "")), flags=flags,
-                language=lang, ranked=ranked, trace=tr, parent_span=self.parent_span
+                language=ui_lang, ranked=ranked, trace=tr, parent_span=self.parent_span
             );
             escalation = esc.summary;
         }
 
-        reply = compose_reply(lang, self.profile, ranking, plan, routes, question);
-        chips = chips_for(ranked, self.profile);
+        reply = compose_reply(ui_lang, self.profile, ranking, plan, routes, question);
+        chips = chips_for(ranked, self.profile, ui_lang);
+        qkey = str(ask["key"]);
         self.summary = {
             "reply": reply,
-            "question": {"key": str(ask["key"]), "text": question, "affects": int(ask["affects"]), "gain": float(ask["gain"])},
+            "reply_language": ui_lang,
+            "question": {
+                "key": qkey, "text": question, "affects": int(ask["affects"]), "gain": float(ask["gain"]),
+                "affects_label": msg(ui_lang, "affects", {"n": int(ask["affects"])}) if int(ask["affects"]) > 0 else "",
+                "options": quick_options(qkey, ui_lang) if qkey else []
+            },
             "matches": ranked,
             "tiers": ranking["tiers"],
             "near_misses": ranking["near_misses"],
             "plan": plan,
             "routes": routes,
             "escalation": escalation,
-            "chips": chips,
+            "chips": [c[0] for c in chips],
+            "chip_labels": [c[1] for c in chips],
+            "ui": ui_labels(ui_lang),
             "facts": facts_for(ranking, plan, question, self.profile)
         };
     }

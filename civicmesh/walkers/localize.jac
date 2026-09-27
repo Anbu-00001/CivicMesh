@@ -1,8 +1,9 @@
-"""LocalizeWalker — translates the engine's full answer, after it is on screen.
+"""LocalizeWalker — translates the engine's answer, after it is on screen.
 
-Called by the client for languages other than English and Spanish (Spanish
-answers are composed natively). Riva Translate first, Gemma 4 for the long
-tail; numbers guarded. See llm/translate.jac.
+Only for languages without a message catalog (engine/messages.jac): those
+with one get the whole answer composed natively and never call this. Riva
+Translate first, Gemma 4 for the long tail; numbers guarded. See
+llm/translate.jac.
 """
 
 import concurrent.futures;
@@ -20,10 +21,12 @@ walker LocalizeWalker {
 
     can localize with `Root entry {
         info = language_info(str(self.language));
-        f_text = LOC_POOL.submit(translate_text, str(self.text)[:4000], str(self.language));
-        f_str = LOC_POOL.submit(translate_strings, [str(x)[:300] for x in list(self.strings)[:16]], str(self.language));
-        res = f_text.result();
-        sres = f_str.result();
+        # The client asks for the short strings and the full text in separate
+        # calls (strings come back in a few seconds; the text can take longer).
+        f_text = LOC_POOL.submit(translate_text, str(self.text)[:4000], str(self.language)) if str(self.text).strip() else None;
+        f_str = LOC_POOL.submit(translate_strings, [str(x)[:300] for x in list(self.strings)[:16]], str(self.language)) if self.strings else None;
+        res = f_text.result() if f_text else {"ok": False, "text": "", "model": "", "error": "no text"};
+        sres = f_str.result() if f_str else {"strings": [], "translated": 0, "model": ""};
         out = {
             "strings": list(sres["strings"]), "strings_translated": int(sres["translated"]), "strings_model": str(sres["model"]),
             "ok": bool(res["ok"]), "text": str(res["text"]), "model": str(res["model"]),

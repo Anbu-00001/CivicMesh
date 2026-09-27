@@ -178,7 +178,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     "margin": "0 auto 38px",
                     "fontWeight": "400"
                 }}>
-                    A multi-agent navigator that routes people in crisis — single mothers, immigrant families, elderly tenants — to the housing, food, healthcare and legal aid they qualify for, and shows exactly why. Instant answers in 75 languages, a full translation and summary in 111 immigrant languages and dialects, and an interpreter card for the ones machines can't translate yet.
+                    A multi-agent navigator that routes people in crisis — single mothers, immigrant families, elderly tenants — to the housing, food, healthcare and legal aid they qualify for, and shows exactly why. The whole answer composed in 51 languages on the first response, understood in 75, translated in 111 immigrant languages and dialects, and an interpreter card for the ones machines can't translate yet.
                 </p>
 
                 <div style={{"display": "flex", "justifyContent": "center", "alignItems": "center", "gap": "16px", "marginBottom": "56px", "flexWrap": "wrap"}}>
@@ -255,7 +255,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     "gap": "14px"
                 }}>
                     {renderStatTile((str(platform["programs"]) if platform else "40"), "Programs scored per turn", "Federal + national programs · 2026 poverty & HUD limits by household size", "#FFE500")}
-                    {renderStatTile((str(platform["languages_routed"]) if platform else "75"), "Languages routed without an LLM", "Script + lexicon language ID · others narrated in the user's language", "#00FF88")}
+                    {renderStatTile((str(platform["languages_native"]) if (platform and platform["languages_native"]) else "51"), "Languages answered natively", ("Whole answer composed from reviewed templates · " + (str(platform["languages_routed"]) if platform else "75") + " routed without an LLM"), "#00FF88")}
                     {renderStatTile(((str(platform["stats"]["engine_ms_p50"]) + " ms") if (platform and Number(platform["stats"]["turns"]) > 0) else "< 1 s"), "Median engine time per turn", ((str(platform["stats"]["turns"]) + " live turns since last restart") if (platform and Number(platform["stats"]["turns"]) > 0) else "Answer on screen before any LLM call"), "#4488FF")}
                     {renderStatTile("1", "LLM call per turn", "Async narration with a facts guard — never on the critical path", "#FF88AA")}
                 </div>

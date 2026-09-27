@@ -491,6 +491,60 @@
     "needs_llm": true
    },
    "_why": "out of scope: don't guess food/housing"
+  },
+  {
+   "text": "남편이 저를 때려요. 아이랑 갈 곳이 없어요",
+   "expect": {
+    "language": "ko",
+    "flag": "dv"
+   },
+   "_note": "colloquial DV (no 'domestic violence' term)"
+  },
+  {
+   "text": "Муж угрожает меня убить, мне страшно",
+   "expect": {
+    "language": "ru",
+    "flag": "dv"
+   }
+  },
+  {
+   "text": "زوجي يضربني وأنا خائفة",
+   "expect": {
+    "language": "ar",
+    "flag": "dv"
+   }
+  },
+  {
+   "text": "Chồng đánh tôi, tôi cần chỗ ở",
+   "expect": {
+    "language": "vi",
+    "flag": "dv"
+   }
+  },
+  {
+   "text": "मेरा पति मुझे मारता है, मुझे मदद चाहिए",
+   "expect": {
+    "language": "hi",
+    "flag": "dv"
+   }
+  },
+  {
+   "text": "请打我电话，我需要食物",
+   "expect": {
+    "language": "zh",
+    "category": "food",
+    "flag_absent": "dv"
+   },
+   "_note": "打我电话 = call me, not violence"
+  },
+  {
+   "text": "У меня сердце бьётся очень быстро, нужен врач",
+   "expect": {
+    "language": "ru",
+    "category": "healthcare",
+    "flag_absent": "dv"
+   },
+   "_note": "heart pounding, not violence"
   }
  ]
 }

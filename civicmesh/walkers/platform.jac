@@ -14,6 +14,7 @@ import from engine.parse { parse_intake }
 import from engine.score { rank_resources, question_for }
 import from engine.stats { stats_snapshot }
 import from engine.i18n { routed_languages, language_catalog }
+import from engine.messages { message_languages }
 import from engine.policy { policy_sources, POLICY_VERSION }
 
 glob PREVIEW_PROMPT: str = "I'm a single mom with 2 kids in Houston. I earn $1,800 a month and we need food.";
@@ -63,6 +64,7 @@ walker PlatformWalker {
             "stats": stats_snapshot(),
             "programs": len(items),
             "languages_routed": len(routed_languages()),
+            "languages_native": len(message_languages()),
             "languages": language_catalog(),
             "policy_version": POLICY_VERSION,
             "policy_sources": policy_sources()
