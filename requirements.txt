@@ -6,7 +6,7 @@ annotated-types==0.7.0
 anyio==4.13.0
 attrs==26.1.0
 bcrypt==4.3.0
-byllm==0.6.7
+byllm==0.6.19
 certifi==2026.4.22
 cffi==2.0.0
 charset-normalizer==3.4.7
@@ -31,12 +31,12 @@ httpx-sse==0.4.3
 huggingface_hub==1.15.0
 idna==3.15
 importlib_metadata==9.0.0
-jac-client==0.3.15
-jac-mcp==0.1.14
-jac-scale==0.2.17
-jac-super==0.1.13
-jaclang==0.15.1
-jaseci==2.3.16
+jac-client==0.3.25
+jac-mcp==0.1.24
+jac-scale==0.2.31
+jac-super==0.1.22
+jaclang==0.16.7
+jaseci==2.3.28
 Jinja2==3.1.6
 jiter==0.14.0
 jsonschema==4.26.0
