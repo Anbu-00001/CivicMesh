@@ -382,6 +382,264 @@
    },
    "suite": "probes",
    "_why": "the green card wins over the visa it came from"
+  },
+  {
+   "text": "There are 3 people in my family and we need food",
+   "expect": {
+    "category": "food",
+    "household_size": 3
+   },
+   "suite": "probes",
+   "_why": "live conversation: 'there are 3 people' read as household 0"
+  },
+  {
+   "text": "3 people live in my apartment and we're behind on rent",
+   "expect": {
+    "category": "housing",
+    "household_size": 3
+   },
+   "suite": "probes",
+   "_why": "count before 'people live'"
+  },
+  {
+   "text": "We're not homeless, we just need help with rent",
+   "expect": {
+    "category": "housing",
+    "flag_absent": "homeless"
+   },
+   "tier_not": {
+    "Emergency Solutions Grant Shelter Network": "likely",
+    "Rapid Re-Housing Program": "likely"
+   },
+   "suite": "probes",
+   "_why": "the scorer's own targeting regex ignored negation"
+  },
+  {
+   "text": "The Salvation Army shelter is full and we have nowhere to sleep tonight",
+   "expect": {
+    "flag": "homeless",
+    "flag_absent": "veteran"
+   },
+   "tier_not": {
+    "HUD-VASH (Veterans Affairs Supportive Housing)": "likely"
+   },
+   "p_max": {
+    "HUD-VASH (Veterans Affairs Supportive Housing)": 0.5
+   },
+   "suite": "probes",
+   "_why": "the scorer's veteran regex matched 'army'"
+  },
+  {
+   "text": "I don't have a disability, I just need legal help with my landlord",
+   "expect": {
+    "category_in": [
+     "legal",
+     "housing"
+    ],
+    "flag_absent": "disabled"
+   },
+   "tier_not": {
+    "Disability Rights Network Protection and Advocacy": "likely"
+   },
+   "suite": "probes",
+   "_why": "negated disability matched the scorer's regex"
+  },
+  {
+   "text": "I'm not pregnant and I have no kids, I need food",
+   "expect": {
+    "category": "food",
+    "flag_absent": "pregnant"
+   },
+   "tier_not": {
+    "WIC (Women, Infants and Children)": "likely"
+   },
+   "suite": "probes",
+   "_why": "negated pregnancy matched the young-child regex"
+  },
+  {
+   "text": "Everyone would be better off without me",
+   "expect": {
+    "flag": "self_harm_concern"
+   },
+   "suite": "probes",
+   "_why": "indirect crisis wording (988 / Hotline warning signs): escalate-only concern"
+  },
+  {
+   "text": "I feel like such a burden to my family since I lost my job",
+   "expect": {
+    "flag": "self_harm_concern"
+   },
+   "suite": "probes",
+   "_why": "indirect crisis wording (988 / Hotline warning signs): escalate-only concern"
+  },
+  {
+   "text": "There's no reason to go on anymore, I lost the apartment",
+   "expect": {
+    "flag": "self_harm"
+   },
+   "suite": "probes",
+   "_why": "already a direct self-harm phrase: the stronger flag wins"
+  },
+  {
+   "text": "I can't take it anymore, nothing is working",
+   "expect": {
+    "flag": "self_harm_concern"
+   },
+   "suite": "probes",
+   "_why": "indirect crisis wording (988 / Hotline warning signs): escalate-only concern"
+  },
+  {
+   "text": "I wish I could just disappear",
+   "expect": {
+    "flag": "self_harm_concern"
+   },
+   "suite": "probes",
+   "_why": "indirect crisis wording (988 / Hotline warning signs): escalate-only concern"
+  },
+  {
+   "text": "I don't see a way out of this",
+   "expect": {
+    "flag": "self_harm_concern"
+   },
+   "suite": "probes",
+   "_why": "indirect crisis wording (988 / Hotline warning signs): escalate-only concern"
+  },
+  {
+   "text": "Estarían mejor sin mí",
+   "expect": {
+    "flag": "self_harm_concern"
+   },
+   "suite": "probes",
+   "_why": "indirect crisis wording (988 / Hotline warning signs): escalate-only concern"
+  },
+  {
+   "text": "Ya no puedo más, soy una carga para todos",
+   "expect": {
+    "flag": "self_harm_concern"
+   },
+   "suite": "probes",
+   "_why": "indirect crisis wording (988 / Hotline warning signs): escalate-only concern"
+  },
+  {
+   "text": "I'm scared to go home tonight",
+   "expect": {
+    "flag": "dv_concern"
+   },
+   "suite": "probes",
+   "_why": "indirect crisis wording (988 / Hotline warning signs): escalate-only concern"
+  },
+  {
+   "text": "My husband controls all my money and checks my phone",
+   "expect": {
+    "flag": "dv_concern"
+   },
+   "suite": "probes",
+   "_why": "indirect crisis wording (988 / Hotline warning signs): escalate-only concern"
+  },
+  {
+   "text": "He won't let me see my family or work",
+   "expect": {
+    "flag": "dv_concern"
+   },
+   "suite": "probes",
+   "_why": "indirect crisis wording (988 / Hotline warning signs): escalate-only concern"
+  },
+  {
+   "text": "She threatens to call immigration if I leave",
+   "expect": {
+    "flag": "dv_concern"
+   },
+   "suite": "probes",
+   "_why": "indirect crisis wording (988 / Hotline warning signs): escalate-only concern"
+  },
+  {
+   "text": "He says he'll take the kids if I go to anyone",
+   "expect": {
+    "flag": "dv_concern"
+   },
+   "suite": "probes",
+   "_why": "indirect crisis wording (988 / Hotline warning signs): escalate-only concern"
+  },
+  {
+   "text": "Tengo miedo de volver a casa",
+   "expect": {
+    "flag": "dv_concern"
+   },
+   "suite": "probes",
+   "_why": "indirect crisis wording (988 / Hotline warning signs): escalate-only concern"
+  },
+  {
+   "text": "Mi esposo me quita el dinero y no me deja salir",
+   "expect": {
+    "flag": "dv_concern"
+   },
+   "suite": "probes",
+   "_why": "indirect crisis wording (988 / Hotline warning signs): escalate-only concern"
+  },
+  {
+   "text": "I'm trapped in a lease I can't afford",
+   "expect": {
+    "flag_absent": "self_harm_concern"
+   },
+   "suite": "probes",
+   "_why": "everyday wording must not raise a concern"
+  },
+  {
+   "text": "There's no way out of this contract, can a lawyer help?",
+   "expect": {
+    "flag_absent": "self_harm_concern"
+   },
+   "suite": "probes",
+   "_why": "everyday wording must not raise a concern"
+  },
+  {
+   "text": "I can't take this paperwork anymore lol, I need food stamps",
+   "expect": {
+    "flag_absent": "self_harm_concern"
+   },
+   "suite": "probes",
+   "_why": "everyday wording must not raise a concern"
+  },
+  {
+   "text": "My phone is broken and I need food",
+   "expect": {
+    "flag_absent": "self_harm_concern"
+   },
+   "suite": "probes",
+   "_why": "everyday wording must not raise a concern"
+  },
+  {
+   "text": "My landlord checks my mail and won't let me have guests",
+   "expect": {
+    "flag_absent": "dv_concern"
+   },
+   "suite": "probes",
+   "_why": "a landlord is not a partner (no 'my phone' / money / immigration cue)"
+  },
+  {
+   "text": "We are a family of 4 in Fort Worth making $52,000 a year and need housing help",
+   "expect": {
+    "category": "housing",
+    "household_size": 4
+   },
+   "suite": "probes",
+   "tier_not": {
+    "Section 8 Housing Choice Voucher Program": "unlikely"
+   },
+   "_why": "local HUD limit (Fort Worth area) — a national figure would misjudge this family"
+  },
+  {
+   "text": "Family of 4 in Fort Lauderdale, we make $60,000 a year and need a housing voucher",
+   "expect": {
+    "category": "housing",
+    "city": "Fort Lauderdale",
+    "household_size": 4
+   },
+   "tier_not": {
+    "Section 8 Housing Choice Voucher Program": "possible"
+   },
+   "suite": "probes",
+   "_why": "outside review: the national limit ($53,950) left this family at 'possible 47%'; Fort Lauderdale's HUD limit is $63,400, so 'likely'"
   }
  ]
 }

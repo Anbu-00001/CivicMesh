@@ -10,8 +10,17 @@ impl GraphViz.loadSnap -> None {
     if reps and len(reps) > 0 {
         snap = reps[len(reps) - 1];
         err = "";
+        GV_RETRY["n"] = 0;
     } elif res["spawn_error"] {
-        err = str(res["spawn_error"]);
+        e = str(res["spawn_error"]);
+        # A proxy error page arrives as a wall of HTML: say what happened
+        # instead, and retry twice on our own before asking.
+        proxy = e.includes("<!DOCTYPE") or e.includes("<html");
+        err = ("The hosting service didn't answer just now (it returned an error page). Your graph is safe." if proxy else e.slice(0, 160));
+        if Number(GV_RETRY["n"]) < 2 {
+            GV_RETRY["n"] = Number(GV_RETRY["n"]) + 1;
+            setTimeout(lambda { loadSnap(); }, 2500 * Number(GV_RETRY["n"]));
+        }
     }
     loading = False;
 }

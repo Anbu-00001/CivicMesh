@@ -17,8 +17,9 @@ is the one to quote. This suite is a measurement, not a gate: long Reddit
 narratives are harder than the short requests the router is built for.
 
 What is measured (the engine's own outputs, no model):
-  domestic_violence  recall = Yes posts that raise the dv flag (a miss hides a
-                     hotline); false alarms = No posts that raise it
+  domestic_violence  recall = Yes posts where the DV hotline is shown (the dv
+                     flag or the escalate-only dv_concern layer; a miss hides a
+                     hotline); false alarms = No posts where it's shown
   housing / health   recall = Yes posts routed to housing / healthcare (as the
                      top or a secondary category); false-positive rate on No
   immigration        recall = Yes posts where an immigration status was read
@@ -59,7 +60,9 @@ def load_task(task: str) -> list {
 """Did the engine's reading of `text` hit the task's target?"""
 def hit(task: str, p: dict) -> bool {
     cats = [str(p["category"])] + [str(c) for c in list(p.get("secondary", []))];
-    if task == "domestic_violence" { return "dv" in list(p["flags"]); }
+    # The hotline is shown for the direct flag and for the escalate-only
+    # concern layer ("he controls my money"), so both count.
+    if task == "domestic_violence" { return "dv" in list(p["flags"]) or "dv_concern" in list(p["flags"]); }
     if task == "housing" { return "housing" in cats; }
     if task == "health" { return "healthcare" in cats; }
     # Every r/legaladvice post is "legal", so routing is no signal here: count

@@ -26,6 +26,12 @@ glob ANSWER_EVIDENCE: dict = {
     "eviction": "eviction notice"
 };
 glob NEGATIVE_QUESTIONS: list = ["homeless", "dv"];
+# The flag a "yes" (or, for the negative questions, a "no") sets. Appending the
+# evidence word to the case text alone left the flag unset, so "Yes" to "Do you
+# or someone in your household have a disability?" changed nothing.
+glob ANSWER_FLAGS: dict = {"homeless": "homeless", "veteran": "veteran", "disability": "disabled", "dv": "dv", "children": "children"};
+glob COUNT_WORDS: dict = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+                          "uno": 1, "una": 1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5, "seis": 6, "siete": 7, "ocho": 8, "nueve": 9, "diez": 10};
 glob YES_RE: str = "^\\s*(?:yes|yeah|yep|yup|sure|correct|right|i am|i do|i have|we do|we are|s[ií]|claro|as[ií] es|tengo|soy)\\b";
 glob NO_RE: str = "^\\s*(?:no|nope|nah|not really|i'?m not|i don'?t|we don'?t|none|ninguno|no tengo|no soy)\\b";
 
@@ -101,7 +107,19 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
     for f in list(prior.get("flags", [])) {
         if f not in flags { flags.append(f); }
     }
+    if out.get("answered_yes") and ANSWER_FLAGS.get(str(out["answered_yes"])) and ANSWER_FLAGS[str(out["answered_yes"])] not in flags {
+        flags.append(ANSWER_FLAGS[str(out["answered_yes"])]);
+    }
     out["flags"] = flags;
+    # "How many people live in your household?" → "3", "three", "there are 3 people".
+    if answering == "household" and int(out.get("household_size", 0) or 0) <= 0 {
+        mc = re.search("\\b(\\d{1,2}|" + "|".join(COUNT_WORDS.keys()) + ")\\b", str(text).lower());
+        if mc {
+            tok = mc.group(1);
+            n = int(tok) if tok.isdigit() else int(COUNT_WORDS.get(tok, 0));
+            if 0 < n < 20 { out["household_size"] = n; }
+        }
+    }
     if prior.get("urgency") == "immediate" { out["urgency"] = "immediate"; }
     known = 0;
     if int(out.get("income_annual", -1)) >= 0 { known += 1; }

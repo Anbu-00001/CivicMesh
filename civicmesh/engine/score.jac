@@ -26,6 +26,7 @@ import math;
 import re;
 import from engine.policy { income_limit, status_rule, snap_estimate, season_rule }
 import from engine.messages { msg, has_messages }
+import from engine.parse { fact_negated }
 
 glob INCOME_K: float = 12.0;
 glob W_INCOME: float = 0.45;
@@ -74,6 +75,25 @@ glob TARGETS: dict = {
     "tenant": ("evict|landlord|lease|repairs|\\bmold|\\brent\\b|tenant|desalo|casero|renta|inquilin", "eviction", "renters with landlord problems", "inquilinos con problemas con el casero")
 };
 glob TARGET_GATE: float = 0.35;
+
+# Person facts have one source of truth: the parser's flags, which apply fact
+# negation ("we're not homeless", "I don't have a disability") and other-sense
+# guards ("the Salvation Army", "a car parked on the street"). Matching the
+# raw TARGETS regex here counted those as evidence (found by probing a real
+# conversation after the flag fixes). Other targets are topics, not facts.
+glob FLAG_TARGETS: dict = {"homeless": "homeless", "veteran": "veteran", "disability": "disabled", "dv": "dv", "children": "children"};
+
+"""Is target `t` evidenced for this person?"""
+def target_hit(t: str, low_msg: str, flags: list) -> bool {
+    f = FLAG_TARGETS.get(t, "");
+    if f { return f in flags; }
+    for m in re.finditer(TARGETS[t][0], low_msg) {
+        # "I'm not pregnant", "no baby yet": a negated fact is not evidence.
+        if t == "young_child" and fact_negated(low_msg, m.start(), m.end()) { continue; }
+        return True;
+    }
+    return False;
+}
 
 glob QUESTIONS: dict = {
     "en": {
@@ -341,7 +361,7 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
 
     targets = [str(t) for t in list(rule.get("targets", []) or []) if str(t) in TARGETS];
     if targets {
-        hit: list = [t for t in targets if re.search(TARGETS[t][0], low_msg)];
+        hit: list = [t for t in targets if target_hit(t, low_msg, flags)];
         miss: list = [t for t in targets if t not in hit];
         es = lang == "es";
         if not miss {
@@ -452,8 +472,9 @@ def rank_resources(items: list, profile: dict, message: str, limit: int = 6, lan
         w = category_weight(cat, profile);
         name_low = str(res.get("agency_name", "")).lower();
         pinned = False;
-        if "self_harm" in flags and "988" in name_low { pinned = True; }
+        if ("self_harm" in flags or "self_harm_concern" in flags) and "988" in name_low { pinned = True; }
         if "dv" in flags and "domestic violence" in name_low { pinned = True; }
+        if "dv_concern" in flags and "domestic violence hotline" in name_low { pinned = True; }
         if w <= 0.0 and not pinned { continue; }
         s = score_resource(res, it["rule"], profile, message, lang);
         s["form"] = it.get("form", {});

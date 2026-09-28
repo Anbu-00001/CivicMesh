@@ -21,7 +21,8 @@ background to localize and warm up the wording.
 import datetime;
 import contextvars;
 import concurrent.futures;
-import from graph.nodes { PersonNode, NeedNode }
+import from graph.nodes { PersonNode, NeedNode, ResourceNode }
+import from walkers.seed { SeedWalker }
 import from graph.edges { has_need }
 import from llm.stubs { understand_message, pool_model_names }
 import from engine.parse { parse_intake }
@@ -31,6 +32,7 @@ import from engine.privacy { redact, is_private_turn, need_summary, model_may_re
 import from engine.compose { merge_profiles, new_trace, span_begin, span_end, export_spans }
 import from walkers.eligibility { EligibilityWalker }
 import from walkers.critique { CritiqueWalker }
+import from walkers.narrate { sign_facts }
 
 glob CATEGORIES: list = ["housing", "food", "healthcare", "legal"];
 # The routing LLM call runs on a worker thread with a wall-clock deadline:
@@ -58,6 +60,12 @@ walker IntakeWalker {
         rid = root_span["span_id"];
         ts = datetime.datetime.utcnow().isoformat();
         text = str(self.conversation);
+        # A visitor whose SeedWalker call was lost (flaky proxy at sign-in) had
+        # no programs, so every answer came back empty with no follow-up
+        # question. Seeding is idempotent: do it here if the catalog is empty.
+        if not [root --> [?:ResourceNode]] {
+            root spawn SeedWalker(user_id=self.user_id);
+        }
 
         sp = span_begin(tr, "intake.parse", "INTERNAL", rid);
         parsed = parse_intake(text);
@@ -245,6 +253,7 @@ walker IntakeWalker {
             "escalation": result.get("escalation", {}),
             "chips": result.get("chips", []),
             "facts": result.get("facts", ""),
+            "facts_sig": sign_facts(str(result.get("facts", "")), [str(c) for c in list(result.get("chips", []))], str(narrate_lang)),
             "llm": {"sync_used": llm_sync, "reason": llm_reason, "error": llm_error, "models": pool_model_names(), "narrate": not private_turn, "budget_s": SYNC_LLM_BUDGET_S},
             # Privacy, as measured behavior: the words were neither stored nor
             # sent to a model (unless an operator opted in and the engine could

@@ -186,6 +186,13 @@ walker EligibilityWalker {
         span_end(tr, sp, {"civicmesh.scored": ranking["all_count"], "civicmesh.likely": ranking["tiers"]["likely"], "civicmesh.ask": str(ask["key"])});
 
         ranked = list(ranking["ranked"]);
+        # Nothing routed the message: say so and ask (compose: r.unsure), don't
+        # present housing programs as if they'd been asked for, don't write
+        # verdict edges for a guess, and don't archive an earlier plan. Only a
+        # pinned crisis line survives.
+        if self.profile.get("defaulted_category") {
+            ranked = [s for s in ranked if s.get("pinned", False)];
+        }
 
         # Persist the verdicts: one scored eligible_for edge per top match, so
         # the case's reasoning lives in the graph (the Graph tab queries it).
@@ -206,11 +213,14 @@ walker EligibilityWalker {
         }
         span_end(tr, sp, {"civicmesh.edges": written});
 
-        nav = self.person_node spawn NavigationWalker(
-            ranked=ranked, urgency=str(self.profile.get("urgency", "within_weeks")),
-            language=ui_lang, trace=tr, parent_span=self.parent_span
-        );
-        plan: dict = nav.summary;
+        plan: dict = {"steps": []};
+        if ranked {
+            nav = self.person_node spawn NavigationWalker(
+                ranked=ranked, urgency=str(self.profile.get("urgency", "within_weeks")),
+                language=ui_lang, trace=tr, parent_span=self.parent_span
+            );
+            plan = nav.summary;
+        }
 
         p_of: dict = {};
         for s in ranked { p_of[s["resource_name"]] = float(s["p_eligible"]) * float(s["approval"]["mean"]); }

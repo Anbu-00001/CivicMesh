@@ -16,7 +16,11 @@ domestic violence) can be recognised server-side; then no call is made.
 """
 
 import re;
+import os;
+import hmac;
 import time;
+import hashlib;
+import secrets;
 import from llm.stubs { narrate_turn, narrate_turn_polyglot, pool_model_names, polyglot_model_names }
 import from engine.i18n { ascii_digits, language_info }
 import from engine.stats { record_narration }
@@ -54,11 +58,38 @@ def invents_numbers(text: str, facts: str, user_message: str = "") -> bool {
 
 glob STRONG_NARRATION: list = ["en", "es", "fr", "de", "it", "pt", "ru", "zh", "yue", "ja", "ko"];
 
+# The narrator's inputs come from IntakeWalker, signed with a per-process key,
+# so the endpoint can't be used as a free relay to the model quota with
+# arbitrary text (outside review). Set CIVICMESH_SIGNING_KEY when running more
+# than one server process.
+glob NARRATE_KEY: bytes = (str(os.environ.get("CIVICMESH_SIGNING_KEY", "")) or secrets.token_hex(32)).encode();
+# A server-wide ceiling on narration calls protects the model quota even
+# against replayed (validly signed) requests.
+glob NARRATE_CALLS: dict = {};
+glob NARRATE_MAX_PER_10_MIN: int = 300;
+
+"""Signature over exactly what the narrator may say something about."""
+def sign_facts(facts: str, chips: list, language: str) -> str {
+    msg = (str(facts) + "\u241e" + "\u241f".join([str(c) for c in chips]) + "\u241e" + str(language)).encode();
+    return hmac.new(NARRATE_KEY, msg, hashlib.sha256).hexdigest();
+}
+
+"""True while under the narration ceiling for `key` (and counts the call)."""
+def narrate_allowed(user_key: str) -> bool {
+    now = time.time();
+    recent = [t for t in list(NARRATE_CALLS.get(user_key, [])) if now - t < 600];
+    if len(recent) >= NARRATE_MAX_PER_10_MIN { NARRATE_CALLS[user_key] = recent; return False; }
+    recent.append(now);
+    NARRATE_CALLS[user_key] = recent;
+    return True;
+}
+
 walker NarrateWalker {
     has user_message: str = "";
     has language: str = "en";
     has facts: str = "";
     has chips: list = [];
+    has facts_sig: str = "";
     has summary: dict = {};
 
     can narrate with `Root entry {
@@ -74,6 +105,21 @@ walker NarrateWalker {
         if is_private_turn(list(parse_intake(str(self.user_message)[:600])["flags"])) {
             out["private"] = True;
             out["error"] = "crisis turn — not sent to any model";
+            out["latency_ms"] = round((time.perf_counter() - t0) * 1000.0, 1);
+            self.summary = out;
+            report out;
+            return;
+        }
+        # Only facts IntakeWalker produced (and signed) are narrated.
+        if not hmac.compare_digest(str(self.facts_sig), sign_facts(str(self.facts), [str(c) for c in self.chips], code)) {
+            out["error"] = "unsigned facts — narration only runs on the engine's own answer";
+            out["latency_ms"] = round((time.perf_counter() - t0) * 1000.0, 1);
+            self.summary = out;
+            report out;
+            return;
+        }
+        if not narrate_allowed("__server__") {
+            out["error"] = "narration rate limit";
             out["latency_ms"] = round((time.perf_counter() - t0) * 1000.0, 1);
             self.summary = out;
             report out;

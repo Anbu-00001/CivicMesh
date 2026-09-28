@@ -31,6 +31,7 @@ Sources (checked 2026-09-27):
 """
 
 import os;
+import json;
 import math;
 import datetime;
 
@@ -46,6 +47,44 @@ glob FPL_SOURCE: str = "HHS 2026 poverty guidelines";
 
 glob HUD_MFI: int = 107900;
 glob HUD_SIZE_ADJ: list = [0.70, 0.80, 0.90, 1.00, 1.08, 1.16, 1.24, 1.32];
+# HUD's published limits for the metro area / county of each city the parser
+# recognises (data/hud_income_limits.json, built by tools/build_hud_limits.py
+# from Section8-FY26.xlsx). Limits are local: for a family of 4 the 50% limit
+# is $50,300 in San Antonio and $105,050 in San Francisco, where the national
+# formula above gives $53,950 (outside review, round 3).
+glob HUD_LOCAL: dict = {};
+
+"""Load the local HUD limits once."""
+def hud_local -> dict {
+    if HUD_LOCAL { return HUD_LOCAL; }
+    for d in [os.path.join(os.getcwd(), "data"), os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")] {
+        f = os.path.join(d, "hud_income_limits.json");
+        if os.path.exists(f) {
+            HUD_LOCAL.update(json.load(open(f, encoding="utf-8")));
+            break;
+        }
+    }
+    return HUD_LOCAL;
+}
+
+"""HUD's published limit for this city's area at `pct` of median, or None."""
+def local_ami(city: str, pct: float, household: int) -> dict {
+    tab = hud_local();
+    row = tab.get("cities", {}).get(str(city or "").strip().lower());
+    if not row { return {}; }
+    area = tab["areas"][row["area"]];
+    col = "l50" if int(pct) == 50 else ("l80" if int(pct) == 80 else ("eli" if int(pct) == 30 else ""));
+    n = max(1, int(household));
+    if col {
+        vals = list(area[col]);
+        # Over 8 people: HUD adds 8% of the 4-person limit per extra person.
+        lim = int(vals[n - 1]) if n <= 8 else int(vals[7]) + int(round(0.08 * int(vals[3]) * (n - 8)));
+    } else {
+        base = list(area["l50"]);
+        lim = int(round((int(base[n - 1]) if n <= 8 else int(base[7])) * float(pct) / 50.0 / 50.0) * 50);
+    }
+    return {"limit": lim, "area": str(area["name"]).replace(" HUD Metro FMR Area", "").replace(" MSA", "")};
+}
 glob HUD_SOURCE: str = "HUD FY2026 income limits (U.S. median family income $107,900)";
 
 glob MEDICAID_NOT_EXPANDED: list = ["AL", "FL", "GA", "KS", "MS", "SC", "TN", "TX", "WI", "WY"];
@@ -154,11 +193,19 @@ def income_limit(rule_id: str, profile: dict, flat_fallback: int = 0) -> dict {
     blocked = "";
     who = "a household of " + str(n);
     if basis == "ami" {
-        limit = ami_limit(pct, n);
-        per = ami_limit(pct, n + 1) - limit;
-        label = str(int(pct)) + "% of area median income for " + who;
-        source = HUD_SOURCE;
-        note = (note + "; " if note else "") + "your local housing authority's limit may differ";
+        loc = local_ami(str(profile.get("city", "")), pct, n);
+        if loc {
+            limit = int(loc["limit"]);
+            per = int(local_ami(str(profile.get("city", "")), pct, n + 1)["limit"]) - limit;
+            label = str(int(pct)) + "% of area median income for " + who + " in the " + str(loc["area"]) + " area";
+            source = "HUD FY2026 Section 8 income limits, " + str(loc["area"]);
+        } else {
+            limit = ami_limit(pct, n);
+            per = ami_limit(pct, n + 1) - limit;
+            label = str(int(pct)) + "% of area median income for " + who + " (national estimate)";
+            source = HUD_SOURCE;
+            note = (note + "; " if note else "") + "HUD sets this limit by county or metro area; tell me your city for the exact figure";
+        }
     } else {
         if basis == "medicaid" {
             flags = list(profile.get("flags", []));

@@ -41,6 +41,8 @@ glob GV_TIER: dict = {
     "unlikely": {"color": "rgba(255,255,255,0.45)", "icon": "✕", "label": "Unlikely"}
 };
 glob GV_TIER_ORDER: list = ["likely", "possible", "needs_info", "unlikely"];
+# Automatic retries after a failed load (a flaky hosting proxy).
+glob GV_RETRY: dict = {"n": 0};
 
 def:pub GraphViz(walker_events: list, user_id: str = "") -> JsxElement {
     has snap: Any = None,
@@ -102,7 +104,7 @@ def:pub GraphViz(walker_events: list, user_id: str = "") -> JsxElement {
                     <button className={"cm-ghost-btn" + (" gv-btn-on" if playing else "")} onClick={lambda _e: MouseEvent { startReplay(); }} disabled={empty or playing}>{("Replaying…" if playing else "▶ Replay turn")}</button>
                 </div>
             </div>
-            {err and <div className="gv-err">{"Couldn't load the graph: " + err}</div>}
+            {err and <div className="gv-err"><span>{"Couldn't load the graph. " + err}</span><button className="cm-ghost-btn" onClick={lambda _e: MouseEvent { GV_RETRY["n"] = 0; loadSnap(); }} disabled={loading}>{("Loading…" if loading else "Try again")}</button></div>}
             <div className="gv-body">
                 <div className="gv-canvas">
                     {empty and <div className="gv-empty">

@@ -1,0 +1,14 @@
+# Review routing. The project has one maintainer today; the safety-critical paths
+# are listed separately so a second maintainer or partner reviewer can be added
+# to them first.
+*                                   @Anbu-00001
+
+# Crisis handling, privacy and eligibility rules: a mistake here can hurt someone.
+/civicmesh/engine/parse.jac         @Anbu-00001
+/civicmesh/engine/policy.jac        @Anbu-00001
+/civicmesh/engine/privacy.jac       @Anbu-00001
+/civicmesh/walkers/escalation.jac   @Anbu-00001
+/civicmesh/walkers/narrate.jac      @Anbu-00001
+/civicmesh/data/resources.json      @Anbu-00001
+/civicmesh/data/i18n/               @Anbu-00001
+/PRIVACY.md                         @Anbu-00001

@@ -6,6 +6,7 @@ panel shows an empty-state explanation.
 """
 
 sv import from walkers.critique { ReflectionReadWalker }
+import from "@jac/runtime" { jacSpawn }
 
 def:pub TelemetryPanel(walker_events: list, user_id: str = "") -> JsxElement {
     # Reflexion-style self-reflection panel state. Populated by

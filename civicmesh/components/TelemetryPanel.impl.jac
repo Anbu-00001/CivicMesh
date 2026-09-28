@@ -243,12 +243,9 @@ impl TelemetryPanel.loadReflections -> None {
     # since the rest of the Telemetry tab is still meaningful without
     # the self-reflection rollup.
     reflections_loading = True;
+    res = await jacSpawn("ReflectionReadWalker", "", {"user_id": user_id, "max_insights": 8}).catch(lambda e: Any -> dict { return {"reports": [], "spawn_error": str(e)}; });
     try {
-        result = await root spawn ReflectionReadWalker(
-            user_id=user_id,
-            max_insights=8
-        );
-        reports = result.reports if result.reports else [];
+        reports = res["reports"] if res["reports"] else [];
         if len(reports) > 0 {
             r0: Any = reports[0];
             ins_raw = r0["insights"] if r0 else None;

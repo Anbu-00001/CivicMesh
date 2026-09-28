@@ -282,13 +282,10 @@ impl ActionPlan.renderStep(s: Any, i: int) -> JsxElement {
 
 impl ActionPlan.loadPlan -> None {
     loading = True;
+    res = await jacSpawn("MemoryWalker", "", {"user_id": user_id, "mode": "read_session"}).catch(lambda e: Any -> dict { return {"reports": [], "spawn_error": str(e)}; });
     try {
-        result = await root spawn MemoryWalker(
-            user_id=user_id,
-            mode="read_session"
-        );
-        if result.reports {
-            data: Any = result.reports[0];
+        if res["reports"] and len(res["reports"]) > 0 {
+            data: Any = res["reports"][0];
             all_steps: list = [];
             approved_names: list = [];
             pending_names: list = [];
@@ -315,17 +312,11 @@ impl ActionPlan.loadPlan -> None {
 }
 
 impl ActionPlan.markApplied(resource_name: str, idx: int) -> None {
-    try {
-        await root spawn MemoryWalker(
-            user_id=user_id,
-            mode="update_status",
-            resource_name=resource_name,
-            new_status="applied"
-        );
-        # Optimistic update
+    res = await jacSpawn("MemoryWalker", "", {"user_id": user_id, "mode": "update_status", "resource_name": resource_name, "new_status": "applied"}).catch(lambda e: Any -> dict { return {"reports": [], "spawn_error": str(e)}; });
+    if not res["spawn_error"] {
         steps[idx]["status"] = "applied";
         done_count = done_count + 1;
-    } except Exception as _ex {}
+    }
 }
 
 impl ActionPlan.markOutcome(resource_name: str, idx: int, outcome: str) -> None {

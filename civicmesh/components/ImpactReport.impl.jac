@@ -3,22 +3,15 @@
 impl ImpactReport.loadImpact -> None {
     loading = True;
     err = "";
-    try {
-        result = await root spawn ImpactWalker();
-        # `result.reports` is an array; in JS, an empty array `[]` is truthy,
-        # so `if result.reports` alone would pass even with no data and crash
-        # on `[0]`. Length-guard explicitly.
-        reports = result.reports if result.reports else [];
-        if len(reports) > 0 {
-            data: Any = reports[0];
-            summary = data;
-        } else {
-            summary = None;
-        }
-    } except Exception as e {
-        # We deliberately keep the error opaque so a stale walker name
-        # mismatch shows up but we don't dump a stack trace to the user.
-        err = "ImpactWalker failed";
+    # jacSpawn + .catch: a client-side `except` can't catch the runtime's
+    # exception class, so a proxy error used to escape as an unhandled rejection.
+    res = await jacSpawn("ImpactWalker", "", {}).catch(lambda e: Any -> dict { return {"reports": [], "spawn_error": str(e)}; });
+    reports = res["reports"] if res["reports"] else [];
+    if len(reports) > 0 {
+        summary = reports[0];
+    } else {
+        summary = None;
+        if res["spawn_error"] { err = "The server didn't answer just now. Try again in a moment."; }
     }
     loading = False;
 }

@@ -962,3 +962,13 @@ html, body { overflow-x: hidden; }
 .cm-en-original { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 0.5px solid rgba(255,255,255,0.08); font-size: 12.5px; }
 .cm-crisis-en { margin-top: 4px; font-size: 11.5px; color: rgba(255,255,255,0.6); }
 .cm-mt-actions .cm-why { margin-left: 0; }
+/* Retry after a failed or timed-out request */
+.cm-retry-row { margin-top: 8px; }
+.cm-retry { margin-left: 0 !important; }
+.gv-err { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+/* Quick exit: always visible, calm but findable */
+.cm-quick-exit { padding: 5px 11px; border-radius: 8px; font-size: 12px; font-weight: 650; cursor: pointer; background: rgba(255,107,107,0.12); color: #FF9B9B; border: 0.5px solid rgba(255,107,107,0.4); white-space: nowrap; }
+.cm-quick-exit:hover { background: rgba(255,107,107,0.22); color: #fff; }
+.cm-quick-exit:focus-visible { outline: 2px solid #FFE500; outline-offset: 2px; }
+.cm-private-note { margin-top: 8px; padding: 8px 10px; border-radius: 8px; font-size: 11.5px; line-height: 1.5; color: rgba(255,255,255,0.72); background: rgba(140,220,190,0.07); border: 0.5px solid rgba(140,220,190,0.3); }
+.cm-private-toggle { display: flex; align-items: center; gap: 8px; margin: 8px 0; cursor: pointer; }

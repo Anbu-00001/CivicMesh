@@ -25,6 +25,11 @@ sv import from walkers.memory { MemoryWalker }
 sv import from walkers.seed { SeedWalker }
 sv import from walkers.platform { PlatformWalker }
 
+# Quick exit (GOV.UK "Exit this page" pattern): Shift pressed 3 times within
+# 5 seconds, or the button. Not Escape: it also stops a page load.
+glob CM_SHIFTS: dict = {"t": []};
+glob CM_EXIT_URL: str = "https://weather.com/";
+
 def:pub ClientApp -> JsxElement {
     has active_tab: str = "chat",
         is_authed: bool = False,
@@ -79,6 +84,23 @@ def:pub ClientApp -> JsxElement {
                 } elif palette_open and k == "Escape" {
                     palette_open = False;
                 }
+                if k == "Shift" and not e.repeat {
+                    now = Date.now();
+                    kept: list = [t for t in list(CM_SHIFTS["t"]) if now - Number(t) < 5000];
+                    kept.append(now);
+                    CM_SHIFTS["t"] = kept;
+                    if len(CM_SHIFTS["t"]) >= 3 { quickExit(); }
+                }
+            });
+            # A private session (crisis turns switch it on) leaves nothing in
+            # this browser once the page closes: the login lives in
+            # sessionStorage and localStorage is wiped on the way out.
+            window.addEventListener("pagehide", lambda _e: Any {
+                try {
+                    if sessionStorage.getItem("cm_private") == "1" {
+                        for key in ["cm_uid", "cm_pw", "jac_token", "cm_lang"] { localStorage.removeItem(key); }
+                    }
+                } except Exception as _ex {}
             });
         } except Exception as _ex {
             # Document-level listener unavailable — palette is still
@@ -95,6 +117,7 @@ def:pub ClientApp -> JsxElement {
 
     async def initAuth -> None;
     def visitorCreds -> list;
+    def quickExit -> None;
     async def loadSession -> None;
     def pushWalkerEvent(events: list) -> None;
     def navTab(tab_id: str, label: str) -> JsxElement;
@@ -186,6 +209,7 @@ def:pub ClientApp -> JsxElement {
                     {navTab("impact", "Impact")}
                 </nav>
                 <div style={{"display": "flex", "alignItems": "center", "gap": "10px"}}>
+                    <button className="cm-quick-exit" onClick={lambda _e: MouseEvent { quickExit(); }} title="Leave this site right now (or press Shift three times)">Quick exit</button>
                     <button
                         onClick={lambda _e: MouseEvent { togglePalette(); }}
                         title="Open command palette (⌘K)"

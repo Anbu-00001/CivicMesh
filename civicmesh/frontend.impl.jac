@@ -2,13 +2,18 @@
 
 
 impl ClientApp.visitorCreds -> list {
-    uid = localStorage.getItem(VISITOR_KEY);
-    pw = localStorage.getItem(VISITOR_SECRET_KEY);
+    # In a private session the anonymous login lives in sessionStorage (it
+    # survives a reload in this tab, not closing it).
+    priv = False;
+    try { priv = sessionStorage.getItem("cm_private") == "1"; } except Exception as _ex {}
+    store = sessionStorage if priv else localStorage;
+    uid = store.getItem(VISITOR_KEY);
+    pw = store.getItem(VISITOR_SECRET_KEY);
     if (not uid) or (not pw) {
         uid = "visitor_" + Math.random().toString(36).substring(2, 10);
         pw = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
-        localStorage.setItem(VISITOR_KEY, uid);
-        localStorage.setItem(VISITOR_SECRET_KEY, pw);
+        store.setItem(VISITOR_KEY, uid);
+        store.setItem(VISITOR_SECRET_KEY, pw);
         # A token from the old shared demo account must not be reused.
         localStorage.removeItem("jac_token");
     }
@@ -40,9 +45,9 @@ impl ClientApp.initAuth -> None {
     }
     if jacIsLoggedIn() {
         user_id = creds[0];
-        try {
-            await root spawn SeedWalker(user_id=creds[0]);
-        } except Exception as _ex {}
+        # Seeding failed through a flaky proxy once and left a visitor with no
+        # programs; IntakeWalker now re-seeds an empty catalog itself.
+        await jacSpawn("SeedWalker", "", {"user_id": creds[0]}).catch(lambda e: Any -> dict { return {"reports": [], "spawn_error": str(e)}; });
         is_authed = True;
         # jacSpawn + .catch: a rejected walker call must never break auth
         # (client-side `except` can't match the runtime's exception class).
@@ -57,16 +62,9 @@ impl ClientApp.loadSession -> None {
         return;
     }
     uid = user_id if user_id else visitorCreds()[0];
-    try {
-        result = await root spawn MemoryWalker(
-            user_id=uid,
-            mode="read_session"
-        );
-        raw = result.reports[0] if result.reports else None;
-        session_data = raw if raw else {};
-    } except Exception as e {
-        session_data = {};
-    }
+    res = await jacSpawn("MemoryWalker", "", {"user_id": uid, "mode": "read_session"}).catch(lambda e: Any -> dict { return {"reports": [], "spawn_error": str(e)}; });
+    reps = res["reports"];
+    session_data = reps[0] if (reps and len(reps) > 0 and reps[0]) else {};
 }
 
 impl ClientApp.startApp -> None {
@@ -368,4 +366,24 @@ impl ClientApp.renderPalette -> JsxElement {
                 </div>
             </div>
         </div>;
+}
+
+impl ClientApp.quickExit -> None {
+    # Leave now. location.replace means Back won't return here. In a private
+    # session also erase the case on the server and everything in this browser.
+    try {
+        if sessionStorage.getItem("cm_private") == "1" {
+            tok = localStorage.getItem("jac_token");
+            uid = sessionStorage.getItem(VISITOR_KEY) or localStorage.getItem(VISITOR_KEY);
+            if tok and uid {
+                fetch("/walker/ForgetWalker", {"method": "POST", "keepalive": True,
+                    "headers": {"Content-Type": "application/json", "Authorization": "Bearer " + tok},
+                    "body": JSON.stringify({"user_id": uid})}).catch(lambda _e: Any { return None; });
+            }
+            for key in ["cm_uid", "cm_pw", "jac_token", "cm_lang"] { localStorage.removeItem(key); }
+            sessionStorage.clear();
+        }
+    } except Exception as _ex {}
+    document.title = "Weather";
+    window.location.replace(CM_EXIT_URL);
 }

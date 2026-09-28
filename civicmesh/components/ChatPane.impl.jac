@@ -12,7 +12,13 @@ jac-client notes that shape this file:
 
 impl ChatPane.safeSpawn(walker_name: str, fields: dict) -> Any {
     return await jacSpawn(walker_name, "", fields).catch(
-        lambda err: Any -> dict { return {"reports": [], "spawn_error": str(err)}; }
+        lambda err: Any -> dict {
+            e = str(err);
+            # The hosting proxy answers a failed request with its own HTML
+            # error page; never show that to a person.
+            if e.includes("<!DOCTYPE") or e.includes("<html") { e = "the hosting service returned an error page"; }
+            return {"reports": [], "spawn_error": e};
+        }
     );
 }
 
@@ -85,6 +91,21 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "", display:
     messages = new_messages;
     is_loading = True;
 
+    # A request the hosting proxy never answers used to leave the typing dots
+    # up forever, and `if is_loading { return; }` then ignored every new
+    # message. After 30 s the turn is released with a retry; a late answer is
+    # dropped. (CM_INFLIGHT is a plain object: React state read inside a
+    # timer would be stale.)
+    req_id = "r" + str(Math.random());
+    CM_INFLIGHT["id"] = req_id;
+    setTimeout(lambda {
+        if CM_INFLIGHT["id"] == req_id {
+            CM_INFLIGHT["id"] = "";
+            messages = new_messages + [{"role": "bot", "kind": "error", "id": "t" + str(Math.random()), "text": "No answer from the server after 30 seconds — the hosting service may be busy. Your message wasn't lost.", "retry": user_text, "retry_answering": ans, "retry_display": shown, "retry_pin": pin}];
+            is_loading = False;
+        }
+    }, 30000);
+
     t0 = window.performance.now();
     res = await safeSpawn("IntakeWalker", {
         "conversation": user_text,
@@ -94,17 +115,21 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "", display:
         "preferred_language": send_lang
     });
     rtt = window.performance.now() - t0;
+    if CM_INFLIGHT["id"] != req_id { return; }
+    CM_INFLIGHT["id"] = "";
 
     reps = res["reports"];
     n = len(reps) if reps else 0;
     data: Any = reps[n - 1] if n > 0 else None;
     if res["spawn_error"] or (not data) or (not data["trace"]) {
-        new_messages = new_messages + [{"role": "bot", "kind": "error", "id": "e" + str(Math.random()), "text": "I couldn't reach the server just now. Please try again in a moment."}];
+        new_messages = new_messages + [{"role": "bot", "kind": "error", "id": "e" + str(Math.random()), "text": "I couldn't reach the server just now (" + (str(res["spawn_error"]) if res["spawn_error"] else "empty answer") + "). Your message wasn't lost.", "retry": user_text, "retry_answering": ans, "retry_display": shown, "retry_pin": pin}];
         messages = new_messages;
         is_loading = False;
         return;
     }
 
+    # A crisis or concern turn switches on a private session by itself.
+    if data["privacy"] and data["privacy"]["private_turn"] and not private_on { setPrivate(True); }
     user_msg["evidence"] = (data["evidence"] if data["evidence"] else []) if shown == user_text else [];
     bot_id = "b" + str(Math.random());
     new_messages = new_messages + [{"role": "bot", "kind": "result", "id": bot_id, "data": data, "rtt_ms": rtt}];
@@ -262,6 +287,8 @@ impl ChatPane.narrate(msg_id: str, data: Any, user_text: str) -> None {
         "user_message": user_text,
         "language": data["narrate_language"] if data["narrate_language"] else data["language"],
         "facts": data["facts"],
+        # Only server-signed facts get narrated (no free LLM relay).
+        "facts_sig": data["facts_sig"] if data["facts_sig"] else "",
         "chips": data["chips"] if data["chips"] else []
     });
     ms = window.performance.now() - t0;
@@ -408,13 +435,9 @@ impl ChatPane.renderMatchCard(m: Any, idx: int, j: int, ui: Any) -> JsxElement {
                 <span style={{"color": ts["color"]}}>{str(pct) + "%"}</span>
             </div>
             <div className="cm-meter"><div style={{"width": str(pct) + "%", "background": ts["color"]}}/></div>
-            <div className="cm-meter-row" title="Beta-Binomial posterior over recorded approvals/denials (capacity-informed prior)">
+            <div className="cm-meter-row" title="A starting guess from how open the program is (open, waitlist or closed), not measured from real outcomes. Recording your own result changes only your copy, so it can't learn across people yet.">
                 <span>{L(ui, "ui.approval", "Approval odds")}</span>
-                <span>{str(mean) + "% · 90% CI " + str(lo) + "–" + str(hi) + "%"}</span>
-            </div>
-            <div className="cm-ci">
-                <div className="cm-ci-band" style={{"left": str(lo) + "%", "width": str(hi - lo) + "%"}}/>
-                <div className="cm-ci-mean" style={{"left": str(mean) + "%"}}/>
+                <span className="cm-muted">{"~" + str(mean) + "% · rough guess"}</span>
             </div>
             {ben["label"] and <div className="cm-benefit" title={str(ben["basis"])}>
                 <span className="cm-benefit-amt">{str(ben["label"])}</span>
@@ -611,6 +634,7 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                     {[<span key={"f" + str(i)} className="cm-fact">{facts[i]}</span> for i in range(len(facts))]}
                     {prof["carried_category"] and <span className="cm-fact cm-fact-dim">carried from earlier</span>}
                 </div>}
+                {(d["privacy"] and d["privacy"]["private_turn"] and is_last) and <div className="cm-private-note">{("Sesión privada activada: cuando cierre esta pestaña, este navegador no guardará nada de esta conversación. «Quick exit» (arriba a la derecha, o pulse Mayús tres veces) sale al instante." if lang == "es" else "Private session is on: once you close this tab, this browser keeps nothing about this conversation. Quick exit (top right, or press Shift three times) leaves instantly.")}</div>}
                 {esc["lead_line"] and <div className="cm-crisis">
                     <div className="cm-crisis-lead">{str(esc["lead_line"])}</div>
                     {esc["lead_line_en"] and <div className="cm-crisis-en" lang="en" dir="ltr">{"In English: " + str(esc["lead_line_en"])}</div>}
@@ -638,7 +662,7 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                     {Number(msg["rtt_ms"]) > 0 and <span>{"round trip " + fmtMs(msg["rtt_ms"])}</span>}
                     {(narr and narr["status"] == "ok") and <span className="cm-hud-llm">{"✦ narrated in " + fmtMs(narr["ms"]) + " · facts guard passed"}</span>}
                     {(narr and narr["status"] == "failed") and <span className="cm-muted">{"LLM narration unavailable — engine answer shown"}</span>}
-                    {(d["privacy"] and d["privacy"]["private_turn"]) and <span className="cm-hud-private">{"Kept on this server — crisis messages are never sent to an AI model"}</span>}
+                    {(d["privacy"] and d["privacy"]["private_turn"]) and <span className="cm-hud-private">{"Not sent to any AI model"}</span>}
                     {(d["privacy"] and d["privacy"]["words_sent_to_model"]) and <span className="cm-hud-private">{"The engine couldn't place this, so an AI model read it (identifiers removed first)"}</span>}
                     <button className="cm-why" onClick={lambda _e: MouseEvent { waterfall_open = (-1 if waterfall_open == idx else idx); }}>{("Hide trace" if waterfall_open == idx else "Trace")}</button>
                 </div>
@@ -665,7 +689,10 @@ impl ChatPane.renderMessage(msg: dict, idx: int, is_last: bool) -> JsxElement {
         <div key={"m-" + str(idx)} className="cm-row msg-enter">
             <div className="cm-avatar">CM</div>
             <div className="cm-result">
-                <div className={("cm-bubble cm-bubble-error" if kind == "error" else "cm-bubble")}>{renderRich(str(msg["text"]))}</div>
+                <div className={("cm-bubble cm-bubble-error" if kind == "error" else "cm-bubble")}>
+                    {renderRich(str(msg["text"]))}
+                    {(kind == "error" and is_last and msg["retry"]) and <div className="cm-retry-row"><button className="cm-why cm-retry" onClick={lambda _e: MouseEvent { sendMessage(str(msg["retry"]), str(msg["retry_answering"] or ""), str(msg["retry_display"] or ""), bool(msg["retry_pin"])); }}>Try again</button></div>}
+                </div>
                 {(is_last and len(sugg) > 0) and <div className="cm-chips cm-chips-col">
                     {[renderChip(str(sugg[s]), str(sugg[s]), "") for s in range(len(sugg))]}
                 </div>}
@@ -774,6 +801,10 @@ impl ChatPane.renderPrivacy -> JsxElement {
                 <li>Crisis messages (self-harm, abuse) are answered by fixed code.</li>
                 <li>Your case is kept until you delete it or the server restarts. No advertising, no tracking, no selling.</li>
             </ul>
+            <label className="cm-private-toggle">
+                <input type="checkbox" checked={private_on} onChange={lambda _e: Any { setPrivate(not private_on); }}/>
+                <span>Private session — keep nothing in this browser after I close the tab</span>
+            </label>
             <div className="cm-privacy-actions">
                 <a className="cm-link" href="https://github.com/Anbu-00001/CivicMesh/blob/main/PRIVACY.md" target="_blank" rel="noreferrer">Full privacy notice</a>
                 <button className="cm-ghost-btn cm-danger-btn" onClick={lambda _e: MouseEvent { forgetMe(); }} disabled={forget_state == "deleting" or forget_state == "done"}>
@@ -781,4 +812,25 @@ impl ChatPane.renderPrivacy -> JsxElement {
                 </button>
             </div>
         </details>;
+}
+
+impl ChatPane.setPrivate(on: bool) -> None {
+    # The login moves to sessionStorage (a reload in this tab still works);
+    # the app shell wipes localStorage when the page closes.
+    try {
+        if on {
+            for key in ["cm_uid", "cm_pw"] {
+                v = localStorage.getItem(key);
+                if v and not sessionStorage.getItem(key) { sessionStorage.setItem(key, v); }
+            }
+            sessionStorage.setItem("cm_private", "1");
+        } else {
+            for key in ["cm_uid", "cm_pw"] {
+                v = sessionStorage.getItem(key);
+                if v { localStorage.setItem(key, v); }
+            }
+            sessionStorage.removeItem("cm_private");
+        }
+    } except Exception as _ex {}
+    private_on = on;
 }

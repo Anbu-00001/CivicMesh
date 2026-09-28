@@ -1,6 +1,6 @@
 # Privacy notice
 
-**Last updated: 28 September 2026**
+**Last updated: 28 September 2026** (Quick exit and private sessions added)
 
 CivicMesh helps people find housing, food, healthcare and legal-aid programs.
 Many of the people who use it are in a hard spot. Some are immigrants, some are
@@ -26,6 +26,12 @@ a law firm or a benefits office, and using it does not apply you for anything.
   about abuse, fixed code answers with the right hotline.
 - **You can delete everything.** Open *Private by design* under the chat box and
   choose **Delete my data**.
+- **Quick exit.** The red button at the top, or pressing Shift three times,
+  jumps to a weather site right away. The Back button won't bring the chat back.
+- **Private session.** If you write about hurting yourself or about abuse, or
+  if you switch it on under the chat box, this browser keeps nothing about the
+  conversation once you close the tab. In a private session, Quick exit also
+  erases your case on the server.
 - **No ads, no tracking, no selling.** There are no analytics scripts and no
   advertising cookies.
 
@@ -36,7 +42,7 @@ a law firm or a benefits office, and using it does not apply you for anything.
 | What the engine understood from your messages: the kind of help, urgency, household size, yearly income, your language, and your ZIP code if you gave one. Not your words, your immigration status, or your location beyond ZIP | Our server, in a graph database under your random login | Until you press **Delete my data**, or until the server restarts, whichever comes first |
 | The programs in your plan (saved as applications you can mark applied, approved or denied; for a crisis they include the hotline) and an automatic quality score for each answer. The score's label is built from the engine's reading, not your words | Same | Same |
 | The conversation so far (so a follow-up answer can build on it) | Your browser, sent along with each new message and used in memory only | Until you start a new case or close the page |
-| Your random login (username and a hashed password, nothing about you) | Our server's user list, and your browser's local storage | Until the server restarts. Delete my data clears it from your browser |
+| Your random login (username and a hashed password, nothing about you) | Our server's user list, and your browser's local storage (in a private session, only the open tab) | Until the server restarts. Delete my data, Quick exit in a private session, or closing a private tab clears it from your browser |
 | Your picked language | Your browser's local storage | Until you clear it or press Delete my data |
 | Anonymous counts: how many chats, which languages, which kinds of help, response times | Our server's memory. Visitor IDs are one-way hashed | Until the server restarts |
 | Server logs | Our hosting provider | The address of each request and whether it worked, never what you wrote |
@@ -126,6 +132,7 @@ repository.
 | Words not stored; the stored need is the engine's reading | `tests/test_privacy_graph.jac`, E2E P1 and P3 |
 | Words not sent to a model; unroutable messages ask instead | E2E P11 (`llm.sync_used` false), `walkers/narrate.jac` has no message parameter |
 | Crisis messages: no routing call, no narration | E2E P4–P5, `tests/test_privacy_graph.jac` |
+| Quick exit leaves, Back doesn't return, a private exit leaves a fresh identity and erases the case | a headless-browser check run for this release, not yet automated in CI; `frontend.impl.jac` `quickExit` |
 | Summary facts carry no income, household, location or status | `facts_for` in `walkers/eligibility.jac` |
 | Delete my data removes the case, and only yours | E2E P8–P10, `tests/test_privacy_graph.jac` |
 | Server logs hold no user text | CI "Server logs hold no user text" step (`walkers/log_privacy.jac`) |

@@ -170,6 +170,39 @@ with entry {
         }
     }
 
+    # Metamorphic check (suggested by an outside review): appending a sentence
+    # that says nothing about eligibility must not move any program's tier.
+    # Every English golden/holdout case × four neutral sentences, all 40
+    # programs; a tier change or a P(eligible) shift over 10 points fails.
+    NEUTRAL: list = ["Thank you for your help.", "I'm writing this from the library.", "The weather has been cold lately.", "I don't have a social security number."];
+    meta_total = 0;
+    meta_bad = 0;
+    for c in cases {
+        if c.get("suite", "golden") not in ["golden", "holdout"] { continue; }
+        p0 = parse_intake(c["text"]);
+        if p0["language"] != "en" { continue; }
+        t0: dict = {};
+        q0: dict = {};
+        for s in rank_resources(items, p0, c["text"], 40, "en")["ranked"] { t0[s["resource_name"]] = s["tier"]; q0[s["resource_name"]] = float(s["p_eligible"]); }
+        for extra in NEUTRAL {
+            meta_total += 1;
+            t2 = c["text"] + " " + extra;
+            p2 = parse_intake(t2);
+            moved: list = [];
+            for s in rank_resources(items, p2, t2, 40, "en")["ranked"] {
+                nm = s["resource_name"];
+                if t0.get(nm, "") and (t0[nm] != s["tier"] or abs(q0[nm] - float(s["p_eligible"])) > 0.10) {
+                    moved.append(nm[:28] + " " + t0[nm] + f" {q0[nm]:.2f}→" + s["tier"] + f" {float(s['p_eligible']):.2f}");
+                }
+            }
+            if moved {
+                meta_bad += 1;
+                failures.append(f"META +{extra!r} moved {moved[:2]} | {c['text'][:50]}");
+            }
+        }
+    }
+    excl_viol += meta_bad;
+
     field_acc = field_ok / max(1, field_total);
     top_rate = top_ok / max(1, top_total);
     print("CivicMesh engine eval — " + str(len(cases)) + " cases");
@@ -184,6 +217,7 @@ with entry {
         print(f"  suite {su:<12}  {int(suite_ok.get(su, 0))}/{n} checks");
     }
     print(f"  top-3 hit rate      {top_rate:.1%}  ({top_ok}/{top_total})");
+    print(f"  metamorphic         {meta_total - meta_bad}/{meta_total} neutral additions left every verdict unchanged (tier, and P(eligible) within 10 points)");
     print(f"  exclusion errors    {excl_viol}");
     print(f"  latency / turn      p50 {pct(lat, 0.5):.2f} ms · p95 {pct(lat, 0.95):.2f} ms · max {max(lat):.2f} ms");
     for f in failures {

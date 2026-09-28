@@ -23,7 +23,7 @@ pinned: false
 [![byllm](https://img.shields.io/badge/byllm-0.6.7-22c55e?style=flat-square)](https://github.com/Jaseci-Labs/byllm)
 [![NVIDIA NIM](https://img.shields.io/badge/NVIDIA%20NIM-translation%20%2B%20narration-76b900?style=flat-square)](https://build.nvidia.com)
 [![Languages](https://img.shields.io/badge/languages-111%20supported%20%C2%B7%2075%20instant-2563eb?style=flat-square)](#languages-and-dialects)
-[![Eval](https://img.shields.io/badge/eval-324%20cases%20%C2%B7%20727%20checks-16a34a?style=flat-square)](#evaluation-and-hard-tests)
+[![Eval](https://img.shields.io/badge/eval-352%20cases%20%C2%B7%20764%20checks-16a34a?style=flat-square)](#evaluation-and-hard-tests)
 [![CI](https://github.com/Anbu-00001/CivicMesh/actions/workflows/ci.yml/badge.svg)](https://github.com/Anbu-00001/CivicMesh/actions/workflows/ci.yml)
 [![Privacy](https://img.shields.io/badge/privacy-scrubbed%20%C2%B7%20deletable%20%C2%B7%20no%20tracking-0f766e?style=flat-square)](./PRIVACY.md)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](./LICENSE)
@@ -47,13 +47,13 @@ CivicMesh turns one message, in the person's own words and language, into a rank
 | Capability | What it does |
 |---|---|
 | **Answers composed in 51 languages, 111 supported** | The whole answer — programs, next step, the follow-up question, its quick replies, the chips, card labels and crisis lines — is composed in the user's language on the first response from a per-language message catalog: nothing to translate, time out or rate-limit. 75 languages are routed without an LLM; income, household, age, status and location are read in 21 of them. **NVIDIA Riva Translate** / **Gemma 4** translate for the rest; an **interpreter card** covers spoken-only languages such as Mam and K'iche'. |
-| **Effective-dated 2026 policy table** | Income limits computed per household from HHS poverty guidelines and HUD area median income; state Medicaid expansion; the 2025 immigrant-eligibility law with its dates; a USDA-formula SNAP estimate. Every criterion cites its source. |
+| **Effective-dated 2026 policy table** | Income limits per household from HHS poverty guidelines, and HUD's own FY2026 Section 8 limits for the metro area of 106 cities (a national estimate, labeled as such, elsewhere); state Medicaid expansion; the 2025 immigrant-eligibility law with its dates; a USDA-formula SNAP estimate. Every criterion cites its source. |
 | **Calibrated, explainable eligibility** | Hard gates × weighted soft criteria, capped at 97%. Thin evidence yields "needs info" rather than a guess. Near-misses get the smallest change that would qualify ("with a household of 4 or more"). |
 | **One sharp follow-up question** | The value-of-information question that changes the most matches, with quick replies. |
 | **Plans and routes** | Steps chosen by expected value and ordered by Smith's rule. Longer-term routes use Yen's k-shortest paths over typed `leads_to` edges. |
 | **Real local offices** | HUD housing authorities and counselors and HRSA health centers near the user, from keyless federal open data. |
 | **The graph is the product** | Each verdict is a scored `eligible_for` edge. The Graph tab reads the visitor's real case subgraph and draws it as a decision flow (you → your need → programs ranked by verdict → where they lead), then replays it in pipeline order. |
-| **Safety by construction** | Crisis and violence flags that negation can't cancel. A numbers guard on every model output. No default admin accounts. |
+| **Safety by construction** | Crisis and violence flags that negation can't cancel, plus an escalate-only second layer for indirect wording ("everyone would be better off without me", "he controls my money"). **Quick exit** (button or Shift ×3) and a private session that crisis turns switch on, so a shared phone keeps nothing. A numbers guard on every model output. No default admin accounts. |
 | **Private by design** | No sign-up and no name needed. What you type is read on the server and never stored or sent to any AI model: only the engine's reading is kept (kind of help, urgency, household, income). Server logs hold no user text, and **Delete my data** erases the case. Each of these is a test. [Privacy notice](./PRIVACY.md) |
 
 ---
@@ -75,8 +75,8 @@ In September 2026 the author asked a chat model (an AI assistant, not a human ex
 
 | The criticism | What changed | Where to check |
 |---|---|---|
-| Built on Jac, a pre-1.0 language few people use; nobody else can maintain it | A written maintenance plan. The engine, where every eligibility decision lives, is transpiled to plain Python on every push and passes the same 727 checks with no Jac installed. `jac eject` was verified for the whole app. Every package is pinned, and Dependabot opens tested upgrade PRs | [docs/MAINTENANCE.md](./docs/MAINTENANCE.md) · `tools/eject_engine.sh` · CI job `portable` |
-| No CI | GitHub Actions on every push and PR: the eval and unit checks, the plain-Python engine, the external check on real posts (reported, not gating), and the production Docker image with 56 HTTP checks and a scan of the server logs for user text | [.github/workflows/ci.yml](./.github/workflows/ci.yml) |
+| Built on Jac, a pre-1.0 language few people use; nobody else can maintain it | A written maintenance plan. The engine, where every eligibility decision lives, is transpiled to plain Python on every push and passes the same 764 checks with no Jac installed. `jac eject` was verified for the whole app. Every package is pinned, and Dependabot opens tested upgrade PRs | [docs/MAINTENANCE.md](./docs/MAINTENANCE.md) · `tools/eject_engine.sh` · CI job `portable` |
+| No CI | GitHub Actions on every push and PR: the eval and unit checks, the plain-Python engine, the external check on real posts (reported, not gating), and the production Docker image with 64 HTTP checks and a scan of the server logs for user text | [.github/workflows/ci.yml](./.github/workflows/ci.yml) |
 | No privacy story, for users asked about immigration status, income, violence and self-harm | A [privacy notice](./PRIVACY.md) where every statement maps to a test. What users type is never stored and never sent to a model (below). **Delete my data** erases the case. jaclang's `report` had been printing every answer into the server logs; that echo is off | `engine/privacy.jac` · `walkers/forget.jac` · `walkers/log_privacy.jac` · E2E P1–P14 |
 | Machine-drafted translations shown to vulnerable people | **0 of 50 are reviewed** (Spanish included). Until they are, each follows HHS Section 1557 guidance for unreviewed machine translation: a notice in the user's language, the English original one tap away, the English sentence under every crisis line, numbers locked by a test, and a report-a-mistake form | [docs/TRANSLATION_REVIEW.md](./docs/TRANSLATION_REVIEW.md) · `tools/review_sheet.py` |
 | No evidence it holds up with a real person in crisis | Still true. The honest next step is a supervised pilot with a legal-aid clinic, library or 211 partner, where a caseworker reads every answer. Until then, the external check below measures the router on real people's words instead of the author's | — |
@@ -86,6 +86,20 @@ In September 2026 the author asked a chat model (an AI assistant, not a human ex
 - *"I don't have a social security number"* marked a mother of three as a senior, because the lexicon read any "social security" as age 60+. That doubled her P(eligible) for two seniors-only programs, from 32% to 64%. Probing that class of bug found more: 22 of 65 new checks failed on the first run. One cause was that negation built for needs ("I have food stamps" means you don't need them) had been applied to personal facts, so "I have a son" and "I have nowhere to sleep" were dropped while "I don't have a disability" was kept. Words in their other senses were also counted: the Salvation Army, serving tables, a car parked on the street, substance-abuse treatment, "my back hurts me", an injury at work. All were fixed in the lexicon, never by editing a case. The suite that catches them is `golden_probes.json`, with `p_max` checks that fail when a wrong flag moves a probability.
 - The identifier scrubber missed 11 of 17 realistic identifiers: names without "my name is", spelled-out birth dates, "+52" numbers, a landlord's or a child's name. The fix that closes the whole class was to stop depending on it. The narrator no longer receives the message, the stored need is the engine's reading, the stored self-critique no longer keeps a snippet of the message, and the routing fallback that sent unroutable messages to NVIDIA is off unless an operator opts in. The scrubber was widened anyway, and `tests/check_privacy.jac` prints what it still misses.
 - The review cautioned against optimizing for a reviewer's checklist. That's why the next section measures against data nobody on this project wrote.
+
+**A third pass, and a bug from real use**
+
+- **A stuck chat, reported by a person using the live Space.** Four turns into a conversation ("I'm 72… evict me illegally" → "I live in illinois" → "There are 3 people…" → "Yes" to the disability question), the typing dots never went away and the Graph tab showed a raw error page. The live logs showed Hugging Face's Spaces proxy failing requests across many unrelated Spaces at the time: 502, 503 and 504 on the home page of several large public Spaces, while HF's status page still said "operational". The app still handled it badly, and replaying the conversation turned up three engine bugs:
+  - **No timeout.** A request the proxy never answered locked the chat for good. There is now a 30-second timeout with **Try again**. The Graph tab retries by itself and shows a sentence instead of HTML. Every walker call now catches errors (six call sites could throw uncaught).
+  - **Lost seeding.** One visitor's program catalog was never seeded, so every answer was empty. IntakeWalker now seeds an empty catalog itself.
+  - **The engine bugs:** "There are 3 people" was read as a household of 0. A "Yes" to the disability question never set the flag. And the scorer's own situation checks matched raw words without negation, so "we're not homeless" made the emergency-shelter program *likely*, "the Salvation Army shelter" pushed veterans' housing to 62%, and "I don't have a disability" made disability legal aid *likely*. Person facts now have one source of truth: the parser's flags.
+- **Indirect crisis wording.** The review wrote 16 indirect messages and the engine caught 0. An escalate-only second layer now reads the 988 Lifeline's and the Domestic Violence Hotline's published warning signs. On 14 indirect messages it went from 0 to 14. These are the author's sentences, so treat that as a regression guard, not a recall measurement. A concern pins the hotline as a gentle first line without switching the turn into crisis mode.
+- **Device safety for survivors.** **Quick exit** follows GOV.UK's "Exit this page" pattern: a button or Shift ×3 jumps to a neutral site, and Back doesn't return. Crisis turns switch on a private session: the login lives only in the tab, the browser is wiped when it closes, and Quick exit also erases the case on the server.
+- **Metamorphic testing.** Appending a sentence that says nothing about eligibility must not move any verdict (tier, or P(eligible) by more than 10 points). The current engine passes 228/228. The version the review tested fails 28, including the reported "needs info 43% → likely 85%", so this test would have found that bug without anyone thinking of the sentence.
+- **Local income limits.** The engine used one national Section 8 limit ($53,950 for a family of 4). HUD sets it per metro area: $50,300 in San Antonio, $63,400 in Fort Lauderdale, $105,050 in San Francisco. `data/hud_income_limits.json` is built from HUD's FY2026 file for the 106 cities the parser knows.
+- **Honest numbers and closed holes.** Approval odds are labeled a rough guess, with no fake interval, because they come from pseudo-counts, not outcomes. The narrator only accepts facts the server signed, so it can't be used as a free relay to the model quota. `SECURITY.md`, `CONTRIBUTING.md` and `CODEOWNERS` were added.
+- **Not done:** an independent oracle check (PolicyEngine US), a stateless in-browser engine, last-verified dates on the 40 programs, legal review of the immigrant-eligibility rules, a second maintainer, native review, and a real pilot. Those need time or people outside this repository.
+
 
 ---
 
@@ -305,7 +319,7 @@ flowchart TD
     subgraph PT["policy.jac — effective-dated 2026 rules"]
         direction LR
         FPL[HHS poverty guideline<br/>$15,960 + $5,680 per person<br/>AK · HI tables]:::pol
-        AMI[HUD area median income<br/>$107,900 × household factor]:::pol
+        AMI[HUD FY2026 income limits<br/>by metro area for 106 cities<br/>national estimate elsewhere]:::pol
         MED[Medicaid expansion by state]:::pol
         IMM[P.L. 119-21 immigrant rules<br/>SNAP 2025-07-04 · Medicaid 2026-10-01]:::pol
     end
@@ -417,7 +431,7 @@ flowchart LR
     MARK[Person marks an application<br/>Approved or Denied]:::ui --> MW[MemoryWalker]:::det
     MW --> RULE[EligibilityRuleNode<br/>prior_approvals / prior_attempts]:::data
     RULE --> BETA["Beta(a, b) posterior<br/>prior from capacity: open 6:3 · waitlist 3:5"]:::det
-    BETA --> CI[Approval odds + 90% interval<br/>shown on every card]:::ok
+    BETA --> CI[Approval odds, shown as a rough guess<br/>per-visitor copy · no cross-person learning yet]:::ok
     BETA --> UCB[UCB₈₀ exploration bonus<br/>in the ranking]:::ok
     UCB -.next turn.-> MARK
 
@@ -427,7 +441,7 @@ flowchart LR
     classDef ok fill:#d1fae5,stroke:#059669,color:#022c22
 ```
 
-Recorded outcomes update the rule node itself, so the approval odds on every future card move ("38% → 44%, 1 real outcome"). Wide intervals on untested programs earn an exploration bonus, so the ranking doesn't only ever recommend the well-trodden programs.
+Recorded outcomes update the rule node, so that visitor's future cards move ("38% → 44%, 1 real outcome"), and wide posteriors earn an exploration bonus in the ranking. Be clear about what this is. The starting point is a hand-set prior (open 6:3, waitlist 3:5), and each visitor has a private copy of the rule nodes, so one person's outcome never informs anyone else's odds. The card therefore shows "~67% · rough guess" with no interval. Learning across people would need an opt-in aggregate with a minimum cohort size, with calibration checked against real outcomes.
 
 **Escape routes.** `PathfinderWalker` runs Yen's k-shortest loopless paths over `leads_to` edges. Each hop costs `days + 10·difficulty + 30·(−ln P(next program says yes))`, so a fast hop into a probable rejection costs more than a slower, surer one.
 
@@ -545,7 +559,7 @@ flowchart LR
         G3[golden_adversarial.json · 67<br/>negation, idioms, traps, DV phrasing]:::t
         G4[golden_holdout.json · 40<br/>written after tuning, scored first]:::t
         G5[golden_facts_i18n.json · 41<br/>income · household · age · status · place<br/>in 20 more languages]:::t
-        G6[golden_probes.json · 42<br/>words in their other senses<br/>+ p_max: a wrong flag can't move a verdict]:::t
+        G6[golden_probes.json · 70<br/>other senses · indirect crisis · local limits<br/>+ p_max / tier_not + metamorphic check]:::t
     end
     S --> EV[eval_engine.jac<br/>policy date pinned]:::det
     EV --> MX[fields · languages · top-3 · plan · exclusions · latency]:::det
@@ -555,7 +569,7 @@ flowchart LR
     CM[check_messages.jac<br/>50 catalogs: keys · placeholders · numbers · round trip]:::t --> GATE
     PV[check_privacy.jac<br/>66 checks: scrub · over-scrub · same facts · crisis]:::t --> GATE
     WT[jac test · walkers in-process<br/>schema · 3 personas · stored-data privacy]:::t --> GATE
-    E2E[tests/e2e_http.py against the Docker image<br/>56 checks · 15 languages · chips · crisis · privacy · hostile input]:::t --> PASS
+    E2E[tests/e2e_http.py against the Docker image<br/>64 checks · 15 languages · crisis · privacy · a live conversation · relay]:::t --> PASS
     PORT[same eval on the engine ejected to plain Python<br/>no Jac installed]:::t --> PASS
     EXT[eval_external.jac · real posts<br/>LegalBench learned_hands · measured, not gated]:::ext
     CI((GitHub Actions<br/>every push and PR)):::det -.-> S & CM & PV & WT & E2E & PORT & EXT
@@ -570,8 +584,8 @@ flowchart LR
 
 ```
 cd civicmesh && jac run tests/eval_engine.jac
-  324 cases · field accuracy 100% (727/727) · 73/73 languages · top-3 + plan checks 100% (54/54) · exclusion errors 0
-  latency / turn p50 ~1.6 ms · p95 ~18 ms
+  352 cases · field accuracy 100% (764/764) · 73/73 languages · top-3 + plan checks 100% (54/54) · exclusion errors 0
+  metamorphic 228/228 neutral additions moved no verdict · latency / turn p50 ~1.6 ms · p95 ~18 ms
 
 cd civicmesh && jac run tests/check_messages.jac
   50 languages + English source, 92 keys each · PASS
@@ -583,7 +597,7 @@ cd civicmesh && rm -rf .jac/data && jac test tests/test_privacy_graph.jac   # + 
   OK
 
 python3 tests/e2e_http.py http://localhost:7860
-  56/56 passed · turn latency p50 ~0.37 s
+  64/64 passed · turn latency p50 ~0.4 s
 
 cd civicmesh && jac run tests/eval_external.jac   # real posts, downloaded on first run
 ```
@@ -595,7 +609,7 @@ cd civicmesh && jac run tests/eval_external.jac   # real posts, downloaded on fi
 | `golden_adversarial.json` | 67 | Cross-category traps ("no food at home", "debt collectors about hospital bills"), negation, possession, idioms ("dying of hunger"), code-switching, romanized scripts, no-signal input, everyday domestic-violence phrasing in five languages with false-alarm guards ("打我电话" is "call me"; a pounding heart is not violence) |
 | `golden_holdout.json` | 40 | Written *after* tuning on the adversarial set, then scored before any fix |
 | `golden_facts_i18n.json` | 41 | Income, household, age, status and location stated in Chinese, Cantonese, Korean, Vietnamese, Russian, Ukrainian, Arabic, Persian, Hindi, Bengali, Punjabi, Gujarati, Telugu, Tamil, Japanese, Tagalog, Haitian Creole, French, Portuguese and Polish, with traps: rent that isn't income, "not a citizen", an abusive partner outside the household, a child's age, other-script digits, 万 multipliers, hourly pay |
-| `golden_probes.json` | 42 | Words in their other senses, each paired with the true positive it must not break: "social security" as a number, card or office; a college senior; retired from the army at 42; the Salvation Army; serving tables; a car parked on the street; adult children who moved out; a child-care job; substance-abuse treatment; "my back hurts me"; an injury at work; negated facts in English and Spanish; a temporary visa stated by the speaker vs. a friend's. `p_max` fails the run if a wrong flag raises a program's P(eligible) |
+| `golden_probes.json` | 70 | Words in their other senses, each paired with the true positive it must not break: "social security" as a number, card or office; a college senior; retired from the army at 42; the Salvation Army; serving tables; a car parked on the street; adult children who moved out; a child-care job; substance-abuse treatment; "my back hurts me"; an injury at work; negated facts in English and Spanish; a temporary visa stated by the speaker vs. a friend's. Also indirect crisis wording (988 / Hotline warning signs) with benign counterparts, the scorer's situation targets under negation, household counts ("there are 3 people"), and local HUD limits. `p_max` / `tier_not` fail the run if a wrong flag moves a verdict |
 
 ### External check: real people's words
 
@@ -633,7 +647,7 @@ The domestic-violence number is the important one. A self-written suite at 100% 
 - hostile input: 6,000 characters, `<script>`, SQL-shaped text, emoji only, a prompt injection planting a phone number
 - privacy: the words typed (an SSN, a phone number) reach neither the stored need nor the stored self-critique, an unroutable message is not sent to a model, a crisis turn requests no narration and `NarrateWalker` refuses it, draft catalogs (Spanish included) carry the English original and English crisis lines, and **Delete my data** empties the graph without touching another visitor
 
-Result: **56/56** locally. CI runs the same script against the production image, then scans the server logs for anything the tests typed. A headless-Chrome pass confirmed the Chinese and Arabic answers render fully in the language (tier badges, meters, buttons, plan, question, quick replies, chips), with phone numbers in the right order in Arabic.
+Result: **64/64** locally. It also covers the live conversation that got stuck (household 3, the disability "yes" applied, a visitor with no seeded catalog), a narrator that refuses unsigned facts, indirect crisis cues pinning 988 and the DV hotline, and unrouted messages getting a question instead of guessed programs. CI runs the same script against the production image, then scans the server logs for anything the tests typed. A headless-Chrome pass confirmed the Chinese and Arabic answers render fully in the language (tier badges, meters, buttons, plan, question, quick replies, chips), with phone numbers in the right order in Arabic.
 
 | Measure | Before (LLM per step) | Now |
 |---|---|---|
@@ -711,6 +725,7 @@ civicmesh/
 │   └── i18n/                    <code>.json message catalogs (English source + 50 languages)
 ├── tools/review_sheet.py        side-by-side translation review sheets (stdlib Python)
 ├── tools/eject_engine.sh        engine → plain Python with jac2py, then run its eval without Jac
+├── tools/build_hud_limits.py    HUD FY2026 Section 8 limits → data/hud_income_limits.json (106 cities)
 └── tests/                       eval_engine.jac + six suites (incl. golden_probes) · eval_external.jac (real posts) ·
                                  check_messages.jac · check_privacy.jac ·
                                  test_schema · persona_* · test_privacy_graph (jac test) · e2e_http.py
@@ -729,6 +744,8 @@ Copy `civicmesh/data/i18n/en.json` to `<code>.json`, translate the values (keep 
 - Local-office lookups sanitize city names before they reach the open-data query.
 - Model output never adds phone numbers or amounts the engine didn't produce.
 - Walker reports are no longer echoed to stdout (`walkers/log_privacy.jac`); CI scans the container logs for user text.
+- The narrator only accepts facts signed by the server (HMAC, `CIVICMESH_SIGNING_KEY` for multi-process deployments), with a server-wide ceiling, so it isn't a free relay to the model quota.
+- Reporting a vulnerability: [SECURITY.md](./SECURITY.md).
 - jac-scale's LLM telemetry endpoints (`/admin/llm/telemetry/*`) answer 403 to anonymous and visitor tokens alike.
 - Privacy guarantees and their limits: [PRIVACY.md](./PRIVACY.md).
 

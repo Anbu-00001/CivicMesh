@@ -14,6 +14,9 @@ sv import from walkers.narrate { NarrateWalker }
 sv import from walkers.forget { ForgetWalker }
 import from "@jac/runtime" { jacSpawn }
 
+# The id of the chat request waiting for an answer (see sendMessage).
+glob CM_INFLIGHT: dict = {"id": ""};
+
 # Follow-up questions answered with a quick Yes / No (must live in the .cl.jac:
 # globs in .impl.jac files don't reach the client bundle).
 glob YES_NO_KEYS: list = ["homeless", "veteran", "disability", "dv", "young_child", "children", "eviction"];
@@ -46,7 +49,9 @@ def:pub ChatPane(
         # "Delete my data": "" | deleting | done | failed.
         forget_state: str = "",
         # Bot message id whose English original is expanded.
-        en_open: str = "";
+        en_open: str = "",
+        # Private session: nothing stays in this browser after the tab closes.
+        private_on: bool = False;
 
     can with entry {
         seed = [{
@@ -77,6 +82,7 @@ def:pub ChatPane(
         try {
             saved = localStorage.getItem("cm_lang");
             if saved { pref_lang = saved; }
+            if sessionStorage.getItem("cm_private") == "1" { private_on = True; }
         } except Exception as _ex {}
     }
 
@@ -98,6 +104,7 @@ def:pub ChatPane(
     def renderLocal(loc: Any) -> JsxElement;
     def resetCase -> None;
     async def forgetMe -> None;
+    def setPrivate(on: bool) -> None;
     def renderPrivacy -> JsxElement;
     def spansToEvents(spans: list) -> list;
     def fmtMs(ms: float) -> str;

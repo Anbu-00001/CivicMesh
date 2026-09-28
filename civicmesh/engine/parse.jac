@@ -100,7 +100,7 @@ glob FLAG_LEXICON: dict = {
                 "(?:served|serving|was|were|been|enlisted|joined|discharged|retired|got out)(?: \\w+)? (?:in|from|with)? ?(?:the )?(?:u\\.?s\\.? )?(?:army|navy|marines?|marine corps|air force|coast guard|national guard|military)",
                 "(?:army|navy|marine|marines|air force|coast guard|national guard|military) (?:vet|veteran|service|retiree)",
                 "dd-?214", "deployed to", "serv[ií] en (?:el |la )?(?:ej[eé]rcito|marina|fuerza a[eé]rea|infanter[ií]a|guardia nacional)", "(?:fui|era) (?:soldado|militar)", "militar retirad[oa]"],
-    "disabled": ["disabilit(?:y|ies)", "disabled", "ssi", "ssdi", "wheelchair", "discapacidad", "discapacitad[oa]"],
+    "disabled": ["disabilit(?:y|ies)", "disabled", "ssi", "ssdi", "wheelchair", "blind", "deaf", "discapacidad", "discapacitad[oa]"],
     "dv": ["domestic violence", "abus(?:e|ed|ive)", "hits me", "beats me", "hurts me", "safe house", "violencia dom[eé]stica", "maltrato", "me golpea",
            "(?:he|she)(?:'ll| will| might| could| is going to)? hurt me", "hurt me again", "(?:afraid|scared) (?:of )?(?:my )?(?:husband|boyfriend|partner|ex|wife|girlfriend)",
            "i'?m (?:scared|afraid) (?:that )?(?:he|she)", "me peg(?:a|[oó]|aba)", "me maltrata", "tengo miedo de mi (?:esposo|pareja|novio|ex)",
@@ -108,6 +108,7 @@ glob FLAG_LEXICON: dict = {
            "domestic (?:battery|abuse|assault|dispute|disturbance)", "restraining order", "protective order", "order of protection",
            "protection order", "no[- ]contact order", "my (?:attacker|abuser)", "sexually assaulted", "sexual assault", "raped",
            "(?:terrified|afraid|scared|fear(?:ful)?) for (?:my|her|his|our) (?:life|lives|safety)", "stalking (?:me|her|him)",
+           "threatens (?:me|to hurt me|to kill me)", "fleeing (?:abuse|violence|domestic|my (?:husband|wife|partner|ex|boyfriend|girlfriend|abuser))",
            "(?:he|she|husband|wife|boyfriend|girlfriend|bf|gf|partner|spouse|fianc[eé]e?|ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|brother|sister|father|dad|stepdad|stepfather|mother|mom|stepmom|son|daughter|uncle|cousin|roommate|in-laws?)\\b[^.!?]{0,40}\\b(?:punched|kicked|choked|strangled|slapped|shoved|pushed|hit|beat|assaulted|attacked|raped|stabbed|threatened to kill|sucker punched|grabbed)\\b[^.!?]{0,15}\\b(?:me|her|him|us|my|our)",
            "(?:punched|kicked|choked|strangled|slapped|shoved|pushed|hit|beaten|assaulted|attacked|raped|abused|stabbed|threatened|sucker punched|battered) by (?:my|her|his|our|a|an) (?:\\w+ )?(?:he|she|husband|wife|boyfriend|girlfriend|bf|gf|partner|spouse|fianc[eé]e?|ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|brother|sister|father|dad|stepdad|stepfather|mother|mom|stepmom|son|daughter|uncle|cousin|roommate|in-laws?)"],
     "self_harm": ["suicid\\w*", "kill myself", "end my life", "want to die", "self[- ]harm", "hurt myself", "quitarme la vida", "matarme", "no quiero vivir",
@@ -116,10 +117,11 @@ glob FLAG_LEXICON: dict = {
     # "on the street" / "en la calle" only with a verb of living there: a car
     # parked on the street is not homelessness.
     "homeless": ["homeless", "on the streets", "(?:living|live|lived|sleeping|sleep|slept|staying|stay|ended up|end up|been|out) on the street",
-                 "sleeping in (?:my|our|the) car", "nowhere to (?:go|stay|sleep|live)", "sin hogar", "sin techo",
+                 "sleeping in (?:my|our|the|a) car", "nowhere to (?:go|stay|sleep|live)", "no place to (?:stay|sleep|live)", "(?:need|find|get) (?:a )?shelter tonight",
+                 "sin hogar", "sin techo", "no tenemos d[oó]nde (?:vivir|dormir|quedarnos)",
                  "(?:vivo|vivimos|viv[ií]a|dormimos|duermo|dorm[ií]|estoy|estamos|quedamos|qued[eé]|terminamos|dejaron|echaron|sacaron|tiraron)(?: \\w+){0,2} en la calle"],
     "pregnant": ["pregnant", "expecting a baby", "embarazada"],
-    "children": ["kids?", "children", "child", "sons?", "daughters?", "baby", "toddler", "infant", "hij[oa]s?", "ni[nñ][oa]s?", "beb[eé]"],
+    "children": ["kids?", "children", "child", "sons?", "daughters?", "baby", "toddler", "infant", "teens?", "teenagers?", "hij[oa]s?", "ni[nñ][oa]s?", "beb[eé]"],
     "family": ["my family", "our family", "mi familia", "nuestra familia", "familia"]
 };
 
@@ -171,6 +173,34 @@ def flag_other_sense(flag: str, low: str, start: int, end: int) -> bool {
     }
     return False;
 }
+
+# A second, softer layer that can only escalate, never suppress: indirect ways
+# of saying it, from the 988 Lifeline's warning signs ("being a burden",
+# "feeling trapped", "no reason to live") and the National Domestic Violence
+# Hotline's ("controls my money", "checks my phone", "threatens to take the
+# kids", threats of deportation). An outside probe found 0 of 16 indirect
+# messages caught by the direct lexicon. A concern pins the hotline as a
+# gentle first line; it doesn't switch the turn into crisis mode.
+glob CONCERN_LEXICON: dict = {
+    "self_harm_concern": [
+        "(?:better off|be better) without me", "(?:i'?m|i am|feel like) (?:just )?a burden", "burden (?:to|on) (?:everyone|my family|my kids|others|you all)",
+        "no (?:reason|point) (?:to|in) (?:living|live|going on|being here|trying)", "(?:can'?t|cannot) (?:take|do|handle) (?:it|this|any of this) any ?more",
+        "(?:feel|feeling|i'?m|i am) (?:so )?trapped(?! in (?:a|my|the|this) (?:lease|contract|job|loan|apartment|car|elevator|building))", "unbearable pain", "(?:wish|want) (?:it|everything|this) (?:would|to|could) (?:just )?(?:end|stop)",
+        "wish i (?:was|were|could be) (?:dead|gone)", "wish i could (?:disappear|just disappear|not wake up)", "(?:don'?t|do not) see a way out",
+        "no way out(?! of (?:the|this|my|a) (?:lease|contract|loan|deal|parking))", "tired of (?:living|being alive|life)", "giving away (?:all )?my (?:things|stuff|belongings)",
+        "nobody would (?:care|miss me|notice) if i", "(?:estar[ií]an|estarian) mejor sin m[ií]", "soy una carga", "ya no puedo m[aá]s",
+        "no (?:le )?veo (?:el )?sentido (?:a|de) (?:la vida|vivir|seguir)", "quisiera desaparecer", "no hay salida", "estoy cansad[oa] de vivir"],
+    "dv_concern": [
+        "(?:scared|afraid|terrified) (?:to|of going) (?:go )?(?:back )?home", "(?:don'?t|do not) feel safe (?:at|in my) home", "(?:isn'?t|is not|not) safe (?:at|in my) home",
+        "(?:controls|takes|keeps) (?:all )?(?:my|our) (?:money|paycheck|cards?|documents|passport|papers)",
+        "(?:checks|reads|goes through|tracks) my (?:phone|messages|texts|location|email)",
+        "(?:won'?t|will not|doesn'?t|does not) let me (?:see|talk to|leave|work|go out|have a phone|call|visit)",
+        "(?:threatens|threatened|says he'?ll|says she'?ll|keeps saying he'?ll|keeps saying she'?ll) (?:to )?(?:take (?:the|my) (?:kids|children)|call (?:immigration|ice)|report me|have me deported|deport me|kick me out)",
+        "locks me (?:in|out)", "walking on eggshells", "(?:he|she) (?:gets|got) (?:really )?(?:violent|aggressive) when",
+        "tengo miedo de (?:volver|regresar|ir) a (?:la )?casa", "me quita (?:el|mi) dinero", "(?:revisa|vigila) mi (?:tel[eé]fono|celular)",
+        "no me deja (?:salir|trabajar|ver a mi familia|hablar con)", "amenaza con (?:quitarme a (?:los|mis) (?:ni[nñ]os|hijos)|llamar a inmigraci[oó]n|deportarme|echarme)",
+        "no me siento segur[oa] en (?:mi )?casa"]
+};
 
 glob URGENT_PATTERNS: list = [
     "tonight", "right now", "today", "emergency", "immediately", "evicted",
@@ -233,7 +263,8 @@ glob CITIES: dict = {
     "syracuse": "NY", "utica": "NY", "providence": "RI", "hartford": "CT",
     "raleigh": "NC", "honolulu": "HI", "anchorage": "AK", "stockton": "CA",
     "modesto": "CA", "bakersfield": "CA", "riverside": "CA", "yuba city": "CA",
-    "lewiston": "ME", "clarkston": "GA", "fargo": "ND", "sioux falls": "SD"
+    "lewiston": "ME", "clarkston": "GA", "fargo": "ND", "sioux falls": "SD",
+    "fort lauderdale": "FL", "jacksonville": "FL", "hialeah": "FL", "oklahoma city": "OK", "tulsa": "OK", "virginia beach": "VA", "colorado springs": "CO", "el cajon": "CA", "worcester": "MA", "des moines": "IA", "grand rapids": "MI", "spokane": "WA", "tacoma": "WA", "reno": "NV", "baton rouge": "LA", "birmingham": "AL", "little rock": "AR", "wichita": "KS", "durham": "NC", "knoxville": "TN"
 };
 
 glob EN_MARKERS: list = [
@@ -398,9 +429,9 @@ def parse_income(low: str) -> tuple {
 
 """Household size from explicit counts, children counts and partner mentions."""
 def parse_household(low: str, evidence: list, text: str) -> int {
-    m = re.search(r"\b(?:family|household) of (\d+|\w+)\b|\bfamilia de (\d+|\w+)\b|\bsomos (\d+|\w+)\b|\bwe are (\d+|\w+) (?:people|of us)\b", low);
+    m = re.search(r"\b(?:family|household) of (\d+|\w+)\b|\bfamilia de (\d+|\w+)\b|\bsomos (\d+|\w+)\b|\bwe are (\d+|\w+) (?:people|of us)\b|\bthere (?:are|is) (\d+|\w+) (?:people|persons|of us)\b|\b(\d+|\w+) (?:people|persons) (?:live|living|in (?:my|our|the) (?:house|home|household|apartment|family))\b", low);
     if m {
-        tok = m.group(1) or m.group(2) or m.group(3) or m.group(4);
+        tok = m.group(1) or m.group(2) or m.group(3) or m.group(4) or m.group(5) or m.group(6);
         n = _num(tok);
         if n > 0 and n < 20 {
             _ev(evidence, "household_size", n, m.start(), m.end(), text);
@@ -584,6 +615,19 @@ def parse_intake(text: str) -> dict {
     }
     for f in i18n_flags {
         if f not in flags { flags.append(f); }
+    }
+    # Indirect cues: added only when the direct flag isn't already there.
+    for (cflag, cpats) in CONCERN_LEXICON.items() {
+        direct = cflag.replace("_concern", "");
+        if direct in flags { continue; }
+        for cp in cpats {
+            cm = re.search("\\b" + cp + "\\b", low);
+            if cm {
+                flags.append(cflag);
+                _ev(evidence, "flag", cflag, cm.start(), cm.end(), raw);
+                break;
+            }
+        }
     }
     # Crisis flags override the category router: they always need a human line.
     if "self_harm" in flags and not top_cat {
