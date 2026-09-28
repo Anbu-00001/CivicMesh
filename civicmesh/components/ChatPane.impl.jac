@@ -548,7 +548,7 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
     # A machine-drafted catalog (no native review yet): say so in the user's
     # language, keep the English original one tap away, and show the English
     # of any crisis line under it (HHS §1557 guidance on unreviewed MT).
-    mt_draft = native_chips and lang != "es" and str(linfo["catalog_review"]) == "draft" and bool(d["reply_en"]);
+    mt_draft = native_chips and str(linfo["catalog_review"]) == "draft" and bool(d["reply_en"]);
     report_url = "https://github.com/Anbu-00001/CivicMesh/issues/new?template=translation.yml&labels=translation&title=" + encodeURIComponent("[" + lang + "] translation: ");
     trace: Any = d["trace"];
     prof: Any = d["profile"] if d["profile"] else {};
@@ -639,7 +639,7 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                     {(narr and narr["status"] == "ok") and <span className="cm-hud-llm">{"✦ narrated in " + fmtMs(narr["ms"]) + " · facts guard passed"}</span>}
                     {(narr and narr["status"] == "failed") and <span className="cm-muted">{"LLM narration unavailable — engine answer shown"}</span>}
                     {(d["privacy"] and d["privacy"]["private_turn"]) and <span className="cm-hud-private">{"Kept on this server — crisis messages are never sent to an AI model"}</span>}
-                    {(d["privacy"] and len(d["privacy"]["redacted"]) > 0) and <span className="cm-hud-private">{"Removed before saving: " + ", ".join([str(k).replace("[", "").replace("]", "") for k in d["privacy"]["redacted"]]) + " — you never need to share these"}</span>}
+                    {(d["privacy"] and d["privacy"]["words_sent_to_model"]) and <span className="cm-hud-private">{"The engine couldn't place this, so an AI model read it (identifiers removed first)"}</span>}
                     <button className="cm-why" onClick={lambda _e: MouseEvent { waterfall_open = (-1 if waterfall_open == idx else idx); }}>{("Hide trace" if waterfall_open == idx else "Trace")}</button>
                 </div>
                 {waterfall_open == idx and renderWaterfall(trace, narr, idx)}
@@ -765,14 +765,14 @@ impl ChatPane.renderPrivacy -> JsxElement {
         <details className="cm-privacy">
             <summary>
                 <span className="cm-privacy-lock" aria-hidden="true"><svg width="11" height="12" viewBox="0 0 11 12"><rect x="1" y="5" width="9" height="6.5" rx="1.5" fill="currentColor"/><path d="M 3 5 V 3.6 a 2.5 2.5 0 0 1 5 0 V 5" stroke="currentColor" strokeWidth="1.4" fill="none"/></svg></span>
-                {"Private by design — no name or ID needed"}
+                {"Private by design — your words aren't saved or sent to AI"}
             </summary>
             <ul>
-                <li>You're anonymous: this browser holds a random login; nobody asks who you are.</li>
-                <li>Social Security, A-numbers, phone numbers, emails, addresses and dates of birth you type are replaced with placeholders before anything is saved or sent to a model.</li>
-                <li>Crisis messages (self-harm, abuse) are answered by fixed code and never sent to any AI model.</li>
-                <li>The eligibility engine runs on this server. Only a scrubbed copy of your message goes to NVIDIA's hosted models, for the optional summary and translation.</li>
-                <li>Your case is kept until you delete it or the server restarts; there's no advertising, no tracking, no selling.</li>
+                <li>You're anonymous: this browser holds a random login, and nobody asks who you are.</li>
+                <li>Your message is read on this server to find programs. It is not saved: we keep only what the engine understood (the kind of help, how urgent, household size, income).</li>
+                <li>Your words are not sent to any AI model. The optional summary and translation are written from the engine's answer (program names, phone numbers, the next step), not from what you typed.</li>
+                <li>Crisis messages (self-harm, abuse) are answered by fixed code.</li>
+                <li>Your case is kept until you delete it or the server restarts. No advertising, no tracking, no selling.</li>
             </ul>
             <div className="cm-privacy-actions">
                 <a className="cm-link" href="https://github.com/Anbu-00001/CivicMesh/blob/main/PRIVACY.md" target="_blank" rel="noreferrer">Full privacy notice</a>

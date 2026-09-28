@@ -1,0 +1,387 @@
+{
+ "_about": "Probes: realistic sentences where a lexicon word appears in another sense (an agency, a card, a job, a body part, a charity), each paired with the true positive it must not break. Started from an outside finding (\"I don't have a social security number\" flagged a mother as a senior). Scored with the rest; failures here were fixed by tightening the lexicon, never by editing the case.",
+ "cases": [
+  {
+   "text": "I'm a mother of three kids aged 2, 5 and 8 and we need food. I don't have a social security number.",
+   "expect": {
+    "category": "food",
+    "flag_absent": "senior"
+   },
+   "tier_not": {
+    "Senior Farmers Market Nutrition Program": "likely",
+    "Commodity Supplemental Food Program": "likely"
+   },
+   "_why": "outside review: SSN sentence flagged a 30-something mother as a senior and flipped two 60+ programs to likely",
+   "suite": "probes",
+   "p_max": {
+    "Senior Farmers Market Nutrition Program": 0.4
+   }
+  },
+  {
+   "text": "I lost my social security card and need food for my kids",
+   "expect": {
+    "category": "food",
+    "flag_absent": "senior"
+   },
+   "tier_not": {
+    "Senior Farmers Market Nutrition Program": "likely",
+    "Commodity Supplemental Food Program": "likely"
+   },
+   "_why": "a card is not an age",
+   "suite": "probes",
+   "p_max": {
+    "Senior Farmers Market Nutrition Program": 0.4
+   }
+  },
+  {
+   "text": "The social security office cut my kids' survivor benefits and now we can't buy groceries",
+   "expect": {
+    "category": "food",
+    "flag_absent": "senior"
+   },
+   "_why": "survivor benefits go to children",
+   "suite": "probes"
+  },
+  {
+   "text": "My son gets SSDI from Social Security and we're behind on rent",
+   "expect": {
+    "category": "housing",
+    "flag_absent": "senior",
+    "flag": "disabled"
+   },
+   "_why": "SSDI is disability, not age",
+   "suite": "probes"
+  },
+  {
+   "text": "Social Security cut my SSI and I can't pay rent",
+   "expect": {
+    "category": "housing",
+    "flag_absent": "senior",
+    "flag": "disabled"
+   },
+   "_why": "SSI is disability or low income, not age",
+   "suite": "probes"
+  },
+  {
+   "text": "I'm 34 and a senior at the community college and I can't afford food",
+   "expect": {
+    "category": "food",
+    "flag_absent": "senior",
+    "age": 34
+   },
+   "_why": "a college senior",
+   "suite": "probes"
+  },
+  {
+   "text": "I retired from the army at 42 and now I'm homeless",
+   "expect": {
+    "flag": "veteran",
+    "flag_absent": "senior"
+   },
+   "_why": "retired at 42 is not a senior",
+   "suite": "probes"
+  },
+  {
+   "text": "I'm retired and living on Social Security, I need food",
+   "expect": {
+    "category": "food",
+    "flag": "senior"
+   },
+   "_why": "true positive must survive",
+   "suite": "probes"
+  },
+  {
+   "text": "Soy jubilada y vivo del seguro social, necesito comida",
+   "expect": {
+    "category": "food",
+    "flag": "senior"
+   },
+   "_why": "true positive (es)",
+   "suite": "probes"
+  },
+  {
+   "text": "My Social Security retirement check isn't enough to cover rent",
+   "expect": {
+    "category": "housing",
+    "flag": "senior"
+   },
+   "_why": "a retirement check means 62+",
+   "suite": "probes"
+  },
+  {
+   "text": "My 70-year-old mother lives with us, I'm 45, and we need food",
+   "expect": {
+    "category": "food",
+    "age": 45
+   },
+   "_why": "a relative's age is not the person's age",
+   "suite": "probes"
+  },
+  {
+   "text": "The Salvation Army shelter is full tonight and I have nowhere to sleep",
+   "expect": {
+    "flag": "homeless",
+    "flag_absent": "veteran"
+   },
+   "_why": "Salvation Army is a charity",
+   "suite": "probes"
+  },
+  {
+   "text": "I served in a restaurant for ten years and just lost my job, we need food",
+   "expect": {
+    "category": "food",
+    "flag_absent": "veteran"
+   },
+   "_why": "served tables",
+   "suite": "probes"
+  },
+  {
+   "text": "I worked at the military base cafeteria and got laid off, I need help with rent",
+   "expect": {
+    "category": "housing",
+    "flag_absent": "veteran"
+   },
+   "_why": "a civilian job on a base",
+   "suite": "probes"
+  },
+  {
+   "text": "I served in the Army for 6 years and now I'm homeless",
+   "expect": {
+    "flag": "veteran"
+   },
+   "_why": "true positive",
+   "suite": "probes"
+  },
+  {
+   "text": "I'm a Navy veteran and need a doctor",
+   "expect": {
+    "category": "healthcare",
+    "flag": "veteran"
+   },
+   "_why": "true positive",
+   "suite": "probes"
+  },
+  {
+   "text": "Serví en el ejército y ahora necesito vivienda",
+   "expect": {
+    "category": "housing",
+    "flag": "veteran"
+   },
+   "_why": "true positive (es) the lexicon missed",
+   "suite": "probes"
+  },
+  {
+   "text": "My car was parked on the street and got towed, is that legal?",
+   "expect": {
+    "flag_absent": "homeless"
+   },
+   "_why": "a parked car",
+   "suite": "probes"
+  },
+  {
+   "text": "We've been living on the streets for a week",
+   "expect": {
+    "flag": "homeless"
+   },
+   "_why": "true positive",
+   "suite": "probes"
+  },
+  {
+   "text": "Mi carro estaba en la calle y se lo llevó la grúa, necesito ayuda legal",
+   "expect": {
+    "flag_absent": "homeless"
+   },
+   "_why": "a car on the street (es)",
+   "suite": "probes"
+  },
+  {
+   "text": "Nos dejaron en la calle con los niños",
+   "expect": {
+    "flag": "homeless"
+   },
+   "_why": "true positive (es)",
+   "suite": "probes"
+  },
+  {
+   "text": "Vivo en la calle desde hace un mes",
+   "expect": {
+    "flag": "homeless"
+   },
+   "_why": "true positive (es)",
+   "suite": "probes"
+  },
+  {
+   "text": "My kids are grown and moved out, I live alone and need food",
+   "expect": {
+    "category": "food",
+    "flag_absent": "children"
+   },
+   "_why": "adult children elsewhere",
+   "suite": "probes"
+  },
+  {
+   "text": "I worked as a child care provider and got laid off, I need food",
+   "expect": {
+    "category": "food",
+    "flag_absent": "children"
+   },
+   "_why": "a job, not a household member",
+   "suite": "probes"
+  },
+  {
+   "text": "I have two kids and we need food",
+   "expect": {
+    "category": "food",
+    "flag": "children"
+   },
+   "_why": "true positive",
+   "suite": "probes"
+  },
+  {
+   "text": "No tengo hijos, vivo sola y necesito comida",
+   "expect": {
+    "category": "food",
+    "flag_absent": "children"
+   },
+   "_why": "negated (es)",
+   "suite": "probes"
+  },
+  {
+   "text": "I need a substance abuse treatment program and I don't have insurance",
+   "expect": {
+    "category": "healthcare",
+    "flag_absent": "dv"
+   },
+   "_why": "substance abuse is treatment, not violence",
+   "suite": "probes"
+  },
+  {
+   "text": "My back hurts me every day and I can't afford a doctor",
+   "expect": {
+    "category": "healthcare",
+    "flag_absent": "dv"
+   },
+   "_why": "pain, not a person",
+   "suite": "probes"
+  },
+  {
+   "text": "My husband hurts me when he drinks",
+   "expect": {
+    "flag": "dv"
+   },
+   "_why": "true positive",
+   "suite": "probes"
+  },
+  {
+   "text": "My boyfriend is abusive and I need to leave",
+   "expect": {
+    "flag": "dv"
+   },
+   "_why": "true positive",
+   "suite": "probes"
+  },
+  {
+   "text": "He hurts me and I'm scared to go home",
+   "expect": {
+    "flag": "dv"
+   },
+   "_why": "true positive",
+   "suite": "probes"
+  },
+  {
+   "text": "I hurt myself at work lifting boxes and need a doctor",
+   "expect": {
+    "category": "healthcare",
+    "flag_absent": "self_harm"
+   },
+   "_why": "a workplace injury",
+   "suite": "probes"
+  },
+  {
+   "text": "Sometimes I want to hurt myself",
+   "expect": {
+    "flag": "self_harm"
+   },
+   "_why": "true positive",
+   "suite": "probes"
+  },
+  {
+   "text": "I hurt myself last night on purpose",
+   "expect": {
+    "flag": "self_harm"
+   },
+   "_why": "true positive",
+   "suite": "probes"
+  },
+  {
+   "text": "I don't have a disability, I just lost my job and need food",
+   "expect": {
+    "category": "food",
+    "flag_absent": "disabled"
+   },
+   "_why": "negated",
+   "suite": "probes"
+  },
+  {
+   "text": "I'm not pregnant, but I need food for my toddler",
+   "expect": {
+    "category": "food",
+    "flag_absent": "pregnant",
+    "flag": "children"
+   },
+   "_why": "negated",
+   "suite": "probes"
+  },
+  {
+   "text": "I'm in the US on an F-1 student visa and I can't afford food",
+   "expect": {
+    "category": "food",
+    "citizenship": "non_citizen"
+   },
+   "suite": "probes",
+   "_why": "a temporary visa, stated by the speaker"
+  },
+  {
+   "text": "I'm currently in the US on the Visa Waiver Program and need a doctor",
+   "expect": {
+    "citizenship": "non_citizen"
+   },
+   "suite": "probes",
+   "_why": "visa waiver"
+  },
+  {
+   "text": "My friend's visa expired and she needs a lawyer",
+   "expect": {
+    "citizenship": ""
+   },
+   "suite": "probes",
+   "_why": "someone else's status is not the speaker's"
+  },
+  {
+   "text": "Is he going to get deported? I'm asking for my cousin",
+   "expect": {
+    "citizenship": ""
+   },
+   "suite": "probes",
+   "_why": "a relative's case"
+  },
+  {
+   "text": "I hold US citizenship and need help with rent",
+   "expect": {
+    "category": "housing",
+    "citizenship": "citizen"
+   },
+   "suite": "probes",
+   "_why": "citizenship (noun)"
+  },
+  {
+   "text": "I got my green card through my K1 visa and now I need food",
+   "expect": {
+    "category": "food",
+    "citizenship": "eligible_immigrant"
+   },
+   "suite": "probes",
+   "_why": "the green card wins over the visa it came from"
+  }
+ ]
+}

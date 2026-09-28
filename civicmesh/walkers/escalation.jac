@@ -42,6 +42,9 @@ walker EscalationWalker {
         es = self.language == "es";
         lead_line = ("Llame a " if es else "Call ") + lead[0] + ": " + lead[1] + " — " + (lead[3] if es else lead[2]) + ".";
         lead_line_en = "";
+        if self.language == "es" {
+            lead_line_en = msg("en", "esc.call", {"name": lead[0], "phone": lead[1], "what": msg("en", "esc." + key)});
+        }
         if self.language not in ["en", "es"] and has_messages(self.language) {
             lead_line = msg(self.language, "esc.call", {"name": lead[0], "phone": lead[1], "what": msg(self.language, "esc." + key)});
             # 988 and the DV hotline interpret 200+ languages for free

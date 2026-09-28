@@ -2,14 +2,14 @@
 
     jac test tests/test_privacy_graph.jac
 
-  · a stored NeedNode holds the scrubbed text ([ssn], [phone]), never the numbers;
+  · a stored NeedNode holds the engine's reading, never the words typed;
   · a crisis turn asks for no narration and makes no model call;
   · ForgetWalker deletes the person, needs, applications and self-critiques
     and leaves the public program data (and other visitors) alone.
 """
 
 import from graph.nodes { PersonNode, NeedNode, ResourceNode, ApplicationNode, SessionInsight }
-import from graph.edges { has_need }
+import from graph.edges { has_need, reflected_on }
 import from walkers.intake { IntakeWalker }
 import from walkers.seed { SeedWalker }
 import from walkers.forget { ForgetWalker }
@@ -19,12 +19,18 @@ test "stored_need_is_scrubbed_and_forget_deletes_it" {
     w = root spawn IntakeWalker(conversation="My SSN is 123-45-6789, call me at 713-555-0199. I need food in Houston", user_id="priv_a");
     r = w.reports[-1];
     assert r["profile"]["category"] == "food";
-    assert "[ssn]" in r["privacy"]["redacted"];
+    assert r["privacy"]["words_stored"] == False and r["privacy"]["words_sent_to_model"] == False;
     p = [root --> [?:PersonNode, user_id == "priv_a"]][0];
     details = [str(n.details) for n in [p ->:has_need:-> [?:NeedNode]]];
     assert len(details) == 1;
-    assert "[ssn]" in details[0] and "[phone]" in details[0];
-    assert "6789" not in details[0] and "0199" not in details[0];
+    assert details[0].startswith("food");
+    for w in ["SSN", "6789", "0199", "call me", "Houston"] { assert w not in details[0]; }
+    # The self-critique is stored too: its snippet and headline hold no words.
+    for ins in [p ->:reflected_on:-> [?:SessionInsight]] {
+        for w in ["SSN", "6789", "0199", "call me", "Houston"] {
+            assert w not in str(ins.user_prompt_snippet) and w not in str(ins.headline);
+        }
+    }
 
     c = root spawn IntakeWalker(conversation="I want to kill myself", user_id="priv_a");
     rc = c.reports[-1];

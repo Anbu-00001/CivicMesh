@@ -172,7 +172,10 @@ impl GraphViz.renderLeft(m: dict) -> JsxElement {
     }
     quote = "";
     if nd and str(nd["tip"]).includes(" — ") {
-        quote = str(nd["tip"]).split(" — ").slice(1).join(" — ");
+        quote = str(nd["tip"]).split(" — ").slice(1).join(" — ").replace("what the engine understood: ", "");
+        # The first two parts repeat the card's own title and urgency pill.
+        qp: list = quote.split(" · ");
+        quote = " · ".join(qp.slice(2)) if len(qp) > 2 else "";
     }
     fid = hovered if hovered else selected;
     extras: list = [];

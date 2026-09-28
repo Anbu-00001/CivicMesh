@@ -33,7 +33,38 @@ glob SCRUB: list = [
     ["vivo en la calle Ocho 200, Miami", "[address]", "Ocho 200"],
     ["my case number is 20250012345", "[number]", "20250012345"],
     ["My name is Maria Lopez and I need food", "[name]", "Maria"],
-    ["me llamo Ana García y necesito comida", "[name]", "García"]
+    ["me llamo Ana García y necesito comida", "[name]", "García"],
+    # Realistic probes (after an outside review found the name, date, address
+    # and phone forms below slipping through):
+    ["I'm Maria Gonzalez and I need food for my kids", "[name]", "Gonzalez"],
+    ["Hi, this is Jose Ramirez, we got an eviction notice", "[name]", "Ramirez"],
+    ["Soy María López y necesito ayuda con la renta", "[name]", "López"],
+    ["My landlord is Mr. Peterson and he won't fix the heat", "[name]", "Peterson"],
+    ["My landlord Dave Kowalski changed the locks", "[name]", "Kowalski"],
+    ["my caseworker Ms. Johnson said to apply", "[name]", "Johnson"],
+    ["My husband Carlos hits me", "[name]", "Carlos"],
+    ["my son Mateo has asthma and needs a doctor", "[name]", "Mateo"],
+    ["My daughter Sofia goes to Lincoln Elementary School", "[school]", "Lincoln"],
+    ["my kids go to Roosevelt High", "[school]", "Roosevelt"],
+    ["I was born March 14, 1985 and need Medicaid", "[date]", "1985"],
+    ["nací el 14 de marzo de 1985", "[date]", "1985"],
+    ["We live at 1420 N Main in Dallas", "[address]", "1420 N Main"],
+    ["call me at +91 98765 43210", "[phone]", "43210"],
+    ["mi número es +52 55 1234 5678", "[phone]", "5678"],
+    ["我叫王芳，我需要食物", "[name]", "王芳"],
+    ["제 이름은 김민수입니다. 도움이 필요해요", "[name]", "김민수"],
+    ["Tên tôi là Nguyễn Văn An, tôi cần giúp đỡ", "[name]", "Nguyễn"]
+];
+
+# Documented limits, measured and printed, not gated: a name with no
+# introduction, a street without a number, a spelled-out phone number. This is
+# why nothing depends on the scrubber by default (engine/privacy.jac rules 1–3).
+glob KNOWN_MISSES: list = [
+    ["Maria and her three kids need food", "Maria"],
+    ["we're the Nguyen family from Houston", "Nguyen"],
+    ["we live on Maple, near the church", "Maple"],
+    ["text me at seven one three five five five zero one nine nine", "seven one three"],
+    ["la escuela de mi hijo es la Benito Juárez", "Benito"]
 ];
 
 glob KEEP: list = [
@@ -47,7 +78,17 @@ glob KEEP: list = [
     "Tengo 3 hijos y gano $1,800 al mes en Texas",
     "my name is on the lease",
     "vivo en la calle con mis hijos",
-    "dormimos en la calle desde hace 2 semanas"
+    "dormimos en la calle desde hace 2 semanas",
+    "I'm Mexican and need food",
+    "I'm pregnant and hungry",
+    "I'm Unemployed since May",
+    "I'm Retired and on Social Security",
+    "Soy madre soltera",
+    "Soy Mexicana y necesito ayuda",
+    "我是单亲妈妈，需要食物",
+    "저는 학생입니다",
+    "My landlord is evicting me",
+    "My daughter is sick"
 ];
 
 glob SAME_FACTS: list = [
@@ -108,6 +149,8 @@ with entry {
             fails.append("private: " + repr(c[0]) + " expected " + str(c[1]));
         }
     }
+    caught = len([k for k in KNOWN_MISSES if k[1] not in redact(k[0])]);
+    print("Scrubber limits (documented, not gated): " + str(caught) + "/" + str(len(KNOWN_MISSES)) + " of the known-miss forms caught");
     print("Privacy guard: " + str(n) + " checks (" + str(len(SCRUB)) + " scrub, " + str(len(KEEP)) + " keep, " + str(len(SAME_FACTS)) + " same-facts, " + str(len(PRIVATE)) + " crisis)");
     for f in fails { print("  ✗ " + f); }
     print("  " + ("PASS" if not fails else "FAIL (" + str(len(fails)) + ")"));

@@ -1,11 +1,12 @@
 # Privacy notice
 
-**Last updated: 27 September 2026**
+**Last updated: 28 September 2026**
 
 CivicMesh helps people find housing, food, healthcare and legal-aid programs.
 Many of the people who use it are in a hard spot. Some are immigrants, some are
 leaving an abusive home, and some are thinking about hurting themselves. So this
-notice says plainly what happens to what you type.
+notice says plainly what happens to what you type. Every statement below is
+checked by an automated test, listed at the end.
 
 CivicMesh is an open-source student project. It is **not** a government agency,
 a law firm or a benefits office, and using it does not apply you for anything.
@@ -15,78 +16,99 @@ a law firm or a benefits office, and using it does not apply you for anything.
 - **You don't need to tell us who you are.** There's no sign-up. Your browser
   gets a random login (like `visitor_k3j9x2`) the first time you visit. We never
   ask for your name, Social Security number, A-number, address or phone number.
-- **If you type an identifier anyway, it's removed before anything is saved or
-  sent to a model.** Social Security numbers, A-numbers, phone numbers, emails,
-  card numbers, dates of birth, street addresses, long ID numbers and "my name
-  is …" become placeholders like `[ssn]`. The app shows you what it removed.
-- **Crisis messages stay on our server.** If you write about hurting yourself or
-  about abuse, fixed code answers with the right hotline. The message is never
-  sent to any AI model.
+- **Your words are not saved.** Our server reads your message to find programs,
+  then keeps only what it understood: the kind of help, how urgent it is, your
+  household size and income. It never keeps what you typed.
+- **Your words are not sent to any AI model.** The optional short summary and
+  the translations are written from the app's own answer (program names, phone
+  numbers, the next step), not from your message.
+- **Crisis messages get a fixed answer.** If you write about hurting yourself or
+  about abuse, fixed code answers with the right hotline.
 - **You can delete everything.** Open *Private by design* under the chat box and
   choose **Delete my data**.
 - **No ads, no tracking, no selling.** There are no analytics scripts and no
-  advertising cookies. We don't share your data with anyone except the two
-  providers named below, and only to run the app.
+  advertising cookies.
 
 ## What is kept, and where
 
 | What | Kept where | For how long |
 |---|---|---|
-| Your case: the kind of help you need, how urgent it is, your message with identifiers removed, the programs the engine matched, applications you track, and a quality check of each answer | Our server, in a graph database under your random login | Until you press **Delete my data**, or until the server restarts, whichever comes first |
+| What the engine understood from your messages: the kind of help, urgency, household size, yearly income, your language, and your ZIP code if you gave one. Not your words, your immigration status, or your location beyond ZIP | Our server, in a graph database under your random login | Until you press **Delete my data**, or until the server restarts, whichever comes first |
+| The programs in your plan (saved as applications you can mark applied, approved or denied; for a crisis they include the hotline) and an automatic quality score for each answer. The score's label is built from the engine's reading, not your words | Same | Same |
+| The conversation so far (so a follow-up answer can build on it) | Your browser, sent along with each new message and used in memory only | Until you start a new case or close the page |
 | Your random login (username and a hashed password, nothing about you) | Our server's user list, and your browser's local storage | Until the server restarts. Delete my data clears it from your browser |
 | Your picked language | Your browser's local storage | Until you clear it or press Delete my data |
 | Anonymous counts: how many chats, which languages, which kinds of help, response times | Our server's memory. Visitor IDs are one-way hashed | Until the server restarts |
-| Server logs | Our hosting provider | Only the address of each request and whether it worked, never what you wrote. A test checks this on every change |
+| Server logs | Our hosting provider | The address of each request and whether it worked, never what you wrote |
 
-The app runs on Hugging Face Spaces' free tier. Its storage is not permanent:
+The app runs on Hugging Face Spaces' free tier, where storage is not permanent:
 everything above is erased whenever the app restarts. That happens on every
 update, and after 48 hours with no visitors.
 
 ## What leaves our server
 
-The eligibility engine runs on our server; deciding which programs fit you never
-uses an outside service. Two optional features use hosted AI models from
-**NVIDIA** (the NVIDIA API Catalog, `build.nvidia.com`):
+Deciding which programs fit you never uses an outside service. Two optional
+features use hosted AI models from **NVIDIA** (the NVIDIA API Catalog):
 
-1. **A short summary in your language** under the answer.
-2. **Translation**, only for languages we don't have pre-written translations for.
-   In rare cases a message the engine can't place at all is also sent for a
-   quick "what does this person need" reading.
+1. **A short summary in your language** under the answer. The model receives the
+   kind of need ("food, immediate") and the app's answer: program names, how
+   likely each one is, their phone numbers, the first step and the follow-up
+   question. It does **not** receive your message, your income, household size,
+   location or immigration status. No summary is written for a crisis message.
+2. **Translation**, only for languages we don't have pre-written translations
+   for. The model receives the app's answer text and button labels, not your
+   message.
 
-These requests carry your message with identifiers removed, or the engine's
-answer, which contains program names and numbers rather than your words. Crisis
-messages are never sent. NVIDIA's trial terms (sections 2.3–2.4 and 3.3) say it
-doesn't keep this content after the session, but it may log it for security and
-may use it, without identifying you, to improve its services. If the app's
-operator configures a backup model provider, the same scrubbed requests may go
-there instead.
+Your message itself is never sent. The code has an off-by-default switch
+(`CIVICMESH_MODEL_READS_MESSAGES=1`) that lets someone running their own copy
+send messages the engine can't understand to a model. That's meant only for
+models whose terms allow personal data. The public demo doesn't turn it on.
+With the switch on, identifiers are removed first and crisis messages are still
+never sent. The removal is pattern matching, and its misses are measured (see
+below).
+
+**Why we built it this way.** NVIDIA's API Trial Terms of Service forbid sending
+"personal data", "protected health information" (§2.6(a)), and "any personal
+information relating to an identifiable individual, financial, health or
+governmental information" (§4.3). They also say NVIDIA may keep submitted content
+for security logging (§2.4) and may use it, without identifying users, "to
+improve NVIDIA products and services, including AI models" (§3.3). The only
+responsible way to use that service with people in crisis is to not send what
+they write.
 
 **Hugging Face** hosts the app and sees ordinary web traffic, such as your IP
 address. Its privacy policy applies to that.
 
 ## What we can't promise
 
-- The scrubber catches common patterns. It can miss an identifier written in an
-  unusual way, and it can't recognise every name. Please don't type anything you
-  don't need to.
+- The app's answer, which is what gets summarized or translated, says what kind
+  of help was found, for example programs for survivors of violence. It carries
+  no name, words or contact details, but it isn't nothing.
+- The identifier scrubber, used only when the operator switch above is on,
+  catches the forms in our tests: Social Security and A-numbers, U.S. and
+  international phone numbers, emails, card numbers, dates of birth (numeric and
+  spelled out), street addresses, school names, and names introduced as "I'm …",
+  "Soy …", "my daughter …" or "my landlord …". It does not catch a bare name
+  ("Maria needs food"), a street without a number, or a phone number spelled out
+  in words. That's why nothing in the public demo depends on it.
 - This is a demo on free hosting, without the security review or legal
   agreements (such as a HIPAA business associate agreement) that a real benefits
   office would have. Don't use it for anything you'd need to prove later.
-- Answers in 50 languages were translated by machine and haven't been checked by
-  native speakers yet. The app says so under each answer and can show you the
-  English original.
+- Answers in 50 languages, Spanish included, were translated by machine and
+  haven't been checked by native speakers yet. The app says so under each
+  answer and can show you the English original.
 
 ## Requests from the government or anyone else
 
 We keep as little as possible so there's little to hand over. There are no
-names, no contact details, and cases are erased when the server restarts. If we
-ever received a legal demand for user data, we would say so here, as far as the
-law allows.
+names, no messages, no immigration status and no contact details, and cases are
+erased when the server restarts. If we ever received a legal demand for user
+data, we would say so here, as far as the law allows.
 
 ## Children
 
 CivicMesh is meant for adults and families looking for help. It doesn't knowingly
-collect anything about children beyond what a parent types about their household.
+collect anything about children beyond the household size a parent gives.
 
 ## Questions and changes
 
@@ -97,9 +119,14 @@ repository.
 
 ---
 
-*For developers:* the scrubber is `civicmesh/engine/privacy.jac`. It's tested by
-`tests/check_privacy.jac`, which covers what must be removed, what must be kept,
-and that the facts the engine reads are unchanged. Crisis handling lives in
-`walkers/intake.jac` and `walkers/narrate.jac`. Delete my data is
-`walkers/forget.jac`. Report-log silencing is `walkers/log_privacy.jac`. CI
-checks the server logs for user text on every push.
+*For developers: the tests behind each statement*
+
+| Statement | Test |
+|---|---|
+| Words not stored; the stored need is the engine's reading | `tests/test_privacy_graph.jac`, E2E P1 and P3 |
+| Words not sent to a model; unroutable messages ask instead | E2E P11 (`llm.sync_used` false), `walkers/narrate.jac` has no message parameter |
+| Crisis messages: no routing call, no narration | E2E P4–P5, `tests/test_privacy_graph.jac` |
+| Summary facts carry no income, household, location or status | `facts_for` in `walkers/eligibility.jac` |
+| Delete my data removes the case, and only yours | E2E P8–P10, `tests/test_privacy_graph.jac` |
+| Server logs hold no user text | CI "Server logs hold no user text" step (`walkers/log_privacy.jac`) |
+| Scrubber: what it catches, what it misses | `tests/check_privacy.jac` (gated cases + printed known misses) |

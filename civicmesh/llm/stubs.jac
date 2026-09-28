@@ -188,18 +188,16 @@ obj Narration {
 sem Narration.message is "Two or three warm, plain sentences in the target language: acknowledge the situation in one clause, name the first program to contact and why, and end with the follow-up question if one is given. No new facts, programs, numbers or phone numbers beyond those in `facts`. No markdown.";
 sem Narration.chips is "The follow-up suggestions translated into the target language, same count and order as given. Return them unchanged if the target language is English. Keep program names (SNAP, WIC, Medicaid, Section 8) as they are.";
 
-"""Write the reply for a social-services navigator from pre-computed facts. The facts are authoritative: do not add programs, eligibility claims, numbers or phone numbers that are not in them."""
-def narrate_turn(user_message: str, language: str, facts: str, chips: list[str]) -> Narration by narrate_pool();
+"""Write the reply for a social-services navigator from pre-computed facts. The facts are authoritative: do not add programs, eligibility claims, numbers or phone numbers that are not in them. The person's own words are deliberately not provided."""
+def narrate_turn(language: str, facts: str, chips: list[str]) -> Narration by narrate_pool();
 
-sem narrate_turn.user_message is "What the person wrote, for tone and context only.";
-sem narrate_turn.language is "Language to write in, as 'Name (code)', e.g. 'Tamil (ta)'. If 'auto', write in the same language as user_message.";
+sem narrate_turn.language is "Language to write in, as 'Name (code)', e.g. 'Tamil (ta)'. If 'auto', write in plain English.";
 sem narrate_turn.facts is "Engine output: matched programs with reasons, the first step, and the follow-up question. Authoritative.";
 sem narrate_turn.chips is "Follow-up suggestion chips in English to translate.";
 
 """Same contract as narrate_turn, served by the polyglot pool for long-tail languages."""
-def narrate_turn_polyglot(user_message: str, language: str, facts: str, chips: list[str]) -> Narration by polyglot_pool();
+def narrate_turn_polyglot(language: str, facts: str, chips: list[str]) -> Narration by polyglot_pool();
 
-sem narrate_turn_polyglot.user_message is "What the person wrote, for tone and context only.";
-sem narrate_turn_polyglot.language is "Language to write in, as 'Name (code)', e.g. 'Tigrinya (ti)', 'Kurdish (Sorani) (ckb)'. If 'auto', write in the same language as user_message.";
+sem narrate_turn_polyglot.language is "Language to write in, as 'Name (code)', e.g. 'Tigrinya (ti)', 'Kurdish (Sorani) (ckb)'. If 'auto', write in plain English.";
 sem narrate_turn_polyglot.facts is "Engine output: matched programs with reasons, the first step, and the follow-up question. Authoritative.";
 sem narrate_turn_polyglot.chips is "Follow-up suggestion chips in English to translate.";

@@ -51,7 +51,9 @@ with entry {
     for c in hold_cases { c["suite"] = "holdout"; }
     fact_cases = json.load(open("tests/golden_facts_i18n.json", encoding="utf-8"))["cases"];
     for c in fact_cases { c["suite"] = "facts"; }
-    cases = cases + i18n_cases + adv_cases + hold_cases + fact_cases;
+    probe_cases = json.load(open("tests/golden_probes.json", encoding="utf-8"))["cases"];
+    for c in probe_cases { c["suite"] = "probes"; }
+    cases = cases + i18n_cases + adv_cases + hold_cases + fact_cases + probe_cases;
     suite_tot: dict = {};
     suite_ok: dict = {};
     langs_ok: dict = {};
@@ -138,6 +140,26 @@ with entry {
             if n in plan_names {
                 excl_viol += 1;
                 failures.append(f"PLAN {n} should not be in the plan | {text[:60]}");
+            }
+        }
+        # A wrong flag is only harmful if it moves a verdict: tier_not pins
+        # the tier a program must NOT reach for this message.
+        tiers_of: dict = {};
+        for s in rk["ranked"] { tiers_of[s["resource_name"]] = s["tier"]; }
+        for (n, bad) in c.get("tier_not", {}).items() {
+            if tiers_of.get(n, "") == bad {
+                excl_viol += 1;
+                failures.append(f"TIER {n} must not be {bad} | {text[:60]}");
+            }
+        }
+        # ...and p_max pins the probability itself (a wrong flag can double
+        # P(eligible) without changing the tier).
+        p_elig: dict = {};
+        for s in rk["ranked"] { p_elig[s["resource_name"]] = float(s["p_eligible"]); }
+        for (n, mx) in c.get("p_max", {}).items() {
+            if n in p_elig and p_elig[n] > float(mx) {
+                excl_viol += 1;
+                failures.append(f"PMAX {n} P(eligible) {p_elig[n]:.2f} > {mx} | {text[:60]}");
             }
         }
         for n in c.get("top3_none", []) {

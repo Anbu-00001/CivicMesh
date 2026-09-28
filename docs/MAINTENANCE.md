@@ -11,9 +11,9 @@ prove nothing changed.
 
 | Layer | Lines | What it is | Jac-specific? |
 |---|---:|---|---|
-| `engine/` | 4,348 | Parsing, scoring, the policy tables, planning, routes, message catalogs, privacy scrubbing. Pure functions over dicts; the only imports are the standard library | **No.** `jac jac2py` turns it into plain Python that runs without Jac installed. CI does this on every push and runs all 282 cases on the result |
+| `engine/` | 4,470 | Parsing, scoring, the policy tables, planning, routes, message catalogs, privacy scrubbing. Pure functions over dicts; the only imports are the standard library | **No.** `jac jac2py` turns it into plain Python that runs without Jac installed. CI does this on every push and runs all 324 cases on the result |
 | `data/` | JSON | 40 programs, transitions, 51 message catalogs | No |
-| `tests/golden*.json` | JSON | 282 cases: the behaviour spec | No. A rewrite in any language can be checked against them |
+| `tests/golden*.json` | JSON | 324 cases: the behaviour spec | No. A rewrite in any language can be checked against them |
 | `walkers/` + `graph/` | 2,577 | Graph I/O: store the case, run the pipeline, snapshot, delete | Yes. This is Jac's object-spatial model (nodes, edges, walkers) on jac-scale's SQLite store. `jac eject` outputs Python, but it still imports the jaclang runtime |
 | `llm/` | 404 | Two model calls via byllm (routing fallback, narration) plus translation | Partly. byllm sits on litellm; the calls are small and replaceable with plain litellm |
 | `components/`, `frontend.*` | 4,930 | The web client (jac-client, compiled to React) | Yes, but `jac eject` outputs a standard React + Vite project |
@@ -24,11 +24,14 @@ Jac-specific part is plumbing.
 
 ## Escape hatches, verified
 
-1. **Engine → Python, on every push.** The `portable` job in
-   `.github/workflows/ci.yml` transpiles `engine/*.jac` and the eval harness
-   with `jac jac2py`. It fails if the output mentions `jaclang`, then runs the
-   eval in a fresh virtualenv with no Jac packages: 653/653 checks, the same as
-   the Jac run. The Python is uploaded as the `civicmesh-engine-python` artifact,
+1. **Engine → Python, on every push.** `tools/eject_engine.sh` transpiles
+   `engine/*.jac` and the eval harness with `jac jac2py`, fails if the output
+   mentions `jaclang`, and runs the eval with a Python that has no Jac
+   packages: 727/727 checks, the same as the Jac run. The `portable` CI job
+   runs it on every push. One trap: `jac2py` prints through a terminal
+   console that hard-wraps long lines at the terminal width, which turns long
+   regex literals into a `SyntaxError`. The script sets `COLUMNS=100000`; do
+   the same if you run `jac2py` by hand. The Python is uploaded as the `civicmesh-engine-python` artifact,
    so a copy of the logic in a mainstream language is always one click away.
 2. **Whole project → Python + JavaScript.** `jac eject . -o ../civicmesh-ejected`
    writes a `backend/` (Python) and a `frontend/` (React + Vite). Tried on
@@ -39,7 +42,7 @@ Jac-specific part is plumbing.
    small: one person, their needs, and 40 programs with rules and forms. It maps
    onto SQLite tables or NetworkX without loss. The HTTP contract to keep is the
    walker endpoints the client calls. `tests/e2e_http.py` pins that contract with
-   52 checks and runs in CI against the production Docker image.
+   55 checks and runs in CI against the production Docker image.
 
 ## Keeping the current stack healthy
 
@@ -66,7 +69,7 @@ Jac-specific part is plumbing.
 ## For a new maintainer
 
 Jac reads like Python with braces. Start with `engine/`: it's plain functions,
-and `jac jac2py engine/score.jac` shows the Python equivalent of any file. Then
+and `COLUMNS=100000 jac jac2py engine/score.jac` shows the Python equivalent of any file. Then
 read `walkers/intake.jac`, the per-turn pipeline. Run `jac run tests/eval_engine.jac`
 before and after every change. CI runs it too, along with the catalog, privacy,
 walker and HTTP checks.

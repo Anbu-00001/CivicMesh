@@ -244,7 +244,7 @@ sem CritiqueWalker is "Reflexion-style self-reflection. Runs once at the end of 
 sem CritiqueWalker.user_id is "Stable session identifier used to find the PersonNode this critique attaches to.";
 sem CritiqueWalker.walker_events is "Walkers that ran this turn, read off the trace. Drives the distinct-walker set shown in Telemetry.";
 sem CritiqueWalker.llm_calls is "LLM calls actually made this turn (sync routing call if any + background narration).";
-sem CritiqueWalker.user_prompt is "Original user prompt that triggered the turn. First 80 chars become the SessionInsight snippet for the Telemetry timeline.";
+sem CritiqueWalker.user_prompt is "The engine's reading of the turn (need_summary: kind of need, urgency, household, income), never the user's words. First 80 chars become the SessionInsight snippet for the Telemetry timeline.";
 sem CritiqueWalker.eligible_count is "Count of eligible resources EligibilityWalker found this turn. Lifts the quality score.";
 sem CritiqueWalker.escalated is "True when the chain routed to EscalationWalker. Drags the quality score down.";
 sem CritiqueWalker.pathfinder_used is "True when PathfinderWalker found a multi-hop escape path. Counts as a positive outcome.";

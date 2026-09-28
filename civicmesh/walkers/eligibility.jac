@@ -114,10 +114,12 @@ def form_dict(f: FormNode) -> dict {
 """Compact, authoritative fact sheet for the narrator LLM."""
 def facts_for(ranking: dict, plan: dict, question: str, profile: dict) -> str {
     lines: list = [];
+    # What the hosted narration model may see: the kind of need and the
+    # engine's answer. Not the person's words, income, household, age,
+    # location or immigration status (the "met" criteria carry those).
     lines.append("need: " + str(profile.get("category", "")) + " (" + str(profile.get("urgency", "")) + ")");
     for s in list(ranking.get("ranked", []))[:4] {
-        met = [c["detail"] for c in s["criteria"] if c["status"] == "met"][:2];
-        lines.append("- " + s["resource_name"] + " | " + s["tier"] + " | " + s["contact_phone"] + " | " + "; ".join(met));
+        lines.append("- " + s["resource_name"] + " | " + s["tier"] + " | " + s["contact_phone"]);
     }
     steps = list(plan.get("steps", []));
     if steps {
@@ -242,7 +244,7 @@ walker EligibilityWalker {
         # request under a catalog translation so a bilingual helper can check it
         # (catalogs are machine-drafted until a native speaker reviews them).
         reply_en = "";
-        if ui_lang not in ["en", "es"] {
+        if ui_lang != "en" {
             plan_en = build_plan(ranked, str(self.profile.get("urgency", "within_weeks")), "en");
             reply_en = compose_reply("en", self.profile, ranking, plan_en, routes, (question_for(str(ask["key"]), "en") if ask["key"] else ""));
         }

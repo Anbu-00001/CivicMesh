@@ -197,14 +197,16 @@ check("S1 default admin/changeme cannot log in", not r.get("ok"), str(r)[:80])
 # ---- P. Privacy: scrub before storing, crisis stays on the server, delete ----
 pu, pt = login()
 dp, _ = turn(pu, pt, "My SSN is 123-45-6789, call me at 713-555-0199. I need food in Houston")
-check("P1 identifiers reported as scrubbed (kinds only, never values)",
-      dp is not None and "[ssn]" in dp["privacy"]["redacted"] and "[phone]" in dp["privacy"]["redacted"]
-      and "123-45-6789" not in json.dumps(dp["privacy"]), dp["privacy"] if dp else "")
+check("P1 the response says the words were neither stored nor sent to a model",
+      dp is not None and dp["privacy"]["words_stored"] is False and dp["privacy"]["words_sent_to_model"] is False, dp["privacy"] if dp else "")
 check("P2 the engine still read the message (food, Houston)", dp is not None and dp["profile"]["category"] == "food" and dp["profile"]["city"] == "Houston")
 gs, _ = walker("GraphSnapshotWalker", {"user_id": pu}, pt)
 need_tip = next((n["tip"] for n in gs["nodes"] if n["id"] == "need"), "") if gs else ""
-check("P3 the stored NeedNode holds [ssn]/[phone], not the numbers",
-      "[ssn]" in need_tip and "[phone]" in need_tip and "6789" not in need_tip and "0199" not in need_tip, need_tip[:120])
+check("P3 the stored NeedNode holds the engine's reading, none of the words typed",
+      "food" in need_tip and not any(w in need_tip for w in ["SSN", "6789", "0199", "call me", "Houston"]), need_tip[:120])
+rr, _ = walker("ReflectionReadWalker", {"user_id": pu}, pt)
+stored = json.dumps(rr or {})
+check("P14 stored self-critiques hold none of the words typed", rr is not None and not any(w in stored for w in ["SSN", "6789", "0199", "call me"]), stored[:160])
 dc, _ = turn(pu, pt, "I want to kill myself")
 check("P4 crisis turn: private, no narration requested", dc is not None and dc["privacy"]["private_turn"] is True and dc["llm"]["narrate"] is False)
 nw, ms = walker("NarrateWalker", {"user_message": "my husband hits me and I want to die", "language": "en", "facts": "x", "chips": []}, pt)
@@ -215,9 +217,18 @@ check("P6 draft catalog: English original + English crisis line ride along (zh)"
       and dz["escalation"].get("lead_line_en", "").startswith("Call "), (dz.get("reply_en", "")[:60], dz["escalation"].get("lead_line_en", "")[:60]) if dz else "")
 de, _ = turn(pu, pt, "I need food")
 check("P7 English answers carry no English duplicate", de is not None and de.get("reply_en", "") == "" and de["escalation"].get("lead_line_en", "") == "")
+dq, _ = turn(pu, pt, "blorf wibble zzkq snorp")
+check("P11 an unroutable message is not sent to any model by default",
+      dq is not None and dq["llm"]["sync_used"] is False and "private" in dq["llm"]["reason"] and dq["question"]["key"] == "need", dq["llm"] if dq else "")
+ds, _ = turn(pu, pt, "Necesito comida para mis hijos en Texas")
+check("P12 Spanish (catalog still a draft) carries the English original too",
+      ds is not None and ds["language_info"].get("catalog_review") == "draft" and ds.get("reply_en", "").startswith("I found"), ds.get("reply_en", "")[:50] if ds else "")
+dsv, _ = turn(pu, pt, "Mi esposo me pega y tengo miedo")
+check("P13 a Spanish crisis line shows its English sentence", dsv is not None and dsv["escalation"].get("lead_line_en", "").startswith("Call "),
+      dsv["escalation"].get("lead_line_en", "")[:60] if dsv else "")
 fw, _ = walker("ForgetWalker", {"user_id": pu}, pt)
 check("P8 Delete my data removes the person, needs, applications and insights",
-      fw is not None and fw["ok"] and fw["removed"]["PersonNode"] == 1 and fw["removed"]["NeedNode"] >= 4, fw)
+      fw is not None and fw["ok"] and fw["removed"]["PersonNode"] == 1 and fw["removed"]["NeedNode"] >= 7, fw)
 gs2, _ = walker("GraphSnapshotWalker", {"user_id": pu}, pt)
 check("P9 after deletion the graph is empty", gs2 is not None and gs2.get("empty") is True and gs2["counts"]["ResourceNode"] == 40,
       {k: gs2["counts"][k] for k in ["PersonNode", "NeedNode", "ResourceNode"]} if gs2 else "")

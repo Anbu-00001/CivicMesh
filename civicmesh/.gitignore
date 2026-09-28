@@ -17,3 +17,5 @@ venv/
 *.session.*
 packages/
 tests/eval_report.json
+tests/.external/
+tests/external_report.json

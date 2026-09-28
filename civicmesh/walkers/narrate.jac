@@ -9,9 +9,10 @@ notices: the deterministic answer is already on screen.
 Guardrail: the narration must not introduce phone numbers the engine didn't
 produce. Any digit run of 3+ that isn't in the fact sheet voids the output.
 
-Privacy (engine/privacy.jac): the user's words are scrubbed of identifiers
-before they're sent, and a crisis turn (self-harm, domestic violence) is
-never sent at all — the walker reports private=True and makes no call.
+Privacy (engine/privacy.jac): the model never receives the user's words —
+only the engine's answer (programs, tiers, phone numbers, the next step and
+the question). The message arrives here only so a crisis turn (self-harm,
+domestic violence) can be recognised server-side; then no call is made.
 """
 
 import re;
@@ -19,7 +20,7 @@ import time;
 import from llm.stubs { narrate_turn, narrate_turn_polyglot, pool_model_names, polyglot_model_names }
 import from engine.i18n { ascii_digits, language_info }
 import from engine.stats { record_narration }
-import from engine.privacy { redact, is_private_turn }
+import from engine.privacy { is_private_turn }
 import from engine.parse { parse_intake }
 
 """True if the narration contains a number the engine didn't produce.
@@ -83,14 +84,13 @@ walker NarrateWalker {
         try {
             fn = narrate_turn_polyglot if polyglot else narrate_turn;
             n = fn(
-                user_message=redact(str(self.user_message))[:600],
                 language=lang_arg,
                 facts=str(self.facts)[:2000],
                 chips=[str(c) for c in self.chips]
             );
             msg = str(n.message).strip();
             chips = [str(c) for c in list(n.chips)];
-            if msg and not invents_numbers(msg, str(self.facts), redact(str(self.user_message))) {
+            if msg and not invents_numbers(msg, str(self.facts), "") {
                 out["ok"] = True;
                 out["message"] = msg;
             } else {

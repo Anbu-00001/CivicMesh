@@ -67,7 +67,7 @@ walker GraphSnapshotWalker {
         shown: dict = {};
         if needs {
             nd: NeedNode = needs[0];
-            nodes.append({"id": "need", "type": "NeedNode", "label": str(nd.category), "tip": "Latest need · " + str(nd.category) + " · " + str(nd.urgency).replace("_", " ") + " — \"" + str(nd.details)[:110] + "\"", "sub": str(nd.urgency).replace("_", " ")});
+            nodes.append({"id": "need", "type": "NeedNode", "label": str(nd.category), "tip": "Latest need · " + str(nd.category) + " · " + str(nd.urgency).replace("_", " ") + " — what the engine understood: " + str(nd.details)[:110], "sub": str(nd.urgency).replace("_", " ")});
             edges.append({"src": "person", "tgt": "need", "label": "has_need"});
             if len(needs) > 1 {
                 nodes.append({"id": "needs_prev", "type": "NeedNode", "label": "+" + str(len(needs) - 1) + " earlier", "tip": str(len(needs) - 1) + " earlier NeedNodes on this PersonNode (one per chat turn).", "dim": True});

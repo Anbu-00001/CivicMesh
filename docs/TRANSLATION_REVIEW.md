@@ -21,6 +21,10 @@ CivicMesh follows that guidance:
 | Phone numbers, dollar amounts and program names are never translated: they are filled into the templates from the engine's data. A test fails if any catalog adds, drops or changes a number | `tests/check_messages.jac` |
 | "Report a translation mistake" opens a pre-filled GitHub issue for that language | `.github/ISSUE_TEMPLATE/translation.yml` |
 
+Spanish gets the same safeguards. Its answers come from hand-written code
+rather than the catalog, but that code was written by the project, not by a
+native speaker, so it counts as a draft too.
+
 A catalog stops showing the notice when its `_meta.review` starts with
 `reviewed`, for example `"reviewed by @handle (native speaker), 2026-10-02"`.
 
@@ -33,9 +37,23 @@ Russian, Arabic, Haitian Creole, Portuguese and French come next.
 
 | Priority | Catalogs |
 |---|---|
-| 1 | `es` (Spanish answers come from hand-written code; the catalog covers chips and labels), `zh`, `yue`, `vi`, `ko`, `tl` |
+| 1 | `es` (answers from hand-written code plus the catalog; both need review), `zh`, `yue`, `vi`, `ko`, `tl` |
 | 2 | `ru`, `ar`, `ht`, `pt`, `fr` |
 | 3 | Everything else, especially languages of recent arrivals: `uk`, `fa`, `ps`, `so`, `ti`, `am`, `my`, `hmn` |
+
+## Where reviewers can come from
+
+- **The communities the app serves.** Legal-aid and 211 language-access
+  coordinators, and interpreters at the local health centers the app already lists.
+- **Volunteer translators.** [Translators without Borders](https://translatorswithoutborders.org/about-us/),
+  now part of [CLEAR Global](https://clearglobal.org/translators-without-borders/),
+  is a community of over 100,000 language volunteers who translate and revise
+  for nonprofits.
+- **Professional pro bono.** Certified translators through the American
+  Translators Association.
+
+Reviewing the 16 safety-critical rows of one language is a small, concrete
+ask to start with.
 
 ## How to review a language
 
