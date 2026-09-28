@@ -58,7 +58,7 @@ jobs:
           done
       - name: Translation review status
         run: python3 tools/review_sheet.py --status >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: eval-report
@@ -88,7 +88,7 @@ jobs:
           python -m venv "$RUNNER_TEMP/plain"
           if "$RUNNER_TEMP/plain/bin/python" -m pip list 2>/dev/null | grep -i jac; then exit 1; fi
           sh tools/eject_engine.sh "$RUNNER_TEMP/ejected" "$RUNNER_TEMP/plain/bin/python"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: civicmesh-engine-python
           path: ${{ runner.temp }}/ejected
@@ -117,7 +117,7 @@ jobs:
         run: |
           jac run tests/eval_external.jac | tee external.txt
           { echo '```'; cat external.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: external-report
           path: civicmesh/tests/external_report.json
