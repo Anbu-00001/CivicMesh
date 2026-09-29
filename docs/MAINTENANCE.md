@@ -49,9 +49,18 @@ Jac-specific part is plumbing.
 - **Everything is pinned.** `requirements.txt` pins every package, including
   `jaclang==0.15.1`, `jac-scale==0.2.17`, `jac-client==0.3.15`, `byllm==0.6.7`
   and `litellm==1.82.6`. The Docker image is reproducible from it.
-- **Upgrades come as pull requests, tested.** Dependabot opens weekly pull requests,
-  with the Jac packages grouped so they move together, and CI runs the full
-  suite on each one.
+- **Upgrades come as pull requests, tested.** Dependabot opens at most one pull
+  request a week for Python packages and one for GitHub Actions, and CI runs the
+  full suite on each. `main` is protected: nothing lands without a pull request
+  that passes the engine, portable and end-to-end jobs.
+- **The Jac stack is held at those pins on purpose.** The first grouped Jac
+  upgrade (jaclang 0.16.7, jac-scale 0.2.31, jac-client 0.3.25, byllm 0.6.19)
+  passed the engine and portable jobs but failed end-to-end: the new jac-scale
+  starts in microservice mode, its gateway listens on port 8000 instead of 7860,
+  and the walker services never report healthy, so the app doesn't serve.
+  Dependabot ignores the Jac packages until that migration is done on a branch.
+  CI's end-to-end job shows when it works; then delete the `ignore` block in
+  `.github/dependabot.yml`.
 - **Known Jac quirks are written down where they're worked around:**
 
   | Quirk (jaclang 0.15.1) | Workaround | Where |

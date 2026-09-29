@@ -1,8 +1,8 @@
 version: 2
 updates:
-  # Weekly PRs for the pinned Python stack (jaclang, jac-scale, byllm, litellm…).
-  # CI runs the full eval on each one, so a Jac release that changes behaviour
-  # shows up as a red check instead of a surprise in production.
+  # Python packages: at most one PR a week for everything outside the Jac stack.
+  # CI runs the full eval on it, so a release that changes behaviour shows up as
+  # a red check instead of a surprise in production.
   - package-ecosystem: pip
     directory: "/"
     schedule:
@@ -11,7 +11,23 @@ updates:
     groups:
       jac:
         patterns: ["jac*", "byllm", "jaseci"]
+      python:
+        patterns: ["*"]
+        exclude-patterns: ["jac*", "byllm", "jaseci"]
+    # The Jac stack is held at its pins. The grouped upgrade to jaclang 0.16.7 /
+    # jac-scale 0.2.31 failed the end-to-end job: jac-scale now starts in
+    # microservice mode, its gateway listens on :8000 instead of 7860, and the
+    # walker services never report healthy. Delete this block once that
+    # migration is done on a branch (docs/MAINTENANCE.md).
+    ignore:
+      - dependency-name: "jac*"
+      - dependency-name: "byllm"
+      - dependency-name: "jaseci"
+  # GitHub Actions: all updates in one PR.
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
