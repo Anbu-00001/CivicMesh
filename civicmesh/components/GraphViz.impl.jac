@@ -442,7 +442,7 @@ impl GraphViz.renderDetail(m: dict) -> JsxElement {
     if not picked {
         return
             <div className="gv-detail cm-muted">
-                Hover, tap or tab to a card. Each program card shows the engine's verdict for your latest need and P(eligible); its rule and form are the program's EligibilityRuleNode and FormNode.
+                Hover, tap or tab to a card. Each program card shows the engine's verdict for your latest need and its eligibility score (a score from the rules, not a measured probability); its rule and form are the program's EligibilityRuleNode and FormNode.
             </div>;
     }
     t = str(picked["type"]);
@@ -479,7 +479,7 @@ impl GraphViz.renderDetail(m: dict) -> JsxElement {
         <div className="gv-detail">
             <div className="gv-detail-type" style={{"color": (ti["color"] if ti else "rgba(255,255,255,0.55)")}}>{kind + (" · " + t if schema else "")}</div>
             <div className="gv-detail-title">{title}</div>
-            {ti and <div className="gv-detail-tier" style={{"--tier": ti["color"]}}><span className="gv-tier-ico">{ti["icon"]}</span>{ti["label"] + " · P(eligible) " + str(Math.round(Number(picked["p"]) * 100)) + "%"}</div>}
+            {ti and <div className="gv-detail-tier" style={{"--tier": ti["color"]}}><span className="gv-tier-ico">{ti["icon"]}</span>{ti["label"] + " · score " + str(Math.round(Number(picked["p"]) * 100)) + "%"}</div>}
             <div className="gv-detail-tip">{body}</div>
             {kids["rule"] and <div className="gv-kv"><span>Rule</span><div>{str(kids["rule"]["tip"])}</div></div>}
             {kids["form"] and <div className="gv-kv"><span>Form</span><div>{(str(kids["form"]["tip"]).slice(0, -3) if str(kids["form"]["tip"]).endsWith(" · ") else str(kids["form"]["tip"])).replace(" · 0 min", "")}</div></div>}

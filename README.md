@@ -12,7 +12,7 @@ pinned: false
 
 # CivicMesh
 
-### A multi-agent navigator that routes people in crisis to the housing, food, healthcare and legal aid they qualify for — answered in under a second, in the user's own language, against 2026 federal rules.
+### A rules engine on a graph that routes people in crisis to the housing, food, healthcare and legal aid they qualify for, and shows why. Seven Jac walkers run it against 2026 federal rules in about a millisecond; language models only translate and summarize, after the answer is on screen.
 
 [![JacHacks Spring 2026 – 1st Place Agentic AI](https://img.shields.io/badge/JacHacks%20Spring%202026-1st%20Place%20Agentic%20AI-FFD700?style=for-the-badge)](https://devpost.com/software/civicmesh-0ctxl5)
 [![JacHacks Spring 2026 – Best Startup Idea](https://img.shields.io/badge/JacHacks%20Spring%202026-Best%20Startup%20Idea-FFD700?style=for-the-badge)](https://devpost.com/software/civicmesh-0ctxl5)
@@ -22,8 +22,8 @@ pinned: false
 [![Jac](https://img.shields.io/badge/Jac-0.15-7c3aed?style=flat-square)](https://github.com/Jaseci-Labs/jaclang)
 [![byllm](https://img.shields.io/badge/byllm-0.6.7-22c55e?style=flat-square)](https://github.com/Jaseci-Labs/byllm)
 [![NVIDIA NIM](https://img.shields.io/badge/NVIDIA%20NIM-translation%20%2B%20narration-76b900?style=flat-square)](https://build.nvidia.com)
-[![Languages](https://img.shields.io/badge/languages-111%20supported%20%C2%B7%2075%20instant-2563eb?style=flat-square)](#languages-and-dialects)
-[![Eval](https://img.shields.io/badge/eval-352%20cases%20%C2%B7%20764%20checks-16a34a?style=flat-square)](#evaluation-and-hard-tests)
+[![Languages](https://img.shields.io/badge/languages-51%20drafted%20%C2%B7%200%20reviewed%20%C2%B7%20111%20selectable-2563eb?style=flat-square)](#languages-and-dialects)
+[![Eval](https://img.shields.io/badge/eval-372%20cases%20%C2%B7%20784%20checks-16a34a?style=flat-square)](#evaluation-and-hard-tests)
 [![CI](https://github.com/Anbu-00001/CivicMesh/actions/workflows/ci.yml/badge.svg)](https://github.com/Anbu-00001/CivicMesh/actions/workflows/ci.yml)
 [![Privacy](https://img.shields.io/badge/privacy-scrubbed%20%C2%B7%20deletable%20%C2%B7%20no%20tracking-0f766e?style=flat-square)](./PRIVACY.md)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](./LICENSE)
@@ -46,15 +46,30 @@ CivicMesh turns one message, in the person's own words and language, into a rank
 
 | Capability | What it does |
 |---|---|
-| **Answers composed in 51 languages, 111 supported** | The whole answer — programs, next step, the follow-up question, its quick replies, the chips, card labels and crisis lines — is composed in the user's language on the first response from a per-language message catalog: nothing to translate, time out or rate-limit. 75 languages are routed without an LLM; income, household, age, status and location are read in 21 of them. **NVIDIA Riva Translate** / **Gemma 4** translate for the rest; an **interpreter card** covers spoken-only languages such as Mam and K'iche'. |
+| **Answers in 51 languages (machine-drafted, none reviewed yet); 111 selectable** | The whole answer — programs, next step, the follow-up question, its quick replies, the chips, card labels and crisis lines — is composed in the user's language on the first response from a per-language message catalog: nothing to translate, time out or rate-limit. 75 languages are routed without an LLM; income, household, age, status and location are read in 21 of them. **NVIDIA Riva Translate** / **Gemma 4** translate for the rest; an **interpreter card** covers spoken-only languages such as Mam and K'iche'. No native speaker has reviewed any of the 50 non-English catalogs yet, and the app tells the user so. |
 | **Effective-dated 2026 policy table** | Income limits per household from HHS poverty guidelines, and HUD's own FY2026 Section 8 limits for the metro area of 106 cities (a national estimate, labeled as such, elsewhere); state Medicaid expansion; the 2025 immigrant-eligibility law with its dates; a USDA-formula SNAP estimate. Every criterion cites its source. |
-| **Calibrated, explainable eligibility** | Hard gates × weighted soft criteria, capped at 97%. Thin evidence yields "needs info" rather than a guess. Near-misses get the smallest change that would qualify ("with a household of 4 or more"). |
+| **Explainable eligibility score** | Hard gates × weighted soft criteria, capped at 97%, banded into likely / possible / needs info / unlikely. Thin evidence yields "needs info" rather than a guess. Near-misses get the smallest change that would qualify ("with a household of 4 or more"). The percentage is a score, not a measured probability: see [what the numbers mean](#what-the-numbers-mean-and-what-they-dont). |
 | **One sharp follow-up question** | The value-of-information question that changes the most matches, with quick replies. |
 | **Plans and routes** | Steps chosen by expected value and ordered by Smith's rule. Longer-term routes use Yen's k-shortest paths over typed `leads_to` edges. |
 | **Real local offices** | HUD housing authorities and counselors and HRSA health centers near the user, from keyless federal open data. |
 | **The graph is the product** | Each verdict is a scored `eligible_for` edge. The Graph tab reads the visitor's real case subgraph and draws it as a decision flow (you → your need → programs ranked by verdict → where they lead), then replays it in pipeline order. |
 | **Safety by construction** | Crisis and violence flags that negation can't cancel, plus an escalate-only second layer for indirect wording ("everyone would be better off without me", "he controls my money"). **Quick exit** (button or Shift ×3) and a private session that crisis turns switch on, so a shared phone keeps nothing. A numbers guard on every model output. No default admin accounts. |
 | **Private by design** | No sign-up and no name needed. What you type is read on the server and never stored or sent to any AI model: only the engine's reading is kept (kind of help, urgency, household, income). Server logs hold no user text, and **Delete my data** erases the case. Each of these is a test. [Privacy notice](./PRIVACY.md) |
+
+
+### What the numbers mean, and what they don't
+
+Everything below is computed, cited and tested, but not all of it is measured. The distinction matters for a tool people in crisis rely on.
+
+| Number shown | What it is | What it isn't (yet) |
+|---|---|---|
+| **Eligibility score** ("likely · 66%") | Hard gates × a weighted average of soft criteria (income 0.45, situation 0.30, residency 0.15, household 0.10), with income passed through a logistic curve (k = 12) around the published limit, capped at 97%. Tiers are bands: *likely* ≥ 65% with no unmet criterion, *possible* ≥ 35%, *needs info* when less than 60% of the evidence is known | A calibrated probability. No set of real eligibility determinations exists to calibrate it against. The rule inputs (limits, statuses, dates) are cited to published figures and pinned by `tests/check_policy.jac`; the weights and bands are hand-set |
+| **Approval odds** ("~67% · rough guess") | A Beta posterior from a hand-set prior (open 6:3, waitlist 3:5), updated by that visitor's own marked outcomes | Learning across people: each visitor has a private copy of the rule nodes, so outcomes never pool |
+| **Plan order** | Smith's rule: steps by value ÷ minutes, where value = urgency × score × approval × access × benefit | Checked against how caseworkers sequence applications |
+| **Route cost** | days + 10·difficulty + 30·(−ln P(yes)), best routes by Yen's k-shortest paths | Tuned: 10 and 30 encode "a likely rejection costs more than a slow step", and no ablation shows they beat simpler choices |
+| **100% on the eval** | Regression gates: 372 cases the author wrote, run on every push | A benchmark. On real posts labeled by lawyers the held-out recall is domestic violence 66%, housing 77%, health 79%, immigration status 82% ([below](#external-check-real-peoples-words), with intervals) |
+
+Turning these into measurements needs more than this repository has: the PolicyEngine US check extended from SNAP to Medicaid, WIC and school meals, an opt-in aggregate with a minimum cohort size for approval odds, and a supervised pilot where a caseworker marks every answer.
 
 ---
 
@@ -99,6 +114,19 @@ In September 2026 the author asked a chat model (an AI assistant, not a human ex
 - **Local income limits.** The engine used one national Section 8 limit ($53,950 for a family of 4). HUD sets it per metro area: $50,300 in San Antonio, $63,400 in Fort Lauderdale, $105,050 in San Francisco. `data/hud_income_limits.json` is built from HUD's FY2026 file for the 106 cities the parser knows.
 - **Honest numbers and closed holes.** Approval odds are labeled a rough guess, with no fake interval, because they come from pseudo-counts, not outcomes. The narrator only accepts facts the server signed, so it can't be used as a free relay to the model quota. `SECURITY.md`, `CONTRIBUTING.md` and `CODEOWNERS` were added.
 - **Not done:** an independent oracle check (PolicyEngine US), a stateless in-browser engine, last-verified dates on the 40 programs, legal review of the immigrant-eligibility rules, a second maintainer, native review, and a real pilot. Those need time or people outside this repository.
+
+**A fourth pass: positioning and evidence**
+
+The fourth review (again a chat model, not an audit) credited the deliberate choice to make the system *less* dependent on the model, the testing discipline, the privacy design, and the record of the project trying to prove itself wrong. Its criticisms were about claims and evidence rather than code:
+
+| The criticism | What changed |
+|---|---|
+| "Multi-agent AI" oversells it: the intelligence is a deterministic rules engine, with models at the edges | The tagline, landing page and repository description now say what it is: a rules engine on a graph, run by Jac walkers, with models only translating and summarizing |
+| Internal 100% versus 64% domestic-violence recall on real posts | Crisis numbers (911, 988, the Domestic Violence Hotline) are shown under the chat box on every screen, so a missed detection no longer means no number. New patterns from the Danger Assessment and the Hotline's warning signs; the held-out recall moved one post, and the eval now prints a 95% interval beside every rate |
+| The equations look better than the evidence behind them; "P(eligible)" isn't a calibrated probability | The UI and README call it an eligibility score, and [a table](#what-the-numbers-mean-and-what-they-dont) lists every hand-set constant and what would validate it. SNAP is now checked against PolicyEngine US (98.2% eligibility agreement on 384 households); no ablation exists yet |
+| The policy data isn't production-ready | USDA's FY2027 SNAP amounts take effect on their date (2026-10-01), with fixes the check turned up (a missing net-income test, no 18-person cap, the earnings deduction applied to Social Security), and the 2025 law's work rules appear as notes. `tests/check_policy.jac` pins these to the published figures. Also state gross limits from USDA's chart, checked against PolicyEngine US. Still missing: last-verified dates per program, an oracle beyond SNAP, legal review |
+| "111 languages" reads as 111 reliable languages | The badge and landing page say 51 machine-drafted, 0 reviewed, 111 selectable |
+| No outside adoption | True, and not something code fixes. [CONTRIBUTING.md](./CONTRIBUTING.md) lists the most useful help: native-speaker review, real wording the engine misreads, and program-data corrections |
 
 
 ---
@@ -325,7 +353,7 @@ flowchart TD
     end
     PT --> CR[Per-program criteria<br/>met · unmet · unknown + reason + source]:::det
     CR --> SC["p = hard gates × weighted soft score<br/>logistic income curve · capped at 97%"]:::det
-    SC --> TI{Calibrated tier}:::det
+    SC --> TI{Tier from score bands}:::det
     TI --> LI[likely]:::ok
     TI --> PO[possible]:::ok
     TI --> NI[needs info]:::warn
@@ -534,7 +562,7 @@ flowchart LR
 | Encoding | Meaning |
 |---|---|
 | Color, always with an icon and a word (✓ Likely, ~ Possible, ? Needs info, ✕ Unlikely) | The engine's verdict, and nothing else. The hues match the chat cards and stay distinguishable under common color-vision deficiencies |
-| Line thickness from the need to a program | P(eligible) |
+| Line thickness from the need to a program | eligibility score |
 | Arrow | `leads_to`: a program this one often opens up, with typical days. Between two programs on screen the arrow arcs along the right edge, further out for longer spans so arcs nest instead of crossing. Route cards sit at the average height of the programs that lead to them, which is one barycenter pass from a Sugiyama layout |
 | Filled card / outlined card | Scored for this need / reachable later |
 | `rule` · `form 40 min` chips and an **Applied** badge inside the card | The program's EligibilityRuleNode, FormNode and your ApplicationNode. They are leaves, so they stay inside their parent |
