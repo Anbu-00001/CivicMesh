@@ -36,6 +36,8 @@ def:pub SessionBanner(session_data: Any) -> JsxElement {
     return
         <div
             className="banner-slide"
+            role="region"
+            aria-label="Welcome back"
             style={{
                 "margin": "0 0 16px 0",
                 "padding": "12px 16px",
@@ -47,7 +49,7 @@ def:pub SessionBanner(session_data: Any) -> JsxElement {
                 "gap": "12px"
             }}
         >
-            <span style={{"fontSize": "20px"}}>👋</span>
+            <span style={{"fontSize": "20px"}} aria-hidden="true">👋</span>
             <div style={{"flex": "1"}}>
                 <div style={{"fontSize": "13px", "fontWeight": "600", "color": "#FFE500"}}>
                     Welcome back
@@ -61,7 +63,7 @@ def:pub SessionBanner(session_data: Any) -> JsxElement {
                     <div style={{"fontSize": "16px", "fontWeight": "600", "color": "#00FF88"}}>
                         {str(len(approved))}
                     </div>
-                    <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.35)"}}>
+                    <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.62)"}}>
                         Approved
                     </div>
                 </div>}
@@ -69,7 +71,7 @@ def:pub SessionBanner(session_data: Any) -> JsxElement {
                     <div style={{"fontSize": "16px", "fontWeight": "600", "color": "#FFB344"}}>
                         {str(len(pending))}
                     </div>
-                    <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.35)"}}>
+                    <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.62)"}}>
                         Pending
                     </div>
                 </div>}
@@ -79,7 +81,7 @@ def:pub SessionBanner(session_data: Any) -> JsxElement {
                 style={{
                     "background": "transparent",
                     "border": "none",
-                    "color": "rgba(255,255,255,0.25)",
+                    "color": "rgba(255,255,255,0.62)",
                     "cursor": "pointer",
                     "fontSize": "18px",
                     "lineHeight": "1",

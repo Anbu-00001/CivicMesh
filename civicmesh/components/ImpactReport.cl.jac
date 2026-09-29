@@ -33,7 +33,7 @@ def:pub ImpactReport -> JsxElement {
 
     if loading {
         return
-            <div style={{"padding": "48px", "textAlign": "center", "color": "rgba(255,255,255,0.4)", "fontSize": "13px"}}>
+            <div style={{"padding": "48px", "textAlign": "center", "color": "rgba(255,255,255,0.62)", "fontSize": "13px"}}>
                 Aggregating graph...
             </div>;
     }
@@ -251,7 +251,7 @@ def:pub ImpactReport -> JsxElement {
                         "borderRadius": "14px"
                     }}
                 >
-                    <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.35)", "textTransform": "uppercase", "letterSpacing": "0.06em", "marginBottom": "12px"}}>
+                    <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.62)", "textTransform": "uppercase", "letterSpacing": "0.06em", "marginBottom": "12px"}}>
                         Need mix · all visitors
                     </div>
                     {[renderCategoryBar(
@@ -270,7 +270,7 @@ def:pub ImpactReport -> JsxElement {
                         "borderRadius": "14px"
                     }}
                 >
-                    <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.35)", "textTransform": "uppercase", "letterSpacing": "0.06em", "marginBottom": "12px"}}>
+                    <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.62)", "textTransform": "uppercase", "letterSpacing": "0.06em", "marginBottom": "12px"}}>
                         Application status
                     </div>
                     <div style={{"display": "flex", "gap": "10px", "alignItems": "stretch"}}>
@@ -299,13 +299,13 @@ def:pub ImpactReport -> JsxElement {
                     "borderRadius": "14px"
                 }}
             >
-                <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.35)", "textTransform": "uppercase", "letterSpacing": "0.06em", "marginBottom": "12px"}}>
+                <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.62)", "textTransform": "uppercase", "letterSpacing": "0.06em", "marginBottom": "12px"}}>
                     Most-requested resources
                 </div>
                 {(len(top_resources) > 0) and <div>
                     {[renderResourceBar(str(top_resources[ri]["name"]), int(top_resources[ri]["count"]), max_res) for ri in range(len(top_resources))]}
                 </div>}
-                {(len(top_resources) == 0) and <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.35)", "padding": "12px 0"}}>
+                {(len(top_resources) == 0) and <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.62)", "padding": "12px 0"}}>
                     No applications written to the graph yet. Send a chat message in the Chat tab to populate ApplicationNodes.
                 </div>}
             </div>
@@ -320,13 +320,13 @@ def:pub ImpactReport -> JsxElement {
                         "borderRadius": "14px"
                     }}
                 >
-                    <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.35)", "textTransform": "uppercase", "letterSpacing": "0.06em", "marginBottom": "12px"}}>
+                    <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.62)", "textTransform": "uppercase", "letterSpacing": "0.06em", "marginBottom": "12px"}}>
                         Languages detected
                     </div>
                     {(len(lang_pairs) > 0) and <div style={{"display": "flex", "flexWrap": "wrap", "gap": "7px"}}>
                         {[renderLanguageChip(str(lang_pairs[i]["lang"]), int(lang_pairs[i]["count"])) for i in range(len(lang_pairs))]}
                     </div>}
-                    {(len(lang_pairs) == 0) and <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.35)"}}>
+                    {(len(lang_pairs) == 0) and <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.62)"}}>
                         No PersonNodes yet.
                     </div>}
                 </div>

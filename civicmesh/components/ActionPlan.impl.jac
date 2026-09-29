@@ -24,7 +24,7 @@ impl ActionPlan.renderSessionContext -> JsxElement {
             >
                 <div style={{
                     "fontSize": "10px",
-                    "color": "rgba(255,255,255,0.35)",
+                    "color": "rgba(255,255,255,0.62)",
                     "textTransform": "uppercase",
                     "letterSpacing": "0.06em",
                     "marginBottom": "10px"
@@ -37,7 +37,7 @@ impl ActionPlan.renderSessionContext -> JsxElement {
                     "paddingTop": "10px",
                     "borderTop": "0.5px solid rgba(255,255,255,0.06)",
                     "fontSize": "11px",
-                    "color": "rgba(255,255,255,0.45)"
+                    "color": "rgba(255,255,255,0.62)"
                 }}>
                     {str(len(walker_events)) + " events captured this session"}
                 </div>
@@ -53,7 +53,7 @@ impl ActionPlan.renderSessionContext -> JsxElement {
             >
                 <div style={{
                     "fontSize": "10px",
-                    "color": "rgba(255,255,255,0.35)",
+                    "color": "rgba(255,255,255,0.62)",
                     "textTransform": "uppercase",
                     "letterSpacing": "0.06em",
                     "marginBottom": "10px"

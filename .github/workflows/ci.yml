@@ -147,6 +147,10 @@ jobs:
           docker logs cm; exit 1
       - name: HTTP end-to-end (64 checks, no LLM key)
         run: python3 civicmesh/tests/e2e_http.py http://localhost:7860
+      - name: Accessibility — axe-core on the chat, replies announced, focus returned
+        run: |
+          pip install websocket-client
+          python3 civicmesh/tests/a11y_axe.py http://localhost:7860
       - name: Server logs hold no user text
         run: |
           if docker logs cm 2>&1 | grep -nE "case_text|123-45-6789|kill myself|老公|\{'version'"; then

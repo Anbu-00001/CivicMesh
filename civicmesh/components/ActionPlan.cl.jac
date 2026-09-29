@@ -45,7 +45,7 @@ def:pub ActionPlan(user_id: str, walker_events: list = []) -> JsxElement {
 
     if loading {
         return
-            <div style={{"padding": "40px", "textAlign": "center", "color": "rgba(255,255,255,0.3)", "fontSize": "13px"}}>
+            <div style={{"padding": "40px", "textAlign": "center", "color": "rgba(255,255,255,0.62)", "fontSize": "13px"}}>
                 Loading your action plan...
             </div>;
     }
@@ -103,7 +103,7 @@ def:pub ActionPlan(user_id: str, walker_events: list = []) -> JsxElement {
                                 <div style={{"fontSize": "16px", "fontWeight": "600", "color": "#FF4444"}}>
                                     Escalation triggered this session
                                 </div>
-                                <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.45)", "marginTop": "2px"}}>
+                                <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.62)", "marginTop": "2px"}}>
                                     EligibilityWalker found zero matching resources for your profile.
                                 </div>
                             </div>
@@ -198,7 +198,7 @@ def:pub ActionPlan(user_id: str, walker_events: list = []) -> JsxElement {
                             "display": "flex",
                             "justifyContent": "space-between",
                             "fontSize": "12px",
-                            "color": "rgba(255,255,255,0.45)",
+                            "color": "rgba(255,255,255,0.62)",
                             "marginBottom": "7px"
                         }}
                     >
@@ -233,13 +233,13 @@ def:pub ActionPlan(user_id: str, walker_events: list = []) -> JsxElement {
                         "textAlign": "center"
                     }}
                 >
-                    <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.35)"}}>
+                    <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.62)"}}>
                         LLM on critical path
                     </div>
                     <div style={{"fontSize": "15px", "fontWeight": "600", "color": "#FFE500"}}>
                         0 calls
                     </div>
-                    <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.35)"}}>
+                    <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.62)"}}>
                         engine decides · LLM narrates
                     </div>
                 </div>

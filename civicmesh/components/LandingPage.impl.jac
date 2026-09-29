@@ -68,7 +68,7 @@ impl LandingPage.renderStatTile(value: str, label: str, sub: str, accent: str) -
             </div>
             <div style={{
                 "fontSize": "10.5px",
-                "color": "rgba(255,255,255,0.4)",
+                "color": "rgba(255,255,255,0.62)",
                 "marginTop": "4px",
                 "lineHeight": "1.45",
                 "position": "relative",
@@ -138,7 +138,7 @@ impl LandingPage.renderWalkerCard(idx: int, name: str, role: str, color: str, ti
             </div>
             <div style={{
                 "fontSize": "10px",
-                "color": "rgba(255,255,255,0.4)",
+                "color": "rgba(255,255,255,0.62)",
                 "textTransform": "uppercase",
                 "letterSpacing": "0.08em",
                 "fontWeight": "600"

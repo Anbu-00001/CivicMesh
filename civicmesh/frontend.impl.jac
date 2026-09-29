@@ -332,7 +332,7 @@ impl ClientApp.renderPalette -> JsxElement {
                     />
                     <span style={{
                         "fontSize": "10px",
-                        "color": "rgba(255,255,255,0.35)",
+                        "color": "rgba(255,255,255,0.62)",
                         "fontFamily": "ui-monospace, monospace",
                         "padding": "3px 7px",
                         "background": "rgba(255,255,255,0.04)",
@@ -343,7 +343,7 @@ impl ClientApp.renderPalette -> JsxElement {
                     </span>
                 </div>
                 <div style={{"padding": "8px", "maxHeight": "50vh", "overflowY": "auto", "display": "flex", "flexDirection": "column", "gap": "2px"}}>
-                    {(len(filtered) == 0) and <div style={{"padding": "20px", "textAlign": "center", "fontSize": "12px", "color": "rgba(255,255,255,0.4)"}}>
+                    {(len(filtered) == 0) and <div style={{"padding": "20px", "textAlign": "center", "fontSize": "12px", "color": "rgba(255,255,255,0.62)"}}>
                         No matching commands.
                     </div>}
                     {[renderPaletteItem(filtered[i], i, sel) for i in range(len(filtered))]}
@@ -355,7 +355,7 @@ impl ClientApp.renderPalette -> JsxElement {
                     "alignItems": "center",
                     "gap": "12px",
                     "fontSize": "10px",
-                    "color": "rgba(255,255,255,0.4)",
+                    "color": "rgba(255,255,255,0.62)",
                     "fontFamily": "ui-monospace, monospace"
                 }}>
                     <span>↑↓ navigate</span>

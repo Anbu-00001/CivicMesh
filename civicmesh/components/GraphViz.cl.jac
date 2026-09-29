@@ -38,7 +38,7 @@ glob GV_TIER: dict = {
     "likely": {"color": "#00E08A", "icon": "✓", "label": "Likely"},
     "possible": {"color": "#5AA2FF", "icon": "~", "label": "Possible"},
     "needs_info": {"color": "#FFB344", "icon": "?", "label": "Needs info"},
-    "unlikely": {"color": "rgba(255,255,255,0.45)", "icon": "✕", "label": "Unlikely"}
+    "unlikely": {"color": "rgba(255,255,255,0.62)", "icon": "✕", "label": "Unlikely"}
 };
 glob GV_TIER_ORDER: list = ["likely", "possible", "needs_info", "unlikely"];
 # Automatic retries after a failed load (a flaky hosting proxy).
