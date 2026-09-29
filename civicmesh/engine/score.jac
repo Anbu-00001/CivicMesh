@@ -191,7 +191,9 @@ def cf_text(key: str, lang: str, a: str = "", b: str = "") -> str {
         return ("está abierto a " + a) if es else ("it's open to " + a);
     }
     if key == "coverage_gap" {
-        return "su estado no amplió Medicaid: un centro de salud comunitario (tarifa según ingresos) o el Mercado de Salud cubren ese hueco" if es else "your state didn't expand Medicaid — a community health center (sliding-scale fees) or the ACA Marketplace covers that gap";
+        # Marketplace subsidies start at 100% of poverty: below that line a
+        # non-expansion state leaves the health center as the only fallback.
+        return "su estado no amplió Medicaid. Los subsidios del Mercado de Salud empiezan en el 100% del nivel de pobreza; por debajo, un centro de salud comunitario (tarifa según ingresos) es la alternativa" if es else "your state didn't expand Medicaid. ACA Marketplace subsidies start at 100% of the poverty line; below that, a community health center (sliding-scale fees) is the fallback";
     }
     if key == "household" {
         return ("calificaría con un hogar de " + a + " personas o más") if es else ("you'd qualify with a household of " + a + " or more");

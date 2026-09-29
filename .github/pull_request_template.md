@@ -7,6 +7,7 @@
 - [ ] `jac run tests/eval_engine.jac` passes (352 cases + metamorphic check)
 - [ ] `jac run tests/check_messages.jac` passes (if a message catalog changed)
 - [ ] `jac run tests/check_privacy.jac` passes (if scrubbing or storage changed)
+- [ ] `jac run tests/check_policy.jac` passes (if a rule, limit or date changed)
 
 ## Engine house rules
 

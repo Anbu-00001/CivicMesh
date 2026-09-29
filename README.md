@@ -351,16 +351,19 @@ flowchart TD
 | Poverty guideline | $15,960 + $5,680 per person (AK $19,950 + $7,100 · HI $18,360 + $6,530) | HHS 2026 poverty guidelines, Federal Register 2026-01-15 |
 | Area median income | U.S. median family income $107,900; size factors 70/80/90/100/108/116/124/132% | HUD FY2026 Section 8 income limits (effective 2026-05-01) |
 | Program limits | SNAP 130% · WIC 185% · school meals 130/185% · CSFP 150% · LIHEAP 150% · Medicaid expansion 138% · LSC legal aid 125% · Section 8 50% AMI · public housing 80% AMI | program rules; locally set limits labelled "typical" |
-| Medicaid expansion | Not expanded: AL FL GA KS MS SC TN TX WI WY (WI covers adults to 100%). In those states childless adults are blocked, with the reason, and pointed to health centers | KFF, Status of State Medicaid Expansion Decisions |
+| Medicaid expansion | Not expanded: AL FL GA KS MS SC TN TX WI WY (WI covers adults to 100%). In those states childless adults are blocked, with the reason: Marketplace subsidies start at 100% of poverty, so below that a health center is the fallback | KFF, Status of State Medicaid Expansion Decisions |
 | Immigrant eligibility | SNAP: citizens, green-card holders, Cuban/Haitian entrants, COFA citizens (refugees, asylees and parolees out since 2025-07-04). Medicaid/CHIP: the same from 2026-10-01; the card warns before that date and flips after it | P.L. 119-21 §10108, §71109; USDA/FNS memo 2025-12-09 |
-| SNAP estimate | max allotment − 30% of net income (20% earnings + standard deduction); FY2026 max $994 for 4 | USDA FNS FY2026 allotments and deductions |
+| SNAP estimate | max allotment − 30% of net income (20% deduction on earnings only, not Social Security or pensions; standard deduction). Net test for every household, gross test except elderly/disabled. FY2027 from 2026-10-01: max $1,023 for 4, minimum $25; FY2026 before that | USDA SNAP FY2027 COLA memo (2026-08-21) |
+| Work rules (notes, not scored) | SNAP: adults 18–64 without a child under 14 get 3 months in 3 years unless working 80 h/month or exempt. Medicaid expansion adults 19–64: 80 h/month of work, school or volunteering from 2027-01-01 at the latest | P.L. 119-21 §10102, §71119 |
 | Seasonal | Summer Food Service Program runs June–August | USDA SFSP |
 
 Unknown household size? The limit is shown for one person with the per-person increment. A household that might qualify gets "needs info", not a no.
 
 **Known gaps:**
-- The FY2027 SNAP amounts (effective 2026-10-01) aren't encoded yet.
-- Area median income uses the national figure, not the county's.
+- Area median income is HUD's local figure for 106 cities and a labeled national estimate elsewhere.
+- The SNAP estimate leaves out the shelter, medical and dependent-care deductions and states' broader limits (up to 200% of poverty), so it's a floor for most households.
+- Work rules are shown as notes, not scored: the engine doesn't ask about hours worked.
+- `tests/check_policy.jac` pins the dated rules to the published figures (42 checks; 30 fail on the previous engine).
 
 ---
 
@@ -593,6 +596,9 @@ cd civicmesh && jac run tests/check_messages.jac
 cd civicmesh && jac run tests/check_privacy.jac
   66 checks (34 scrub, 21 keep, 5 same-facts, 6 crisis) · PASS · known misses printed: 0/5 caught
 
+cd civicmesh && jac run tests/check_policy.jac
+  42 checks: SNAP FY2026 → FY2027 on 2026-10-01, net test, unearned income, P.L. 119-21 dates and notes · PASS
+
 cd civicmesh && rm -rf .jac/data && jac test tests/test_privacy_graph.jac   # + test_schema, persona_* (8 tests); clean store, see docs/MAINTENANCE.md
   OK
 
@@ -727,7 +733,7 @@ civicmesh/
 ├── tools/eject_engine.sh        engine → plain Python with jac2py, then run its eval without Jac
 ├── tools/build_hud_limits.py    HUD FY2026 Section 8 limits → data/hud_income_limits.json (106 cities)
 └── tests/                       eval_engine.jac + six suites (incl. golden_probes) · eval_external.jac (real posts) ·
-                                 check_messages.jac · check_privacy.jac ·
+                                 check_messages.jac · check_privacy.jac · check_policy.jac ·
                                  test_schema · persona_* · test_privacy_graph (jac test) · e2e_http.py
 .github/workflows/ci.yml         engine · portable (plain Python) · e2e (Docker, logs)
 docs/                            MAINTENANCE.md · TRANSLATION_REVIEW.md · DEPLOY.md
