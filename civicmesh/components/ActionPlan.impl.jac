@@ -62,7 +62,7 @@ impl ActionPlan.renderSessionContext -> JsxElement {
                 </div>
                 <div style={{"display": "flex", "flexDirection": "column", "gap": "8px", "fontSize": "12px", "color": "rgba(255,255,255,0.7)", "lineHeight": "1.5"}}>
                     <div>
-                        <strong style={{"color": "#FFE500"}}>Chat</strong> — start or continue a session with the multi-agent pipeline.
+                        <strong style={{"color": "#FFE500"}}>Chat</strong> — start or continue a session with the walker pipeline.
                     </div>
                     <div>
                         <strong style={{"color": "#FFE500"}}>Graph</strong> — watch the real walker traversal across PersonNode / ResourceNode / FormNode.

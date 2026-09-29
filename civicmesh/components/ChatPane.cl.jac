@@ -132,7 +132,7 @@ def:pub ChatPane(
                     <div style={{"flex": "1", "minWidth": "0"}}>
                         <div style={{"fontSize": "14px", "fontWeight": "600"}}>CivicMesh Navigator</div>
                         <div className="cm-muted" style={{"fontSize": "11px", "marginTop": "2px"}}>
-                            Deterministic eligibility engine · 2026 federal rules · answers composed in 51 languages, 111 supported · 1 LLM call per turn, off the critical path
+                            Deterministic eligibility engine · 2026 federal rules · 51 machine-drafted languages, 111 selectable · 1 LLM call per turn, off the critical path
                         </div>
                     </div>
                     {is_loading and <div className="cm-badge badge-glow"><span className="cm-dot-live"/>Scoring 40 programs…</div>}
