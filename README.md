@@ -353,7 +353,7 @@ flowchart TD
 | Program limits | SNAP 130% · WIC 185% · school meals 130/185% · CSFP 150% · LIHEAP 150% · Medicaid expansion 138% · LSC legal aid 125% · Section 8 50% AMI · public housing 80% AMI | program rules; locally set limits labelled "typical" |
 | Medicaid expansion | Not expanded: AL FL GA KS MS SC TN TX WI WY (WI covers adults to 100%). In those states childless adults are blocked, with the reason: Marketplace subsidies start at 100% of poverty, so below that a health center is the fallback | KFF, Status of State Medicaid Expansion Decisions |
 | Immigrant eligibility | SNAP: citizens, green-card holders, Cuban/Haitian entrants, COFA citizens (refugees, asylees and parolees out since 2025-07-04). Medicaid/CHIP: the same from 2026-10-01; the card warns before that date and flips after it | P.L. 119-21 §10108, §71109; USDA/FNS memo 2025-12-09 |
-| SNAP estimate | max allotment − 30% of net income (20% deduction on earnings only, not Social Security or pensions; standard deduction). Net test for every household, gross test except elderly/disabled. FY2027 from 2026-10-01: max $1,023 for 4, minimum $25; FY2026 before that | USDA SNAP FY2027 COLA memo (2026-08-21) |
+| SNAP estimate | max allotment − 30% of net income (20% deduction on earnings only, not Social Security or pensions; standard deduction). The gross limit is the state's, 130% to 200% of poverty (broad-based categorical eligibility); under it most states drop the net test, six keep it; over it only a household with someone 60+ or disabled can qualify, and the card says so instead of "possible". State minimums: NJ $95, DC $30, MD $40 at 62+. FY2027 from 2026-10-01: max $1,023 for 4, minimum $25 | USDA SNAP FY2027 COLA memo (2026-08-21); USDA BBCE state chart (June 2026) |
 | Work rules (notes, not scored) | SNAP: adults 18–64 without a child under 14 get 3 months in 3 years unless working 80 h/month or exempt. Medicaid expansion adults 19–64: 80 h/month of work, school or volunteering from 2027-01-01 at the latest | P.L. 119-21 §10102, §71119 |
 | Seasonal | Summer Food Service Program runs June–August | USDA SFSP |
 
@@ -363,7 +363,16 @@ Unknown household size? The limit is shown for one person with the per-person in
 - Area median income is HUD's local figure for 106 cities and a labeled national estimate elsewhere.
 - The SNAP estimate leaves out the shelter, medical and dependent-care deductions and states' broader limits (up to 200% of poverty), so it's a floor for most households.
 - Work rules are shown as notes, not scored: the engine doesn't ask about hours worked.
-- `tests/check_policy.jac` pins the dated rules to the published figures (42 checks; 30 fail on the previous engine).
+- `tests/check_policy.jac` pins the dated rules and state limits to the published figures (69 checks).
+
+**Checked against PolicyEngine US.** [PolicyEngine US](https://github.com/PolicyEngine/policyengine-us) is an independent, open-source microsimulation of benefit rules. `tools/oracle_policyengine.py` runs the same 384 households through both (12 states spanning the 130–200% limits; 1, 2 and 4 people; 0–205% of poverty; working adults and seniors on Social Security) for October 2026:
+
+| | First run | After the fixes it prompted |
+|---|---|---|
+| SNAP eligibility agrees | 94.8% (364/384) | **98.2%** (377/384) |
+| Benefit within $5, when both say eligible | 173/237 | 188/238 |
+
+It found two real errors in this engine: California keeps the net-income test under its 200% limit (confirmed in the LA County CalFresh manual), and New Jersey, D.C. and Maryland pay state-funded minimum benefits. The remaining differences are modeling choices, not errors. PolicyEngine adds the TANF cash aid or SSI a zero-income household would likely receive, and applies state utility allowances this estimate leaves out, so ours is lower for families at $0 and higher or lower for seniors on small Social Security checks. The 7 eligibility disagreements are seniors at 150–180% of poverty in IL, NY, GA and OH, where PolicyEngine applies state rules for elderly households that USDA's chart doesn't list; they're open leads, not fixed. A disagreement is a question for a caseworker, not ground truth for either side.
 
 ---
 
@@ -597,7 +606,7 @@ cd civicmesh && jac run tests/check_privacy.jac
   66 checks (34 scrub, 21 keep, 5 same-facts, 6 crisis) · PASS · known misses printed: 0/5 caught
 
 cd civicmesh && jac run tests/check_policy.jac
-  42 checks: SNAP FY2026 → FY2027 on 2026-10-01, net test, unearned income, P.L. 119-21 dates and notes · PASS
+  69 checks: SNAP FY2026 → FY2027 on 2026-10-01, state gross limits, net test, state minimums, unearned income, P.L. 119-21 dates and notes · PASS
 
 cd civicmesh && rm -rf .jac/data && jac test tests/test_privacy_graph.jac   # + test_schema, persona_* (8 tests); clean store, see docs/MAINTENANCE.md
   OK
@@ -732,6 +741,7 @@ civicmesh/
 ├── tools/review_sheet.py        side-by-side translation review sheets (stdlib Python)
 ├── tools/eject_engine.sh        engine → plain Python with jac2py, then run its eval without Jac
 ├── tools/build_hud_limits.py    HUD FY2026 Section 8 limits → data/hud_income_limits.json (106 cities)
+├── tools/oracle_policyengine.py  SNAP differential against PolicyEngine US (384 households; not in CI)
 └── tests/                       eval_engine.jac + six suites (incl. golden_probes) · eval_external.jac (real posts) ·
                                  check_messages.jac · check_privacy.jac · check_policy.jac ·
                                  test_schema · persona_* · test_privacy_graph (jac test) · e2e_http.py

@@ -98,10 +98,66 @@ glob HUD_SOURCE: str = "HUD FY2026 income limits (U.S. median family income $107
 
 glob MEDICAID_NOT_EXPANDED: list = ["AL", "FL", "GA", "KS", "MS", "SC", "TN", "TX", "WI", "WY"];
 glob STATE_NAMES: dict = {
-    "AL": "Alabama", "FL": "Florida", "GA": "Georgia", "KS": "Kansas", "MS": "Mississippi",
-    "SC": "South Carolina", "TN": "Tennessee", "TX": "Texas", "WI": "Wisconsin", "WY": "Wyoming",
-    "AK": "Alaska", "HI": "Hawaii"
+    "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas", "CA": "California", "CO": "Colorado",
+    "CT": "Connecticut", "DE": "Delaware", "DC": "the District of Columbia", "FL": "Florida", "GA": "Georgia",
+    "HI": "Hawaii", "ID": "Idaho", "IL": "Illinois", "IN": "Indiana", "IA": "Iowa", "KS": "Kansas",
+    "KY": "Kentucky", "LA": "Louisiana", "ME": "Maine", "MD": "Maryland", "MA": "Massachusetts",
+    "MI": "Michigan", "MN": "Minnesota", "MS": "Mississippi", "MO": "Missouri", "MT": "Montana",
+    "NE": "Nebraska", "NV": "Nevada", "NH": "New Hampshire", "NJ": "New Jersey", "NM": "New Mexico",
+    "NY": "New York", "NC": "North Carolina", "ND": "North Dakota", "OH": "Ohio", "OK": "Oklahoma",
+    "OR": "Oregon", "PA": "Pennsylvania", "RI": "Rhode Island", "SC": "South Carolina", "SD": "South Dakota",
+    "TN": "Tennessee", "TX": "Texas", "UT": "Utah", "VT": "Vermont", "VA": "Virginia", "WA": "Washington",
+    "WV": "West Virginia", "WI": "Wisconsin", "WY": "Wyoming", "GU": "Guam", "VI": "the U.S. Virgin Islands"
 };
+
+# SNAP gross-income limit by state, % of poverty (USDA FNS "Broad-Based
+# Categorical Eligibility" chart, last updated June 2026). A household under
+# its state's limit is categorically eligible: no net-income or asset test.
+# States not listed (KS MO MS SD TN UT WY) use the federal 130% test. New York
+# depends on the household (200% with dependent-care costs, 150% with
+# earnings, else 130%); Arkansas is 165% only for elderly/disabled households.
+glob SNAP_BBCE: dict = {
+    "AL": 130, "AK": 200, "AZ": 200, "AR": 130, "CA": 200, "CO": 200, "CT": 200, "DE": 200, "DC": 200,
+    "FL": 200, "GA": 130, "GU": 165, "HI": 200, "ID": 130, "IL": 165, "IN": 130, "IA": 160, "KY": 200,
+    "LA": 200, "ME": 200, "MD": 200, "MA": 200, "MI": 200, "MN": 200, "MT": 200, "NE": 165, "NV": 200,
+    "NH": 200, "NJ": 185, "NM": 200, "NY": 150, "NC": 200, "ND": 200, "OH": 130, "OK": 130, "OR": 200,
+    "PA": 200, "RI": 185, "SC": 130, "TX": 165, "VT": 185, "VI": 175, "VA": 200, "WA": 200, "WV": 200,
+    "WI": 200
+};
+glob SNAP_BBCE_SOURCE: str = "USDA FNS broad-based categorical eligibility chart (June 2026)";
+# States whose categorical-eligibility program keeps the net-income test
+# (California: LA County CalFresh manual, MCE 200/130; the others as compiled
+# from state manuals in PolicyEngine US). The second list is for households
+# with someone elderly or disabled. Found by tools/oracle_policyengine.py.
+glob SNAP_BBCE_NET_TEST: list = ["CA", "HI", "IN", "LA", "ND", "RI"];
+glob SNAP_BBCE_NET_TEST_ED: list = ["AL", "CA", "HI", "ID", "IN", "LA", "MN", "ND", "NE", "OK", "RI"];
+# State-funded minimum benefits: New Jersey $95 for every SNAP household,
+# D.C. $30; Maryland $40 when someone is 62 or older.
+glob SNAP_STATE_MIN: dict = {"NJ": 95, "DC": 30};
+glob SNAP_MD_SENIOR_MIN: int = 40;
+
+"""SNAP gross-income limit (% of poverty) for this household's state, and a
+sentence saying where it comes from. Unknown state: the federal 130%."""
+def snap_gross_pct(profile: dict) -> tuple {
+    state = str(profile.get("state", "") or "").upper();
+    flags = list(profile.get("flags", []));
+    if not state {
+        return (130, "federal 130% test; most states go higher (up to 200%) — tell me your state");
+    }
+    name = str(STATE_NAMES.get(state, state));
+    pct = int(SNAP_BBCE.get(state, 130));
+    if state == "AR" and ("senior" in flags or "disabled" in flags) { pct = 165; }
+    if state == "NY" and "unearned_income" in flags { pct = 130; }
+    if state not in SNAP_BBCE {
+        return (130, name + " uses the federal 130% gross-income test");
+    }
+    if pct <= 130 {
+        return (130, name + " keeps the 130% gross-income test");
+    }
+    extra = " (200% with child- or dependent-care costs)" if state == "NY" else "";
+    after = "; the net-income test still applies" if state in SNAP_BBCE_NET_TEST else "; under it there's no net-income or asset test";
+    return (pct, name + " raises the gross-income limit to " + str(pct) + "% of poverty" + extra + after);
+}
 
 glob OBBBA_SNAP_DATE: str = "2025-07-04";
 glob OBBBA_MEDICAID_DATE: str = "2026-10-01";
@@ -121,7 +177,7 @@ glob PROGRAMS: dict = {
     "hud-vash-rule":         {"income": {"basis": "ami", "pct": 50, "note": "PHAs may admit HUD-VASH families up to 80% of area median"}, "status": "hud"},
     "salvation-army-th-rule": {"income": {"basis": "none", "note": "income rules vary by site"}, "status": ""},
     "cc-era-rule":           {"income": {"basis": "ami", "pct": 80, "typical": True, "note": "typical for emergency rental assistance; varies by diocese"}, "status": ""},
-    "snap-rule":             {"income": {"basis": "fpl", "pct": 130, "note": "gross test; many states allow up to 200% (broad-based categorical eligibility); no gross test for elderly/disabled households"}, "status": "snap"},
+    "snap-rule":             {"income": {"basis": "fpl", "pct": 130, "note": "gross test; the state's limit replaces 130% (snap_gross_pct)"}, "status": "snap"},
     "wic-rule":              {"income": {"basis": "fpl", "pct": 185, "note": "automatically income-eligible if on SNAP, Medicaid or TANF"}, "status": ""},
     "feeding-america-rule":  {"income": {"basis": "none"}, "status": ""},
     "nslp-rule":             {"income": {"basis": "fpl", "pct": 185, "note": "free meals under 130%, reduced-price under 185%; community-eligibility schools serve everyone free"}, "status": ""},
@@ -267,13 +323,18 @@ def income_limit(rule_id: str, profile: dict, flat_fallback: int = 0) -> dict {
                 }
             }
         }
-        if str(rule_id) == "snap-rule" and _work_rule_applies(profile, 18) {
-            note = note + ". " + SNAP_TIME_LIMIT_NOTE;
+        if str(rule_id) == "snap-rule" {
+            (spct, snote) = snap_gross_pct(profile);
+            pct = float(spct);
+            note = snote + "; a household with someone 60+ or disabled skips the gross test (the net test still applies)";
+            if _work_rule_applies(profile, 18) {
+                note = note + ". " + SNAP_TIME_LIMIT_NOTE;
+            }
         }
         limit = int(round(fpl_annual(n, state) * pct / 100.0));
         per = int(round(fpl_annual(n + 1, state) * pct / 100.0)) - limit;
         label = str(int(pct)) + "% of the " + str(FPL_YEAR) + " poverty line for " + who;
-        source = FPL_SOURCE + (" (" + str(STATE_NAMES.get(state, state)) + " table)" if state in ["AK", "HI"] else "");
+        source = FPL_SOURCE + (" (" + str(STATE_NAMES.get(state, state)) + " table)" if state in ["AK", "HI"] else "") + ("; " + SNAP_BBCE_SOURCE if str(rule_id) == "snap-rule" else "");
     }
     return {
         "limit": limit, "label": label, "per_person": per, "assumed_household": assumed,
@@ -418,7 +479,15 @@ def snap_estimate(profile: dict) -> dict {
     elderly_disabled = "senior" in flags or "disabled" in flags;
     earned = "unearned_income" not in flags;
     gross = income / 12.0;
-    if gross > fpl_annual(n, state) * 1.30 / 12.0 and not elderly_disabled {
+    (gpct, _gnote) = snap_gross_pct(profile);
+    # Under the state's limit a household is categorically eligible (broad-
+    # based categorical eligibility): no net test. Over it, only an elderly
+    # or disabled household can still qualify, through the net test.
+    categorical = state in SNAP_BBCE and gross <= fpl_annual(n, state) * gpct / 100.0 / 12.0;
+    if state in (SNAP_BBCE_NET_TEST_ED if elderly_disabled else SNAP_BBCE_NET_TEST) {
+        categorical = False;
+    }
+    if gross > fpl_annual(n, state) * max(1.30, gpct / 100.0) / 12.0 and not elderly_disabled {
         return {};
     }
     y = snap_year();
@@ -432,12 +501,19 @@ def snap_estimate(profile: dict) -> dict {
     }
     sd = int(list(y["std"][region])[min(n, 6) - 1]);
     net = max(0.0, gross * (0.8 if earned else 1.0) - sd);
-    if net > fpl_annual(n, state) / 12.0 {
+    if net > fpl_annual(n, state) / 12.0 and not categorical {
         return {};
     }
     ben = int(round(maxa - 0.3 * net));
     if n <= 2 {
         ben = max(ben, int(y["min"][region]));
+    }
+    if state in SNAP_STATE_MIN {
+        ben = max(ben, int(SNAP_STATE_MIN[state]));
+    }
+    age = int(profile.get("age", 0) or 0);
+    if state == "MD" and (age >= 62 or (age == 0 and "senior" in flags)) {
+        ben = max(ben, SNAP_MD_SENIOR_MIN);
     }
     if ben <= 0 {
         return {};

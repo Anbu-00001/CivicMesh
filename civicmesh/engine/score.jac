@@ -190,6 +190,9 @@ def cf_text(key: str, lang: str, a: str = "", b: str = "") -> str {
     if key == "age" {
         return ("está abierto a " + a) if es else ("it's open to " + a);
     }
+    if key == "snap_elderly" {
+        return "si alguien en su hogar tiene 60 años o más o una discapacidad, SNAP no aplica este límite de ingreso bruto (sí el de ingreso neto)" if es else "if someone in your household is 60 or older or has a disability, SNAP skips this gross-income limit (a net-income test still applies)";
+    }
     if key == "coverage_gap" {
         # Marketplace subsidies start at 100% of poverty: below that line a
         # non-expansion state leaves the health center as the only fallback.
@@ -257,6 +260,16 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         } else {
             cr = _crit("income", "Income", "unmet", sigmoid(INCOME_K * (limit - income) / float(limit)), W_INCOME, False, usd(income) + "/yr is over " + basis);
             cfs.append({"key": "income", "effort": (income - limit) / float(limit), "text": cf_text("income", lang, usd(limit), usd(income - limit))});
+            if rule_id == "snap-rule" and not ("senior" in flags or "disabled" in flags) {
+                # SNAP's gross test is a gate, not a preference: over the
+                # state's limit only a household with someone 60+ or disabled
+                # can still qualify (outside review: 210% of poverty read
+                # "possible 41%").
+                cr["hard"] = True;
+                cr["score"] = 0.0;
+                cfs.append({"key": "snap_elderly", "effort": 1.0, "text": cf_text("snap_elderly", lang)});
+                if "disability" not in asks { asks.append("disability"); }
+            }
         }
         cr["source"] = str(lim.get("source", ""));
         if lim.get("note") { cr["note"] = str(lim["note"]); }

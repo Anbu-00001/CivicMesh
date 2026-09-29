@@ -8,8 +8,11 @@ so a typo in a table fails the run:
 1. SNAP switches from FY2026 to FY2027 on October 1, 2026 (USDA memo of
    2026-08-21): max allotments, standard deductions, minimum benefit, the
    18-person cap, Alaska and Hawaii.
-2. Every household must pass SNAP's net-income test, and the 20% deduction
-   is for earnings only (not Social Security, SSI or a pension).
+2. SNAP's gross limit is the state's (USDA broad-based categorical
+   eligibility chart, June 2026); under it there is no net test, over it
+   only an elderly or disabled household can qualify, through the net test.
+   The 20% deduction is for earnings only (not Social Security, SSI or a
+   pension).
 3. P.L. 119-21: refugees lose federally funded Medicaid on 2026-10-01; the
    SNAP time limit (18–64, no child under 14) and the Medicaid work
    requirement (expansion adults 19–64, from 2027-01-01) are shown as notes
@@ -21,7 +24,9 @@ so a typo in a table fails the run:
 
 import os;
 import sys;
+import json;
 import from engine.policy { snap_estimate, snap_year, income_limit, status_rule }
+import from engine.score { score_resource }
 import from engine.parse { parse_intake }
 
 glob fails: list = [];
@@ -39,6 +44,8 @@ def on(date: str) -> None {
 def prof(n: int, income_mo: int, state: str = "TX", flags: list = [], age: int = 0) -> dict {
     return {"household_size": n, "income_annual": income_mo * 12, "state": state, "flags": list(flags), "age": age, "citizenship": ""};
 }
+
+glob SNAP_RES: dict = [r for r in json.load(open("data/resources.json"))["resources"] if r["eligibility"].get("rule_id") == "snap-rule"][0];
 
 with entry {
     # ---- 1. SNAP year switch (USDA FY2027 COLA memo, 2026-08-21) ----
@@ -63,8 +70,11 @@ with entry {
     check(snap_estimate(prof(6, 3000))["monthly"] == 835, "FY2027 6+ standard deduction is $308");
 
     # ---- 2. Net test and unearned income ----
-    # Gross limit for 1 is $1,729: over it, no benefit unless elderly/disabled.
-    check(snap_estimate(prof(1, 1800)) == {}, "over the gross limit → no estimate");
+    # Kansas keeps the federal 130% gross test ($1,729 for 1): over it, no
+    # benefit unless elderly/disabled. Texas's limit is 165% ($2,195).
+    check(snap_estimate(prof(1, 1800, "KS")) == {}, "Kansas: over 130% gross → no estimate");
+    check(snap_estimate(prof(1, 1800, "TX")).get("monthly", 0) > 0, "Texas: $1,800 is under its 165% limit");
+    check(snap_estimate(prof(1, 2300, "TX")) == {}, "Texas: over 165% gross → no estimate");
     # A senior living alone on $3,000/mo Social Security fails the net test
     # (net 2,783 > $1,330); the minimum benefit must not be shown.
     senior_rich = prof(1, 3000, "TX", ["senior", "unearned_income"], 72);
@@ -82,6 +92,41 @@ with entry {
     check("unearned_income" not in p2["flags"], "parser: wages are earned");
     p3 = parse_intake("mi pensión es de $900 al mes y necesito comida");
     check("unearned_income" in p3["flags"], "parser: pensión is unearned");
+
+    # ---- 2b. State gross limits (USDA broad-based categorical eligibility
+    # chart, June 2026); family of 4, 2026 poverty line $33,000 ----
+    for (st, pct) in {"CA": 200, "CO": 200, "AZ": 200, "NJ": 185, "IL": 165, "TX": 165, "IA": 160, "ID": 130, "GA": 130, "KS": 130}.items() {
+        lim = income_limit("snap-rule", prof(4, 3000, st))["limit"];
+        check(lim == int(round(33000 * pct / 100.0)), f"{st} SNAP gross limit for 4 is {pct}% (${int(round(33000 * pct / 100.0)):,}), got ${lim:,}");
+    }
+    check(income_limit("snap-rule", prof(4, 3000, "NY"))["limit"] == 49500, "New York: 150% with earnings");
+    check(income_limit("snap-rule", prof(4, 3000, "NY", ["unearned_income"]))["limit"] == 42900, "New York: 130% without earnings");
+    check(income_limit("snap-rule", prof(4, 3000, "AR", ["senior"]))["limit"] == 54450, "Arkansas: 165% for an elderly household");
+    check(income_limit("snap-rule", prof(4, 3000, ""))["limit"] == 42900, "unknown state: federal 130%");
+    # Categorically eligible households skip the net test in most states:
+    # Texas, 4 people, $4,500/mo earned (164% of poverty, under 165%): net
+    # 3,371 is over the $2,750 net limit, yet eligible: 1,023 - 1,011 = $12.
+    # California keeps the net test (LA County CalFresh manual; found by the
+    # PolicyEngine differential), and Kansas has no broad-based eligibility.
+    check(snap_estimate(prof(4, 4500, "TX")).get("monthly") == 12, "Texas: categorical eligibility skips the net test");
+    check(snap_estimate(prof(4, 4500, "CA")) == {}, "California: the net test still applies");
+    check(snap_estimate(prof(4, 4500, "KS")) == {}, "Kansas: $4,500 for 4 is over 130% gross");
+    # State minimums: New Jersey $95 for every household, D.C. $30, Maryland
+    # $40 with someone 62+.
+    check(snap_estimate(prof(1, 1700, "NJ")).get("monthly") == 95, "New Jersey: $95 state minimum");
+    check(snap_estimate(prof(1, 1700, "DC")).get("monthly") == 30, "D.C.: $30 state minimum");
+    check(snap_estimate(prof(1, 1200, "MD", ["senior", "unearned_income"], 70)).get("monthly") == 40, "Maryland: $40 minimum at 62+");
+    check(snap_estimate(prof(1, 1700, "MD", [], 40)).get("monthly") == 25, "Maryland: federal minimum under 62");
+    # 210% of poverty for 4 ($69,300): over every state's limit. Not
+    # "possible 41%" any more: unlikely, unless someone is 60+ or disabled.
+    rich = prof(4, 5775, "CA");
+    check(score_resource(SNAP_RES, SNAP_RES["eligibility"], rich, "we need food")["tier"] == "unlikely", "210% of poverty in California is unlikely for SNAP");
+    rich_d = prof(4, 5775, "CA", ["disabled"]);
+    check(score_resource(SNAP_RES, SNAP_RES["eligibility"], rich_d, "we need food")["tier"] != "unlikely", "a disabled member keeps the net-test route open");
+    mid = prof(4, 4500, "ID");
+    sr = score_resource(SNAP_RES, SNAP_RES["eligibility"], mid, "we need food");
+    check(sr["tier"] == "unlikely" and "disability" in str(sr), "Idaho at 164%: unlikely, and the card names the elderly/disabled route");
+    check(score_resource(SNAP_RES, SNAP_RES["eligibility"], prof(4, 4500, "CA"), "we need food")["tier"] != "unlikely", "California at 164%: still in range");
 
     # ---- 3. P.L. 119-21 ----
     refugee = {"household_size": 1, "income_annual": 12000, "state": "IL", "flags": [], "age": 30, "citizenship": "humanitarian"};
