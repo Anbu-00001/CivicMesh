@@ -302,7 +302,10 @@ glob UNEARNED_CUES: str = r"\b(?:social security|ssi|ssdi|pension|disability (?:
 glob EARNED_CUES: str = r"\b(?:earn|earns|earning|earnings|salary|wages?|paycheck|job|jobs|work|works|working|hourly|an hour|per hour|self.employed|sueldo|salario|trabajo)\b";
 glob INCOME_CUES: str ="(?:earn|earning|make|making|income|salary|paid|wage|wages|pension|social security|ssi|ssdi|disability|benefits?|gano|ganamos|ingresos?|sueldo|salario|pensi[oó]n|seguro social)";
 glob EXPENSE_CUES: str = "(?:rent|owe|owed|debt|bill|bills|cost|costs|fee|fine|deposit|renta|alquiler|debo|deuda|factura)";
-glob MONEY_RE: str = "\\$\\s?(\\d[\\d,]*(?:\\.\\d+)?)\\s*(k)?|(\\d[\\d,]*(?:\\.\\d+)?)\\s*(k)?\\s*(?:dollars|d[oó]lares|usd|bucks)";
+# Bounded digit runs and an anchored start keep this linear: the unbounded
+# form retried every position inside a digit run, and 10,000 digits took
+# 3.5 s (outside review; tests/check_input_limits.jac pins the budget).
+glob MONEY_RE: str = "\\$\\s?(\\d[\\d,]{0,14}(?:\\.\\d{1,2})?)\\s*(k)?|(?<![\\d,.])(\\d[\\d,]{0,14}(?:\\.\\d{1,2})?)\\s*(k)?\\s*(?:dollars|d[oó]lares|usd|bucks)";
 glob PERIOD_RE: str = "^\\s*(?:/|a|an|per|every|each|al|por|cada|a la|al a[nñ]o)?\\s*(month|mo|monthly|year|yr|yearly|annually|annual|week|wk|weekly|hour|hr|hourly|mes|mensual(?:es)?|a[nñ]o|anual(?:es)?|semana|semanal(?:es)?|hora)\\b";
 
 # ---------- helpers ----------
@@ -580,9 +583,23 @@ def parse_citizenship(low: str, evidence: list, text: str) -> str {
 
 # ---------- entry point ----------
 
+glob MAX_MESSAGE_CHARS: int = 4000;
+
+"""Bound what one message can cost. Longer text keeps its first and last
+2,000 characters: the ask is usually at one end of a pasted letter, and a
+crisis sentence can be at either."""
+def clip_message(text: str) -> str {
+    t = str(text);
+    if len(t) <= MAX_MESSAGE_CHARS {
+        return t;
+    }
+    half = MAX_MESSAGE_CHARS // 2;
+    return t[:half] + " … " + t[len(t) - half:];
+}
+
 """Parse one user message into a structured, evidence-backed profile."""
 def parse_intake(text: str) -> dict {
-    raw = str(text or "");
+    raw = clip_message(str(text or ""));
     low = raw.lower();
     evidence: list = [];
 

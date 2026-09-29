@@ -788,6 +788,7 @@ Copy `civicmesh/data/i18n/en.json` to `<code>.json`, translate the values (keep 
 - jac-scale bootstraps a login-capable `admin` / `changeme` account and a `__system__` / `system_secret` scheduler account by default. The admin portal is disabled in `jac.toml`, and the container sets a random `SYSTEM_USER_PASSWORD` on every boot.
 - Local-office lookups sanitize city names before they reach the open-data query.
 - Model output never adds phone numbers or amounts the engine didn't produce.
+- One message costs at most 4,000 characters of parsing: longer text keeps its first and last 2,000 (a crisis sentence can sit at either end of a pasted letter), and the chat box stops at 4,000. An outside review found the money pattern quadratic on digit runs: 100,000 digits took 438 s. It is linear now (0.04 s for a million), and `tests/check_input_limits.jac` holds 19 hostile inputs to a one-second budget. Chat turns have no per-client rate limit yet; only narration does.
 - Walker reports are no longer echoed to stdout (`walkers/log_privacy.jac`); CI scans the container logs for user text.
 - The narrator only accepts facts signed by the server (HMAC, `CIVICMESH_SIGNING_KEY` for multi-process deployments), with a server-wide ceiling, so it isn't a free relay to the model quota.
 - Reporting a vulnerability: [SECURITY.md](./SECURITY.md).

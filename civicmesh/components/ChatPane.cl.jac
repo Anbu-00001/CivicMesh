@@ -168,6 +168,7 @@ def:pub ChatPane(
                         }}
                         placeholder={("Answer the question above, or describe anything else…" if pending_question else "Describe your situation in any language…")}
                         disabled={is_loading}
+                        maxLength={4000}
                         className="cm-input"
                     />
                     <button
