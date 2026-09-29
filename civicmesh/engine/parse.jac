@@ -279,7 +279,9 @@ glob ES_MARKERS: list = [
     "hijos", "familia", "días", "dias", "casa", "trabajo"
 ];
 
-glob INCOME_CUES: str = "(?:earn|earning|make|making|income|salary|paid|wage|wages|pension|social security|ssi|ssdi|disability|benefits?|gano|ganamos|ingresos?|sueldo|salario|pensi[oó]n|seguro social)";
+glob UNEARNED_CUES: str = r"\b(?:social security|ssi|ssdi|pension|disability (?:check|benefits?|payments?)|retirement (?:check|benefits?|income)|unemployment (?:benefits?|insurance|checks?)|child support|alimony|seguro social|pensi[oó]n|jubilaci[oó]n)\b";
+glob EARNED_CUES: str = r"\b(?:earn|earns|earning|earnings|salary|wages?|paycheck|job|jobs|work|works|working|hourly|an hour|per hour|self.employed|sueldo|salario|trabajo)\b";
+glob INCOME_CUES: str ="(?:earn|earning|make|making|income|salary|paid|wage|wages|pension|social security|ssi|ssdi|disability|benefits?|gano|ganamos|ingresos?|sueldo|salario|pensi[oó]n|seguro social)";
 glob EXPENSE_CUES: str = "(?:rent|owe|owed|debt|bill|bills|cost|costs|fee|fine|deposit|renta|alquiler|debo|deuda|factura)";
 glob MONEY_RE: str = "\\$\\s?(\\d[\\d,]*(?:\\.\\d+)?)\\s*(k)?|(\\d[\\d,]*(?:\\.\\d+)?)\\s*(k)?\\s*(?:dollars|d[oó]lares|usd|bucks)";
 glob PERIOD_RE: str = "^\\s*(?:/|a|an|per|every|each|al|por|cada|a la|al a[nñ]o)?\\s*(month|mo|monthly|year|yr|yearly|annually|annual|week|wk|weekly|hour|hr|hourly|mes|mensual(?:es)?|a[nñ]o|anual(?:es)?|semana|semanal(?:es)?|hora)\\b";
@@ -669,6 +671,12 @@ def parse_intake(text: str) -> dict {
     (income_annual, im) = parse_income(low);
     if im {
         _ev(evidence, "income", income_annual, im.start(), im.end(), raw);
+        # SNAP's 20% deduction is for earnings only: "$1200/month Social
+        # Security" is unearned income and gets no such deduction.
+        ctx = low[max(0, im.start() - 40):im.end() + 24];
+        if re.search(UNEARNED_CUES, ctx) and not re.search(EARNED_CUES, ctx) and "unearned_income" not in flags {
+            flags.append("unearned_income");
+        }
     }
     household = parse_household(low, evidence, raw);
     if household > 1 and "children" not in flags and re.search(r"\b(?:kids?|children|hij[oa]s|ni[nñ][oa]s)\b", low) {

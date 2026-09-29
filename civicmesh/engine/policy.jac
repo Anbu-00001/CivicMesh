@@ -10,7 +10,16 @@ their effective dates and sources, so every explanation can cite them:
   "$24,000/yr is under 130% of the 2026 poverty line for a household of 3
    ($35,516) — HHS 2026 poverty guidelines"
 
-Sources (checked 2026-09-27):
+Sources (checked 2026-09-29):
+  * USDA SNAP FY2027 cost-of-living adjustments, memo of 2026-08-21
+    (effective 2026-10-01): max allotments, standard deductions, minimum
+    benefit. The FY2026 figures stay in force before that date.
+  * P.L. 119-21 §10102 (SNAP time limit, implemented from late 2025): adults
+    18–64 without a child under 14 get 3 months in 36 unless they work,
+    volunteer or train 80 hours a month or are exempt.
+  * P.L. 119-21 §71119 (Medicaid): expansion adults 19–64 must show 80 hours
+    a month of work, school or volunteering (or $580/month in earnings) from
+    January 1, 2027 at the latest, unless exempt.
   * HHS/ASPE 2026 poverty guidelines, Federal Register 2026-01-15:
     48 states + DC $15,960 + $5,680/person; AK $19,950 + $7,100; HI $18,360 + $6,530.
   * HUD FY2026 Section 8 income limits (effective 2026-05-01): U.S. median
@@ -35,7 +44,7 @@ import json;
 import math;
 import datetime;
 
-glob POLICY_VERSION: str = "2026-09-27";
+glob POLICY_VERSION: str = "2026-09-29";
 
 glob FPL_YEAR: int = 2026;
 glob FPL: dict = {
@@ -96,6 +105,7 @@ glob STATE_NAMES: dict = {
 
 glob OBBBA_SNAP_DATE: str = "2025-07-04";
 glob OBBBA_MEDICAID_DATE: str = "2026-10-01";
+glob MEDICAID_WORK_DATE: str = "2027-01-01";
 
 # rule_id → income basis + immigrant-status rule.
 #   income: {basis: fpl|ami|medicaid|none, pct, note, typical}
@@ -147,6 +157,33 @@ glob PROGRAMS: dict = {
 def policy_today -> str {
     forced = str(os.environ.get("CIVICMESH_POLICY_DATE", "")).strip();
     return forced if forced else datetime.date.today().isoformat();
+}
+
+glob SNAP_TIME_LIMIT_NOTE: str = "Time limit: adults 18–64 without a child under 14 at home may get SNAP for only 3 months in 3 years unless they work, volunteer or train 80 hours a month or are exempt, e.g. unable to work or pregnant (P.L. 119-21 §10102; the SNAP office decides exemptions)";
+
+"""Medicaid work-requirement note, effective-dated (P.L. 119-21 §71119)."""
+def medicaid_work_note -> str {
+    rule = "adults 19–64 covered through the expansion must show 80 hours a month of work, school or volunteering (or $580/month in earnings) unless exempt, e.g. parents of a child 13 or younger, pregnant or medically frail (P.L. 119-21 §71119)";
+    if policy_today() < MEDICAID_WORK_DATE {
+        return "From January 1, 2027 at the latest, " + rule + "; some states start earlier";
+    }
+    return rule[0].upper() + rule[1:];
+}
+
+"""Whether a work rule's note should be shown: an adult of working age with
+no exemption the conversation has revealed. Only decides a note, never a tier.
+"""
+def _work_rule_applies(profile: dict, lo: int) -> bool {
+    flags = list(profile.get("flags", []));
+    if "children" in flags or "pregnant" in flags or "disabled" in flags {
+        return False;
+    }
+    age = int(profile.get("age", 0) or 0);
+    if age > 0 {
+        return lo <= age and age <= 64;
+    }
+    # "Retired" or "elderly" with no age given: most people who say so are 65+.
+    return "senior" not in flags;
 }
 
 """HHS poverty guideline for a household size and state."""
@@ -220,12 +257,18 @@ def income_limit(rule_id: str, profile: dict, flat_fallback: int = 0) -> dict {
                     pct = 40.0;
                     note = sname + " did not expand Medicaid: parents qualify only at very low incomes (often under 40% of poverty), but children usually qualify through Medicaid or CHIP";
                 } else {
-                    blocked = sname + " did not expand Medicaid, so adults without children, a disability or a pregnancy generally can't get it at any income — a community health center or the ACA Marketplace is the fallback";
+                    blocked = sname + " did not expand Medicaid, so adults without children, a disability or a pregnancy generally can't get it at any income. ACA Marketplace subsidies start at 100% of the poverty line; below that, a community health center (sliding-scale fees) is the fallback";
                     note = blocked;
                 }
             } else {
                 note = "ACA expansion adults; children and pregnant women qualify at higher incomes";
+                if _work_rule_applies(profile, 19) {
+                    note = note + ". " + medicaid_work_note();
+                }
             }
+        }
+        if str(rule_id) == "snap-rule" and _work_rule_applies(profile, 18) {
+            note = note + ". " + SNAP_TIME_LIMIT_NOTE;
         }
         limit = int(round(fpl_annual(n, state) * pct / 100.0));
         per = int(round(fpl_annual(n + 1, state) * pct / 100.0)) - limit;
@@ -300,28 +343,67 @@ def status_rule(rule_id: str, profile: dict) -> dict {
 
 """Short provenance line for the UI."""
 def policy_sources -> list {
-    return [FPL_SOURCE + " (effective Jan 15, 2026)", HUD_SOURCE + " (effective May 1, 2026)", "KFF state Medicaid expansion status (2026)", "P.L. 119-21 §10108 SNAP (Jul 4, 2025) · §71109 Medicaid/CHIP (Oct 1, 2026)"];
+    return [FPL_SOURCE + " (effective Jan 15, 2026)", HUD_SOURCE + " (effective May 1, 2026)", "USDA SNAP " + str(snap_year()["fy"]) + " allotments (from " + str(snap_year()["from"]) + ")", "KFF state Medicaid expansion status (2026)", "P.L. 119-21 §10108 SNAP (Jul 4, 2025) · §71109 Medicaid/CHIP (Oct 1, 2026)"];
 }
 
-# ---------- SNAP benefit estimate (USDA FNS, FY2026: Oct 1 2025 – Sep 30 2026) ----------
-glob SNAP_FY: str = "FY2026";
-glob SNAP_MAX: dict = {
-    "default": [298, 546, 785, 994, 1183, 1421, 1571, 1789, 218],
-    "AK": [385, 707, 1015, 1285, 1529, 1838, 2031, 2314, 282],
-    "HI": [506, 929, 1334, 1689, 2010, 2415, 2668, 3040, 371]
-};
-glob SNAP_STD_DED: dict = {
-    "default": [209, 209, 209, 223, 261, 299],
-    "AK": [358, 358, 358, 358, 358, 374],
-    "HI": [295, 295, 295, 295, 300, 344]
-};
+# ---------- SNAP benefit estimate ----------
+# USDA's cost-of-living adjustments take effect every October 1. Each year:
+# max allotment for 1–8 people + each extra person; standard deduction for
+# 1–2, 3, 4, 5, 6+ people; the minimum benefit for 1–2 person households;
+# the 18+ person cap (200% of the 4-person max over the 8-person max).
+# FY2027: USDA memo of 2026-08-21. FY2026 kept so earlier dates reproduce.
+# Alaska is the urban column.
+glob SNAP_YEARS: list = [
+    {
+        "fy": "FY2027", "from": "2026-10-01",
+        "max": {
+            "default": [306, 562, 808, 1023, 1217, 1463, 1616, 1841, 225],
+            "AK": [392, 718, 1032, 1306, 1555, 1868, 2064, 2352, 287],
+            "HI": [496, 910, 1307, 1655, 1969, 2367, 2615, 2979, 364]
+        },
+        "std": {
+            "default": [217, 217, 217, 229, 268, 308],
+            "AK": [371, 371, 371, 371, 371, 385],
+            "HI": [306, 306, 306, 306, 309, 354]
+        },
+        "min": {"default": 25, "AK": 31, "HI": 40},
+        "cap18": {"default": 3887, "AK": 4965, "HI": 6289}
+    },
+    {
+        "fy": "FY2026", "from": "2025-10-01",
+        "max": {
+            "default": [298, 546, 785, 994, 1183, 1421, 1571, 1789, 218],
+            "AK": [385, 707, 1015, 1285, 1529, 1838, 2031, 2314, 282],
+            "HI": [506, 929, 1334, 1689, 2010, 2415, 2668, 3040, 371]
+        },
+        "std": {
+            "default": [209, 209, 209, 223, 261, 299],
+            "AK": [358, 358, 358, 358, 358, 374],
+            "HI": [295, 295, 295, 295, 300, 344]
+        },
+        "min": {"default": 24, "AK": 31, "HI": 40},
+        "cap18": {}
+    }
+];
+
+"""The SNAP parameter year in force on the policy date."""
+def snap_year -> dict {
+    today = policy_today();
+    for y in SNAP_YEARS {
+        if today >= str(y["from"]) { return y; }
+    }
+    return SNAP_YEARS[-1];
+}
 
 """Estimated monthly SNAP benefit: max allotment − 30% of net income.
 
-Net income = gross − 20% earned-income deduction − standard deduction
-(USDA's formula without the shelter / dependent-care deductions, so the
-estimate is conservative: rent and childcare usually raise it). Returns {}
-when income or eligibility is unknown or over the gross limit.
+Net income = gross − 20% earned-income deduction (earnings only, so not for
+Social Security, SSI or a pension) − standard deduction. USDA's formula
+without the shelter, dependent-care and medical deductions, so rent,
+childcare and a senior's medical costs usually raise it. Every household
+must pass the net test (100% of poverty); only elderly or disabled
+households skip the gross test (130%). Returns {} when income is unknown or
+the household fails a test.
 """
 def snap_estimate(profile: dict) -> dict {
     income = int(profile.get("income_annual", -1));
@@ -333,28 +415,40 @@ def snap_estimate(profile: dict) -> dict {
     n = 1 if assumed else hh;
     state = str(profile.get("state", "") or "").upper();
     flags = list(profile.get("flags", []));
+    elderly_disabled = "senior" in flags or "disabled" in flags;
+    earned = "unearned_income" not in flags;
     gross = income / 12.0;
-    gross_limit = fpl_annual(n, state) * 1.30 / 12.0;
-    if gross > gross_limit and not ("senior" in flags or "disabled" in flags) {
+    if gross > fpl_annual(n, state) * 1.30 / 12.0 and not elderly_disabled {
         return {};
     }
-    mx = SNAP_MAX.get(state, SNAP_MAX["default"]);
-    maxa = int(mx[n - 1]) if n <= 8 else int(mx[7]) + int(mx[8]) * (n - 8);
-    ded = SNAP_STD_DED.get(state, SNAP_STD_DED["default"]);
-    sd = int(ded[min(n, 6) - 1]);
-    net = max(0.0, gross * 0.8 - sd);
+    y = snap_year();
+    region = state if state in ["AK", "HI"] else "default";
+    mx = list(y["max"][region]);
+    if n <= 8 {
+        maxa = int(mx[n - 1]);
+    } else {
+        cap = int(y["cap18"].get(region, int(mx[7]) + 2 * int(mx[3])));
+        maxa = min(int(mx[7]) + int(mx[8]) * (n - 8), cap);
+    }
+    sd = int(list(y["std"][region])[min(n, 6) - 1]);
+    net = max(0.0, gross * (0.8 if earned else 1.0) - sd);
+    if net > fpl_annual(n, state) / 12.0 {
+        return {};
+    }
     ben = int(round(maxa - 0.3 * net));
     if n <= 2 {
-        ben = max(ben, int(round(int(mx[0]) * 0.08)));
+        ben = max(ben, int(y["min"][region]));
     }
     if ben <= 0 {
         return {};
     }
+    deds = ("the 20% earnings and $" + str(sd) + " standard deductions") if earned else ("the $" + str(sd) + " standard deduction; no earnings deduction for Social Security, SSI or pension income");
+    raises = "Rent, childcare and medical costs usually raise it." if elderly_disabled else "Rent and childcare deductions usually raise it.";
     return {
         "monthly": ben, "max": maxa, "household": n, "assumed_household": assumed,
         "label": "≈ $" + f"{ben:,}" + "/mo",
-        "basis": "USDA " + SNAP_FY + ": max $" + f"{maxa:,}" + " for " + str(n) + " − 30% of net income ($" + f"{int(net):,}" + "/mo after the 20% earnings and $" + str(sd) + " standard deductions). Rent and childcare deductions usually raise it.",
-        "source": "USDA FNS SNAP " + SNAP_FY + " maximum allotments and deductions"
+        "basis": "USDA " + str(y["fy"]) + ": max $" + f"{maxa:,}" + " for " + str(n) + " − 30% of net income ($" + f"{int(net):,}" + "/mo after " + deds + "). " + raises,
+        "source": "USDA SNAP " + str(y["fy"]) + " maximum allotments and deductions (from " + str(y["from"]) + ")"
     };
 }
 

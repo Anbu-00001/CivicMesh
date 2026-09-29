@@ -21,6 +21,7 @@ cd civicmesh
 jac run tests/eval_engine.jac        # 352 cases + metamorphic check; must PASS
 jac run tests/check_messages.jac     # every catalog: keys, placeholders, numbers
 jac run tests/check_privacy.jac      # scrubber: caught, kept, documented misses
+jac run tests/check_policy.jac       # dated rules vs the published figures
 rm -rf .jac/data && jac test tests/test_privacy_graph.jac   # in-process walkers
 jac run tests/eval_external.jac      # real posts (measured, not gated)
 ```
