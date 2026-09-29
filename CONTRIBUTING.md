@@ -18,7 +18,7 @@ Thank you. The most useful contributions, in order:
 
 ```bash
 cd civicmesh
-jac run tests/eval_engine.jac        # 350 cases + metamorphic check; must PASS
+jac run tests/eval_engine.jac        # 352 cases + metamorphic check; must PASS
 jac run tests/check_messages.jac     # every catalog: keys, placeholders, numbers
 jac run tests/check_privacy.jac      # scrubber: caught, kept, documented misses
 rm -rf .jac/data && jac test tests/test_privacy_graph.jac   # in-process walkers
@@ -29,6 +29,23 @@ With the app running (`docker build -t civicmesh . && docker run -p 7860:7860 ci
 `python3 civicmesh/tests/e2e_http.py http://localhost:7860`.
 
 CI runs all of these on every pull request.
+
+## Sending a change
+
+`main` is protected, for the maintainer too. Every change lands through a pull
+request, and three CI jobs must pass first: the engine eval, the same eval on
+the engine ejected to plain Python, and the Docker end-to-end run. No approval
+is required while the project has one maintainer.
+
+```bash
+git switch -c fix/short-name
+# edit, run the checks above, commit
+git push -u origin fix/short-name
+gh pr create --fill
+gh pr merge --auto --squash   # maintainers: merges by itself once CI is green
+```
+
+The pull request template repeats the house rules below as a checklist.
 
 ## House rules for the engine
 
