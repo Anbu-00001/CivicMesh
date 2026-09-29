@@ -35,7 +35,7 @@ impl ImpactReport.renderStatCard(label: str, value: str, sub: str, color: str) -
             <div style={{"fontSize": "28px", "fontWeight": "700", "letterSpacing": "-0.03em", "color": color, "lineHeight": "1.1", "marginTop": "4px"}}>
                 {value}
             </div>
-            <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.35)", "marginTop": "5px"}}>
+            <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.62)", "marginTop": "5px"}}>
                 {sub}
             </div>
         </div>;
@@ -170,11 +170,11 @@ impl ImpactReport.renderTopNeedCard(cat_lookup: Any) -> JsxElement {
                         {str(top_n) + " turn" + ("s" if top_n != 1 else "")}
                     </span>
                 </div>
-                <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.45)", "marginTop": "10px", "lineHeight": "1.55"}}>
+                <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.62)", "marginTop": "10px", "lineHeight": "1.55"}}>
                     Counted per chat turn across all visitors (anonymous, in-process, resets on restart).
                 </div>
             </div>}
-            {(top_n == 0) and <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.4)", "fontStyle": "italic", "lineHeight": "1.5"}}>
+            {(top_n == 0) and <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.62)", "fontStyle": "italic", "lineHeight": "1.5"}}>
                 No NeedNodes yet — send a prompt in the Chat tab and IntakeWalker will write the first one. This card updates live.
             </div>}
         </div>;

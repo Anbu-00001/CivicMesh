@@ -41,7 +41,7 @@ impl ChatPane.tierStyle(tier: str, ui: Any) -> dict {
     if tier == "likely" { return {"label": L(ui, "ui.likely", "Likely eligible"), "color": "#00E08A", "bg": "rgba(0,224,138,0.12)"}; }
     if tier == "possible" { return {"label": L(ui, "ui.possible", "Possible"), "color": "#5AA2FF", "bg": "rgba(90,162,255,0.12)"}; }
     if tier == "needs_info" { return {"label": L(ui, "ui.needs_info", "Needs info"), "color": "#FFB344", "bg": "rgba(255,179,68,0.12)"}; }
-    return {"label": L(ui, "ui.unlikely", "Unlikely"), "color": "rgba(255,255,255,0.45)", "bg": "rgba(255,255,255,0.06)"};
+    return {"label": L(ui, "ui.unlikely", "Unlikely"), "color": "rgba(255,255,255,0.62)", "bg": "rgba(255,255,255,0.06)"};
 }
 
 impl ChatPane.resetCase -> None {

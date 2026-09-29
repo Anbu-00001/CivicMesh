@@ -116,7 +116,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                         {("engine live · " + str(platform["programs"]) + " programs") if platform else "engine starting…"}
                     </span>
                     <div style={{"width": "1px", "height": "16px", "background": "rgba(255,255,255,0.1)", "margin": "0 6px"}}/>
-                    <span style={{"fontSize": "11px", "color": "rgba(255,255,255,0.4)"}}>
+                    <span style={{"fontSize": "11px", "color": "rgba(255,255,255,0.62)"}}>
                         JacHacks Spring 2026
                     </span>
                 </div>
@@ -124,6 +124,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
 
             <section
                 className="lp-reveal"
+                role="main"
                 style={{
                     "position": "relative",
                     "zIndex": "1",
@@ -185,7 +186,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     <button className="lp-cta" onClick={lambda _e: MouseEvent { on_start(); }}>
                         Enter the Navigator  →
                     </button>
-                    <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.4)", "textAlign": "left", "lineHeight": "1.5"}}>
+                    <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.62)", "textAlign": "left", "lineHeight": "1.5"}}>
                         <div style={{"color": "rgba(255,255,255,0.65)"}}>No signup — an anonymous account lives in this browser</div>
                         <div>{"40 national programs · 2026 federal income rules · local offices from HUD & HRSA open data"}</div>
                     </div>
@@ -206,7 +207,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                             <span style={{"width": "10px", "height": "10px", "borderRadius": "50%", "background": "#FF5F57"}}/>
                             <span style={{"width": "10px", "height": "10px", "borderRadius": "50%", "background": "#FEBC2E"}}/>
                             <span style={{"width": "10px", "height": "10px", "borderRadius": "50%", "background": "#28C840"}}/>
-                            <span style={{"fontSize": "11px", "color": "rgba(255,255,255,0.4)", "marginLeft": "10px", "letterSpacing": "0.02em"}}>
+                            <span style={{"fontSize": "11px", "color": "rgba(255,255,255,0.62)", "marginLeft": "10px", "letterSpacing": "0.02em"}}>
                                 {"Live engine run · " + ((str(platform["preview"]["engine_ms"]) + " ms, 0 LLM calls") if platform else "starting…")}
                             </span>
                         </div>
@@ -230,7 +231,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                         {(preview_step >= 2) and renderPreviewBubble("bot", "IntakeWalker", previewLine(2), "#FFE500")}
                         {(preview_step >= 3) and renderPreviewBubble("bot", "EligibilityWalker", previewLine(3), "#4488FF")}
                         {(preview_step >= 4) and renderPreviewBubble("bot", "Next question", previewLine(4), "#00FF88")}
-                        {(preview_step > 0 and preview_step < 4) and <div style={{"display": "flex", "alignItems": "center", "gap": "6px", "color": "rgba(255,255,255,0.35)", "fontSize": "11px", "fontStyle": "italic", "paddingLeft": "34px"}}>
+                        {(preview_step > 0 and preview_step < 4) and <div style={{"display": "flex", "alignItems": "center", "gap": "6px", "color": "rgba(255,255,255,0.62)", "fontSize": "11px", "fontStyle": "italic", "paddingLeft": "34px"}}>
                             <span className="lp-typing-dot"/>
                             <span className="lp-typing-dot"/>
                             <span className="lp-typing-dot"/>
@@ -356,7 +357,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     <div className="lp-orb" style={{"width": "240px", "height": "240px", "background": "#FFE500", "top": "-60px", "right": "-60px", "opacity": "0.18"}}/>
                     <div style={{
                         "fontSize": "10px",
-                        "color": "rgba(255,255,255,0.45)",
+                        "color": "rgba(255,255,255,0.62)",
                         "textTransform": "uppercase",
                         "letterSpacing": "0.1em",
                         "fontWeight": "600",
@@ -398,7 +399,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     <div className="lp-orb" style={{"width": "200px", "height": "200px", "background": "#00FF88", "bottom": "-50px", "left": "-30px", "opacity": "0.2"}}/>
                     <div style={{
                         "fontSize": "10px",
-                        "color": "rgba(255,255,255,0.45)",
+                        "color": "rgba(255,255,255,0.62)",
                         "textTransform": "uppercase",
                         "letterSpacing": "0.1em",
                         "fontWeight": "600",
@@ -420,7 +421,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     "padding": "20px 40px",
                     "borderTop": "0.5px solid rgba(255,255,255,0.06)",
                     "fontSize": "11px",
-                    "color": "rgba(255,255,255,0.35)",
+                    "color": "rgba(255,255,255,0.62)",
                     "display": "flex",
                     "alignItems": "center",
                     "justifyContent": "space-between",

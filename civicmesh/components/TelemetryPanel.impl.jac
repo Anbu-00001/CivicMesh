@@ -50,7 +50,7 @@ impl TelemetryPanel.renderWalkerRow(name: str) -> JsxElement {
                         }}
                     />
                 </div>
-                <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.35)", "marginTop": "3px"}}>
+                <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.62)", "marginTop": "3px"}}>
                     {(str(pct) + "% of session activity" if is_active else "not triggered this session")}
                 </div>
             </div>
@@ -74,9 +74,10 @@ impl TelemetryPanel.renderChainNode(name: str, is_triggered: bool, count: int) -
     is_last = name == "EscalationWalker";
     return
         <div key={name} style={{"display": "flex", "alignItems": "center"}}>
-            <div style={{"textAlign": "center", "minWidth": "105px", "opacity": ("1" if is_triggered else "0.35")}}>
+            <div style={{"textAlign": "center", "minWidth": "105px"}}>
                 <div
                     style={{
+                        "opacity": ("1" if is_triggered else "0.35"),
                         "width": "38px",
                         "height": "38px",
                         "borderRadius": "50%",
@@ -94,7 +95,7 @@ impl TelemetryPanel.renderChainNode(name: str, is_triggered: bool, count: int) -
                 <div style={{"fontSize": "10px", "fontWeight": "600", "color": color}}>
                     {name}
                 </div>
-                <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.35)", "marginTop": "2px"}}>
+                <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.62)", "marginTop": "2px"}}>
                     {((str(count) + (" event" if count == 1 else " events")) if is_triggered else "not triggered")}
                 </div>
             </div>
@@ -112,7 +113,7 @@ impl TelemetryPanel.renderChainNode(name: str, is_triggered: bool, count: int) -
                         "position": "absolute",
                         "right": "-4px",
                         "top": "-8px",
-                        "color": "rgba(255,255,255,0.25)",
+                        "color": "rgba(255,255,255,0.62)",
                         "fontSize": "13px"
                     }}
                 >
@@ -172,14 +173,14 @@ impl TelemetryPanel.renderCallCard(name: str) -> JsxElement {
                     "padding": "1px 7px",
                     "borderRadius": "8px",
                     "background": ("rgba(0,255,136,0.08)" if uses_tools else "rgba(255,255,255,0.04)"),
-                    "color": ("#00FF88" if uses_tools else "rgba(255,255,255,0.4)"),
+                    "color": ("#00FF88" if uses_tools else "rgba(255,255,255,0.62)"),
                     "border": ("0.5px solid rgba(0,255,136,0.3)" if uses_tools else "0.5px solid rgba(255,255,255,0.08)")
                 }}>
                     {("tools: yes" if uses_tools else "tools: no")}
                 </span>
                 <span style={{
                     "fontSize": "10px",
-                    "color": "rgba(255,255,255,0.4)",
+                    "color": "rgba(255,255,255,0.62)",
                     "fontFamily": "ui-monospace, monospace"
                 }}>
                     {str(count) + (" event" if count == 1 else " events")}
@@ -194,9 +195,9 @@ impl TelemetryPanel.renderCallCard(name: str) -> JsxElement {
                 "lineHeight": "1.45",
                 "marginTop": "2px"
             }}>
-                <div style={{"color": "rgba(255,255,255,0.35)", "textTransform": "uppercase", "fontSize": "9px", "letterSpacing": "0.06em", "paddingTop": "2px"}}>Input</div>
+                <div style={{"color": "rgba(255,255,255,0.62)", "textTransform": "uppercase", "fontSize": "9px", "letterSpacing": "0.06em", "paddingTop": "2px"}}>Input</div>
                 <div style={{"fontFamily": "ui-monospace, monospace", "color": "rgba(255,255,255,0.7)"}}>{in_str}</div>
-                <div style={{"color": "rgba(255,255,255,0.35)", "textTransform": "uppercase", "fontSize": "9px", "letterSpacing": "0.06em", "paddingTop": "2px"}}>Output</div>
+                <div style={{"color": "rgba(255,255,255,0.62)", "textTransform": "uppercase", "fontSize": "9px", "letterSpacing": "0.06em", "paddingTop": "2px"}}>Output</div>
                 <div style={{"fontFamily": "ui-monospace, monospace", "color": color}}>{out_str}</div>
             </div>
         </div>;
@@ -227,11 +228,11 @@ impl TelemetryPanel.renderEvent(ev: Any, idx: int) -> JsxElement {
                 "gap": "8px"
             }}
         >
-            <span style={{"fontSize": "10px", "color": "rgba(255,255,255,0.3)", "minWidth": "20px"}}>
+            <span style={{"fontSize": "10px", "color": "rgba(255,255,255,0.62)", "minWidth": "20px"}}>
                 {"#" + str(idx + 1)}
             </span>
             <span style={{"color": "#FFE500", "minWidth": "150px"}}>{ev_walker}</span>
-            <span style={{"color": "rgba(255,255,255,0.35)"}}>→</span>
+            <span style={{"color": "rgba(255,255,255,0.62)"}}>→</span>
             <span style={{"minWidth": "140px"}}>{ev_node}</span>
             <span style={{"color": status_color, "fontWeight": "500"}}>{ev_status}</span>
         </div>;
@@ -289,7 +290,7 @@ impl TelemetryPanel.renderReflectionTimeline -> JsxElement {
                 <div style={{"fontSize": "11.5px", "color": "rgba(255,255,255,0.6)", "lineHeight": "1.55"}}>
                     After every chat turn a zero-LLM <strong style={{"color": "rgba(0,200,255,0.95)"}}>CritiqueWalker</strong> reads the turn's trace (which walkers ran, how many LLM calls were made), scores the outcome, and writes a SessionInsight node on your PersonNode via the <code style={{"fontFamily": "ui-monospace, monospace", "fontSize": "10px", "color": "#00C8FF"}}>reflected_on</code> edge. They are charted here, not fed back into routing.
                 </div>
-                <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.4)", "marginTop": "10px", "fontStyle": "italic"}}>
+                <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.62)", "marginTop": "10px", "fontStyle": "italic"}}>
                     Send a chat message and refresh this tab to see the first reflection appear.
                 </div>
             </div>;
@@ -401,11 +402,11 @@ impl TelemetryPanel.renderReflectionRow(ins: Any, idx: int) -> JsxElement {
                 {nav and <span style={{"fontSize": "9px", "padding": "1px 6px", "borderRadius": "8px", "background": "rgba(0,255,136,0.1)", "color": "#00FF88", "border": "0.5px solid currentColor", "fontWeight": "600", "letterSpacing": "0.03em", "textTransform": "uppercase"}}>nav</span>}
                 {pf and <span style={{"fontSize": "9px", "padding": "1px 6px", "borderRadius": "8px", "background": "rgba(0,200,255,0.1)", "color": "#00C8FF", "border": "0.5px solid currentColor", "fontWeight": "600", "letterSpacing": "0.03em", "textTransform": "uppercase"}}>pathfinder</span>}
                 {esc and <span style={{"fontSize": "9px", "padding": "1px 6px", "borderRadius": "8px", "background": "rgba(255,68,68,0.1)", "color": "#FF4444", "border": "0.5px solid currentColor", "fontWeight": "600", "letterSpacing": "0.03em", "textTransform": "uppercase"}}>escalated</span>}
-                <span style={{"fontSize": "10px", "fontFamily": "ui-monospace, monospace", "color": "rgba(255,255,255,0.35)"}}>
+                <span style={{"fontSize": "10px", "fontFamily": "ui-monospace, monospace", "color": "rgba(255,255,255,0.62)"}}>
                     {str(llm_est) + " LLM call" + ("" if llm_est == 1 else "s")}
                 </span>
             </div>
-            {snip and <div style={{"fontSize": "10.5px", "color": "rgba(255,255,255,0.45)", "fontStyle": "italic", "paddingLeft": "36px", "lineHeight": "1.45"}}>
+            {snip and <div style={{"fontSize": "10.5px", "color": "rgba(255,255,255,0.62)", "fontStyle": "italic", "paddingLeft": "36px", "lineHeight": "1.45"}}>
                 "{snip}"
             </div>}
         </div>;

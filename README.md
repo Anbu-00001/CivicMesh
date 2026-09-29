@@ -55,6 +55,7 @@ CivicMesh turns one message, in the person's own words and language, into a rank
 | **The graph is the product** | Each verdict is a scored `eligible_for` edge. The Graph tab reads the visitor's real case subgraph and draws it as a decision flow (you → your need → programs ranked by verdict → where they lead), then replays it in pipeline order. |
 | **Safety by construction** | Crisis and violence flags that negation can't cancel, plus an escalate-only second layer for indirect wording ("everyone would be better off without me", "he controls my money"). **Quick exit** (button or Shift ×3) and a private session that crisis turns switch on, so a shared phone keeps nothing. A numbers guard on every model output. No default admin accounts. |
 | **Private by design** | No sign-up and no name needed. What you type is read on the server and never stored or sent to any AI model: only the engine's reading is kept (kind of help, urgency, household, income). Server logs hold no user text, and **Delete my data** erases the case. Each of these is a test. [Privacy notice](./PRIVACY.md) |
+| **Accessible** | Screen readers announce each reply (the transcript is a polite live region, with a spoken "working on your answer" status), keyboard focus returns to the message box after an answer, controls have labels, and text meets 4.5:1 contrast. `tests/a11y_axe.py` runs axe-core in CI on the chat before and after an answer; a pass over every tab found no serious or critical issues. |
 
 ---
 

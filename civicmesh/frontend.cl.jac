@@ -167,16 +167,17 @@ def:pub ClientApp -> JsxElement {
                 }}
             >
                 <div style={{"display": "flex", "alignItems": "center", "gap": "10px"}}>
-                    <span
+                    <h1
                         style={{
                             "fontSize": "17px",
                             "fontWeight": "700",
                             "letterSpacing": "-0.03em",
-                            "color": "#FFE500"
+                            "color": "#FFE500",
+                            "margin": "0"
                         }}
                     >
                         CivicMesh
-                    </span>
+                    </h1>
                     <span
                         className="cm-appbar-badge"
                         style={{
@@ -213,6 +214,7 @@ def:pub ClientApp -> JsxElement {
                     <button
                         onClick={lambda _e: MouseEvent { togglePalette(); }}
                         title="Open command palette (⌘K)"
+                        aria-label="Open command palette"
                         style={{
                             "display": "flex",
                             "alignItems": "center",
@@ -242,7 +244,7 @@ def:pub ClientApp -> JsxElement {
                             "display": "inline-block"
                         }}
                     />
-                    <span style={{"fontSize": "12px", "color": "rgba(255,255,255,0.4)"}}>
+                    <span style={{"fontSize": "12px", "color": "rgba(255,255,255,0.62)"}}>
                         {("engine ready · LLM narrator" if is_authed else "connecting...")}
                     </span>
                 </div>
@@ -282,7 +284,7 @@ def:pub ClientApp -> JsxElement {
                     "alignItems": "center",
                     "justifyContent": "space-between",
                     "fontSize": "11px",
-                    "color": "rgba(255,255,255,0.3)",
+                    "color": "rgba(255,255,255,0.55)",
                     "maxWidth": "1400px",
                     "margin": "0 auto"
                 }}

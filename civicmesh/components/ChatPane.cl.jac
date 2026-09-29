@@ -94,6 +94,18 @@ def:pub ChatPane(
         } except Exception as _ex {}
     }
 
+    # The input is disabled while a turn runs, which drops keyboard focus to
+    # the page. Put it back when the answer lands, so a keyboard or screen-
+    # reader user can reply without hunting for the box (not on first load).
+    can with [is_loading] entry {
+        try {
+            if (not is_loading) and len(messages) > 1 and (document.activeElement == document.body or not document.activeElement) {
+                box = document.querySelector(".cm-input");
+                if box { box.focus(); }
+            }
+        } except Exception as _ex {}
+    }
+
     async def sendMessage(text_override: str = "", answering: str = "", display: str = "", pin: bool = False) -> None;
     async def safeSpawn(walker_name: str, fields: dict) -> Any;
     async def narrate(msg_id: str, data: Any, user_text: str) -> None;
@@ -130,7 +142,7 @@ def:pub ChatPane(
             <div className="cm-panel cm-chat-col">
                 <div className="cm-chat-head">
                     <div style={{"flex": "1", "minWidth": "0"}}>
-                        <div style={{"fontSize": "14px", "fontWeight": "600"}}>CivicMesh Navigator</div>
+                        <h2 style={{"fontSize": "14px", "fontWeight": "600", "margin": "0"}}>CivicMesh Navigator</h2>
                         <div className="cm-muted" style={{"fontSize": "11px", "marginTop": "2px"}}>
                             Deterministic eligibility engine · 2026 federal rules · answers composed in 51 languages, 111 supported · 1 LLM call per turn, off the critical path
                         </div>
@@ -139,15 +151,16 @@ def:pub ChatPane(
                     {renderLangPicker()}
                     <button className="cm-ghost-btn" onClick={lambda _e: MouseEvent { resetCase(); }} title="Start a new case">New case</button>
                 </div>
-                <div className="cm-thread">
+                <div className="cm-thread" role="log" aria-live="polite" aria-relevant="additions" aria-label="Conversation" aria-busy={is_loading} tabIndex={0}>
                     {[renderMessage(messages[i], i, (i == len(messages) - 1) and (not is_loading)) for i in range(len(messages))]}
                     {is_loading and <div className="cm-row">
                         <div className="cm-avatar">CM</div>
-                        <div className="cm-typing"><span/><span/><span/></div>
+                        <div className="cm-typing" role="status"><span aria-hidden="true"/><span aria-hidden="true"/><span aria-hidden="true"/><span className="cm-sr-only">Working on your answer…</span></div>
                     </div>}
                 </div>
                 <div className="cm-composer">
                     <input
+                        aria-label="Your message"
                         value={input_val}
                         onChange={lambda e: ChangeEvent { input_val = e.target.value; }}
                         onKeyDown={lambda e: KeyboardEvent {
@@ -161,13 +174,15 @@ def:pub ChatPane(
                         onClick={lambda _e: MouseEvent { sendMessage(); }}
                         disabled={is_loading}
                         className={("cm-send cm-send-on" if (input_val and (not is_loading)) else "cm-send")}
+                        aria-label="Send message"
+                        title="Send"
                     >
                         →
                     </button>
                 </div>
                 {renderPrivacy()}
             </div>
-            <div className="cm-side">
+            <div className="cm-side" role="region" aria-label="Case file and pipeline" tabIndex={0}>
                 {renderProfilePanel()}
                 {renderPipeline()}
             </div>

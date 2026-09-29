@@ -152,7 +152,7 @@ def:pub TelemetryPanel(walker_events: list, user_id: str = "") -> JsxElement {
             <div
                 style={{
                     "fontSize": "11px",
-                    "color": "rgba(255,255,255,0.4)",
+                    "color": "rgba(255,255,255,0.62)",
                     "marginBottom": "12px",
                     "display": "flex",
                     "alignItems": "center",
@@ -194,7 +194,7 @@ def:pub TelemetryPanel(walker_events: list, user_id: str = "") -> JsxElement {
                     <div style={{"fontSize": "22px", "fontWeight": "600", "color": "#FFE500"}}>
                         {str(total_events)}
                     </div>
-                    <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.4)", "marginTop": "3px"}}>
+                    <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.62)", "marginTop": "3px"}}>
                         Walker events
                     </div>
                 </div>
@@ -213,7 +213,7 @@ def:pub TelemetryPanel(walker_events: list, user_id: str = "") -> JsxElement {
                     <div style={{"fontSize": "22px", "fontWeight": "600", "color": "#FFE500"}}>
                         {str(len([w for w in walker_order if triggered[w]]))}
                     </div>
-                    <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.4)", "marginTop": "3px"}}>
+                    <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.62)", "marginTop": "3px"}}>
                         Walkers triggered
                     </div>
                 </div>
@@ -232,7 +232,7 @@ def:pub TelemetryPanel(walker_events: list, user_id: str = "") -> JsxElement {
                     <div style={{"fontSize": "22px", "fontWeight": "600", "color": "#FFE500"}}>
                         mistral-nemotron
                     </div>
-                    <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.4)", "marginTop": "3px"}}>
+                    <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.62)", "marginTop": "3px"}}>
                         Active model
                     </div>
                 </div>
@@ -253,7 +253,7 @@ def:pub TelemetryPanel(walker_events: list, user_id: str = "") -> JsxElement {
                         "padding": "10px 16px",
                         "borderBottom": "0.5px solid rgba(255,255,255,0.06)",
                         "fontSize": "10px",
-                        "color": "rgba(255,255,255,0.35)",
+                        "color": "rgba(255,255,255,0.62)",
                         "textTransform": "uppercase",
                         "letterSpacing": "0.06em"
                     }}
@@ -272,14 +272,14 @@ def:pub TelemetryPanel(walker_events: list, user_id: str = "") -> JsxElement {
                     "borderRadius": "14px"
                 }}
             >
-                <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.35)", "marginBottom": "14px", "textTransform": "uppercase", "letterSpacing": "0.06em"}}>
+                <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.62)", "marginBottom": "14px", "textTransform": "uppercase", "letterSpacing": "0.06em"}}>
                     Walker call tree — parent → child invocation
                 </div>
                 <div style={{"display": "flex", "alignItems": "center", "overflowX": "auto", "gap": "0"}}>
                     {[renderChainNode(walker_order[i], bool(triggered[walker_order[i]]), int(counts[walker_order[i]])) for i in range(len(walker_order))]}
                 </div>
                 <div style={{"marginTop": "14px", "paddingTop": "12px", "borderTop": "0.5px solid rgba(255,255,255,0.06)"}}>
-                    <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.3)", "marginBottom": "7px", "textTransform": "uppercase", "letterSpacing": "0.06em"}}>
+                    <div style={{"fontSize": "10px", "color": "rgba(255,255,255,0.62)", "marginBottom": "7px", "textTransform": "uppercase", "letterSpacing": "0.06em"}}>
                         Recent events
                     </div>
                     {[renderEvent(walker_events[j], j) for j in range(max(0, total_events - 8), total_events)]}
@@ -299,7 +299,7 @@ def:pub TelemetryPanel(walker_events: list, user_id: str = "") -> JsxElement {
                 <div
                     style={{
                         "fontSize": "10px",
-                        "color": "rgba(255,255,255,0.35)",
+                        "color": "rgba(255,255,255,0.62)",
                         "textTransform": "uppercase",
                         "letterSpacing": "0.06em",
                         "marginBottom": "4px"
@@ -310,7 +310,7 @@ def:pub TelemetryPanel(walker_events: list, user_id: str = "") -> JsxElement {
                 <div
                     style={{
                         "fontSize": "11px",
-                        "color": "rgba(255,255,255,0.45)",
+                        "color": "rgba(255,255,255,0.62)",
                         "marginBottom": "14px",
                         "lineHeight": "1.45"
                     }}
