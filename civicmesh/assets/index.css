@@ -943,6 +943,13 @@ html, body { overflow-x: hidden; }
 @media (max-width: 600px) { .cm-lang-select { max-width: 140px; } }
 .cm-interp .cm-crit-src { font-family: inherit; font-size: 11px; line-height: 1.5; }
 
+/* Crisis numbers under the composer, always shown: detection misses about a
+   third of real abuse posts (tests/eval_external.jac), so a miss must never
+   mean no number on screen. */
+.cm-safety-line { margin: 0 14px 6px; font-size: 11px; line-height: 1.5; color: rgba(255,255,255,0.5); }
+.cm-safety-line a { color: rgba(255,255,255,0.78); text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 2px; }
+.cm-safety-line a:hover { color: #fff; }
+
 /* ── Privacy: result-bar notes + the panel under the composer ── */
 .cm-hud-private { color: rgba(140,220,190,0.85); }
 .cm-privacy { margin: 0 14px 12px; font-size: 11.5px; color: rgba(255,255,255,0.55); }

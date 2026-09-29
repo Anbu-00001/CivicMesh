@@ -640,6 +640,166 @@
    },
    "suite": "probes",
    "_why": "outside review: the national limit ($53,950) left this family at 'possible 47%'; Fort Lauderdale's HUD limit is $63,400, so 'likely'"
+  },
+  {
+   "text": "My friend was hit in the face by her boyfriend last night, where can she go?",
+   "expect": {
+    "flag": "dv"
+   },
+   "suite": "probes",
+   "_why": "passive, with words between the act and 'by': a friend asking is a true positive"
+  },
+  {
+   "text": "I got shoved into a wall by my stepdad and I need somewhere to stay",
+   "expect": {
+    "flag": "dv"
+   },
+   "suite": "probes",
+   "_why": "passive family violence: true positive"
+  },
+  {
+   "text": "My ex-husband assaulted my new partner and now he knows where I live",
+   "expect": {
+    "flag": "dv"
+   },
+   "suite": "probes",
+   "_why": "violence-only verb with no 'me' after it: true positive"
+  },
+  {
+   "text": "He put his hands around my neck during a fight",
+   "expect": {
+    "flag": "dv"
+   },
+   "suite": "probes",
+   "_why": "strangulation, the Danger Assessment's strongest single predictor: true positive"
+  },
+  {
+   "text": "She threatened to kill the kids if I leave",
+   "expect": {
+    "flag": "dv"
+   },
+   "suite": "probes",
+   "_why": "Danger Assessment / Hotline warning sign, in the words people use: true positive"
+  },
+  {
+   "text": "My boyfriend pulled a knife on me last week",
+   "expect": {
+    "flag": "dv"
+   },
+   "suite": "probes",
+   "_why": "Danger Assessment / Hotline warning sign, in the words people use: true positive"
+  },
+  {
+   "text": "He forced me to have sex and I don't know what to do",
+   "expect": {
+    "flag": "dv"
+   },
+   "suite": "probes",
+   "_why": "Danger Assessment / Hotline warning sign, in the words people use: true positive"
+  },
+  {
+   "text": "Mi pareja me amenazó con un cuchillo",
+   "expect": {
+    "flag": "dv"
+   },
+   "suite": "probes",
+   "_why": "Danger Assessment / Hotline warning sign, in the words people use: true positive"
+  },
+  {
+   "text": "My husband is getting more and more aggressive when he drinks",
+   "expect": {
+    "flag": "dv_concern"
+   },
+   "suite": "probes",
+   "_why": "escalation or intimidation (Danger Assessment, Hotline): escalate-only concern"
+  },
+  {
+   "text": "He smashed my phone so I couldn't call anyone",
+   "expect": {
+    "flag": "dv_concern"
+   },
+   "suite": "probes",
+   "_why": "escalation or intimidation (Danger Assessment, Hotline): escalate-only concern"
+  },
+  {
+   "text": "I'm afraid of my son, he yells and takes my checks",
+   "expect": {
+    "flag": "dv_concern"
+   },
+   "suite": "probes",
+   "_why": "escalation or intimidation (Danger Assessment, Hotline): escalate-only concern"
+  },
+  {
+   "text": "Mi esposo se está poniendo muy violento",
+   "expect": {
+    "flag": "dv_concern"
+   },
+   "suite": "probes",
+   "_why": "escalation or intimidation (Danger Assessment, Hotline): escalate-only concern"
+  },
+  {
+   "text": "My car was hit by a truck on the highway and I need a lawyer",
+   "expect": {
+    "flag_absent": "dv"
+   },
+   "suite": "probes",
+   "_why": "a car hit by a truck: no person doing it to someone"
+  },
+  {
+   "text": "My son was assaulted at school by another student",
+   "expect": {
+    "flag_absent": "dv"
+   },
+   "suite": "probes",
+   "_why": "a family member as the victim of a stranger is not domestic violence"
+  },
+  {
+   "text": "The buyer threatened to kill the deal unless we sign today",
+   "expect": {
+    "flag_absent": "dv"
+   },
+   "suite": "probes",
+   "_why": "'kill the deal' is not a threat to a person"
+  },
+  {
+   "text": "My brother choked on a fishbone and we have no insurance",
+   "expect": {
+    "flag_absent": "dv"
+   },
+   "suite": "probes",
+   "_why": "choking on food"
+  },
+  {
+   "text": "The kids are getting more aggressive at daycare",
+   "expect": {
+    "flag_absent": "dv_concern"
+   },
+   "suite": "probes",
+   "_why": "children's behaviour, not a partner escalating"
+  },
+  {
+   "text": "I punched the wall and broke my hand, I need a doctor",
+   "expect": {
+    "flag_absent": "dv_concern"
+   },
+   "suite": "probes",
+   "_why": "the person hurt themselves; no one else is punching walls at them"
+  },
+  {
+   "text": "My dad is afraid of my brother's dog",
+   "expect": {
+    "flag_absent": "dv_concern"
+   },
+   "suite": "probes",
+   "_why": "afraid of a dog, not of a family member"
+  },
+  {
+   "text": "My landlord pulled a knife on me",
+   "expect": {
+    "flag_absent": "dv"
+   },
+   "suite": "probes",
+   "_why": "a landlord's threat is a police matter, not the domestic violence hotline"
   }
  ]
 }

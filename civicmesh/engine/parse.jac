@@ -110,7 +110,19 @@ glob FLAG_LEXICON: dict = {
            "(?:terrified|afraid|scared|fear(?:ful)?) for (?:my|her|his|our) (?:life|lives|safety)", "stalking (?:me|her|him)",
            "threatens (?:me|to hurt me|to kill me)", "fleeing (?:abuse|violence|domestic|my (?:husband|wife|partner|ex|boyfriend|girlfriend|abuser))",
            "(?:he|she|husband|wife|boyfriend|girlfriend|bf|gf|partner|spouse|fianc[eé]e?|ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|brother|sister|father|dad|stepdad|stepfather|mother|mom|stepmom|son|daughter|uncle|cousin|roommate|in-laws?)\\b[^.!?]{0,40}\\b(?:punched|kicked|choked|strangled|slapped|shoved|pushed|hit|beat|assaulted|attacked|raped|stabbed|threatened to kill|sucker punched|grabbed)\\b[^.!?]{0,15}\\b(?:me|her|him|us|my|our)",
-           "(?:punched|kicked|choked|strangled|slapped|shoved|pushed|hit|beaten|assaulted|attacked|raped|abused|stabbed|threatened|sucker punched|battered) by (?:my|her|his|our|a|an) (?:\\w+ )?(?:he|she|husband|wife|boyfriend|girlfriend|bf|gf|partner|spouse|fianc[eé]e?|ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|brother|sister|father|dad|stepdad|stepfather|mother|mom|stepmom|son|daughter|uncle|cousin|roommate|in-laws?)"],
+           "(?:punched|kicked|choked|strangled|slapped|shoved|pushed|hit|beaten|assaulted|attacked|raped|abused|stabbed|threatened|sucker punched|battered) (?:\\w+ ){0,3}?by (?:my|her|his|our|a|an) (?:[\\w'-]+ ){0,5}?(?:he|she|husband|wife|boyfriend|girlfriend|bf|gf|partner|spouse|fianc[eé]e?|ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|brother|sister|father|dad|stepdad|stepfather|mother|mom|stepmom|son|daughter|uncle|cousin|roommate|in-laws?)",
+           # Danger Assessment items (Campbell; strongest predictors of partner
+           # homicide: strangulation, threats to kill, weapons, forced sex) and
+           # the Hotline's warning signs, in the words people use. Each has a
+           # benign probe in tests/golden_probes.json.
+           "(?:my|her|his|our) (?:husband|wife|boyfriend|girlfriend|bf|gf|partner|spouse|fianc[eé]e?|ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|brother|sister|father|dad|stepdad|stepfather|mother|mom|stepmom|son|daughter|uncle|cousin|roommate|in-laws?) (?:(?:just|has|had|then|also|repeatedly|physically|sexually|once|again|finally) ){0,2}(?:assaulted|strangled|raped|stabbed|beat up|threatened to kill)",
+           "(?:put|had|wrapped|pressed) (?:his|her|their|both) hands? (?:around|on|over) (?:my|her|his) (?:neck|throat)",
+           "threatened to (?:kill|shoot|stab) (?:me|her|us|him|the kids|my kids|our kids|the children|my children|our children)",
+           "(?:said|says|told me|keeps saying) (?:he|she)(?:'d| would| will|'ll| is going to| was going to) kill (?:me|us|her)",
+           "(?:he|she|husband|wife|boyfriend|girlfriend|bf|gf|partner|spouse|fianc[eé]e?|ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|brother|sister|father|dad|stepdad|stepfather|mother|mom|stepmom|son|daughter|uncle|cousin|roommate|in-laws?)\\b[^.!?]{0,30}\\b(?:pulled|held|pointed|waved) (?:a )?(?:gun|knife|weapon) (?:on|at) (?:me|her|us)",
+           "threatened (?:me|her|us) with (?:a )?(?:gun|knife|weapon|bat)",
+           "(?:forced|forces|pressured|pressures|made|makes) (?:me|her) (?:to )?(?:have sex|into (?:having )?sex|do sexual)",
+           "me (?:amenaz[oó]|amenaza) con (?:matarme|un cuchillo|una pistola|un arma)", "me (?:ahorc[oó]|estrangul[oó]|ahorca)", "me (?:oblig[oó]|obliga) a tener relaciones"],
     "self_harm": ["suicid\\w*", "kill myself", "end my life", "want to die", "self[- ]harm", "hurt myself", "quitarme la vida", "matarme", "no quiero vivir",
                   "(?:don'?t|do not) want to (?:live|be alive|be here|wake up)", "no reason to (?:live|go on)", "better off dead", "end it all",
                   "take my (?:own )?life", "can'?t go on (?:anymore|like this)?", "quiero morir(?:me)?", "suicidarme", "no quiero seguir viviendo"],
@@ -199,7 +211,14 @@ glob CONCERN_LEXICON: dict = {
         "locks me (?:in|out)", "walking on eggshells", "(?:he|she) (?:gets|got) (?:really )?(?:violent|aggressive) when",
         "tengo miedo de (?:volver|regresar|ir) a (?:la )?casa", "me quita (?:el|mi) dinero", "(?:revisa|vigila) mi (?:tel[eé]fono|celular)",
         "no me deja (?:salir|trabajar|ver a mi familia|hablar con)", "amenaza con (?:quitarme a (?:los|mis) (?:ni[nñ]os|hijos)|llamar a inmigraci[oó]n|deportarme|echarme)",
-        "no me siento segur[oa] en (?:mi )?casa"]
+        "no me siento segur[oa] en (?:mi )?casa",
+        # Escalation and intimidation (Danger Assessment "violence increased in
+        # severity"; Hotline: destroying belongings, threatening looks).
+        "(?:he|she|husband|wife|boyfriend|girlfriend|bf|gf|partner|spouse|fianc[eé]e?|ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|brother|sister|father|dad|stepdad|stepfather|mother|mom|stepmom|son|daughter|uncle|cousin|roommate|in-laws?)(?:'s| is| has been| keeps)? (?:just |only |also )?(?:getting|becoming|gotten|become|growing) (?:more (?:and more )?|very |really |increasingly |so )?(?:aggressive|violent|abusive|threatening)",
+        "(?:he|she|husband|wife|boyfriend|girlfriend|bf|gf|partner|spouse|fianc[eé]e?|ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|brother|sister|father|dad|stepdad|stepfather|mother|mom|stepmom|son|daughter|uncle|cousin|roommate|in-laws?)\\b[^.!?]{0,30}\\b(?:smashed|broke|destroyed|threw) (?:my|our) (?:phone|things|stuff|belongings|door|tv|laptop)",
+        "(?:he|she|husband|wife|boyfriend|girlfriend|bf|gf|partner|spouse|fianc[eé]e?|ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|brother|sister|father|dad|stepdad|stepfather|mother|mom|stepmom|son|daughter|uncle|cousin|roommate|in-laws?)\\b[^.!?]{0,20}\\bpunch(?:ed|es|ing) (?:holes in )?(?:the |a )?walls?",
+        "(?:afraid|scared|terrified) of my (?:father|dad|stepdad|stepfather|mother|mom|stepmom|brother|sister|son|daughter|uncle)(?!'s)",
+        "se (?:est[aá] poniendo|pone) (?:m[aá]s |muy )?(?:agresivo|agresiva|violento|violenta)"]
 };
 
 glob URGENT_PATTERNS: list = [

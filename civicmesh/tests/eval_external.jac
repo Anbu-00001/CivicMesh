@@ -71,11 +71,23 @@ def hit(task: str, p: dict) -> bool {
     return False;
 }
 
+"""Wilson 95% interval for k of n: with ~44 Yes posts a task, one post moves
+recall 2.3 points, so the interval is printed next to every rate."""
+def wilson(k: int, n: int) -> tuple {
+    if n == 0 { return (0.0, 0.0); }
+    z = 1.96;
+    ph = k / n;
+    den = 1 + z * z / n;
+    mid = (ph + z * z / (2 * n)) / den;
+    half = z * ((ph * (1 - ph) / n + z * z / (4 * n * n)) ** 0.5) / den;
+    return (max(0.0, mid - half), min(1.0, mid + half));
+}
+
 with entry {
     show = "misses" in sys.argv;
     summary: dict = {};
     print("External check — LegalBench learned_hands (real r/legaladvice posts, lawyer-labelled)");
-    print(f"  {'task':<18} {'half':<9} {'recall (Yes)':>14} {'false pos (No)':>16}");
+    print(f"  {'task':<18} {'half':<9} {'recall (Yes)':>14} {'95% CI':>13} {'false pos (No)':>16}");
     for task in TASKS {
         rows = load_task(task);
         for half in ["dev", "held-out"] {
@@ -95,8 +107,9 @@ with entry {
             }
             rec = tp / pos if pos else 0.0;
             fpr = fp / neg if neg else 0.0;
-            summary[task + "/" + half] = {"recall": round(rec, 3), "false_positive_rate": round(fpr, 3), "yes": pos, "no": neg};
-            print(f"  {task:<18} {half:<9} {rec:>8.1%} ({tp}/{pos}) {fpr:>9.1%} ({fp}/{neg})");
+            (lo, hi) = wilson(tp, pos);
+            summary[task + "/" + half] = {"recall": round(rec, 3), "recall_ci95": [round(lo, 3), round(hi, 3)], "false_positive_rate": round(fpr, 3), "yes": pos, "no": neg};
+            print(f"  {task:<18} {half:<9} {rec:>8.1%} ({tp}/{pos}) {lo:>5.0%}–{hi:<5.0%} {fpr:>9.1%} ({fp}/{neg})");
             if show and half == "dev" {
                 for mm in misses[:25] { print("      miss: " + mm); }
             }
