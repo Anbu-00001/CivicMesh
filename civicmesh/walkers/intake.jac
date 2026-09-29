@@ -25,7 +25,7 @@ import from graph.nodes { PersonNode, NeedNode, ResourceNode }
 import from walkers.seed { SeedWalker }
 import from graph.edges { has_need }
 import from llm.stubs { understand_message, pool_model_names }
-import from engine.parse { parse_intake }
+import from engine.parse { parse_intake, clip_message }
 import from engine.i18n { language_name, language_info, interpreter_card }
 import from engine.stats { record_turn }
 import from engine.privacy { redact, is_private_turn, need_summary, model_may_read_messages }
@@ -59,7 +59,8 @@ walker IntakeWalker {
         root_span = span_begin(tr, "invoke_agent CivicMesh", "SERVER", "", {"gen_ai.operation.name": "invoke_agent", "gen_ai.agent.name": "CivicMesh"});
         rid = root_span["span_id"];
         ts = datetime.datetime.utcnow().isoformat();
-        text = str(self.conversation);
+        # Bounded before anything reads or stores it (engine.parse.clip_message).
+        text = clip_message(str(self.conversation));
         # A visitor whose SeedWalker call was lost (flaky proxy at sign-in) had
         # no programs, so every answer came back empty with no follow-up
         # question. Seeding is idempotent: do it here if the catalog is empty.

@@ -45,6 +45,8 @@ jobs:
         run: jac run tests/eval_engine.jac
       - name: Message catalogs — keys, placeholders, numbers, detector round trip
         run: jac run tests/check_messages.jac
+      - name: Input cost — linear money pattern, 4,000-character clip, hostile inputs under 1 s
+        run: jac run tests/check_input_limits.jac
       - name: Privacy guard — scrubbing, over-scrubbing, crisis turns
         run: jac run tests/check_privacy.jac
       - name: In-process walker tests — schema, personas, stored-data privacy
