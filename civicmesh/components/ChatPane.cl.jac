@@ -165,6 +165,11 @@ def:pub ChatPane(
                         →
                     </button>
                 </div>
+                <p className="cm-safety-line">
+                    {"In danger now: "}<a href="tel:911">911</a>
+                    {" · Suicide or crisis: call or text "}<a href="tel:988">988</a>
+                    {" · Not safe at home: "}<a href="tel:18007997233">1-800-799-7233</a>{" or text START to 88788"}
+                </p>
                 {renderPrivacy()}
             </div>
             <div className="cm-side">

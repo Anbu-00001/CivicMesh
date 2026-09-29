@@ -75,7 +75,7 @@ In September 2026 the author asked a chat model (an AI assistant, not a human ex
 
 | The criticism | What changed | Where to check |
 |---|---|---|
-| Built on Jac, a pre-1.0 language few people use; nobody else can maintain it | A written maintenance plan. The engine, where every eligibility decision lives, is transpiled to plain Python on every push and passes the same 764 checks with no Jac installed. `jac eject` was verified for the whole app. Every package is pinned, and Dependabot opens tested upgrade PRs | [docs/MAINTENANCE.md](./docs/MAINTENANCE.md) · `tools/eject_engine.sh` · CI job `portable` |
+| Built on Jac, a pre-1.0 language few people use; nobody else can maintain it | A written maintenance plan. The engine, where every eligibility decision lives, is transpiled to plain Python on every push and passes the same 784 checks with no Jac installed. `jac eject` was verified for the whole app. Every package is pinned, and Dependabot opens tested upgrade PRs | [docs/MAINTENANCE.md](./docs/MAINTENANCE.md) · `tools/eject_engine.sh` · CI job `portable` |
 | No CI | GitHub Actions on every push and PR: the eval and unit checks, the plain-Python engine, the external check on real posts (reported, not gating), and the production Docker image with 64 HTTP checks and a scan of the server logs for user text | [.github/workflows/ci.yml](./.github/workflows/ci.yml) |
 | No privacy story, for users asked about immigration status, income, violence and self-harm | A [privacy notice](./PRIVACY.md) where every statement maps to a test. What users type is never stored and never sent to a model (below). **Delete my data** erases the case. jaclang's `report` had been printing every answer into the server logs; that echo is off | `engine/privacy.jac` · `walkers/forget.jac` · `walkers/log_privacy.jac` · E2E P1–P14 |
 | Machine-drafted translations shown to vulnerable people | **0 of 50 are reviewed** (Spanish included). Until they are, each follows HHS Section 1557 guidance for unreviewed machine translation: a notice in the user's language, the English original one tap away, the English sentence under every crisis line, numbers locked by a test, and a report-a-mistake form | [docs/TRANSLATION_REVIEW.md](./docs/TRANSLATION_REVIEW.md) · `tools/review_sheet.py` |
@@ -571,7 +571,7 @@ flowchart LR
         G3[golden_adversarial.json · 67<br/>negation, idioms, traps, DV phrasing]:::t
         G4[golden_holdout.json · 40<br/>written after tuning, scored first]:::t
         G5[golden_facts_i18n.json · 41<br/>income · household · age · status · place<br/>in 20 more languages]:::t
-        G6[golden_probes.json · 70<br/>other senses · indirect crisis · local limits<br/>+ p_max / tier_not + metamorphic check]:::t
+        G6[golden_probes.json · 90<br/>other senses · indirect crisis · local limits<br/>+ p_max / tier_not + metamorphic check]:::t
     end
     S --> EV[eval_engine.jac<br/>policy date pinned]:::det
     EV --> MX[fields · languages · top-3 · plan · exclusions · latency]:::det
@@ -596,7 +596,7 @@ flowchart LR
 
 ```
 cd civicmesh && jac run tests/eval_engine.jac
-  352 cases · field accuracy 100% (764/764) · 73/73 languages · top-3 + plan checks 100% (54/54) · exclusion errors 0
+  372 cases · field accuracy 100% (784/784) · 73/73 languages · top-3 + plan checks 100% (54/54) · exclusion errors 0
   metamorphic 228/228 neutral additions moved no verdict · latency / turn p50 ~1.6 ms · p95 ~18 ms
 
 cd civicmesh && jac run tests/check_messages.jac
@@ -624,7 +624,7 @@ cd civicmesh && jac run tests/eval_external.jac   # real posts, downloaded on fi
 | `golden_adversarial.json` | 67 | Cross-category traps ("no food at home", "debt collectors about hospital bills"), negation, possession, idioms ("dying of hunger"), code-switching, romanized scripts, no-signal input, everyday domestic-violence phrasing in five languages with false-alarm guards ("打我电话" is "call me"; a pounding heart is not violence) |
 | `golden_holdout.json` | 40 | Written *after* tuning on the adversarial set, then scored before any fix |
 | `golden_facts_i18n.json` | 41 | Income, household, age, status and location stated in Chinese, Cantonese, Korean, Vietnamese, Russian, Ukrainian, Arabic, Persian, Hindi, Bengali, Punjabi, Gujarati, Telugu, Tamil, Japanese, Tagalog, Haitian Creole, French, Portuguese and Polish, with traps: rent that isn't income, "not a citizen", an abusive partner outside the household, a child's age, other-script digits, 万 multipliers, hourly pay |
-| `golden_probes.json` | 70 | Words in their other senses, each paired with the true positive it must not break: "social security" as a number, card or office; a college senior; retired from the army at 42; the Salvation Army; serving tables; a car parked on the street; adult children who moved out; a child-care job; substance-abuse treatment; "my back hurts me"; an injury at work; negated facts in English and Spanish; a temporary visa stated by the speaker vs. a friend's. Also indirect crisis wording (988 / Hotline warning signs) with benign counterparts, the scorer's situation targets under negation, household counts ("there are 3 people"), and local HUD limits. `p_max` / `tier_not` fail the run if a wrong flag moves a verdict |
+| `golden_probes.json` | 90 | Words in their other senses, each paired with the true positive it must not break: "social security" as a number, card or office; a college senior; retired from the army at 42; the Salvation Army; serving tables; a car parked on the street; adult children who moved out; a child-care job; substance-abuse treatment; "my back hurts me"; an injury at work; negated facts in English and Spanish; a temporary visa stated by the speaker vs. a friend's. Also indirect crisis wording (988 / Hotline warning signs) with benign counterparts, the scorer's situation targets under negation, household counts ("there are 3 people"), local HUD limits, and Danger Assessment phrasing (passive voice, hands around the neck, a knife pulled, threats to kill) with benign twins ("hit by a truck", "choked on a fishbone", "kill the deal"). `p_max` / `tier_not` fail the run if a wrong flag moves a verdict |
 
 ### External check: real people's words
 
@@ -632,14 +632,14 @@ Every suite above was written by the engine's author, so 100% on them only prove
 
 To avoid tuning to the test, each task's posts are split by index. Misses were read only on the dev half. The held-out half was never looked at, only scored, and its number is the one to quote.
 
-| Task (engine output checked) | Held-out recall, previous commit | Held-out recall now | False positives (held-out, now) |
+| Task (engine output checked) | Held-out recall, first run | Held-out recall now (95% CI) | False positives (held-out, now) |
 |---|---|---|---|
-| Domestic violence (the dv flag, which shows the hotline) | 38.6% (17/44) | **63.6%** (28/44) | 2.3% (1/43) |
-| Housing (routed to housing) | 77.0% | 77.1% (863/1,120) | 11.5% |
-| Health (routed to healthcare) | 78.9% | 78.9% (45/57) | 10.7% |
-| Immigration (an immigration status read) | 67.6% (23/34) | **82.4%** (28/34) | 3.0% |
+| Domestic violence (the dv flag or the concern layer, which pin the hotline) | 38.6% (17/44) | **65.9%** (29/44; 51–78%) | 2.3% (1/43) |
+| Housing (routed to housing) | 77.0% | 77.1% (863/1,120; 75–79%) | 11.5% |
+| Health (routed to healthcare) | 78.9% | 78.9% (45/57; 67–88%) | 10.7% |
+| Immigration (an immigration status read) | 67.6% (23/34) | **82.4%** (28/34; 66–92%) | 3.0% |
 
-The domestic-violence number is the important one. A self-written suite at 100% had hidden that most real descriptions of abuse ("he kicked me in the stomach", "a restraining order", "my attacker", "terrified for her life") never raised the flag. It's better now and still misses about a third. These are long Reddit narratives, which are harder than the short requests the router is built for, and some labels are noisy. This suite is a measurement, not a gate: CI prints it on every run. Regression cases from real intake conversations with a legal-aid or 211 partner would be the next step up.
+The domestic-violence number is the important one. A self-written suite at 100% had hidden that most real descriptions of abuse ("he kicked me in the stomach", "a restraining order", "my attacker", "terrified for her life") never raised the flag. The latest round added, as patterns, the [Danger Assessment](https://www.dangerassessment.org/)'s strongest predictors of partner homicide (strangulation, threats to kill, weapons, forced sex, escalating violence) and the [Hotline](https://www.thehotline.org/identify-abuse/domestic-abuse-warning-signs/)'s warning signs, each with a benign probe. That moved the dev half from 74% to 81% and the held-out half by one post (63.6% → 65.9%), well inside the interval: word patterns are near their ceiling on long narratives, and it still misses about a third. So the design no longer depends on detection to show a number. **911, 988 and the Domestic Violence Hotline (call 1-800-799-7233 or text START to 88788) are shown under the chat box on every screen**, and detection only decides whether the hotline is also pinned to the top of the plan. These are long Reddit narratives, which are harder than the short requests the router is built for, and some labels are noisy (6 of the 11 dev-half misses are about a speeding ticket, unpaid wages, a psychiatric hold or sleeplessness). This suite is a measurement, not a gate: CI prints it on every run. Regression cases from real intake conversations with a legal-aid or 211 partner would be the next step up.
 
 **Honest numbers:**
 - First runs scored **74%** category accuracy on the adversarial suite and **78%** of checks on the held-out batch.

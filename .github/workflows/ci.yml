@@ -1,7 +1,7 @@
 name: CI
 
 # Every push and pull request runs the same checks used locally:
-#   engine    — the 352-case eval (regression floor), message catalogs,
+#   engine    — the 372-case eval (regression floor), message catalogs,
 #               privacy guard, and in-process walker tests (Jac)
 #   portable  — the same eval on the engine ejected to plain Python, run in a
 #               venv with no Jac installed (the escape hatch from the stack)
@@ -41,7 +41,7 @@ jobs:
           cache-dependency-path: requirements.txt
       - name: Install pinned dependencies
         run: pip install -r ../requirements.txt
-      - name: Engine eval — 352 golden cases, fails below the regression floor
+      - name: Engine eval — 372 golden cases, fails below the regression floor
         run: jac run tests/eval_engine.jac
       - name: Message catalogs — keys, placeholders, numbers, detector round trip
         run: jac run tests/check_messages.jac
