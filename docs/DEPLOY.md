@@ -53,7 +53,84 @@ If you get a generic "Page Not Found" right after deploy, the container is mid-b
 
 - **512 MB is tight** but fits because model inference is remote (NIM API) and the eligibility engine is pure Python-level math.
 - **NVIDIA NIM free tier** rate-limits at ~40 RPM. A chat turn makes **one** LLM call (background narration), plus one time-boxed routing call only when no language lexicon matches — so rate limits no longer block answers; at worst the narration is skipped.
-- **Sleep behavior:** Render pings your `healthCheckPath` (set to `/docs`) every minute. If the page returns 200, the service is considered awake. To prevent sleep during a scheduled demo, hit any page yourself (or use a cron-ping service like [cron-job.org](https://cron-job.org)) in the 15 min leading up to it.
+- **Sleep behavior:** if you set a `healthCheckPath`, use `/healthz` (the blueprint uses Render's TCP check). Render pings it every minute. If the page returns 200, the service is considered awake. To prevent sleep during a scheduled demo, hit any page yourself (or use a cron-ping service like [cron-job.org](https://cron-job.org)) in the 15 min leading up to it.
+
+## Abuse protection settings
+
+The container starts `python -m cmguard.serve`: a gateway on the public port in
+front of jac-scale on 127.0.0.1 (see the README's "Security notes"). Every
+setting below is optional. The defaults suit a free Hugging Face Space (2 vCPU,
+one process) and sit well above what real visitors do; per-address limits are
+generous because a library or shelter can put many people behind one address.
+
+**Secrets.** Generated per boot when unset; set them only if logins should
+survive a restart (they otherwise end with the rest of a free Space's state).
+
+| Variable | Purpose |
+|---|---|
+| `CIVICMESH_JWT_SECRET` | Signs login tokens. At least 32 characters; jac-scale's public default is refused. jac.toml reads it and the server won't start without it |
+| `CIVICMESH_SIGNING_KEY` | Signs the narration and translation tokens |
+| `SYSTEM_USER_PASSWORD` | jac-scale's internal scheduler account |
+
+**Client address.** `CIVICMESH_TRUSTED_PROXY_HOPS` (default `1`): how many
+`X-Forwarded-For` entries the proxy in front appends. Hugging Face appends one
+(verified). Use `0` on a host with no proxy. The header is only read when the
+direct peer is a private address.
+
+**Rate limits.** Token buckets written `COUNT/SECONDS` (a burst of COUNT,
+refilled over SECONDS). Override any cell with
+`CIVICMESH_RL_<CLASS>_<SCOPE>`, e.g. `CIVICMESH_RL_CHAT_IP=150/60`, or `off`.
+Body caps: `CIVICMESH_BODY_MAX_<CLASS>` (bytes). Timeouts:
+`CIVICMESH_TIMEOUT_<CLASS>` (seconds).
+
+| Class | Routes | Per address | Per visitor | Server-wide | Max body | Timeout |
+|---|---|---|---|---|---|---|
+| `static` | pages, scripts, images, API docs | 600/60 | — | 12000/60 | — | 30 s |
+| `health` | /healthz | 60/60 | — | 600/60 | — | 5 s |
+| `register` | POST /user/register | 20/600 | — | 200/600 | 2 KB | 15 s |
+| `login` | POST /user/login, /user/refresh-token | 60/600 | — | 900/600 | 2 KB | 15 s |
+| `me` | GET /user/me | 180/60 | 40/60 | 3000/60 | — | 10 s |
+| `chat` | IntakeWalker | 90/60 | 40/60 | 600/60 | 64 KB | 40 s |
+| `model` | NarrateWalker, LocalizeWalker | 60/60 | 12/60 | 180/60 | 32 KB | 60 s |
+| `external` | LocalHelpWalker (open-data lookups) | 30/60 | 8/60 | 200/60 | 8 KB | 30 s |
+| `light` | Memory, GraphSnapshot, Impact, Platform, ReflectionRead walkers | 240/60 | 60/60 | 4000/60 | 8 KB | 20 s |
+| `seed` | SeedWalker | 40/600 | 6/600 | 400/600 | 4 KB | 30 s |
+| `forget` | ForgetWalker | 20/600 | 4/600 | 200/600 | 4 KB | 20 s |
+| `sink` | POST /cl/__error__ (dropped) | 10/60 | — | 120/60 | 8 KB | — |
+
+**Concurrency and shape.**
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `CIVICMESH_INFLIGHT_PER_IP` | 6 | API requests in flight per address |
+| `CIVICMESH_INFLIGHT_GLOBAL` | 16 | API requests in flight to jac-scale in total |
+| `CIVICMESH_INFLIGHT_MODEL` | 6 | Narration/translation requests in flight |
+| `CIVICMESH_QUEUE_WAIT_S` | 3 | How long a request waits for a slot before a 503 |
+| `CIVICMESH_BODY_READ_S` | 15 | Deadline for receiving a request body |
+| `CIVICMESH_JSON_MAX_DEPTH` / `_NODES` / `_STRING` | 12 / 5000 / 20000 | JSON shape caps |
+| `CIVICMESH_DEDUP_CHAT_S` / `CIVICMESH_DEDUP_MODEL_S` | 3 / 60 | How long an identical request from the same visitor reuses the first answer |
+| `CIVICMESH_TOKEN_TTL_S` | 900 | Lifetime of narration/translation tokens |
+| `CIVICMESH_MAX_CONNECTIONS` | 256 | Open connections the gateway accepts |
+| `CIVICMESH_LIMITER_MAX_KEYS` | 50000 | Entries per limiter table (idle entries are forgotten after their window) |
+| `CIVICMESH_SECURITY_LOG_S` | 60 | Interval of the aggregate security log line |
+
+**Model budget.** Counts every model call the app makes: each model a pool
+falls back through, and each parallel translation segment. When it refuses,
+narration and translation are skipped and the deterministic answer is
+unaffected.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `CIVICMESH_LLM_MAX_PER_MIN` | 30 | Model calls per minute (NVIDIA's free tier allows about 40) |
+| `CIVICMESH_LLM_MAX_PER_HOUR` | 600 | Model calls per hour |
+| `CIVICMESH_LLM_MAX_PER_DAY` | 4000 | Model calls per day |
+| `CIVICMESH_LLM_MAX_TOKENS_PER_DAY` | 2000000 | Estimated tokens per day (prompt length / 4 + requested output, corrected by reported usage) |
+| `CIVICMESH_LLM_MAX_REQUEST_TOKENS` | 8000 | Largest single request |
+| `CIVICMESH_LLM_MAX_CONCURRENT` | 4 | Model calls at once |
+| `CIVICMESH_LLM_WAIT_S` | 2 | Wait for a free slot before refusing |
+| `CIVICMESH_LLM_BREAKER_FAILURES` | 5 | Consecutive failures that open the circuit |
+| `CIVICMESH_LLM_BREAKER_COOLDOWN_S` / `_MAX_COOLDOWN_S` | 60 / 900 | Open time, doubling on each re-trip up to the maximum |
+| `CIVICMESH_LLM_DISABLED` | 0 | `1` turns every model call off (deterministic answers only) |
 
 ## Updating
 

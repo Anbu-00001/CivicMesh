@@ -35,14 +35,29 @@ a fix ships, and will credit you if you want to be credited.
 Details and the tests behind them are in the README ("Security notes",
 "Privacy") and PRIVACY.md:
 
+- Login tokens are signed with a per-boot secret (`CIVICMESH_JWT_SECRET`), not
+  jac-scale's public default; the server refuses to start with a weak one.
+- One public port: a gateway (`cmguard/gateway.py`) in front of jac-scale on
+  loopback, with a route allowlist, body and JSON caps, token checks, rate
+  limits per address, per visitor and server-wide, concurrency caps,
+  duplicate collapse and timeouts.
+- Narration and translation run only on short-lived, visitor-bound,
+  replay-limited tokens over the engine's own answer (`cmguard/tokens.py`).
+- A process-wide model budget and circuit breaker around every model call
+  (`cmguard/budget.py`); when it refuses, the deterministic answer still works.
 - No default admin accounts (jac-scale's admin portal is off; the system
   account gets a random password on every boot).
-- Walker reports are not echoed to server logs.
-- The narrator only accepts facts signed by the server.
+- Walker reports, client-error reports and request addresses are not written
+  to server logs; security telemetry is aggregate counts only.
 - The routing model is off unless an operator opts in.
+- `tests/security_e2e.py` (58 attack simulations) and `tests/test_cmguard.py`
+  run in CI on every push.
 
 ## Not yet done
 
 This is a student project on free hosting. It has had no independent security
-review or penetration test. If you can offer one, please get in touch through
-the channel above.
+review or penetration test; the 2026-09-29 audit described in the README was
+done by the project itself. Known limits (in-memory, single-process state;
+what a large botnet can still do) are listed in the README's "Security notes".
+If you can offer an independent review, please get in touch through the
+channel above.

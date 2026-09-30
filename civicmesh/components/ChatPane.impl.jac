@@ -181,7 +181,8 @@ impl ChatPane.findLocal(msg_id: str, data: Any) -> None {
 impl ChatPane.localize(msg_id: str, data: Any) -> None {
     localized[msg_id] = {"status": "pending"};
     narr_tick = Math.random();
-    res = await safeSpawn("LocalizeWalker", {"text": str(data["reply"]), "language": str(data["language_info"]["code"]), "strings": []});
+    loc = data["loc"] if data["loc"] else {};
+    res = await safeSpawn("LocalizeWalker", {"text": str(data["reply"]), "language": str(data["language_info"]["code"]), "strings": [], "text_token": (str(loc["text_token"]) if loc["text_token"] else "")});
     reps = res["reports"];
     r = reps[len(reps) - 1] if (reps and len(reps) > 0) else None;
     localized[msg_id] = {"status": ("ok" if (r and r["ok"]) else "failed"), "data": r};
@@ -194,8 +195,12 @@ impl ChatPane.localizeStrings(msg_id: str, data: Any) -> None {
     quick: list = list(q["options"]) if (q and q["options"]) else [];
     chips_en: list = list(data["chips"]) if data["chips"] else [];
     affects_en = str(q["affects_label"]) if (q and q["affects_label"]) else "";
-    strings: list = [q_text, affects_en] + [str(o[0]) for o in quick] + [str(c) for c in chips_en];
-    res = await safeSpawn("LocalizeWalker", {"text": "", "language": str(data["language_info"]["code"]), "strings": strings});
+    # The server's own list (same order: question, what it affects, quick
+    # replies, chips): the token covers exactly these strings.
+    loc = data["loc"] if data["loc"] else {};
+    strings: list = list(loc["strings"]) if loc["strings"] else [];
+    strings_token = str(loc["strings_token"]) if loc["strings_token"] else "";
+    res = await safeSpawn("LocalizeWalker", {"text": "", "language": str(data["language_info"]["code"]), "strings": strings, "strings_token": strings_token});
     reps = res["reports"];
     r = reps[len(reps) - 1] if (reps and len(reps) > 0) else None;
     ls: list = list(r["strings"]) if (r and r["strings"]) else [];
@@ -287,8 +292,8 @@ impl ChatPane.narrate(msg_id: str, data: Any, user_text: str) -> None {
         "user_message": user_text,
         "language": data["narrate_language"] if data["narrate_language"] else data["language"],
         "facts": data["facts"],
-        # Only server-signed facts get narrated (no free LLM relay).
-        "facts_sig": data["facts_sig"] if data["facts_sig"] else "",
+        # Only server-issued, visitor-bound tokens get narrated (no free LLM relay).
+        "narrate_token": data["narrate_token"] if data["narrate_token"] else "",
         "chips": data["chips"] if data["chips"] else []
     });
     ms = window.performance.now() - t0;

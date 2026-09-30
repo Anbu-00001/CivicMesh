@@ -50,6 +50,16 @@ def pin_sdk_retries -> bool {
 
 glob SDK_RETRIES_PINNED: bool = pin_sdk_retries();
 
+# ---------- one model budget for the whole process ----------
+# Every litellm call (each model the pool falls back through, each parallel
+# translation segment) draws on the same per-minute/hour/day and daily-token
+# budget, a concurrency cap and a circuit breaker (cmguard/budget.py). When it
+# refuses, the call fails before any network request; narration and
+# translation already treat that as "no optional text", and the deterministic
+# answer is unaffected.
+import from cmguard.budget { install as install_model_budget, BUDGET as MODEL_BUDGET }
+glob MODEL_BUDGET_INSTALLED: bool = install_model_budget();
+
 # Tried in order (litellm Router fallback). NVIDIA retired
 # meta/llama-3.1-8b-instruct on 2026-08-26 and nv-mistralai/mistral-nemo-12b
 # answers 404 on our key, so the NIM chain is mistral-nemotron → gpt-oss-20b.

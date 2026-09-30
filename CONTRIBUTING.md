@@ -23,6 +23,7 @@ jac run tests/check_messages.jac     # every catalog: keys, placeholders, number
 jac run tests/check_privacy.jac      # scrubber: caught, kept, documented misses
 rm -rf .jac/data && jac test tests/test_privacy_graph.jac   # in-process walkers
 jac run tests/eval_external.jac      # real posts (measured, not gated)
+python3 -m unittest tests.test_cmguard   # abuse protection: limits, tokens, model budget
 ```
 
 With the app running (`docker build -t civicmesh . && docker run -p 7860:7860 civicmesh`):
