@@ -800,6 +800,59 @@
    },
    "suite": "probes",
    "_why": "a landlord's threat is a police matter, not the domestic violence hotline"
-  }
+  },
+ {
+  "text": "não aguento mais esperar na fila do SNAP, preciso de comida",
+  "expect": {
+   "category": "food",
+   "flag_absent": "self_harm_concern"
+  },
+  "_why": "'can't stand waiting' is not the warning sign"
+ },
+ {
+  "text": "我的生意撑不下去了，需要医疗保险",
+  "expect": {
+   "category": "healthcare",
+   "flag_absent": "self_harm_concern"
+  },
+  "_why": "a business that can't go on"
+ },
+ {
+  "text": "больше не могу платить за квартиру",
+  "expect": {
+   "flag_absent": "self_harm_concern"
+  },
+  "_why": "can't pay the rent any more"
+ },
+ {
+  "text": "Je n'en peux plus de ce loyer trop cher",
+  "expect": {
+   "flag_absent": "self_harm_concern"
+  },
+  "_why": "fed up with the rent"
+ },
+ {
+  "text": "My ex-husband follows me on Instagram, I need food stamps",
+  "expect": {
+   "category": "food",
+   "flag_absent": "dv_concern"
+  },
+  "_why": "a social-media follow is not stalking"
+ },
+ {
+  "text": "My boss kicked me out of the meeting and I need help paying for insulin",
+  "expect": {
+   "category": "healthcare"
+  },
+  "_why": "out of a meeting, not out of a home"
+ },
+ {
+  "text": "my parents give me $500 a month, I need food",
+  "expect": {
+   "income_annual": 6000,
+   "category": "food"
+  },
+  "_why": "'parents' contains 'rent'"
+ }
  ]
 }

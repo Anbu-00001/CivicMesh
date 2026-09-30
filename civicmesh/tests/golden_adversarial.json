@@ -545,6 +545,206 @@
     "flag_absent": "dv"
    },
    "_note": "heart pounding, not violence"
+  },
+ {
+  "text": "Where can I stay tonight? I'm in Seattle",
+  "expect": {
+   "category": "housing",
+   "state": "WA"
+  },
+  "_why": "shelter asked as a question"
+ },
+ {
+  "text": "não aguento mais viver assim, quero sumir, ninguém sentiria minha falta",
+  "expect": {
+   "language": "pt",
+   "flag": "self_harm_concern"
+  },
+  "_why": "indirect self-harm wording in Portuguese"
+ },
+ {
+  "text": "我不敢回家，他控制我的钱",
+  "expect": {
+   "language": "zh",
+   "flag": "dv_concern"
+  },
+  "_why": "indirect DV wording in Chinese"
+ },
+ {
+  "text": "Tôi sợ về nhà, anh ấy lấy hết tiền của tôi",
+  "expect": {
+   "language": "vi",
+   "flag": "dv_concern"
   }
+ },
+ {
+  "text": "Tôi không muốn sống nữa",
+  "expect": {
+   "language": "vi",
+   "flag": "self_harm"
+  },
+  "_why": "direct Vietnamese wording"
+ },
+ {
+  "text": "Всем будет лучше без меня",
+  "expect": {
+   "language": "ru",
+   "flag": "self_harm_concern"
+  }
+ },
+ {
+  "text": "Je suis un fardeau pour ma famille, je veux disparaître",
+  "expect": {
+   "language": "fr",
+   "flag": "self_harm_concern"
+  }
+ },
+ {
+  "text": "أنا عبء على عائلتي",
+  "expect": {
+   "language": "ar",
+   "flag": "self_harm_concern"
+  }
+ },
+ {
+  "text": "요즘 그냥 사라지고 싶어요",
+  "expect": {
+   "language": "ko",
+   "flag": "self_harm_concern"
+  }
+ },
+ {
+  "text": "Tengo miedo de volver a casa, mi esposo me quita el dinero",
+  "expect": {
+   "language": "es",
+   "flag": "dv_concern"
+  }
+ },
+ {
+  "text": "I pay $900 rent and need food",
+  "expect": {
+   "category": "food",
+   "income_annual": -1
+  },
+  "_why": "rent paid is not income (was read as $10,800 a year)"
+ },
+ {
+  "text": "I pay $900 a month for rent",
+  "expect": {
+   "income_annual": -1
+  },
+  "_why": "expense word after the amount"
+ },
+ {
+  "text": "my rent is $1,400 and I make $1,900 a month",
+  "expect": {
+   "income_annual": 22800
+  },
+  "_why": "the second amount is the income"
+ },
+ {
+  "text": "I earn 1800 a month and need food in Texas",
+  "expect": {
+   "income_annual": 21600,
+   "state": "TX"
+  },
+  "_why": "no dollar sign"
+ },
+ {
+  "text": "Necesito comida y también ayuda con la renta, gano 1200 al mes",
+  "expect": {
+   "language": "es",
+   "income_annual": 14400
+  },
+  "_why": "no dollar sign, Spanish"
+ },
+ {
+  "text": "I work 25 hours a week at 12 an hour",
+  "expect": {
+   "income_annual": 15600
+  },
+  "_why": "hourly wage without a dollar sign"
+ },
+ {
+  "text": "I get 900 from social security",
+  "expect": {
+   "income_annual": 10800,
+   "flag": "unearned_income"
+  },
+  "_why": "source after the amount"
+ },
+ {
+  "text": "I've lived here 3 years and I earn about 2000",
+  "expect": {
+   "income_annual": 24000
+  },
+  "_why": "3 years is not an amount"
+ },
+ {
+  "text": "court date on 12/15, landlord is suing me, I live at 10001",
+  "expect": {
+   "income_annual": -1,
+   "category": "legal"
+  },
+  "_why": "a date and a zip code are not income"
+ },
+ {
+  "text": "I'm seventy-two and need help paying for medicine",
+  "expect": {
+   "age": 72,
+   "flag": "senior"
+  }
+ },
+ {
+  "text": "I'm in my 70s and my landlord wants me out",
+  "expect": {
+   "age": 70,
+   "flag": "senior"
+  }
+ },
+ {
+  "text": "I'm thirty weeks pregnant and need a doctor",
+  "expect": {
+   "age": 0,
+   "flag": "pregnant"
+  },
+  "_why": "weeks pregnant is not an age"
+ },
+ {
+  "text": "need food for my kids, we are in LA",
+  "expect": {
+   "state": "CA"
+  },
+  "_why": "in LA is Los Angeles"
+ },
+ {
+  "text": "I live in Baton Rouge, LA and need food",
+  "expect": {
+   "state": "LA"
+  }
+ },
+ {
+  "text": "I'm 17 and my parents kicked me out",
+  "expect": {
+   "category": "housing",
+   "age": 17
+  }
+ },
+ {
+  "text": "My ex keeps showing up at my job and threatening me",
+  "expect": {
+   "flag": "dv_concern"
+  },
+  "_why": "stalking by an ex is a DV warning sign"
+ },
+ {
+  "text": "Estou grávida e preciso de ajuda médica, moro em Boston",
+  "expect": {
+   "language": "pt",
+   "category": "healthcare",
+   "flag": "pregnant",
+   "state": "MA"
+  }
+ }
  ]
 }

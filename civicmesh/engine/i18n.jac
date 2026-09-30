@@ -83,7 +83,7 @@ glob LANG_NAMES: dict = {
 # Spanish words, which detect_language already counts).
 glob LATIN_MARKERS: dict = {
     "pt": ["eu", "não", "nao", "você", "voce", "nós", "estou", "preciso", "minha", "meu", "meus", "minhas", "também", "está", "são", "tenho", "temos", "uma", "com", "sem", "hoje", "emprego", "obrigado", "obrigada", "filhos",
-           "em", "moro", "moramos", "ganho", "ganhamos", "mês", "ajuda", "fome", "aluguel", "precisamos", "família", "dinheiro", "quero", "onde", "posso", "pra", "muito", "trabalho", "agora", "então"],
+           "em", "moro", "moramos", "ganho", "ganhamos", "mês", "califórnia", "flórida", "geórgia", "pensilvânia", "havaí", "ajuda", "fome", "aluguel", "precisamos", "família", "dinheiro", "quero", "onde", "posso", "pra", "muito", "trabalho", "agora", "então"],
     "fr": ["je", "j'ai", "nous", "pour", "avec", "les", "des", "est", "pas", "mon", "ma", "mes", "besoin", "aide", "suis", "sommes", "avons", "enfants", "travail", "dans", "ne", "une", "aujourd'hui", "merci", "loyer"],
     "it": ["io", "non", "sono", "ho", "bisogno", "aiuto", "mio", "mia", "siamo", "abbiamo", "figli", "perché", "della", "sto", "anche", "lavoro", "oggi", "grazie", "affitto",
            "gli", "di", "che", "per", "è", "più", "sua", "suo", "lei", "qualcuno", "stanotte", "c'è", "dove", "posso", "mangiare", "soldi", "cibo", "mese", "anni", "figlio"],
@@ -142,7 +142,9 @@ glob VI_WEAK: str = "ạẹịọụỵ";
 glob LATIN_CHAR_HINTS: dict = {"pt": "ãõ", "fr": "èêàùœ", "de": "äöüß", "pl": "ąęłńśźż", "tr": "ığş", "ht": "òè", "ro": "șțşă", "sq": "ë", "sh": "ćđ", "cs": "řěů", "sk": "ľĺŕô", "hu": "őű", "yo": "ṣ", "ig": "ṅ", "ha": "ɗƙɓƴ", "ff": "ŋ", "ak": "ɛɔ", "mh": "ļņ", "uz": "ʻ", "lt": "ėįų", "lv": "ēīģķ"};
 
 # Per-language routing keywords. Keys: food, housing, healthcare, legal,
-# self_harm, dv, urgent, homeless, children.
+# self_harm, dv, urgent, homeless, children; and for the most-spoken
+# immigrant languages self_harm_concern and dv_concern, the indirect warning
+# signs parse.jac's CONCERN_LEXICON reads in English and Spanish.
 glob LEX: dict = {
     "zh": {
         "food": ["食物", "食品", "吃饭", "吃飯", "饿", "餓", "粮食", "糧食", "没饭吃", "沒飯吃", "食物银行", "食物銀行", "吃的"],
@@ -151,6 +153,8 @@ glob LEX: dict = {
         "legal": ["律师", "律師", "法律", "法院", "移民", "驱逐出境", "驅逐出境", "政治庇护", "政治庇護", "签证", "簽證", "绿卡", "綠卡", "诈骗", "詐騙", "权利", "權利"],
         "self_harm": ["自杀", "自殺", "想死", "不想活", "结束生命", "結束生命"],
         "dv": ["家暴", "家庭暴力", "被打", "殴打", "毆打", "他打我", "她打我", "老公打", "丈夫打", "男朋友打", "打伤", "打傷", "打了我一", "虐待", "威胁我", "威脅我", "要杀我", "要殺我", "怕我老公", "怕我丈夫", "暴力"],
+        "self_harm_concern": ["活着没意思", "活著沒意思", "活着没有意义", "活著沒有意義", "没有我会更好", "沒有我會更好", "我是累赘", "我是累贅", "我是负担", "我是負擔", "想消失", "不想醒来", "不想醒來", "没有出路", "沒有出路"],
+        "dv_concern": ["不敢回家", "怕回家", "在家不安全", "控制我的钱", "控制我的錢", "查我手机", "查我手機", "不让我出门", "不讓我出門", "不让我工作", "不讓我工作", "威胁要带走孩子", "威脅要帶走孩子", "威胁要举报我", "威脅要舉報我", "威胁叫移民局", "威脅叫移民局"],
         "urgent": ["今天", "今晚", "马上", "馬上", "紧急", "緊急"],
         "homeless": ["无家可归", "無家可歸", "露宿", "睡在车", "睡在車"],
         "children": ["孩子", "小孩", "儿子", "兒子", "女儿", "女兒"]
@@ -173,6 +177,8 @@ glob LEX: dict = {
         "legal": ["변호사", "법률", "법원", "이민", "추방", "비자", "영주권", "망명", "사기"],
         "self_harm": ["자살", "죽고 싶"],
         "dv": ["가정폭력", "때려", "때린", "폭력", "폭행", "학대", "죽이겠다", "협박", "남편이 무서"],
+        "self_harm_concern": ["사라지고 싶", "없어지고 싶", "짐이 되", "살 이유가 없", "나 없으면 다들"],
+        "dv_concern": ["집에 가기 무서", "집에 가는 게 무서", "집이 안전하지 않", "돈을 다 가져가", "휴대폰을 검사", "밖에 못 나가게", "아이들을 데려가겠다고", "추방시키겠다고"],
         "urgent": ["오늘", "당장", "긴급"],
         "homeless": ["노숙", "갈 곳이 없", "살 곳이 없"],
         "children": ["아이", "자녀", "아들", "딸"]
@@ -182,8 +188,10 @@ glob LEX: dict = {
         "housing": ["nhà ở", "tiền nhà", "tiền thuê", "thuê nhà", "chủ nhà", "đuổi", "chỗ ở", "chỗ ngủ", "nơi ở", "tiền điện", "vô gia cư"],
         "healthcare": ["bác sĩ", "bệnh viện", "thuốc", "bảo hiểm y tế", "y tế", "bị bệnh", "nha sĩ", "sức khỏe", "phòng khám"],
         "legal": ["luật sư", "pháp lý", "tòa án", "di trú", "trục xuất", "thẻ xanh", "tị nạn", "lừa đảo", "quyền lợi"],
-        "self_harm": ["tự tử", "tự sát", "muốn chết"],
+        "self_harm": ["tự tử", "tự sát", "muốn chết", "không muốn sống"],
         "dv": ["bạo lực gia đình", "đánh tôi", "bạo hành", "đánh đập", "chồng đánh", "dọa giết", "bị đánh", "sợ chồng"],
+        "self_harm_concern": ["muốn biến mất", "không ai nhớ đến tôi", "là gánh nặng", "không còn lối thoát", "mệt mỏi với cuộc sống", "sống không còn ý nghĩa"],
+        "dv_concern": ["sợ về nhà", "không an toàn ở nhà", "kiểm soát tiền của tôi", "lấy hết tiền của tôi", "không cho tôi ra ngoài", "không cho tôi đi làm", "đe dọa bắt con", "đe dọa báo di trú"],
         "urgent": ["hôm nay", "tối nay", "ngay lập tức", "khẩn cấp", "ngay bây giờ"],
         "homeless": ["vô gia cư", "ngủ ngoài đường", "không có chỗ ở"],
         "children": ["con tôi", "các con", "trẻ em", "con cái", "con trai", "con gái"]
@@ -195,6 +203,8 @@ glob LEX: dict = {
         "legal": ["abogado", "korte", "hukuman", "imigrasyon", "karapatan", "deport"],
         "self_harm": ["magpakamatay", "patayin ang sarili", "gusto ko nang mamatay"],
         "dv": ["karahasan sa tahanan", "sinasaktan ako", "binubugbog", "sinasaktan", "pinagbabantaan", "sinasampal", "takot sa asawa"],
+        "self_harm_concern": ["pabigat ako", "gusto ko nang mawala", "wala nang saysay ang buhay", "mas mabuti kung wala na ako"],
+        "dv_concern": ["takot akong umuwi", "hindi ako ligtas sa bahay", "kinokontrol ang pera ko", "kinukuha ang pera ko", "hindi ako pinapalabas", "kukunin daw ang mga anak ko", "isusumbong daw ako sa immigration"],
         "urgent": ["ngayong gabi", "agad", "kagyat"],
         "homeless": ["walang tirahan", "walang bahay", "sa kalye"],
         "children": ["anak", "mga bata"]
@@ -206,6 +216,8 @@ glob LEX: dict = {
         "legal": ["محامي", "محام", "قانون", "محكمة", "هجرة", "ترحيل", "لجوء", "تأشيرة", "احتيال", "حقوق"],
         "self_harm": ["انتحار", "أقتل نفسي", "أريد أن أموت"],
         "dv": ["عنف أسري", "عنف منزلي", "يضربني", "ضربني", "يضرب", "يهددني", "يهدد بقتلي", "أخاف من زوجي", "اخاف من زوجي", "عنف"],
+        "self_harm_concern": ["أريد أن أختفي", "أنا عبء", "لا فائدة من الحياة", "سيكونون أفضل بدوني", "لا يوجد مخرج"],
+        "dv_concern": ["أخاف أن أعود إلى البيت", "خائفة من العودة إلى البيت", "لست آمنة في البيت", "يأخذ كل أموالي", "يتحكم في أموالي", "لا يسمح لي بالخروج", "يهددني بأخذ الأطفال", "يهددني بالترحيل"],
         "urgent": ["اليوم", "الليلة", "عاجل", "فورا"],
         "homeless": ["بلا مأوى", "مشرد", "في الشارع"],
         "children": ["أطفال", "اطفال", "أولادي", "ابني", "ابنتي"]
@@ -239,6 +251,8 @@ glob LEX: dict = {
         "legal": ["адвокат", "юрист", "суд", "иммиграц", "депорт", "убежищ", "виза", "мошенни", "права"],
         "self_harm": ["самоубийств", "покончить с собой", "не хочу жить", "суицид"],
         "dv": ["домашнее насилие", "бьет меня", "бьёт меня", "избивает", "избил", "угрожает", "боюсь мужа", "насили"],
+        "self_harm_concern": ["хочу исчезнуть", "я обуза", "всем будет лучше без меня", "больше не могу так жить", "не вижу выхода", "нет смысла жить", "устал жить", "устала жить"],
+        "dv_concern": ["боюсь идти домой", "боюсь возвращаться домой", "дома небезопасно", "забирает мои деньги", "контролирует мои деньги", "не выпускает из дома", "не даёт работать", "не дает работать", "угрожает забрать детей", "угрожает депортацией"],
         "urgent": ["сегодня", "срочно", "немедленно"],
         "homeless": ["бездомн", "на улице", "негде жить"],
         "children": ["дети", "детей", "ребен", "ребён", "сын", "дочь"]
@@ -261,6 +275,8 @@ glob LEX: dict = {
         "legal": ["वकील", "अदालत", "कोर्ट", "कानून", "कानूनी", "इमिग्रेशन", "आप्रवासन", "वीज़ा", "वीजा", "निर्वासन", "धोखा"],
         "self_harm": ["आत्महत्या", "मरना चाहता", "मरना चाहती", "जान दे"],
         "dv": ["घरेलू हिंसा", "मारता है", "पीटता", "मारता", "पीटती", "धमकी", "मारपीट", "हिंसा"],
+        "self_harm_concern": ["गायब हो जाना चाहता", "गायब हो जाना चाहती", "बोझ हूँ", "बोझ हूं", "जीने का कोई मतलब नहीं", "जीना नहीं चाहता", "जीना नहीं चाहती"],
+        "dv_concern": ["घर जाने से डर", "घर में सुरक्षित नहीं", "मेरे पैसे ले लेता", "बाहर नहीं जाने देता", "बच्चों को छीनने की धमकी"],
         "urgent": ["आज", "तुरंत", "जल्दी"],
         "homeless": ["बेघर", "सड़क पर", "रहने की जगह नहीं"],
         "children": ["बच्चे", "बच्चों", "बेटा", "बेटी"]
@@ -455,10 +471,12 @@ glob LEX: dict = {
     "pt": {
         "food": ["comida", "fome", "alimento", "alimentação", "cesta básica", "banco de alimentos"],
         "housing": ["moradia", "aluguel", "senhorio", "proprietário", "despejo", "despejad", "sem-teto", "sem teto", "abrigo", "lugar para morar", "conta de luz", "habitação"],
-        "healthcare": ["médico", "hospital", "remédio", "medicamento", "saúde", "plano de saúde", "doente", "dentista", "clínica"],
+        "healthcare": ["médico", "médica", "hospital", "remédio", "medicamento", "saúde", "plano de saúde", "doente", "dentista", "clínica", "grávida", "gravidez", "pré-natal"],
         "legal": ["advogad", "tribunal", "justiça", "imigração", "deportação", "asilo", "visto", "direitos", "golpe", "fraude"],
         "self_harm": ["suicídio", "me matar", "quero morrer", "tirar minha vida"],
         "dv": ["violência doméstica", "me bate", "me agride", "me ameaça", "violento comigo", "medo do meu marido"],
+        "self_harm_concern": ["não aguento mais viver", "não aguento mais essa vida", "não aguento mais isso", "quero sumir", "queria sumir", "queria desaparecer", "ninguém sentiria minha falta", "ninguém ia sentir minha falta", "estariam melhor sem mim", "seriam mais felizes sem mim", "sou um peso", "sou um fardo", "não vejo saída", "cansado de viver", "cansada de viver", "não vejo sentido em viver", "queria não acordar"],
+        "dv_concern": ["tenho medo de voltar pra casa", "tenho medo de voltar para casa", "tenho medo de ir pra casa", "não me sinto segura em casa", "não me sinto seguro em casa", "controla meu dinheiro", "pega meu dinheiro", "não me deixa sair", "não me deixa trabalhar", "mexe no meu celular", "ameaça tirar meus filhos", "ameaça chamar a imigração", "ameaça me denunciar"],
         "urgent": ["hoje", "hoje à noite", "urgente"],
         "homeless": ["sem-teto", "sem teto", "morando na rua", "na rua"],
         "children": ["filhos", "filho", "filha", "crianças"]
@@ -470,6 +488,8 @@ glob LEX: dict = {
         "legal": ["avocat", "tribunal", "juridique", "immigration", "asile", "titre de séjour", "papiers", "déportation", "arnaque", "fraude", "mes droits"],
         "self_harm": ["suicide", "me tuer", "envie de mourir", "en finir"],
         "dv": ["violence conjugale", "violence domestique", "me frappe", "me bat", "me menace", "violent avec moi", "peur de mon mari", "me tape"],
+        "self_harm_concern": ["je veux disparaître", "je suis un fardeau", "ils seraient mieux sans moi", "je n'en peux plus de vivre", "je ne vois pas d'issue", "plus aucune raison de vivre", "fatigué de vivre", "fatiguée de vivre"],
+        "dv_concern": ["peur de rentrer à la maison", "peur de rentrer chez moi", "pas en sécurité chez moi", "contrôle mon argent", "prend mon argent", "m'empêche de sortir", "m'empêche de travailler", "menace de prendre les enfants", "menace d'appeler l'immigration"],
         "urgent": ["aujourd'hui", "ce soir", "urgent", "tout de suite"],
         "homeless": ["sans-abri", "sans abri", "sdf", "dans la rue"],
         "children": ["enfants", "enfant", "fils", "fille"]
@@ -536,6 +556,8 @@ glob LEX: dict = {
         "legal": ["avoka", "tribinal", "imigrasyon", "depòte", "azil", "viza", "dwa"],
         "self_harm": ["touye tèt mwen", "swisid"],
         "dv": ["vyolans domestik", "bat mwen", "frape mwen", "menase mwen", "vyolans"],
+        "self_harm_concern": ["mwen vle disparèt", "mwen se yon chay", "yo t ap pi byen san mwen"],
+        "dv_concern": ["mwen pè ale lakay", "mwen pa an sekirite lakay", "li pran tout lajan mwen", "li pa kite m soti", "li menase pran pitit yo"],
         "urgent": ["jodi a", "aswè a", "ijan"],
         "homeless": ["san kay", "nan lari"],
         "children": ["pitit", "timoun"]
@@ -1125,10 +1147,12 @@ def route_i18n(code: str, low: str) -> dict {
             out["spans"].append({"field": "category", "value": cat, "start": s, "end": e});
         }
     }
-    for (key, flag) in [("self_harm", "self_harm"), ("dv", "dv"), ("homeless", "homeless"), ("children", "children")] {
+    for (key, flag) in [("self_harm", "self_harm"), ("dv", "dv"), ("self_harm_concern", "self_harm_concern"), ("dv_concern", "dv_concern"), ("homeless", "homeless"), ("children", "children")] {
+        # The indirect layer (warning signs) only adds what the direct one missed.
+        if flag.endswith("_concern") and flag.replace("_concern", "") in out["flags"] { continue; }
         # Crisis and violence flags are never negated away, as in parse.jac:
         # a false alarm shows a hotline, a miss hides one.
-        h = [x for x in _hits(code, list(lex.get(key, [])), low) if key in ["self_harm", "dv"] or not negated(low, x[0], x[1])];
+        h = [x for x in _hits(code, list(lex.get(key, [])), low) if key in ["self_harm", "dv", "self_harm_concern", "dv_concern"] or not negated(low, x[0], x[1])];
         if h {
             out["flags"].append(flag);
             out["spans"].append({"field": "flag", "value": flag, "start": h[0][0], "end": h[0][1]});

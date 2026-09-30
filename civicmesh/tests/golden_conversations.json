@@ -1,0 +1,110 @@
+{
+  "_about": "Multi-turn conversations: each turn is parsed and folded into the case the way IntakeWalker does (parse_intake, then merge_profiles with the previous turn's profile and the question being answered). Expectations are checked on the merged profile after each turn. Written from a hard-test pass on 2026-09-30: people switch languages mid-conversation (code-switching is normal in immigrant families), add a second need, answer a follow-up with a bare number, or disclose violence in one language and continue in another.",
+  "conversations": [
+    {
+      "name": "Chinese, then Portuguese, then English",
+      "why": "a language switch used to start a new case and drop every fact",
+      "turns": [
+        {"text": "我和两个孩子住在波士顿，我每个月挣1800美元，我们需要食物。", "expect": {"language": "zh", "category": "food", "income_annual": 21600, "household_size": 3, "state": "MA"}},
+        {"text": "Também precisamos de ajuda com o aluguel, o senhorio quer nos despejar.", "expect": {"language": "pt", "category": "housing", "income_annual": 21600, "household_size": 3, "state": "MA", "flag": "children"}},
+        {"text": "What documents do I need to bring to apply?", "expect": {"language": "en", "category": "housing", "income_annual": 21600, "household_size": 3, "state": "MA"}}
+      ]
+    },
+    {
+      "name": "Vietnamese need, English facts",
+      "why": "the English facts started a new case and the need was lost",
+      "turns": [
+        {"text": "Tôi cần thức ăn cho gia đình tôi", "expect": {"language": "vi", "category": "food"}},
+        {"text": "We are 5 people and we live in Houston, Texas", "expect": {"category": "food", "household_size": 5, "state": "TX"}},
+        {"text": "I make about 2000 dollars a month", "expect": {"category": "food", "household_size": 5, "income_annual": 24000}}
+      ]
+    },
+    {
+      "name": "Violence disclosed in Chinese, shelter asked in English",
+      "why": "the dv flag was dropped with the language switch, so the second turn was neither private nor routed to DV help",
+      "turns": [
+        {"text": "他打我，我很害怕，我带着两个孩子", "expect": {"flag": "dv", "household_size": 3}},
+        {"text": "Where can I stay tonight with my kids? I'm in Seattle", "expect": {"flag": "dv", "category": "housing", "state": "WA", "household_size": 3}}
+      ]
+    },
+    {
+      "name": "A second need in the same language",
+      "why": "a topic change started a new case: income, household and state had to be given again",
+      "turns": [
+        {"text": "I'm a single mom with 2 kids in Houston, Texas, I earn $1,600 a month and we need food", "expect": {"category": "food", "income_annual": 19200, "household_size": 3, "state": "TX"}},
+        {"text": "Also my landlord says we have to leave by Friday, can I get help with rent?", "expect": {"category": "housing", "income_annual": 19200, "household_size": 3, "state": "TX", "flag": "children"}}
+      ]
+    },
+    {
+      "name": "English, then Spanish violence, then Chinese legal question",
+      "why": "three languages, three needs, one person: facts and the dv flag carry through",
+      "turns": [
+        {"text": "I need food, we are 4 people in Denver and I earn $2,100 a month", "expect": {"category": "food", "household_size": 4, "state": "CO", "income_annual": 25200}},
+        {"text": "Mi pareja me pega y tengo miedo", "expect": {"language": "es", "flag": "dv", "household_size": 4, "state": "CO"}},
+        {"text": "我需要律师帮我办离婚", "expect": {"language": "zh", "category": "legal", "flag": "dv", "household_size": 4, "income_annual": 25200}}
+      ]
+    },
+    {
+      "name": "Bare answers to the follow-up questions, in a Chinese conversation",
+      "why": "\"3\" set the household but \"2000\" was not read as the monthly income",
+      "turns": [
+        {"text": "我需要食物，我住在纽约", "expect": {"language": "zh", "category": "food", "state": "NY"}},
+        {"text": "3", "answering": "household", "expect": {"language": "zh", "household_size": 3}},
+        {"text": "2000", "answering": "income", "expect": {"language": "zh", "household_size": 3, "income_annual": 24000}}
+      ]
+    },
+    {
+      "name": "Income answered in Chinese numerals",
+      "turns": [
+        {"text": "我需要医疗保险，住在德州", "expect": {"category": "healthcare", "state": "TX"}},
+        {"text": "两千五", "answering": "income", "expect": {"income_annual": 30000, "language": "zh"}}
+      ]
+    },
+    {
+      "name": "Income answered with a pay period",
+      "why": "an hourly wage is not a monthly amount",
+      "turns": [
+        {"text": "I need food in Ohio", "expect": {"category": "food", "state": "OH"}},
+        {"text": "15 an hour", "answering": "income", "expect": {"income_annual": 31200}}
+      ]
+    },
+    {
+      "name": "Income answered with nothing",
+      "turns": [
+        {"text": "Necesito comida en Miami", "expect": {"category": "food", "state": "FL"}},
+        {"text": "nada", "answering": "income", "expect": {"income_annual": 0}}
+      ]
+    },
+    {
+      "name": "Spanish warning signs, English follow-up",
+      "turns": [
+        {"text": "Tengo miedo de volver a casa, mi esposo me quita el dinero", "expect": {"flag": "dv_concern"}},
+        {"text": "I have two kids and I'm in Phoenix", "expect": {"flag": "dv_concern", "state": "AZ", "household_size": 3}}
+      ]
+    },
+    {
+      "name": "Korean need, English short answer",
+      "turns": [
+        {"text": "음식이 필요해요. 저는 로스앤젤레스에 살아요", "expect": {"language": "ko", "category": "food", "state": "CA"}},
+        {"text": "we are 2", "answering": "household", "expect": {"category": "food", "household_size": 2}}
+      ]
+    },
+    {
+      "name": "A corrected income",
+      "turns": [
+        {"text": "I earn $2000 a month and need food in Ohio", "expect": {"income_annual": 24000}},
+        {"text": "sorry, actually it's $1500 a month", "expect": {"income_annual": 18000, "category": "food", "state": "OH"}}
+      ]
+    },
+    {
+      "name": "An answer to a different question",
+      "why": "\"we are 2\" while the income question was pending became an income of $24 a year",
+      "turns": [
+        {"text": "음식이 필요해요. 저는 로스앤젤레스에 살아요", "expect": {"language": "ko", "category": "food"}},
+        {"text": "we are 2", "answering": "income", "expect": {"household_size": 2, "income_annual": -1}},
+        {"text": "about 1,800 a month", "answering": "income", "expect": {"household_size": 2, "income_annual": 21600}},
+        {"text": "大概两千块", "answering": "income", "expect": {"income_annual": 21600}}
+      ]
+    }
+  ]
+}

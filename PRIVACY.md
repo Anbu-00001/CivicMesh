@@ -28,6 +28,10 @@ a law firm or a benefits office, and using it does not apply you for anything.
   choose **Delete my data**.
 - **Quick exit.** The red button at the top, or pressing Shift three times,
   jumps to a weather site right away. The Back button won't bring the chat back.
+  On the huggingface.co page the app sits inside Hugging Face's page, which it
+  isn't allowed to close: Quick exit blanks the chat and (from the button) opens
+  the weather site in a new tab, but the Hugging Face tab stays open. Use the
+  direct link, https://anbu-00001-civicmesh.hf.space, for the full exit.
 - **Private session.** If you write about hurting yourself or about abuse, or
   if you switch it on under the chat box, this browser keeps nothing about the
   conversation once you close the tab. In a private session, Quick exit also
@@ -134,7 +138,7 @@ repository.
 | Words not stored; the stored need is the engine's reading | `tests/test_privacy_graph.jac`, E2E P1 and P3 |
 | Words not sent to a model; unroutable messages ask instead | E2E P11 (`llm.sync_used` false), `walkers/narrate.jac` has no message parameter |
 | Crisis messages: no routing call, no narration | E2E P4–P5, `tests/test_privacy_graph.jac` |
-| Quick exit leaves, Back doesn't return, a private exit leaves a fresh identity and erases the case | a headless-browser check run for this release, not yet automated in CI; `frontend.impl.jac` `quickExit` |
+| Quick exit leaves, Back doesn't return, a private exit leaves a fresh identity and erases the case; inside the huggingface.co frame it blanks the chat | `tests/browser_e2e.py` in CI (headless Chrome, including Hugging Face's iframe sandbox); `frontend.impl.jac` `quickExit` |
 | Summary facts carry no income, household, location or status | `facts_for` in `walkers/eligibility.jac` |
 | Delete my data removes the case, and only yours | E2E P8–P10, `tests/test_privacy_graph.jac` |
 | Server logs hold no user text | CI "Server logs hold no user text" step (`walkers/log_privacy.jac`) |

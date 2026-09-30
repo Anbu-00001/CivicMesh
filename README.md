@@ -23,12 +23,12 @@ pinned: false
 [![byllm](https://img.shields.io/badge/byllm-0.6.7-22c55e?style=flat-square)](https://github.com/Jaseci-Labs/byllm)
 [![NVIDIA NIM](https://img.shields.io/badge/NVIDIA%20NIM-translation%20%2B%20narration-76b900?style=flat-square)](https://build.nvidia.com)
 [![Languages](https://img.shields.io/badge/languages-51%20drafted%20%C2%B7%200%20reviewed%20%C2%B7%20111%20selectable-2563eb?style=flat-square)](#languages-and-dialects)
-[![Eval](https://img.shields.io/badge/eval-372%20cases%20%C2%B7%20784%20checks-16a34a?style=flat-square)](#evaluation-and-hard-tests)
+[![Eval](https://img.shields.io/badge/eval-413%20cases%20%C2%B7%2013%20conversations%20%C2%B7%20956%20checks-16a34a?style=flat-square)](#evaluation-and-hard-tests)
 [![CI](https://github.com/Anbu-00001/CivicMesh/actions/workflows/ci.yml/badge.svg)](https://github.com/Anbu-00001/CivicMesh/actions/workflows/ci.yml)
 [![Privacy](https://img.shields.io/badge/privacy-scrubbed%20%C2%B7%20deletable%20%C2%B7%20no%20tracking-0f766e?style=flat-square)](./PRIVACY.md)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](./LICENSE)
 
-**JacHacks Spring 2026 — 1st Place, Agentic AI Track · Best Startup Idea** · [Devpost](https://devpost.com/software/civicmesh-0ctxl5) · [Live demo](https://huggingface.co/spaces/Anbu-00001/CivicMesh)
+**JacHacks Spring 2026 — 1st Place, Agentic AI Track · Best Startup Idea** · [Devpost](https://devpost.com/software/civicmesh-0ctxl5) · [Live demo](https://huggingface.co/spaces/Anbu-00001/CivicMesh) · [Direct link](https://anbu-00001-civicmesh.hf.space) (full screen; the one to share, since Quick exit can close only this tab)
 
 </div>
 
@@ -68,7 +68,7 @@ Everything below is computed, cited and tested, but not all of it is measured. T
 | **Approval odds** ("~67% · rough guess") | A Beta posterior from a hand-set prior (open 6:3, waitlist 3:5), updated by that visitor's own marked outcomes | Learning across people: each visitor has a private copy of the rule nodes, so outcomes never pool |
 | **Plan order** | Smith's rule: steps by value ÷ minutes, where value = urgency × score × approval × access × benefit | Checked against how caseworkers sequence applications |
 | **Route cost** | days + 10·difficulty + 30·(−ln P(yes)), best routes by Yen's k-shortest paths | Tuned: 10 and 30 encode "a likely rejection costs more than a slow step", and no ablation shows they beat simpler choices |
-| **100% on the eval** | Regression gates: 372 cases the author wrote, run on every push | A benchmark. On real posts labeled by lawyers the held-out recall is domestic violence 66%, housing 77%, health 79%, immigration status 82% ([below](#external-check-real-peoples-words), with intervals) |
+| **100% on the eval** | Regression gates: 413 cases and 13 multi-turn conversations the author wrote, run on every push | A benchmark. On real posts labeled by lawyers the held-out recall is domestic violence 66%, housing 77%, health 79%, immigration status 82% ([below](#external-check-real-peoples-words), with intervals) |
 
 Turning these into measurements needs more than this repository has: the PolicyEngine US check extended from SNAP to Medicaid, WIC and school meals, an opt-in aggregate with a minimum cohort size for approval odds, and a supervised pilot where a caseworker marks every answer.
 
@@ -92,7 +92,7 @@ In September 2026 the author asked a chat model (an AI assistant, not a human ex
 | The criticism | What changed | Where to check |
 |---|---|---|
 | Built on Jac, a pre-1.0 language few people use; nobody else can maintain it | A written maintenance plan. The engine, where every eligibility decision lives, is transpiled to plain Python on every push and passes the same 784 checks with no Jac installed. `jac eject` was verified for the whole app. Every package is pinned, and Dependabot opens tested upgrade PRs | [docs/MAINTENANCE.md](./docs/MAINTENANCE.md) · `tools/eject_engine.sh` · CI job `portable` |
-| No CI | GitHub Actions on every push and PR: the eval and unit checks, the plain-Python engine, the external check on real posts (reported, not gating), and the production Docker image with 64 HTTP checks and a scan of the server logs for user text | [.github/workflows/ci.yml](./.github/workflows/ci.yml) |
+| No CI | GitHub Actions on every push and PR: the eval and unit checks, the plain-Python engine, the external check on real posts (reported, not gating), and the production Docker image with 64 HTTP checks, an accessibility scan, a real-browser check of Quick exit and the first message, and a scan of the server logs for user text | [.github/workflows/ci.yml](./.github/workflows/ci.yml) |
 | No privacy story, for users asked about immigration status, income, violence and self-harm | A [privacy notice](./PRIVACY.md) where every statement maps to a test. What users type is never stored and never sent to a model (below). **Delete my data** erases the case. jaclang's `report` had been printing every answer into the server logs; that echo is off | `engine/privacy.jac` · `walkers/forget.jac` · `walkers/log_privacy.jac` · E2E P1–P14 |
 | Machine-drafted translations shown to vulnerable people | **0 of 50 are reviewed** (Spanish included). Until they are, each follows HHS Section 1557 guidance for unreviewed machine translation: a notice in the user's language, the English original one tap away, the English sentence under every crisis line, numbers locked by a test, and a report-a-mistake form | [docs/TRANSLATION_REVIEW.md](./docs/TRANSLATION_REVIEW.md) · `tools/review_sheet.py` |
 | No evidence it holds up with a real person in crisis | Still true. The honest next step is a supervised pilot with a legal-aid clinic, library or 211 partner, where a caseworker reads every answer. Until then, the external check below measures the router on real people's words instead of the author's | — |
@@ -128,6 +128,22 @@ The fourth review (again a chat model, not an audit) credited the deliberate cho
 | The policy data isn't production-ready | USDA's FY2027 SNAP amounts take effect on their date (2026-10-01), with fixes the check turned up (a missing net-income test, no 18-person cap, the earnings deduction applied to Social Security), and the 2025 law's work rules appear as notes. `tests/check_policy.jac` pins these to the published figures. Also state gross limits from USDA's chart, checked against PolicyEngine US. Still missing: last-verified dates per program, an oracle beyond SNAP, legal review |
 | "111 languages" reads as 111 reliable languages | The badge and landing page say 51 machine-drafted, 0 reviewed, 111 selectable |
 | No outside adoption | True, and not something code fixes. [CONTRIBUTING.md](./CONTRIBUTING.md) lists the most useful help: native-speaker review, real wording the engine misreads, and program-data corrections |
+
+**A fifth pass: conversations the way people have them, and two crashes from real use**
+
+- **A language switch wiped the case.** A family wrote in Chinese (two children, Boston, $1,800 a month, food), added in Portuguese that the landlord wanted them out, then asked in English what documents to bring. The engine started a new case at each switch, so by the third message it had forgotten everything and asked "what do you need?". Violence disclosed in Chinese was dropped when the next message came in English, so that turn was neither private nor routed to domestic-violence help. A second need in the same language ("also, the rent") lost the income, household and state the same way. One conversation is now one person: facts and flags carry across languages and needs, the reply follows the language of the latest message, and **New case** is the one way to start over. `golden_conversations.json` replays 13 such conversations turn by turn (90 checks).
+- **Rent read as income.** "I pay $900 rent" was read as an income of $10,800 a year: expense words were only looked for before an amount, "pay" wasn't one, and "pa*rent*s" counted as rent. Also fixed from the same probing:
+  - amounts written without a dollar sign: "I earn 1800 a month", "gano 1200 al mes", "12 an hour", "900 from social security";
+  - stated hours: "$15 an hour, 30 hours a week" is $23,400, not $31,200;
+  - Chinese numerals: 两千五百块;
+  - a bare "2000" as the answer to the income question, while "we are 2" given to that question stays a household;
+  - ages in words ("seventy-two", "in my 70s"), "we're 3 in the family", and Hinglish ("hum 4 log");
+  - Portuguese read as Spanish because of "Califórnia", and "in LA" read as Louisiana.
+- **Warning signs in ten more languages.** The indirect crisis layer read only English and Spanish. It now reads the 988 Lifeline's and the Hotline's warning signs in Chinese, Portuguese, Vietnamese, Korean, Tagalog, Arabic, Russian, French, Haitian Creole and Hindi, plus stalking by an ex-partner. Phrases that also fit everyday complaints ("não aguento mais esperar na fila", "больше не могу платить") were left out, and benign probes fail the run if they come back.
+- **Quick exit crashed on the Space page.** On huggingface.co the app runs in a sandboxed frame that isn't allowed to move the tab, and the neutral site breaks when it loads inside that frame, so people saw "This page couldn't load" under the Hugging Face header. Inside a frame, Quick exit now opens the neutral site in a new tab and blanks the frame. Shift ×3 can only blank it, because a key press isn't allowed to open a tab. The Hugging Face tab stays open either way, so share the [direct link](https://anbu-00001-civicmesh.hf.space), where Quick exit replaces the page and Back can't return.
+- **A message sent during sign-in was lost.** A suggestion tapped as the chat opened went out before the anonymous sign-in finished. The 401 made the client reload the page, and the message was gone. The chat now waits for the sign-in.
+- `tests/browser_e2e.py` checks both in headless Chrome on every push, including a stand-in for the Space page with Hugging Face's exact iframe sandbox and a sign-in held back for 3 seconds.
+- **Still not handled:** typos ("foood"), romanized Chinese and Arabic (pinyin, Arabizi), and Spanish or Portuguese number words ("mil quinientos"). With the model fallback off by default, these get a follow-up question rather than a guess.
 
 
 ---
@@ -597,10 +613,11 @@ flowchart LR
         direction TB
         G1[golden.json · 41<br/>EN/ES pipeline + policy cases]:::t
         G2[golden_i18n.json · 93<br/>73 languages, crisis, Mayan heuristic]:::t
-        G3[golden_adversarial.json · 67<br/>negation, idioms, traps, DV phrasing]:::t
+        G3[golden_adversarial.json · 94<br/>negation, idioms, traps, DV phrasing, income traps]:::t
         G4[golden_holdout.json · 40<br/>written after tuning, scored first]:::t
-        G5[golden_facts_i18n.json · 41<br/>income · household · age · status · place<br/>in 20 more languages]:::t
-        G6[golden_probes.json · 90<br/>other senses · indirect crisis · local limits<br/>+ p_max / tier_not + metamorphic check]:::t
+        G5[golden_facts_i18n.json · 48<br/>income · household · age · status · place<br/>in 20 more languages]:::t
+        G6[golden_probes.json · 97<br/>other senses · indirect crisis · local limits<br/>+ p_max / tier_not + metamorphic check]:::t
+        G7[golden_conversations.json · 13<br/>language switches · a second need · bare answers<br/>turn by turn through merge_profiles]:::t
     end
     S --> EV[eval_engine.jac<br/>policy date pinned]:::det
     EV --> MX[fields · languages · top-3 · plan · exclusions · latency]:::det
@@ -611,9 +628,10 @@ flowchart LR
     PV[check_privacy.jac<br/>66 checks: scrub · over-scrub · same facts · crisis]:::t --> GATE
     WT[jac test · walkers in-process<br/>schema · 3 personas · stored-data privacy]:::t --> GATE
     E2E[tests/e2e_http.py against the Docker image<br/>64 checks · 15 languages · crisis · privacy · a live conversation · relay]:::t --> PASS
+    BR[tests/browser_e2e.py · headless Chrome<br/>quick exit: own tab · Shift ×3 · private · HF frame<br/>first message during sign-in]:::t --> PASS
     PORT[same eval on the engine ejected to plain Python<br/>no Jac installed]:::t --> PASS
     EXT[eval_external.jac · real posts<br/>LegalBench learned_hands · measured, not gated]:::ext
-    CI((GitHub Actions<br/>every push and PR)):::det -.-> S & CM & PV & WT & E2E & PORT & EXT
+    CI((GitHub Actions<br/>every push and PR)):::det -.-> S & CM & PV & WT & E2E & BR & PORT & EXT
 
     classDef t fill:#e0f2fe,stroke:#0284c7,color:#082f49
     classDef det fill:#dbeafe,stroke:#2563eb,color:#0b2545
@@ -625,7 +643,7 @@ flowchart LR
 
 ```
 cd civicmesh && jac run tests/eval_engine.jac
-  372 cases · field accuracy 100% (784/784) · 73/73 languages · top-3 + plan checks 100% (54/54) · exclusion errors 0
+  413 cases + 13 conversations · field accuracy 100% (956/956) · 73/73 languages · top-3 + plan checks 100% (54/54) · exclusion errors 0
   metamorphic 228/228 neutral additions moved no verdict · latency / turn p50 ~1.6 ms · p95 ~18 ms
 
 cd civicmesh && jac run tests/check_messages.jac
@@ -643,6 +661,9 @@ cd civicmesh && rm -rf .jac/data && jac test tests/test_privacy_graph.jac   # + 
 python3 tests/e2e_http.py http://localhost:7860
   64/64 passed · turn latency p50 ~0.4 s
 
+python3 tests/browser_e2e.py http://localhost:7860   # headless Chrome
+  13 checks · PASS
+
 cd civicmesh && jac run tests/eval_external.jac   # real posts, downloaded on first run
 ```
 
@@ -650,10 +671,11 @@ cd civicmesh && jac run tests/eval_external.jac   # real posts, downloaded on fi
 |---|---|---|
 | `golden.json` | 41 | EN/ES full pipeline plus policy cases: refugee and SNAP, Texas childless adult and Medicaid, California expansion, 130% FPL for 4, the Alaska table, SNAP present in the plan |
 | `golden_i18n.json` | 93 | Language ID and routing in 73 languages including Cantonese, Pashto, Sorani and Kurmanji, Tigrinya, Romanian, both BCS scripts, Yoruba, Igbo, Hausa, Cebuano, Samoan, Tongan, Yiddish and Quechua. Also crisis and violence phrasing, an Estonian sentence that must stay unidentified, and the Mayan heuristic |
-| `golden_adversarial.json` | 67 | Cross-category traps ("no food at home", "debt collectors about hospital bills"), negation, possession, idioms ("dying of hunger"), code-switching, romanized scripts, no-signal input, everyday domestic-violence phrasing in five languages with false-alarm guards ("打我电话" is "call me"; a pounding heart is not violence) |
+| `golden_adversarial.json` | 94 | Cross-category traps ("no food at home", "debt collectors about hospital bills"), negation, possession, idioms ("dying of hunger"), code-switching, romanized scripts, no-signal input, everyday domestic-violence phrasing in five languages with false-alarm guards ("打我电话" is "call me"; a pounding heart is not violence). Income traps: rent paid, a date, a zip code, "3 years"; amounts without a dollar sign; ages in words; warning signs in ten more languages |
 | `golden_holdout.json` | 40 | Written *after* tuning on the adversarial set, then scored before any fix |
-| `golden_facts_i18n.json` | 41 | Income, household, age, status and location stated in Chinese, Cantonese, Korean, Vietnamese, Russian, Ukrainian, Arabic, Persian, Hindi, Bengali, Punjabi, Gujarati, Telugu, Tamil, Japanese, Tagalog, Haitian Creole, French, Portuguese and Polish, with traps: rent that isn't income, "not a citizen", an abusive partner outside the household, a child's age, other-script digits, 万 multipliers, hourly pay |
-| `golden_probes.json` | 90 | Words in their other senses, each paired with the true positive it must not break: "social security" as a number, card or office; a college senior; retired from the army at 42; the Salvation Army; serving tables; a car parked on the street; adult children who moved out; a child-care job; substance-abuse treatment; "my back hurts me"; an injury at work; negated facts in English and Spanish; a temporary visa stated by the speaker vs. a friend's. Also indirect crisis wording (988 / Hotline warning signs) with benign counterparts, the scorer's situation targets under negation, household counts ("there are 3 people"), local HUD limits, and Danger Assessment phrasing (passive voice, hands around the neck, a knife pulled, threats to kill) with benign twins ("hit by a truck", "choked on a fishbone", "kill the deal"). `p_max` / `tier_not` fail the run if a wrong flag moves a verdict |
+| `golden_facts_i18n.json` | 48 | Income, household, age, status and location stated in Chinese, Cantonese, Korean, Vietnamese, Russian, Ukrainian, Arabic, Persian, Hindi, Bengali, Punjabi, Gujarati, Telugu, Tamil, Japanese, Tagalog, Haitian Creole, French, Portuguese and Polish, with traps: rent that isn't income, "not a citizen", an abusive partner outside the household, a child's age, other-script digits, 万 multipliers, Chinese numerals (两千五百), hourly pay with stated hours, Taglish and Hinglish counts |
+| `golden_probes.json` | 97 | Words in their other senses, each paired with the true positive it must not break: "social security" as a number, card or office; a college senior; retired from the army at 42; the Salvation Army; serving tables; a car parked on the street; adult children who moved out; a child-care job; substance-abuse treatment; "my back hurts me"; an injury at work; negated facts in English and Spanish; a temporary visa stated by the speaker vs. a friend's. Also indirect crisis wording (988 / Hotline warning signs) with benign counterparts, the scorer's situation targets under negation, household counts ("there are 3 people"), local HUD limits, and Danger Assessment phrasing (passive voice, hands around the neck, a knife pulled, threats to kill) with benign twins ("hit by a truck", "choked on a fishbone", "kill the deal"). `p_max` / `tier_not` fail the run if a wrong flag moves a verdict |
+| `golden_conversations.json` | 13 (32 turns) | Multi-turn: Chinese → Portuguese → English with facts carried; violence disclosed in one language, shelter asked in another; a second need; bare answers ("3", "2000", "两千五", "15 an hour", "nada"); an answer to a different question; a corrected income |
 
 ### External check: real people's words
 
@@ -772,9 +794,9 @@ civicmesh/
 ├── tools/eject_engine.sh        engine → plain Python with jac2py, then run its eval without Jac
 ├── tools/build_hud_limits.py    HUD FY2026 Section 8 limits → data/hud_income_limits.json (106 cities)
 ├── tools/oracle_policyengine.py  SNAP differential against PolicyEngine US (384 households; not in CI)
-└── tests/                       eval_engine.jac + six suites (incl. golden_probes) · eval_external.jac (real posts) ·
+└── tests/                       eval_engine.jac + seven suites (incl. golden_probes, golden_conversations) · eval_external.jac (real posts) ·
                                  check_messages.jac · check_privacy.jac · check_policy.jac ·
-                                 test_schema · persona_* · test_privacy_graph (jac test) · e2e_http.py
+                                 test_schema · persona_* · test_privacy_graph (jac test) · e2e_http.py · browser_e2e.py
 .github/workflows/ci.yml         engine · portable (plain Python) · e2e (Docker, logs)
 docs/                            MAINTENANCE.md · TRANSLATION_REVIEW.md · DEPLOY.md
 PRIVACY.md                       what is kept, what leaves, how to delete
