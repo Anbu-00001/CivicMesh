@@ -49,10 +49,13 @@ Jac-specific part is plumbing.
 - **Everything is pinned.** `requirements.txt` pins every package, including
   `jaclang==0.15.1`, `jac-scale==0.2.17`, `jac-client==0.3.15`, `byllm==0.6.7`
   and `litellm==1.82.6`. The Docker image is reproducible from it.
-- **Upgrades come as pull requests, tested.** Dependabot opens at most one pull
-  request a week for Python packages and one for GitHub Actions, and CI runs the
-  full suite on each. `main` is protected: nothing lands without a pull request
-  that passes the engine, portable and end-to-end jobs.
+- **Upgrades come as pull requests, tested.** Dependabot opens one weekly pull
+  request for GitHub Actions and security-only pull requests for Python
+  packages, and CI runs the full suite on each. Python version bumps are off:
+  jaclang and byllm pin litellm and its dependencies exactly, so a grouped bump
+  of the other 50 packages couldn't even install. `main` is protected: nothing
+  lands without a pull request that passes the engine, portable and end-to-end
+  jobs.
 - **The Jac stack is held at those pins on purpose.** The first grouped Jac
   upgrade (jaclang 0.16.7, jac-scale 0.2.31, jac-client 0.3.25, byllm 0.6.19)
   passed the engine and portable jobs but failed end-to-end: the new jac-scale

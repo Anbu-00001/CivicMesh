@@ -234,6 +234,10 @@ class Gateway(unittest.TestCase):
         users = [g._limited("chat", "10.0.%d.%d" % (i // 250, i % 250), "u:same") for i in range(cap + 5)]
         self.assertEqual(sum(1 for w in users if w == 0.0), cap)  # per-visitor limit across addresses
 
+    def test_favicon_is_a_png(self):
+        from cmguard.gateway import FAVICON
+        self.assertTrue(FAVICON.startswith(b"\x89PNG"))
+
     def test_json_shape_caps(self):
         self.assertEqual(json_shape_problem({"a": "b"}, 12, 5000, 20000), "")
         deep = cur = {}

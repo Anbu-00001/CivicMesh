@@ -9,8 +9,10 @@
    system account password. A configured secret shorter than 32 characters, or
    equal to the public default, stops the boot.
 2. jac-scale runs as a child process on 127.0.0.1 only.
-3. The gateway (cmguard/gateway.py) is the only public listener. If jac-scale
-   exits, this process exits too, so the host restarts the container.
+3. The gateway (cmguard/gateway.py) is the only public listener, and it opens
+   only once jac-scale answers, so the host keeps its "Starting" screen up
+   during the boot. If jac-scale exits, this process exits too, so the host
+   restarts the container.
 """
 
 import os
@@ -31,6 +33,24 @@ def ensure_secret(name: str, generated_bytes: int = 48) -> str:
         sys.exit(f"{name} must be at least 32 random characters (unset it to generate one per boot)")
     os.environ[name] = value
     return value
+
+
+def wait_until_ready(url: str, child, timeout_s: float) -> None:
+    import time
+    import urllib.request
+
+    deadline = time.time() + timeout_s
+    while time.time() < deadline:
+        if child.poll() is not None:
+            sys.exit(f"jac-scale exited with code {child.returncode} before it was ready")
+        try:
+            with urllib.request.urlopen(url, timeout=3) as r:
+                if r.status < 500:
+                    return
+        except Exception:
+            pass
+        time.sleep(0.5)
+    sys.exit(f"jac-scale wasn't ready after {timeout_s:.0f} s")
 
 
 def main() -> None:
@@ -62,6 +82,12 @@ def main() -> None:
         os._exit(code or 1)
 
     threading.Thread(target=watch, daemon=True).start()
+
+    # Open the public port only once jac-scale answers. Until then the host
+    # shows its own "Starting" screen (Hugging Face waits for the app port), so
+    # no visitor gets a page whose first requests fail while the engine boots.
+    wait_until_ready(f"http://127.0.0.1:{upstream_port}/healthz", child,
+                     float(os.environ.get("CIVICMESH_BOOT_TIMEOUT_S", "") or 900))
 
     import uvicorn
 

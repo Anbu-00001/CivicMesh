@@ -30,6 +30,7 @@ import hashlib
 import json
 import os
 import time
+from pathlib import Path
 
 import httpx
 
@@ -81,6 +82,10 @@ STARTING_PAGE = (b"<!doctype html><html lang='en'><head><meta charset='utf-8'><m
                  b"<meta name='viewport' content='width=device-width, initial-scale=1'><title>CivicMesh is starting</title></head>"
                  b"<body style='font-family:system-ui;background:#0a0a0a;color:#eee;display:grid;place-items:center;min-height:90vh'>"
                  b"<p>CivicMesh is starting&hellip; this page refreshes by itself. In danger now: call 911. Crisis: call or text 988.</p></body></html>")
+
+
+_ICON = Path(__file__).resolve().parent.parent / "assets" / "favicon.png"
+FAVICON = _ICON.read_bytes() if _ICON.exists() else b""
 
 
 def classify(method: str, path: str):
@@ -216,6 +221,9 @@ class Gateway:
             timeout=httpx.Timeout(30.0, connect=5.0),
             follow_redirects=False,
         )
+        # cmguard/serve.py only opens the port once jac-scale answers, so this
+        # first check normally succeeds and nothing sees "starting".
+        self.ready = await self._probe()
         self._tasks.append(asyncio.create_task(self._watch_ready()))
         self._tasks.append(asyncio.create_task(self._telemetry_loop()))
 
@@ -225,14 +233,16 @@ class Gateway:
         if self.client:
             await self.client.aclose()
 
+    async def _probe(self) -> bool:
+        try:
+            r = await self.client.get("/healthz", timeout=3.0)
+            return r.status_code < 500
+        except Exception:
+            return False
+
     async def _watch_ready(self):
         while True:
-            try:
-                r = await self.client.get("/healthz", timeout=3.0)
-                ok = r.status_code < 500
-            except Exception:
-                ok = False
-            if ok and not self.ready:
+            if not self.ready and await self._probe():
                 self.ready = True
             await asyncio.sleep(1.0 if not self.ready else 15.0)
 
@@ -250,6 +260,9 @@ class Gateway:
         if cls == "blocked":
             telemetry.count("rejected:blocked_route")
             await self._respond(send, 404, error_body(404, "NOT_FOUND", "Not found."))
+            return
+        if path == "/favicon.ico" and FAVICON:
+            await self._respond(send, 200, FAVICON, headers_raw=[(b"content-type", b"image/png"), (b"cache-control", b"public, max-age=86400")])
             return
         peer = (scope.get("client") or ("unknown", 0))[0]
         ip = client_ip(peer, headers.get(b"x-forwarded-for", b"").decode("latin-1"), self.cfg.trusted_hops)

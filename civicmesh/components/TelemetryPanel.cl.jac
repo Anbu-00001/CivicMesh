@@ -140,9 +140,9 @@ def:pub TelemetryPanel(walker_events: list, user_id: str = "") -> JsxElement {
                     "lineHeight": "1.55"
                 }}>
                     <div style={{"color": "#FFE500", "fontWeight": "600", "marginBottom": "4px"}}>
-                        For full LLM telemetry (token counts, cost, traces):
+                        Model calls on this server:
                     </div>
-                    Run an admin session at <span style={{"color": "#FFE500"}}>/admin/llm/telemetry/summary</span> with admin credentials — that endpoint exposes per-invocation traces, prompt-cache hit rate, and provider-level cost.
+                    Per-call model traces stay private to the server. What the public Space shows is here and on the Impact tab: which walkers ran, how long they took, and whether a model was called at all (usually only the background summary).
                 </div>
             </div>;
     }
@@ -168,7 +168,6 @@ def:pub TelemetryPanel(walker_events: list, user_id: str = "") -> JsxElement {
                     }}
                 />
                 Live data — {str(total_events)} walker events captured this session.
-                For per-invocation LLM token/cost traces, open <span style={{"color": "#FFE500"}}>/admin/llm/telemetry</span>.
             </div>
 
             <div
