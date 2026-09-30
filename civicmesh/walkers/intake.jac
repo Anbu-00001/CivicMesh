@@ -32,7 +32,8 @@ import from engine.privacy { redact, is_private_turn, need_summary, model_may_re
 import from engine.compose { merge_profiles, new_trace, span_begin, span_end, export_spans }
 import from walkers.eligibility { EligibilityWalker }
 import from walkers.critique { CritiqueWalker }
-import from walkers.narrate { sign_facts }
+import from cmguard.tokens { issue as issue_token, content_hash }
+import from cmguard { telemetry }
 
 glob CATEGORIES: list = ["housing", "food", "healthcare", "legal"];
 # The routing LLM call runs on a worker thread with a wall-clock deadline:
@@ -227,6 +228,12 @@ walker IntakeWalker {
                 last_end = int(e["end"]);
             }
         }
+        # The strings the client asks LocalizeWalker to translate, in the order
+        # it reads them back: question, what it affects, quick replies, chips.
+        q_out = result.get("question", {}) or {};
+        chips_out: list = [str(c) for c in list(result.get("chips", []) or [])];
+        loc_strings: list = [str(q_out.get("text", "") or ""), str(q_out.get("affects_label", "") or "")] + [str(o[0]) for o in list(q_out.get("options", []) or [])] + chips_out;
+        telemetry.maybe_log(None, "app");
         report {
             "version": 2,
             "language": lang_out,
@@ -254,7 +261,15 @@ walker IntakeWalker {
             "escalation": result.get("escalation", {}),
             "chips": result.get("chips", []),
             "facts": result.get("facts", ""),
-            "facts_sig": sign_facts(str(result.get("facts", "")), [str(c) for c in list(result.get("chips", []))], str(narrate_lang)),
+            # Each optional model call gets a token over exactly the content it
+            # may send, bound to this visitor's graph and short-lived
+            # (cmguard/tokens.py): the model walkers can't be used as a relay.
+            "narrate_token": issue_token("narrate", jid(root), content_hash("narrate", str(result.get("facts", "")), [str(c) for c in chips_out], str(narrate_lang or lang_out))),
+            "loc": {
+                "strings": loc_strings,
+                "strings_token": issue_token("loc_strings", jid(root), content_hash("loc_strings", loc_strings, str(info["code"]))),
+                "text_token": issue_token("loc_text", jid(root), content_hash("loc_text", str(result.get("reply", "")), str(info["code"])))
+            },
             "llm": {"sync_used": llm_sync, "reason": llm_reason, "error": llm_error, "models": pool_model_names(), "narrate": not private_turn, "budget_s": SYNC_LLM_BUDGET_S},
             # Privacy, as measured behavior: the words were neither stored nor
             # sent to a model (unless an operator opted in and the engine could

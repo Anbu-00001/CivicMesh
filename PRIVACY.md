@@ -1,6 +1,6 @@
 # Privacy notice
 
-**Last updated: 28 September 2026** (Quick exit and private sessions added)
+**Last updated: 29 September 2026** (abuse protection: in-memory request counters, no addresses in the logs)
 
 CivicMesh helps people find housing, food, healthcare and legal-aid programs.
 Many of the people who use it are in a hard spot. Some are immigrants, some are
@@ -45,7 +45,9 @@ a law firm or a benefits office, and using it does not apply you for anything.
 | Your random login (username and a hashed password, nothing about you) | Our server's user list, and your browser's local storage (in a private session, only the open tab) | Until the server restarts. Delete my data, Quick exit in a private session, or closing a private tab clears it from your browser |
 | Your picked language | Your browser's local storage | Until you clear it or press Delete my data |
 | Anonymous counts: how many chats, which languages, which kinds of help, response times | Our server's memory. Visitor IDs are one-way hashed | Until the server restarts |
-| Server logs | Our hosting provider | The address of each request and whether it worked, never what you wrote |
+| Abuse-protection counters: your connection's address, and a one-way hash of your random login, each with a request count | Our server's memory only; never written to disk or to the logs | Until the limit's window passes (at most 10 minutes after your last request), or the server restarts |
+| A copy of an answer, so a double-tapped Send doesn't run twice | Our server's memory only | 3 seconds for a chat answer, 60 seconds for a summary |
+| Server logs | Our hosting provider | Which kind of request came in and whether it worked, plus counts of refused requests. Never your address, your login or what you wrote |
 
 The app runs on Hugging Face Spaces' free tier, where storage is not permanent:
 everything above is erased whenever the app restarts. That happens on every
@@ -136,4 +138,7 @@ repository.
 | Summary facts carry no income, household, location or status | `facts_for` in `walkers/eligibility.jac` |
 | Delete my data removes the case, and only yours | E2E P8–P10, `tests/test_privacy_graph.jac` |
 | Server logs hold no user text | CI "Server logs hold no user text" step (`walkers/log_privacy.jac`) |
+| Client-error reports are never logged; security logs are aggregate counts with no addresses or ids | `tests/security_e2e.py` S14–S15 (`cmguard/gateway.py`, `cmguard/telemetry.py`) |
+| Counters forget an address or login once its window passes | `tests/test_cmguard.py` `test_idle_keys_are_forgotten` |
+| Model keys never appear in responses, pages, scripts or logs | `tests/security_e2e.py` S14 (dummy keys planted in CI) |
 | Scrubber: what it catches, what it misses | `tests/check_privacy.jac` (gated cases + printed known misses) |

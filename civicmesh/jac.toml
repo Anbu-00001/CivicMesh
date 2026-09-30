@@ -47,11 +47,20 @@ threshold_ratio = 0.8
 keep_recent_iterations = 3
 
 [plugins.scale.server]
-port = 7860
-host = "0.0.0.0"
+# jac-scale listens on loopback only; the public port (7860) belongs to the
+# cmguard gateway in front of it (python -m cmguard.serve).
+port = 8000
+host = "127.0.0.1"
 
 [plugins.scale.metrics]
 enabled = true
+
+[plugins.scale.jwt]
+# jac-scale's built-in default is a public string ("supersecretkey_for_testing_
+# only!"), so anyone could forge a login token for any visitor. The secret now
+# comes from the environment; cmguard/serve.py generates one per boot when it's
+# unset, and the server refuses to start without one.
+secret = "${CIVICMESH_JWT_SECRET:?start with python -m cmguard.serve, or set CIVICMESH_JWT_SECRET}"
 
 [plugins.scale.admin]
 # jac-scale otherwise bootstraps a login-capable admin/changeme account, and

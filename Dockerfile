@@ -62,10 +62,8 @@ EXPOSE 7860
 # (Hugging Face Spaces). We patch jac.toml at runtime so jac's internal
 # config matches the actual port — avoids a mismatch where the CLI flag
 # says one port but jac.toml says another.
-CMD ["sh", "-c", "\
-  P=${PORT:-7860} && \
-  export SYSTEM_USER_PASSWORD=\"${SYSTEM_USER_PASSWORD:-$(head -c 24 /dev/urandom | base64 | tr -d '/+=')}\" && \
-  sed -i \"s/^port = .*/port = $P/\" jac.toml && \
-  sed -i \"s/^host = .*/host = \\\"0.0.0.0\\\"/\" jac.toml && \
-  exec jac start app.jac --no-dev --port $P --host 0.0.0.0\
-"]
+# The gateway (cmguard/gateway.py) is the only public listener; jac-scale runs
+# on 127.0.0.1 behind it. cmguard/serve.py generates per-boot secrets for login
+# tokens, narration/translation tokens and the jac-scale system account when
+# they aren't set, and stops the container if jac-scale exits.
+CMD ["python", "-m", "cmguard.serve"]

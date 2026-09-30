@@ -7,9 +7,11 @@ name: CI
 #               venv with no Jac installed (the escape hatch from the stack)
 #   external  — the router on real people's posts (LegalBench learned_hands),
 #               held-out numbers printed to the run summary; never fails the run
-#   e2e       — the production Docker image, 64 HTTP checks, and a scan of the
-#               server logs for anything a user typed
-# No secrets are needed: nothing on these paths calls an LLM.
+#   e2e       — the production Docker image, 64 HTTP checks, a scan of the
+#               server logs for anything a user typed, and attack simulations
+#               against a second container (tests/security_e2e.py)
+# No secrets are needed: nothing on these paths calls a real LLM (the attack
+# simulations use tests/fake_llm.py and dummy keys that must never leak).
 
 on:
   push:
@@ -47,6 +49,8 @@ jobs:
         run: jac run tests/check_messages.jac
       - name: Input cost — linear money pattern, 4,000-character clip, hostile inputs under 1 s
         run: jac run tests/check_input_limits.jac
+      - name: Abuse protection — limiter, tokens, model budget, client address, redaction (unit)
+        run: python3 -m unittest tests.test_cmguard -v
       - name: Privacy guard — scrubbing, over-scrubbing, crisis turns
         run: jac run tests/check_privacy.jac
       - name: Policy dates — SNAP FY2027, net test, P.L. 119-21 rules, against published figures
@@ -158,6 +162,21 @@ jobs:
           if docker logs cm 2>&1 | grep -nE "case_text|123-45-6789|kill myself|老公|\{'version'"; then
             echo "user text reached the server logs" >&2; exit 1
           fi
+      - name: Security — attack simulations (second container, fake model provider, tight limits)
+        run: |
+          python3 civicmesh/tests/fake_llm.py 8799 0.3 &
+          docker run -d --name cm-sec -p 7861:7860 --add-host=host.docker.internal:host-gateway \
+            -e CIVICMESH_LLM_MODELS=openai/fake-narrator -e CIVICMESH_POLYGLOT_MODELS=openai/fake-polyglot \
+            -e OPENAI_API_BASE=http://host.docker.internal:8799/v1 -e OPENAI_API_KEY=sk-test-DO-NOT-LEAK-openai-123456 \
+            -e NVIDIA_NIM_API_BASE=http://host.docker.internal:8799/v1 \
+            -e NVIDIA_NIM_API_KEY=nvapi-TESTSECRET-DO-NOT-LEAK-123456 -e NVIDIA_API_KEY=nvapi-TESTSECRET-DO-NOT-LEAK-123456 \
+            -e CIVICMESH_RL_REGISTER_IP=5/600 -e CIVICMESH_RL_CHAT_USER=6/60 -e CIVICMESH_RL_CHAT_IP=12/60 \
+            -e CIVICMESH_INFLIGHT_PER_IP=2 -e CIVICMESH_LLM_MAX_PER_HOUR=12 -e CIVICMESH_LLM_MAX_CONCURRENT=2 \
+            -e CIVICMESH_SECURITY_LOG_S=5 civicmesh:ci
+          for _ in $(seq 1 90); do curl -sf -o /dev/null http://localhost:7861/ && break; sleep 2; done
+          CM_CONTAINER=cm-sec CM_FAKE=http://localhost:8799 \
+            CM_SECRETS=nvapi-TESTSECRET-DO-NOT-LEAK-123456,sk-test-DO-NOT-LEAK-openai-123456 \
+            python3 civicmesh/tests/security_e2e.py http://localhost:7861
       - name: Server logs (on failure)
         if: failure()
         run: docker logs cm 2>&1 | tail -200
