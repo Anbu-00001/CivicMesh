@@ -72,8 +72,8 @@ walker IntakeWalker {
         sp = span_begin(tr, "intake.parse", "INTERNAL", rid);
         parsed = parse_intake(text);
         # A picked (or pinned-by-chip) language is the case language: an
-        # English chip tapped in a Chinese conversation must not look like a
-        # language switch and start a new case.
+        # English chip tapped in a Chinese conversation must not switch the
+        # reply to English.
         pin = str(self.preferred_language or "").strip();
         if pin and pin != "auto" {
             parsed["language"] = pin;

@@ -13,7 +13,8 @@
 import re;
 import time;
 import uuid;
-import from engine.i18n { yes_no, unspaced_chars }
+import from engine.i18n { yes_no, unspaced_chars, ascii_digits }
+import from engine.facts_i18n { zh_number }
 import from engine.messages { msg, has_messages }
 
 glob MERGE_FIELDS: list = ["income_annual", "household_size", "age", "state", "city", "zip", "citizenship"];
@@ -34,14 +35,20 @@ glob COUNT_WORDS: dict = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, 
                           "uno": 1, "una": 1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5, "seis": 6, "siete": 7, "ocho": 8, "nueve": 9, "diez": 10};
 glob YES_RE: str = "^\\s*(?:yes|yeah|yep|yup|sure|correct|right|i am|i do|i have|we do|we are|s[ií]|claro|as[ií] es|tengo|soy)\\b";
 glob NO_RE: str = "^\\s*(?:no|nope|nah|not really|i'?m not|i don'?t|we don'?t|none|ninguno|no tengo|no soy)\\b";
+# Words a bare income answer may carry besides the number: hedges, currency
+# and pay periods ("about $2,000 a month", "unos 1500 al mes", "大概两千块").
+glob ANSWER_FILLER: str = "\\b(?:about|around|approximately|approx|roughly|maybe|almost|nearly|just|only|like|over|under|per|a|an|each|every|i|we|make|earn|get|it'?s|is|months?|monthly|mo|years?|yearly|annual|annually|weeks?|weekly|hours?|hourly|hrs?|dollars?|usd|bucks|k|cerca|de|unos|unas|como|m[aá]s|o|menos|aproximadamente|al|por|mes|mensual|a[nñ]o|semana|hora|d[oó]lares|gano|ganamos|ganho|m[eê]s|reais)\\b|大概|大约|大約|左右|差不多|美元|美金|块钱|塊錢|块|塊|元|每个月|每個月|每月|一个月|一個月|月|每年|年|每小时|每小時|小时|小時|每周|每週|周|週|星期";
 
 """Fold a new parse into the case carried over from earlier turns.
 
-Same case → new evidence wins and unknown fields keep their earlier value; a
-bare answer ("about $1,500 a month", "yes") inherits the earlier need instead
-of forcing an LLM call. A different language or a clearly different need
-starts a fresh case, so a demo visitor trying several prompts in a row never
-sees one person's facts leak into another's.
+One conversation is one person. New evidence wins, unknown fields keep their
+earlier value, and flags accumulate: violence disclosed in Chinese still
+counts after a switch to English. The latest message sets the need and, when
+it says enough, the reply language, because people switch languages mid-
+conversation and a second need ("also, the rent") is the same household's.
+A bare answer ("about $1,500 a month", "yes", "2000") inherits the earlier
+need instead of forcing an LLM call. Starting over is explicit: the New case
+button sends no prior.
 """
 def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") -> dict {
     out = dict(cur);
@@ -56,15 +63,6 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
         # "no", "sí", "$900" carry too little signal to switch language; a
         # reply written in a different script (conf ≥ 0.85) still does.
         out["language"] = prior.get("language");
-    }
-    # Length, not "is a question pending", decides: the client marks every
-    # typed message as a possible answer, but a full sentence about a new
-    # need in a new language is a new case.
-    lang_changed = (not short) and bool(cur.get("language")) and bool(prior.get("language")) and cur.get("language") != prior.get("language");
-    topic_changed = (not short) and bool(cur.get("category")) and bool(prior.get("category")) and cur.get("category") != prior.get("category") and float(cur.get("category_conf", 0)) >= 0.45;
-    if lang_changed or topic_changed {
-        out["new_case"] = True;
-        return out;
     }
     out["case_text"] = (str(prior.get("case_text", "")) + " \n " + str(text))[-1500:];
     answered = list(prior.get("answered", []));
@@ -87,6 +85,11 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
         if unknown and prior.get(k) not in [None, ""] {
             out[k] = prior.get(k);
         }
+    }
+    # A household inferred from children or a partner never shrinks one given
+    # earlier ("we are 4", later "my partner hits me"); a stated count wins.
+    if not cur.get("household_stated") and int(prior.get("household_size", 0) or 0) > int(out.get("household_size", 0) or 0) {
+        out["household_size"] = prior.get("household_size");
     }
     if not cur.get("category") and prior.get("category") {
         out["category"] = prior.get("category");
@@ -120,6 +123,11 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
             if 0 < n < 20 { out["household_size"] = n; }
         }
     }
+    # "About how much does your household earn per month?" → "2000", "两千五".
+    if answering == "income" and int(out.get("income_annual", -1)) < 0 {
+        annual = answer_income(str(text));
+        if annual >= 0 { out["income_annual"] = annual; }
+    }
     if prior.get("urgency") == "immediate" { out["urgency"] = "immediate"; }
     known = 0;
     if int(out.get("income_annual", -1)) >= 0 { known += 1; }
@@ -129,6 +137,37 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
     if out.get("citizenship") { known += 1; }
     out["completeness"] = round(known / 5.0, 2);
     return out;
+}
+
+"""Annual income from a bare answer to the income question, or -1.
+
+"2000", "about 2,000", "1.500", "2k", "两千五", "nothing", "15 an hour". Only
+a bare amount counts; "we are 2" answers something else and is left to the
+parser. The question asks per month, so an amount with no pay period is
+monthly unless it is 5,000 or more, as in parse.jac.
+"""
+def answer_income(text: str) -> int {
+    t = ascii_digits(str(text)).strip().lower();
+    if re.search("^(?:0|zero|cero|nothing|none|nada|没有|沒有)(?!\\w)", t) {
+        return 0;
+    }
+    rest = re.sub("[零〇一二两兩三四五六七八九十百千万萬]", " ", re.sub(ANSWER_FILLER, " ", t));
+    if re.search("[^\\W\\d_]", rest) {
+        return -1;
+    }
+    amount = -1;
+    m = re.search("(?<![\\d.,])(\\d{1,3}(?:[,.]\\d{3})+|\\d{1,7})(?:[.,]\\d{1,2})?(?![\\d.,])\\s*(k\\b)?", t);
+    if m {
+        amount = int(re.sub("[,.]", "", m.group(1))) * (1000 if m.group(2) else 1);
+    } else {
+        zm = re.search("[零〇一二两兩三四五六七八九十百千万萬]+", t);
+        if zm { amount = zh_number(zm.group(0)); }
+    }
+    if amount < 0 { return -1; }
+    if re.search("\\b(?:hour|hr|hora)s?\\b|小时|小時", t) { return amount * 2080; }
+    if re.search("\\b(?:week|wk|semana)s?\\b|周|週|星期", t) { return amount * 52; }
+    if re.search("\\b(?:year|yr|a[nñ]o|annual|anual)s?\\b|年", t) { return amount; }
+    return amount * 12 if amount < 5000 else amount;
 }
 
 """Language the reply is composed in: the user's when a catalog covers it."""

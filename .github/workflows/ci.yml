@@ -157,9 +157,11 @@ jobs:
         run: |
           pip install websocket-client
           python3 civicmesh/tests/a11y_axe.py http://localhost:7860
+      - name: Browser — quick exit (own tab, Shift ×3, private session, sandboxed frame), first message during sign-in
+        run: python3 civicmesh/tests/browser_e2e.py http://localhost:7860
       - name: Server logs hold no user text
         run: |
-          if docker logs cm 2>&1 | grep -nE "case_text|123-45-6789|kill myself|老公|\{'version'"; then
+          if docker logs cm 2>&1 | grep -nE "case_text|123-45-6789|kill myself|老公|scared to go home|\{'version'"; then
             echo "user text reached the server logs" >&2; exit 1
           fi
       - name: Security — attack simulations (second container, fake model provider, tight limits)

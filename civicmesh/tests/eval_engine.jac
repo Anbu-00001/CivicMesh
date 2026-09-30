@@ -6,7 +6,9 @@ tests/golden_adversarial.json (negation, idioms, cross-category traps,
 crisis, code-switching, romanized scripts, no-signal input) and
 tests/golden_facts_i18n.json (income, household, age, status and location
 stated in 20 other languages, with traps) through
-parse → rank → plan → routes
+parse → rank → plan → routes, and tests/golden_conversations.json
+(multi-turn: language switches, a second need, bare answers) through
+parse → merge_profiles turn by turn,
 and reports field-extraction accuracy, top-3 recommendation hit rate,
 exclusion violations, LLM-routing precision, and latency percentiles.
 
@@ -24,6 +26,7 @@ import from engine.parse { parse_intake }
 import from engine.score { rank_resources }
 import from engine.plan { build_plan }
 import from engine.paths { plan_routes }
+import from engine.compose { merge_profiles }
 
 glob FLOORS: dict = {"field_accuracy": 0.9, "top3_hit_rate": 0.85, "exclusion_violations": 0};
 
@@ -167,6 +170,40 @@ with entry {
                 excl_viol += 1;
                 failures.append(f"EXCL {n} should not be in top 3 | {text[:60]}");
             }
+        }
+    }
+
+    # Conversations: each turn folded into the previous turn's profile, as
+    # IntakeWalker does; expectations are on the merged profile.
+    convs = json.load(open("tests/golden_conversations.json", encoding="utf-8"))["conversations"];
+    for conv in convs {
+        prior: dict = {};
+        for (ti, t) in enumerate(conv["turns"]) {
+            merged = merge_profiles(prior, parse_intake(t["text"]), t["text"], str(t.get("answering", "")));
+            for (k, v) in t.get("expect", {}).items() {
+                if k == "flag" {
+                    got = merged.get("flags", []);
+                    ok = v in got;
+                } elif k == "flag_absent" {
+                    got = merged.get("flags", []);
+                    ok = v not in got;
+                } else {
+                    got = merged.get(k);
+                    ok = got == v;
+                }
+                field_total += 1;
+                suite_tot["conversations"] = int(suite_tot.get("conversations", 0)) + 1;
+                per_field.setdefault(k, [0, 0]);
+                per_field[k][1] += 1;
+                if ok {
+                    field_ok += 1;
+                    per_field[k][0] += 1;
+                    suite_ok["conversations"] = int(suite_ok.get("conversations", 0)) + 1;
+                } else {
+                    failures.append(f"CONV {conv['name'][:40]} · turn {ti + 1} {k}: want {v!r} got {got!r}");
+                }
+            }
+            prior = merged;
         }
     }
 

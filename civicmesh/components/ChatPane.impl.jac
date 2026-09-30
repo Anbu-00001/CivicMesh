@@ -106,14 +106,23 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "", display:
         }
     }, 30000);
 
+    # The anonymous login can still be running when the first message goes
+    # out (a suggestion tapped as the chat opens). A request without a token
+    # gets a 401, and the client runtime then reloads the page and the
+    # message is lost: wait for the login, and never send without one.
+    uid = user_id;
+    if auth_ready { uid = (await auth_ready) or user_id; }
     t0 = window.performance.now();
-    res = await safeSpawn("IntakeWalker", {
-        "conversation": user_text,
-        "user_id": user_id,
-        "prior": profile_ctx if profile_ctx else {},
-        "answering": ans,
-        "preferred_language": send_lang
-    });
+    res: Any = {"reports": [], "spawn_error": "couldn't sign in to the server"};
+    if uid and jacIsLoggedIn() {
+        res = await safeSpawn("IntakeWalker", {
+            "conversation": user_text,
+            "user_id": uid,
+            "prior": profile_ctx if profile_ctx else {},
+            "answering": ans,
+            "preferred_language": send_lang
+        });
+    }
     rtt = window.performance.now() - t0;
     if CM_INFLIGHT["id"] != req_id { return; }
     CM_INFLIGHT["id"] = "";

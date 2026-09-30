@@ -24,7 +24,7 @@ Output contract (plain dict so it serialises straight into walker reports):
 
 import re;
 import from engine.i18n { detect_script, detect_latin_other, route_i18n, negated, need_focus, LATIN_MARKERS, NEG_RIGHT }
-import from engine.facts_i18n { facts_i18n }
+import from engine.facts_i18n { facts_i18n, place_i18n }
 
 # ---------- lexicons ----------
 # (pattern, weight). Patterns are regex fragments matched on lowercase text
@@ -46,6 +46,8 @@ glob CATEGORY_LEXICON: dict = {
         ("homeless", 2.5), ("shelter", 2.0), ("housing", 2.5), ("apartment", 1.0),
         ("section 8", 2.5), ("mortgage", 1.5), ("foreclos\\w*", 2.0),
         ("place to (?:stay|live|sleep)", 2.0), ("sleeping in (?:my|our|the) car", 2.5),
+        ("(?:where can (?:i|we)|somewhere to|anywhere to) (?:stay|sleep)", 2.0),
+        ("(?:kicked|threw|thrown|put|kick|throw|throwing|kicking) (?:me|us) out", 2.0), ("me (?:ech[oó]|corri[oó]) de (?:la )?casa", 2.0),
         ("renta", 1.5), ("alquiler", 1.5), ("desalo(?:jo|jar|jan)", 2.5),
         ("casero", 1.5), ("vivienda", 2.5), ("refugio", 2.0), ("sin hogar", 2.5),
         ("heating", 2.0), ("electric(?:ity)?", 1.5), ("utilit(?:y|ies)", 2.0),
@@ -132,7 +134,7 @@ glob FLAG_LEXICON: dict = {
                  "sleeping in (?:my|our|the|a) car", "nowhere to (?:go|stay|sleep|live)", "no place to (?:stay|sleep|live)", "(?:need|find|get) (?:a )?shelter tonight",
                  "sin hogar", "sin techo", "no tenemos d[oó]nde (?:vivir|dormir|quedarnos)",
                  "(?:vivo|vivimos|viv[ií]a|dormimos|duermo|dorm[ií]|estoy|estamos|quedamos|qued[eé]|terminamos|dejaron|echaron|sacaron|tiraron)(?: \\w+){0,2} en la calle"],
-    "pregnant": ["pregnant", "expecting a baby", "embarazada"],
+    "pregnant": ["pregnant", "expecting a baby", "embarazada", "gr[aá]vida"],
     "children": ["kids?", "children", "child", "sons?", "daughters?", "baby", "toddler", "infant", "teens?", "teenagers?", "hij[oa]s?", "ni[nñ][oa]s?", "beb[eé]"],
     "family": ["my family", "our family", "mi familia", "nuestra familia", "familia"]
 };
@@ -208,7 +210,9 @@ glob CONCERN_LEXICON: dict = {
         "(?:checks|reads|goes through|tracks) my (?:phone|messages|texts|location|email)",
         "(?:won'?t|will not|doesn'?t|does not) let me (?:see|talk to|leave|work|go out|have a phone|call|visit)",
         "(?:threatens|threatened|says he'?ll|says she'?ll|keeps saying he'?ll|keeps saying she'?ll) (?:to )?(?:take (?:the|my) (?:kids|children)|call (?:immigration|ice)|report me|have me deported|deport me|kick me out)",
-        "locks me (?:in|out)", "walking on eggshells", "(?:he|she) (?:gets|got) (?:really )?(?:violent|aggressive) when",
+        "locks me (?:in|out)", "walking on eggshells",
+        "(?:my )?(?:ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|ex-partner|husband|wife|boyfriend|girlfriend|partner)\\b[^.!?]{0,40}\\b(?:threaten(?:s|ed|ing)? me|stalk(?:s|ed|ing)? me|keeps? showing up|shows? up at my|follow(?:s|ed|ing)? me (?:home|around|to (?:work|my job|school)|everywhere)|won'?t leave me alone)",
+        "mi (?:ex|expareja|exesposo|exesposa|exnovio|exnovia|esposo|esposa|pareja|novio|novia)\\b[^.!?]{0,40}\\b(?:me amenaza|me acosa|me sigue|me persigue|no me deja en paz)", "(?:he|she) (?:gets|got) (?:really )?(?:violent|aggressive) when",
         "tengo miedo de (?:volver|regresar|ir) a (?:la )?casa", "me quita (?:el|mi) dinero", "(?:revisa|vigila) mi (?:tel[eé]fono|celular)",
         "no me deja (?:salir|trabajar|ver a mi familia|hablar con)", "amenaza con (?:quitarme a (?:los|mis) (?:ni[nñ]os|hijos)|llamar a inmigraci[oó]n|deportarme|echarme)",
         "no me siento segur[oa] en (?:mi )?casa",
@@ -233,6 +237,8 @@ glob SOON_PATTERNS: list = [
     "desalojo"
 ];
 
+glob AGE_TENS: dict = {"twenty": 20, "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90};
+glob TENS_RE: str = "twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety";
 glob NUMBER_WORDS: dict = {
     "a": 1, "an": 1, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
     "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
@@ -301,12 +307,17 @@ glob ES_MARKERS: list = [
 glob UNEARNED_CUES: str = r"\b(?:social security|ssi|ssdi|pension|disability (?:check|benefits?|payments?)|retirement (?:check|benefits?|income)|unemployment (?:benefits?|insurance|checks?)|child support|alimony|seguro social|pensi[oó]n|jubilaci[oó]n)\b";
 glob EARNED_CUES: str = r"\b(?:earn|earns|earning|earnings|salary|wages?|paycheck|job|jobs|work|works|working|hourly|an hour|per hour|self.employed|sueldo|salario|trabajo)\b";
 glob INCOME_CUES: str ="(?:earn|earning|make|making|income|salary|paid|wage|wages|pension|social security|ssi|ssdi|disability|benefits?|gano|ganamos|ingresos?|sueldo|salario|pensi[oó]n|seguro social)";
-glob EXPENSE_CUES: str = "(?:rent|owe|owed|debt|bill|bills|cost|costs|fee|fine|deposit|renta|alquiler|debo|deuda|factura)";
+glob EXPENSE_CUES: str = "\\b(?:rent|owe|owed|debt|bill|bills|cost|costs|fee|fine|deposit|pay|paying|renta|alquiler|debo|deuda|factura|pago|pagamos|pagar)\\b";
+# A number with no currency mark counts as income only right after an income
+# word in its clause or right before a pay period ("I earn 1800", "18k a year").
+# ...or right before its source: "900 from social security", "1200 de mi trabajo".
+glob BARE_SOURCE_RE: str = "^\\s*(?:dollars?\\s*)?(?:a month\\s*|per month\\s*|monthly\\s*|al mes\\s*)?(?:from|in|of|de)\\s+(?:my\\s+|mi\\s+)?(?:social security|ssi|ssdi|pension|disability|unemployment|child support|job|work|seguro social|pensi[oó]n|trabajo)\\b";
+glob BARE_AMOUNT_RE: str = "(?<![\\d,.$/:-])(\\d{1,3}(?:,\\d{3})+|\\d{1,6})(?:\\.\\d{1,2})?\\s*(k)?(?![\\d/:%-])";
 # Bounded digit runs and an anchored start keep this linear: the unbounded
 # form retried every position inside a digit run, and 10,000 digits took
 # 3.5 s (outside review; tests/check_input_limits.jac pins the budget).
-glob MONEY_RE: str = "\\$\\s?(\\d[\\d,]{0,14}(?:\\.\\d{1,2})?)\\s*(k)?|(?<![\\d,.])(\\d[\\d,]{0,14}(?:\\.\\d{1,2})?)\\s*(k)?\\s*(?:dollars|d[oó]lares|usd|bucks)";
-glob PERIOD_RE: str = "^\\s*(?:/|a|an|per|every|each|al|por|cada|a la|al a[nñ]o)?\\s*(month|mo|monthly|year|yr|yearly|annually|annual|week|wk|weekly|hour|hr|hourly|mes|mensual(?:es)?|a[nñ]o|anual(?:es)?|semana|semanal(?:es)?|hora)\\b";
+glob MONEY_RE: str = "\\$\\s?(\\d[\\d,]{0,14}(?:\\.\\d{1,2})?)\\s*(k)?|(?<![\\d,.])(\\d[\\d,]{0,14}(?:\\.\\d{1,2})?)\\s*(k)?\\s*(?:dollars?|d[oó]lares|usd|bucks)";
+glob PERIOD_RE: str = "^\\s*(?:/|a|an|per|every|each|al|por|cada|a la|al a[nñ]o)?\\s*(month|mo|monthly|year|yr|yearly|annually|annual|week|wk|weekly|hour|hr|hourly|mes|mensual(?:es)?|a[nñ]o|anual(?:es)?|semana|semanal(?:es)?|hora|mahin[ae])\\b";
 
 # ---------- helpers ----------
 
@@ -426,40 +437,67 @@ def parse_income(low: str) -> tuple {
         period = pm.group(1) if pm else "";
         cue = 0.0;
         if re.search(INCOME_CUES, head) or re.search(INCOME_CUES, tail) { cue += 2.0; }
-        # Expense words only disqualify an amount inside the same clause
-        # ("rent is $900"), not across a comma ("rent, family of 3, $25k a year").
+        # Expense words only disqualify an amount inside the same clause, before
+        # it ("rent is $900") or after it ("$900 a month for rent"), not across
+        # a comma ("rent, family of 3, $25k a year").
         clause = re.split(r"[,.;!?]", head)[-1];
-        if re.search(EXPENSE_CUES, clause) { cue -= 3.0; }
+        after = re.split(r"[,.;!?]|\band\b|\bbut\b|\by\b|\bpero\b", tail)[0];
+        if re.search(EXPENSE_CUES, clause) or re.search(EXPENSE_CUES, after) { cue -= 3.0; }
         if period { cue += 1.0; }
         if cue < 0 { continue; }
-        annual = amount;
-        if period.startswith("h") or period == "hora" {
-            annual = amount * 2080.0;
-        } elif period.startswith("w") or period.startswith("seman") {
-            annual = amount * 52.0;
-        } elif period.startswith("mo") or period.startswith("mes") or period.startswith("mensual") {
-            annual = amount * 12.0;
-        } elif period == "" and amount < 5000.0 {
-            annual = amount * 12.0;
-        }
         if cue > best_score {
             best_score = cue;
             best = m;
-            best_annual = int(round(annual));
+            best_annual = _annualize(amount, period, low);
+        }
+    }
+    if best is None {
+        for m in re.finditer(BARE_AMOUNT_RE, low) {
+            amount = float(m.group(1).replace(",", "")) * (1000.0 if m.group(2) else 1.0);
+            clause = re.split(r"[,.;!?]", low[max(0, m.start() - 30):m.start()])[-1];
+            after = re.split(r"[,.;!?]|\band\b|\bbut\b|\by\b|\bpero\b", low[m.end():m.end() + 24])[0];
+            pm = re.match(PERIOD_RE, low[m.end():m.end() + 24]);
+            period = pm.group(1) if pm else "";
+            hourly = period.startswith("h") or period == "hora";
+            if (amount < 100 and not hourly) or re.search(EXPENSE_CUES, clause) or re.search(EXPENSE_CUES, after) { continue; }
+            cued = re.search(INCOME_CUES + "\\W*(?:about|around|like|roughly|approximately|unos|como)?\\W*$", clause) or re.match(BARE_SOURCE_RE, low[m.end():m.end() + 40]);
+            if not (cued or pm) { continue; }
+            return (_annualize(amount, period, low), m);
         }
     }
     return (best_annual, best);
 }
 
-"""Household size from explicit counts, children counts and partner mentions."""
-def parse_household(low: str, evidence: list, text: str) -> int {
-    m = re.search(r"\b(?:family|household) of (\d+|\w+)\b|\bfamilia de (\d+|\w+)\b|\bsomos (\d+|\w+)\b|\bwe are (\d+|\w+) (?:people|of us)\b|\bthere (?:are|is) (\d+|\w+) (?:people|persons|of us)\b|\b(\d+|\w+) (?:people|persons) (?:live|living|in (?:my|our|the) (?:house|home|household|apartment|family))\b", low);
+"""An amount and its pay period ("month", "hr", "semana", "" …) as a yearly figure.
+
+Hourly pay uses the hours stated ("$15 an hour, about 30 hours a week"), else
+40 a week. No period and under $5,000 reads as monthly.
+"""
+def _annualize(amount: float, period: str, low: str) -> int {
+    if period.startswith("h") or period == "hora" {
+        hm = re.search(r"\b(\d{1,2})\s*(?:hours?|hrs?|horas)\s*(?:a|an|per|each|every|por|a la|cada)?\s*(?:week|wk|semana)\b", low);
+        weekly_hours = int(hm.group(1)) if (hm and 0 < int(hm.group(1)) <= 80) else 40;
+        return int(round(amount * weekly_hours * 52.0));
+    }
+    if period.startswith("w") or period.startswith("seman") { return int(round(amount * 52.0)); }
+    if period.startswith("mo") or period.startswith("mes") or period.startswith("mensual") or period.startswith("mahin") { return int(round(amount * 12.0)); }
+    if period == "" and amount < 5000.0 { return int(round(amount * 12.0)); }
+    return int(round(amount));
+}
+
+"""Household size and whether it was stated: (n, stated).
+
+Stated: an explicit count ("family of 4", "we're 3", "somos 5") or living
+alone. Otherwise inferred from children and a partner (1 + kids + partner).
+"""
+def parse_household(low: str, evidence: list, text: str, flags: list) -> tuple {
+    m = re.search(r"\b(?:family|household) of (\d+|\w+)\b|\bfamilia de (\d+|\w+)\b|\bsomos (\d+|\w+)\b|\bwe(?:'re| are) (\d+|\w+)(?: (?:people|persons|of us)| in (?:the|my|our) (?:family|household|house|home))\b|\bwe(?:'re| are) (\d+|\w+)(?=\s*(?:[,.;!?]|$))|\bhum (\d+) log\b|\bthere (?:are|is) (\d+|\w+) (?:people|persons|of us)\b|\b(\d+|\w+) (?:people|persons) (?:live|living|in (?:my|our|the) (?:house|home|household|apartment|family))\b", low);
     if m {
-        tok = m.group(1) or m.group(2) or m.group(3) or m.group(4) or m.group(5) or m.group(6);
+        tok = [g for g in m.groups() if g][0];
         n = _num(tok);
         if n > 0 and n < 20 {
             _ev(evidence, "household_size", n, m.start(), m.end(), text);
-            return n;
+            return (n, True);
         }
     }
     kids = 0;
@@ -474,21 +512,18 @@ def parse_household(low: str, evidence: list, text: str) -> int {
     }
     partner = 1 if re.search(r"\b(?:my|our) (?:husband|wife|partner|spouse|boyfriend|girlfriend)\b|\bmi (?:esposo|esposa|pareja|marido|mujer)\b|\bmarried\b|\bcasad[oa]\b", low) else 0;
     # Someone fleeing an abusive partner is not in that partner's household.
-    if partner and re.search(r"\b(?:hits|beats|hurts|abus\w*|threaten\w*)\b|\bme golpea\b|\bmaltrat\w*", low) {
+    if partner and ("dv" in flags or re.search(r"\b(?:hits|beats|hurts|abus\w*|threaten\w*)\b|\bme golpea\b|\bmaltrat\w*", low)) {
         partner = 0;
     }
     if kids > 0 {
-        return 1 + kids + partner;
+        return (1 + kids + partner, False);
     }
     if re.search(r"\b(?:i live alone|live by myself|just me|only me|vivo sol[oa])\b", low) {
         ma = re.search(r"\b(?:i live alone|live by myself|just me|only me|vivo sol[oa])\b", low);
         _ev(evidence, "household_size", 1, ma.start(), ma.end(), text);
-        return 1;
+        return (1, True);
     }
-    if partner {
-        return 2;
-    }
-    return 0;
+    return ((2, False) if partner else (0, False));
 }
 
 """Age from "I'm 72", "72 years old", "tengo 72 años"."""
@@ -510,6 +545,22 @@ def parse_age(low: str, evidence: list, text: str) -> int {
                 _ev(evidence, "age", a, m.start(), m.end(), text);
                 return a;
             }
+        }
+    }
+    # "I'm seventy-two", "sixty five years old"; "in my 70s" reads as 70, the
+    # least it can mean.
+    w = re.search("\\b(?:i'?m|i am|aged?)\\s+(" + TENS_RE + ")(?:[- ](one|two|three|four|five|six|seven|eight|nine))?\\b(?!\\s*(?:dollars|bucks|%|percent|minutes|hours|days|weeks|months|miles|blocks))|\\b(" + TENS_RE + ")(?:[- ](one|two|three|four|five|six|seven|eight|nine))?\\s+years? old", low);
+    if w {
+        a = int(AGE_TENS[w.group(1) or w.group(3)]) + _num(str(w.group(2) or w.group(4) or ""));
+        _ev(evidence, "age", a, w.start(), w.end(), text);
+        return a;
+    }
+    d = re.search("\\bin (?:my|his|her) (?:(\\d)0'?s|(" + TENS_RE.replace("ty", "ties") + "))\\b", low);
+    if d {
+        a = int(d.group(1)) * 10 if d.group(1) else int(AGE_TENS[d.group(2).replace("ties", "ty")]);
+        if a >= 20 {
+            _ev(evidence, "age", a, d.start(), d.end(), text);
+            return a;
         }
     }
     return 0;
@@ -538,6 +589,11 @@ def parse_location(text: str, low: str, evidence: list) -> dict {
                 break;
             }
         }
+    }
+    if not out["state"] and re.search(r"\bin L\.?A\.?(?![A-Za-z])", text) {
+        # "in LA" is Los Angeles; Louisiana comes after a city ("Baton Rouge, LA").
+        out["city"] = "Los Angeles";
+        out["state"] = "CA";
     }
     if not out["state"] {
         # Two-letter codes only in their capitalised form after "in" or a
@@ -657,7 +713,7 @@ def parse_intake(text: str) -> dict {
     # Indirect cues: added only when the direct flag isn't already there.
     for (cflag, cpats) in CONCERN_LEXICON.items() {
         direct = cflag.replace("_concern", "");
-        if direct in flags { continue; }
+        if direct in flags or cflag in flags { continue; }
         for cp in cpats {
             cm = re.search("\\b" + cp + "\\b", low);
             if cm {
@@ -714,7 +770,7 @@ def parse_intake(text: str) -> dict {
             flags.append("unearned_income");
         }
     }
-    household = parse_household(low, evidence, raw);
+    (household, household_stated) = parse_household(low, evidence, raw, flags);
     if household > 1 and "children" not in flags and re.search(r"\b(?:kids?|children|hij[oa]s|ni[nñ][oa]s)\b", low) {
         flags.append("children");
     }
@@ -739,6 +795,7 @@ def parse_intake(text: str) -> dict {
         }
         if household == 0 and int(fx["household_size"]) > 0 {
             household = int(fx["household_size"]);
+            household_stated = int(fx["kids"]) == 0 and int(fx["household_span"][0]) >= 0;
             if int(fx["household_span"][0]) >= 0 {
                 _ev(evidence, "household_size", household, int(fx["household_span"][0]), int(fx["household_span"][1]), raw);
             }
@@ -757,6 +814,16 @@ def parse_intake(text: str) -> dict {
             loc["state"] = str(fx["state"]);
             loc["city"] = str(fx["city"]);
             _ev(evidence, "location", ((str(fx["city"]) + ", ") if fx["city"] else "") + str(fx["state"]), int(fx["place_span"][0]), int(fx["place_span"][1]), raw);
+        }
+    }
+    # Place names don't depend on the language they're written in: a message
+    # read as Spanish can still say "Califórnia".
+    if not loc["state"] {
+        (pcity, pstate, p0, p1) = place_i18n(low);
+        if pstate {
+            loc["state"] = pstate;
+            loc["city"] = pcity;
+            _ev(evidence, "location", ((pcity + ", ") if pcity else "") + pstate, p0, p1, raw);
         }
     }
 
@@ -787,6 +854,7 @@ def parse_intake(text: str) -> dict {
         "urgency": urgency,
         "income_annual": income_annual,
         "household_size": household,
+        "household_stated": household_stated,
         "age": age,
         "state": loc["state"],
         "city": loc["city"],

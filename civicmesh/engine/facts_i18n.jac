@@ -584,6 +584,45 @@ def _amount(raw: str) -> float {
     return float(s.replace(",", "."));
 }
 
+glob ZH_DIGITS: dict = {"零": 0, "〇": 0, "一": 1, "二": 2, "两": 2, "兩": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9};
+glob ZH_UNITS: dict = {"十": 10, "百": 100, "千": 1000};
+# A run of Chinese numerals, as people write amounts: 两千五百, 一千八, 一万二.
+glob ZH_NUMERAL_RE: str = "[零〇一二两兩三四五六七八九十百千万萬]*[一二两兩三四五六七八九十][零〇一二两兩三四五六七八九十百千万萬]*";
+
+"""A Chinese numeral as an int: 两千五百 → 2500, 十五 → 15, 一千零五 → 1005.
+
+A digit right after a unit is one unit lower, as in speech: 两千五 → 2500,
+一万二 → 12000.
+"""
+def zh_number(s: str) -> int {
+    total = 0;
+    section = 0;
+    digit = -1;
+    unit = 1;
+    after_unit = False;
+    for ch in str(s) {
+        if ch in ZH_DIGITS {
+            digit = int(ZH_DIGITS[ch]);
+            after_unit = after_unit and ch not in ["零", "〇"];
+        } elif ch in ZH_UNITS {
+            unit = int(ZH_UNITS[ch]);
+            section += (digit if digit >= 0 else 1) * unit;
+            digit = -1;
+            after_unit = True;
+        } elif ch in ["万", "萬"] {
+            total += (section + max(digit, 0)) * 10000;
+            section = 0;
+            digit = -1;
+            unit = 10000;
+            after_unit = True;
+        }
+    }
+    if digit >= 0 {
+        section += digit * (unit // 10) if (after_unit and unit >= 10) else digit;
+    }
+    return total + section;
+}
+
 """Annual income from a message in `lang`: (annual, start, end), (-1, -1, -1) if none.
 
 An amount counts when it carries a currency mark and either an income cue
@@ -600,10 +639,12 @@ def income_i18n(lang: str, t: str) -> tuple {
     num = "(\\d{1,3}(?:[,.\\s]\\d{3})+|\\d+(?:[.,]\\d+)?)\\s*(k|千|万|萬|천|만)?";
     best: tuple = (-1, -1, -1);
     best_score = -1;
-    for pat in ["(?:\\$|usd|us\\$)\\s?" + num, num + "\\s*" + cur] {
+    pats = ["(?:\\$|usd|us\\$)\\s?" + num, num + "\\s*" + cur];
+    if lang in ["zh", "yue"] { pats.append("(" + ZH_NUMERAL_RE + ")()\\s*" + cur); }
+    for pat in pats {
         for m in re.finditer(pat, t) {
             try {
-                amount = _amount(m.group(1));
+                amount = float(zh_number(m.group(1))) if re.match(ZH_NUMERAL_RE, m.group(1)) else _amount(m.group(1));
             } except Exception as _ex {
                 continue;
             }

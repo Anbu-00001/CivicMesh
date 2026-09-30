@@ -20,7 +20,7 @@ impl ClientApp.visitorCreds -> list {
     return [uid, pw];
 }
 
-impl ClientApp.initAuth -> None {
+impl ClientApp.initAuth -> str {
     # Auth bootstrap that survives container rebuilds on free HF Spaces:
     # 1) drop a stale token (the users DB is wiped on redeploy) by probing
     #    /user/me; 2) signup is idempotent (409 if the visitor exists), then
@@ -53,7 +53,9 @@ impl ClientApp.initAuth -> None {
         # (client-side `except` can't match the runtime's exception class).
         pw = await jacSpawn("PlatformWalker", "", {}).catch(lambda e: Any -> dict { return {"reports": []}; });
         if pw["reports"] and len(pw["reports"]) > 0 { platform = pw["reports"][len(pw["reports"]) - 1]; }
+        return creds[0];
     }
+    return "";
 }
 
 impl ClientApp.loadSession -> None {
@@ -70,7 +72,7 @@ impl ClientApp.loadSession -> None {
 impl ClientApp.startApp -> None {
     # CTA from the landing page hides it and routes the user to the chat tab.
     # Auth runs on mount (initAuth in `with entry`). If it hasn't finished
-    # yet, ChatPane's sendMessage will retry — don't block the UI here.
+    # yet, ChatPane's sendMessage waits for it — don't block the UI here.
     show_landing = False;
     active_tab = "chat";
 }
@@ -385,5 +387,21 @@ impl ClientApp.quickExit -> None {
         }
     } except Exception as _ex {}
     document.title = "Weather";
-    window.location.replace(CM_EXIT_URL);
+    # Inside another site's frame (the Space page on huggingface.co) this page
+    # can't move the tab, and the neutral site breaks when framed: open it in
+    # a new tab and blank the frame. Only a click allows the new tab (Shift is
+    # not user activation); don't try without one, or the browser shows a
+    # "pop-up blocked" badge.
+    framed = False;
+    try { framed = window.self != window.top; } except Exception as _ex { framed = True; }
+    if framed {
+        clicked = True;
+        try { clicked = bool(navigator.userActivation.isActive); } except Exception as _ex {}
+        if clicked {
+            try { window.open(CM_EXIT_URL, "_blank", "noopener,noreferrer"); } except Exception as _ex {}
+        }
+        window.location.replace("about:blank");
+    } else {
+        window.location.replace(CM_EXIT_URL);
+    }
 }

@@ -41,6 +41,13 @@
     {"text": "Nous sommes 5 à la maison et je suis sans papiers", "expect": {"language": "fr", "household_size": 5, "citizenship": "non_citizen"}},
     {"text": "Moro em Boston, ganho 2500 dólares por mês, somos 4, preciso de comida", "expect": {"language": "pt", "category": "food", "income_annual": 30000, "household_size": 4, "state": "MA"}},
     {"text": "Tenho 66 anos, sou cidadão americano e moro sozinho", "expect": {"language": "pt", "age": 66, "citizenship": "citizen", "household_size": 1}},
-    {"text": "Mam 70 lat, mieszkam sama w Chicago, potrzebuję lekarza", "expect": {"language": "pl", "age": 70, "household_size": 1, "state": "IL"}}
+    {"text": "Mam 70 lat, mieszkam sama w Chicago, potrzebuję lekarza", "expect": {"language": "pl", "age": 70, "household_size": 1, "state": "IL"}},
+    {"text": "我每个月挣两千五百块，家里有五口人，住在加州，需要找房子", "expect": {"language": "zh", "category": "housing", "income_annual": 30000, "household_size": 5, "state": "CA"}, "_why": "Chinese numerals for the amount"},
+    {"text": "我一个月赚一千八百美元，需要食物", "expect": {"language": "zh", "income_annual": 21600}, "_why": "一千八百 = 1,800"},
+    {"text": "Kailangan ko ng tulong sa rent, we're 3 in the family, nasa Los Angeles kami", "expect": {"language": "tl", "household_size": 3, "state": "CA"}, "_why": "Taglish: the count is in English"},
+    {"text": "mujhe khana chahiye, hum 4 log hai, income 2000 dollar mahina hai, New Jersey mein rehte hai", "expect": {"category": "food", "household_size": 4, "income_annual": 24000, "state": "NJ"}, "_why": "romanized Hindi (Hinglish)"},
+    {"text": "Moro na Califórnia e preciso de comida", "expect": {"language": "pt", "category": "food", "state": "CA"}, "_why": "Portuguese spelling of the state; was read as Spanish"},
+    {"text": "I make $15 an hour, about 30 hours a week, need help paying for health insurance in Georgia", "expect": {"income_annual": 23400, "category": "healthcare", "state": "GA"}, "_why": "stated hours, not 40"},
+    {"text": "We are 3 months behind on rent in Chicago", "expect": {"household_size": 0, "category": "housing"}, "_why": "trap: 'we are 3' followed by months is not a household"}
   ]
 }

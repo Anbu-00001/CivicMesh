@@ -12,7 +12,7 @@ real timing from the last turn's trace.
 sv import from walkers.intake { IntakeWalker }
 sv import from walkers.narrate { NarrateWalker }
 sv import from walkers.forget { ForgetWalker }
-import from "@jac/runtime" { jacSpawn }
+import from "@jac/runtime" { jacSpawn, jacIsLoggedIn }
 
 # The id of the chat request waiting for an answer (see sendMessage).
 glob CM_INFLIGHT: dict = {"id": ""};
@@ -24,6 +24,7 @@ glob YES_NO_KEYS: list = ["homeless", "veteran", "disability", "dv", "young_chil
 def:pub ChatPane(
     user_id: str,
     on_walker_event: Any,
+    auth_ready: Any = None,
     session_data: dict,
     walker_events: list = [],
     platform: Any = None

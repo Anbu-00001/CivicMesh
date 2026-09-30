@@ -41,7 +41,10 @@ def:pub ClientApp -> JsxElement {
         palette_query: str = "",
         palette_idx: int = 0,
         # Live engine preview + platform counters for the landing page.
-        platform: Any = None;
+        platform: Any = None,
+        # initAuth's promise (resolves to the visitor id): the chat awaits it
+        # before its first request.
+        auth_ready: Any = None;
 
     # Master action list for the Cmd+K command palette. Each entry is a
     # (label, kind, payload) triple so navigate actions and side effects
@@ -66,7 +69,7 @@ def:pub ClientApp -> JsxElement {
     can with entry {
         # Always run initAuth: it also migrates browsers still holding the
         # old shared demo token onto their own visitor account.
-        initAuth();
+        auth_ready = initAuth();
         # Global Cmd/Ctrl+K listener wired at the document level so the
         # palette is reachable from any tab without per-component plumbing.
         try {
@@ -115,7 +118,7 @@ def:pub ClientApp -> JsxElement {
         }
     }
 
-    async def initAuth -> None;
+    async def initAuth -> str;
     def visitorCreds -> list;
     def quickExit -> None;
     async def loadSession -> None;
@@ -263,6 +266,7 @@ def:pub ClientApp -> JsxElement {
             >
                 {active_tab == "chat" and <ChatPane
                     user_id={user_id}
+                    auth_ready={auth_ready}
                     on_walker_event={pushWalkerEvent}
                     session_data={session_data}
                     walker_events={walker_events}
