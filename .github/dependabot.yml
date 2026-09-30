@@ -1,13 +1,17 @@
 version: 2
 updates:
-  # Python packages: at most one PR a week for everything outside the Jac stack.
-  # CI runs the full eval on it, so a release that changes behaviour shows up as
-  # a red check instead of a surprise in production.
+  # Python packages: security updates only. The stack is pinned as a unit:
+  # jaclang and byllm pin litellm (and through it openai, fastapi and friends)
+  # exactly, so version bumps can't resolve one by one or grouped (#18: 50
+  # packages, ResolutionImpossible on litellm vs byllm==0.6.7). A limit of 0
+  # turns version updates off; security updates don't count against it and
+  # still arrive. The stack moves together in the planned Jac migration
+  # (docs/MAINTENANCE.md).
   - package-ecosystem: pip
     directory: "/"
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 0
     groups:
       jac:
         patterns: ["jac*", "byllm", "jaseci"]

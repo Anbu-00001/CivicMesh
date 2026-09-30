@@ -38,13 +38,20 @@ def main(url: str) -> int:
     fails = []
     tabs = []
     try:
+        # Chrome can answer /json before its first page exists (seen on a CI
+        # runner): wait for a page target, and open one if none appears.
         for _ in range(100):
             try:
-                tabs = json.load(urllib.request.urlopen(f"http://127.0.0.1:{PORT}/json"))
-                break
+                tabs = [t for t in json.load(urllib.request.urlopen(f"http://127.0.0.1:{PORT}/json")) if t.get("type") == "page"]
+                if tabs:
+                    break
             except Exception:
-                time.sleep(0.2)
-        ws = websocket.create_connection([t for t in tabs if t["type"] == "page"][0]["webSocketDebuggerUrl"])
+                pass
+            time.sleep(0.2)
+        if not tabs:
+            opened = urllib.request.Request(f"http://127.0.0.1:{PORT}/json/new?about:blank", method="PUT")
+            tabs = [json.load(urllib.request.urlopen(opened, timeout=10))]
+        ws = websocket.create_connection(tabs[0]["webSocketDebuggerUrl"], timeout=60)
         seq = [0]
 
         def js(expr, wait=False):
