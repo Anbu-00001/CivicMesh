@@ -25,7 +25,6 @@ def:pub ChatPane(
     user_id: str,
     on_walker_event: Any,
     auth_ready: Any = None,
-    session_data: dict,
     walker_events: list = [],
     platform: Any = None
 ) -> JsxElement {
@@ -67,18 +66,9 @@ def:pub ChatPane(
                 "我今天在哪里可以得到食物？我没有工作。"
             ]
         }];
-        has_history_flag = False;
-        try { has_history_flag = bool(session_data["has_history"]); } except Exception as _ex {}
-        if has_history_flag {
-            nxt = "";
-            try {
-                summary = session_data["session_summary"];
-                if summary and summary["next_recommended_step"] { nxt = str(summary["next_recommended_step"]); }
-            } except Exception as _ex {}
-            if nxt {
-                seed = seed + [{"role": "bot", "kind": "text", "id": "memory", "text": "Welcome back. " + nxt, "suggestions": []}];
-            }
-        }
+        # Every visit opens on this welcome and its examples. Nothing about an
+        # earlier case is put on screen unasked: on a shared device the next
+        # person would see it. The saved case is in the Action Plan tab.
         messages = seed;
         try {
             saved = localStorage.getItem("cm_lang");

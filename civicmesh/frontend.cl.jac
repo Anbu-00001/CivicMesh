@@ -16,7 +16,6 @@ import from "@jac/runtime" { jacLogin, jacSignup, jacIsLoggedIn, jacSpawn }
 import from .components.ChatPane { ChatPane }
 import from .components.GraphViz { GraphViz }
 import from .components.ActionPlan { ActionPlan }
-import from .components.SessionBanner { SessionBanner }
 import from .components.TelemetryPanel { TelemetryPanel }
 import from .components.LandingPage { LandingPage }
 import from .components.ImpactReport { ImpactReport }
@@ -34,7 +33,6 @@ def:pub ClientApp -> JsxElement {
     has active_tab: str = "chat",
         is_authed: bool = False,
         user_id: str = "",
-        session_data: Any = {},
         walker_events: list = [],
         show_landing: bool = True,
         palette_open: bool = False,
@@ -112,29 +110,12 @@ def:pub ClientApp -> JsxElement {
         }
     }
 
-    can with [is_authed] entry {
-        if is_authed {
-            loadSession();
-        }
-    }
-
     async def initAuth -> str;
     def visitorCreds -> list;
     def quickExit -> None;
-    async def loadSession -> None;
     def pushWalkerEvent(events: list) -> None;
     def navTab(tab_id: str, label: str) -> JsxElement;
     def tabIcon(tab_id: str, is_active: bool) -> JsxElement;
-
-    # Build has_history defensively without using .get (Any-typed value doesn't expose .get to the checker)
-    has_history = False;
-    if session_data {
-        try {
-            has_history = bool(session_data["has_history"]);
-        } except Exception as _ex {
-            has_history = False;
-        }
-    }
 
     if show_landing {
         return <LandingPage on_start={startApp} platform={platform}/>;
@@ -252,7 +233,6 @@ def:pub ClientApp -> JsxElement {
                     </span>
                 </div>
             </header>
-            {has_history and <SessionBanner session_data={session_data}/>}
             <main
                 style={{
                     "padding": "12px 28px 20px 28px",
@@ -268,7 +248,6 @@ def:pub ClientApp -> JsxElement {
                     user_id={user_id}
                     auth_ready={auth_ready}
                     on_walker_event={pushWalkerEvent}
-                    session_data={session_data}
                     walker_events={walker_events}
                     platform={platform}
                 />}

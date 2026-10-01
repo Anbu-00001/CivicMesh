@@ -58,17 +58,6 @@ impl ClientApp.initAuth -> str {
     return "";
 }
 
-impl ClientApp.loadSession -> None {
-    if not jacIsLoggedIn() {
-        session_data = {};
-        return;
-    }
-    uid = user_id if user_id else visitorCreds()[0];
-    res = await jacSpawn("MemoryWalker", "", {"user_id": uid, "mode": "read_session"}).catch(lambda e: Any -> dict { return {"reports": [], "spawn_error": str(e)}; });
-    reps = res["reports"];
-    session_data = reps[0] if (reps and len(reps) > 0 and reps[0]) else {};
-}
-
 impl ClientApp.startApp -> None {
     # CTA from the landing page hides it and routes the user to the chat tab.
     # Auth runs on mount (initAuth in `with entry`). If it hasn't finished

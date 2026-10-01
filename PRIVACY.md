@@ -1,6 +1,6 @@
 # Privacy notice
 
-**Last updated: 29 September 2026** (abuse protection: in-memory request counters, no addresses in the logs)
+**Last updated: 1 October 2026** (a return visit no longer shows the earlier case; Quick exit on the huggingface.co page)
 
 CivicMesh helps people find housing, food, healthcare and legal-aid programs.
 Many of the people who use it are in a hard spot. Some are immigrants, some are
@@ -26,6 +26,10 @@ a law firm or a benefits office, and using it does not apply you for anything.
   about abuse, fixed code answers with the right hotline.
 - **You can delete everything.** Open *Private by design* under the chat box and
   choose **Delete my data**.
+- **Coming back shows nothing from before.** Your words were never kept, and
+  when the page opens it doesn't show your earlier case either, so someone who
+  uses this device after you won't see it. The programs you were matched with,
+  and any status you set, are in the **Action Plan** tab until you delete them.
 - **Quick exit.** The red button at the top, or pressing Shift three times,
   jumps to a weather site right away. The Back button won't bring the chat back.
   On the huggingface.co page the app sits inside Hugging Face's page, which it
@@ -140,6 +144,7 @@ repository.
 | Crisis messages: no routing call, no narration | E2E P4–P5, `tests/test_privacy_graph.jac` |
 | Quick exit leaves, Back doesn't return, a private exit leaves a fresh identity and erases the case; inside the huggingface.co frame it blanks the chat | `tests/browser_e2e.py` in CI (headless Chrome, including Hugging Face's iframe sandbox); `frontend.impl.jac` `quickExit` |
 | Summary facts carry no income, household, location or status | `facts_for` in `walkers/eligibility.jac` |
+| Opening the page again shows the welcome and its examples, nothing about an earlier case | `tests/browser_e2e.py` check 6 (headless Chrome, a real reload) |
 | Delete my data removes the case, and only yours | E2E P8–P10, `tests/test_privacy_graph.jac` |
 | Server logs hold no user text | CI "Server logs hold no user text" step (`walkers/log_privacy.jac`) |
 | Client-error reports are never logged; security logs are aggregate counts with no addresses or ids | `tests/security_e2e.py` S14–S15 (`cmguard/gateway.py`, `cmguard/telemetry.py`) |
