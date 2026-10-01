@@ -19,6 +19,9 @@ pattern):
    let the frame navigate the tab, the click opens the neutral site in a new
    tab and blanks the frame. The neutral site must not load in the frame,
    where it breaks: that was the bug.
+6. Coming back: after a reload the chat opens on the welcome and its
+   examples. Nothing about the earlier case is on screen (on a shared device
+   the next person would see it).
 
 The neutral site's page may not load on an offline runner, so the checks look
 at where the browser was sent, not at the weather. Stdlib + websocket-client;
@@ -291,6 +294,22 @@ def main(app: str) -> int:
         open_chat(tab, app)
         fresh = tab.js("localStorage.getItem('cm_uid') || sessionStorage.getItem('cm_uid')")
         check("3f the next visit gets a new identity", fresh and fresh != uid)
+        tab.close()
+
+        # 6. Coming back to the same browser after a conversation.
+        tab = new_tab()
+        open_chat(tab, app)
+        rows = tab.js("document.querySelectorAll('.cm-thread .cm-row').length") or 0
+        send(tab, "I need food for my family in Denver, we are 3")
+        tab.until(f"document.querySelectorAll('.cm-thread .cm-row').length>={rows + 2} && !document.querySelector('.cm-typing')", 45)
+        tab.call("Page.reload")
+        tab.until("!!document.querySelector('button')")
+        time.sleep(3.0)  # a person reads the landing page; sign-in finishes meanwhile
+        open_chat(tab, None)
+        examples = tab.js("document.querySelectorAll('.cm-thread .cm-chip').length") or 0
+        shown = tab.js("document.body.innerText") or ""
+        check("6a after a reload the welcome examples are there to tap", examples >= 4, examples)
+        check("6b nothing about the earlier case is on screen", "Welcome back" not in shown and "Denver" not in shown)
         tab.close()
 
         # 4. Inside a sandboxed cross-site frame, like the huggingface.co page.

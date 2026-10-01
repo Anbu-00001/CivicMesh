@@ -1,7 +1,7 @@
 """MemoryWalker — read or update a returning user's session state.
 
 Modes:
-  "read_session"   — summarize the user's ApplicationNodes for the welcome screen
+  "read_session"   — the user's ApplicationNodes by status, for the Action Plan tab
   "update_status"  — mark one ApplicationNode applied/denied/approved/withdrawn
 
 When every ApplicationNode is denied after an update, the walker automatically
@@ -71,27 +71,12 @@ walker MemoryWalker {
                 }
             }
 
-            # Deterministic welcome-back line (was an LLM call on every page load).
-            session_summary: any = None;
-            if approved or pending or denied {
-                nxt = "";
-                if pending {
-                    nxt = "Follow up with " + str(pending[0]) + " — ask where your application stands.";
-                } elif denied {
-                    nxt = "Ask " + str(denied[0]) + " for the denial reason in writing; most programs allow an appeal within 30 days.";
-                } else {
-                    nxt = "Great news on " + str(approved[0]) + " — tell me what else you need help with.";
-                }
-                session_summary = {"approved": approved, "pending": pending, "denied": denied, "next_recommended_step": nxt};
-            }
-
             report {
                 "has_history": bool(approved or pending or denied),
                 "approved": approved,
                 "pending": pending,
                 "denied": denied,
                 "language": str(here.language),
-                "session_summary": session_summary,
                 "application_count": len(apps)
             };
             return;

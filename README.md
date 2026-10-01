@@ -129,7 +129,7 @@ The fourth review (again a chat model, not an audit) credited the deliberate cho
 | "111 languages" reads as 111 reliable languages | The badge and landing page say 51 machine-drafted, 0 reviewed, 111 selectable |
 | No outside adoption | True, and not something code fixes. [CONTRIBUTING.md](./CONTRIBUTING.md) lists the most useful help: native-speaker review, real wording the engine misreads, and program-data corrections |
 
-**A fifth pass: conversations the way people have them, and two crashes from real use**
+**A fifth pass: conversations the way people have them, and three bugs from real use**
 
 - **A language switch wiped the case.** A family wrote in Chinese (two children, Boston, $1,800 a month, food), added in Portuguese that the landlord wanted them out, then asked in English what documents to bring. The engine started a new case at each switch, so by the third message it had forgotten everything and asked "what do you need?". Violence disclosed in Chinese was dropped when the next message came in English, so that turn was neither private nor routed to domestic-violence help. A second need in the same language ("also, the rent") lost the income, household and state the same way. One conversation is now one person: facts and flags carry across languages and needs, the reply follows the language of the latest message, and **New case** is the one way to start over. `golden_conversations.json` replays 13 such conversations turn by turn (90 checks).
 - **Rent read as income.** "I pay $900 rent" was read as an income of $10,800 a year: expense words were only looked for before an amount, "pay" wasn't one, and "pa*rent*s" counted as rent. Also fixed from the same probing:
@@ -141,8 +141,9 @@ The fourth review (again a chat model, not an audit) credited the deliberate cho
   - Portuguese read as Spanish because of "Califórnia", and "in LA" read as Louisiana.
 - **Warning signs in ten more languages.** The indirect crisis layer read only English and Spanish. It now reads the 988 Lifeline's and the Hotline's warning signs in Chinese, Portuguese, Vietnamese, Korean, Tagalog, Arabic, Russian, French, Haitian Creole and Hindi, plus stalking by an ex-partner. Phrases that also fit everyday complaints ("não aguento mais esperar na fila", "больше не могу платить") were left out, and benign probes fail the run if they come back.
 - **Quick exit crashed on the Space page.** On huggingface.co the app runs in a sandboxed frame that isn't allowed to move the tab, and the neutral site breaks when it loads inside that frame, so people saw "This page couldn't load" under the Hugging Face header. Inside a frame, Quick exit now opens the neutral site in a new tab and blanks the frame. Shift ×3 can only blank it, because a key press isn't allowed to open a tab. The Hugging Face tab stays open either way, so share the [direct link](https://anbu-00001-civicmesh.hf.space), where Quick exit replaces the page and Back can't return.
+- **Coming back put the earlier case on screen.** Your words were never kept, but a reload opened on a "Welcome back" banner and a chat line naming a program, for whoever used the device next, and that line pushed the example questions out of view. It was also wrong: it said "ask where your application stands" about programs the engine had only matched, never applied to. The page now opens on the welcome and its examples every time; the saved case is in the Action Plan tab. The banner and the page-load fetch behind it are gone.
 - **A message sent during sign-in was lost.** A suggestion tapped as the chat opened went out before the anonymous sign-in finished. The 401 made the client reload the page, and the message was gone. The chat now waits for the sign-in.
-- `tests/browser_e2e.py` checks both in headless Chrome on every push, including a stand-in for the Space page with Hugging Face's exact iframe sandbox and a sign-in held back for 3 seconds.
+- `tests/browser_e2e.py` checks all three in headless Chrome on every push, including a stand-in for the Space page with Hugging Face's exact iframe sandbox and a sign-in held back for 3 seconds.
 - **Still not handled:** typos ("foood"), romanized Chinese and Arabic (pinyin, Arabizi), and Spanish or Portuguese number words ("mil quinientos"). With the model fallback off by default, these get a follow-up question rather than a guess.
 
 
@@ -628,7 +629,7 @@ flowchart LR
     PV[check_privacy.jac<br/>66 checks: scrub · over-scrub · same facts · crisis]:::t --> GATE
     WT[jac test · walkers in-process<br/>schema · 3 personas · stored-data privacy]:::t --> GATE
     E2E[tests/e2e_http.py against the Docker image<br/>64 checks · 15 languages · crisis · privacy · a live conversation · relay]:::t --> PASS
-    BR[tests/browser_e2e.py · headless Chrome<br/>quick exit: own tab · Shift ×3 · private · HF frame<br/>first message during sign-in]:::t --> PASS
+    BR[tests/browser_e2e.py · headless Chrome<br/>quick exit: own tab · Shift ×3 · private · HF frame<br/>first message during sign-in · return visit]:::t --> PASS
     PORT[same eval on the engine ejected to plain Python<br/>no Jac installed]:::t --> PASS
     EXT[eval_external.jac · real posts<br/>LegalBench learned_hands · measured, not gated]:::ext
     CI((GitHub Actions<br/>every push and PR)):::det -.-> S & CM & PV & WT & E2E & BR & PORT & EXT
@@ -662,7 +663,7 @@ python3 tests/e2e_http.py http://localhost:7860
   64/64 passed · turn latency p50 ~0.4 s
 
 python3 tests/browser_e2e.py http://localhost:7860   # headless Chrome
-  13 checks · PASS
+  19 checks · PASS
 
 cd civicmesh && jac run tests/eval_external.jac   # real posts, downloaded on first run
 ```
