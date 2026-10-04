@@ -117,8 +117,16 @@ def without_sdk_retries(pool: Any) -> Any {
 
 # Sync path: the user is waiting (the walker also enforces a 3.5 s deadline).
 glob fast_pool = without_sdk_retries(ModelPool(models=build_pool_models(), strategy="fallback", num_retries=0, timeout=5.0));
-# Async path: nobody is blocked; allow one slow model before giving up.
-glob narrate_pool = without_sdk_retries(ModelPool(models=build_pool_models(), strategy="fallback", num_retries=0, timeout=8.0));
+# Async path: nobody is blocked (the answer is already on screen under a
+# "writing a summary" placeholder), so each model gets 25 s, and two models
+# fit inside the gateway's 60 s limit for model calls. It was 8 s, tuned for
+# Mistral-Nemotron (5.8–7.9 s on NVIDIA's free tier); gpt-oss-20b and Gemma 4
+# didn't answer within 8 s on the first live check after the model switch
+# (2026-10-04). Free-tier latency is the cost of the free tier; a Groq key
+# (GROQ_API_KEY) leads the pool at about a second. CIVICMESH_NARRATE_TIMEOUT_S
+# overrides it.
+glob NARRATE_TIMEOUT_S: float = float(os.environ.get("CIVICMESH_NARRATE_TIMEOUT_S", "25") or "25");
+glob narrate_pool = without_sdk_retries(ModelPool(models=build_pool_models(), strategy="fallback", num_retries=0, timeout=NARRATE_TIMEOUT_S));
 
 # Long-tail languages: Gemma 4 (pre-trained on 140+ languages, on NVIDIA NIM)
 # leads, then the default chain. CIVICMESH_POLYGLOT_MODELS overrides the lead.
@@ -135,7 +143,7 @@ def polyglot_model_names -> list {
     return [str(m.model_name) for m in build_polyglot_models()];
 }
 
-glob polyglot_pool = without_sdk_retries(ModelPool(models=build_polyglot_models(), strategy="fallback", num_retries=0, timeout=9.0));
+glob polyglot_pool = without_sdk_retries(ModelPool(models=build_polyglot_models(), strategy="fallback", num_retries=0, timeout=NARRATE_TIMEOUT_S));
 
 # ---------- types kept for walker interfaces ----------
 
