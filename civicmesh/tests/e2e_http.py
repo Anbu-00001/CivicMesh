@@ -290,6 +290,26 @@ check("Q2 small talk mid-case keeps the case and its language and re-asks the op
       and de2["reply"].startswith("**Una pregunta") and not de2["matches"] and not de2["llm"]["narrate"],
       (de2["language"], de2["question"]["key"], pend, de2["reply"][:50]) if de2 else "")
 
+# ---- V. Chips and long stories (live reports 2026-10-03/04) ----
+cu, ct = login()
+dc1, _ = turn(cu, ct, "I need food for my family in Houston")
+tapped = dc1["chips"][0] if dc1 and dc1["chips"] else ""
+dc2, _ = turn(cu, ct, tapped, dc1["profile"] if dc1 else {}, dc1["question"]["key"] if dc1 else "")
+check("V1 a suggestion that was tapped is not offered again (the same question was suggested right after it was asked)",
+      bool(tapped) and dc2 is not None and tapped not in dc2["chips"] and len(dc2["chips"]) >= 1, (tapped, dc2["chips"] if dc2 else ""))
+STORY = ("El mes pasado llegaron dos inspectores a mi edificio porque un vecino dijo que mi cocina olía raro. Midieron el pasillo, fotografiaron mi bicicleta, "
+         "preguntaron por qué tenía tres abrigos y lo anotaron todo en un formulario sin título. La semana siguiente vino otra pareja que quería saber si "
+         "siempre saludaba al cartero. En una reunión alguien bromeó con que nadie había pedido comida, y todos se rieron, aunque nunca entendí por qué. "
+         "Pasé casi todas las noches leyendo las cartas en voz alta a mi gato, y al final solo quería que alguien lo escuchara todo.")
+cs, cst = login()
+dst, _ = turn(cs, cst, STORY)
+check("V2 a long story with one passing keyword gets 'what do you need?', not food banks (no programs, plan, crisis box, chips or narration)",
+      dst is not None and dst["question"]["key"] == "need" and not dst["matches"] and not dst["plan"].get("steps") and not dst["escalation"]
+      and not dst["chips"] and not dst["llm"]["narrate"] and not dst["profile"]["category"] and not dst["evidence"],
+      (dst["question"]["key"], len(dst["matches"]), dst["profile"]["category"], len(dst["evidence"])) if dst else "")
+dd, _ = turn(cs, cst, "Our house burned down last night and we are at a motel with no money")
+check("V3 a home lost to a fire is a housing need", dd is not None and dd["profile"]["category"] == "housing" and len(dd["matches"]) > 0, dd["profile"]["category"] if dd else "")
+
 lat.sort()
 p50 = lat[len(lat) // 2] if lat else 0
 print(f"\nturn latency p50 {p50:.0f} ms · max {max(lat) if lat else 0:.0f} ms over {len(lat)} turns")

@@ -853,6 +853,28 @@
    "category": "food"
   },
   "_why": "'parents' contains 'rent'"
+ },
+ {
+  "text": "I work for a flood insurance company and I need health insurance for my kids",
+  "expect": {
+   "category": "healthcare",
+   "flag_absent": "homeless"
+  },
+  "_why": "flood in a job title, not a lost home"
+ },
+ {
+  "text": "My home health aide quit and I need a doctor for my mother",
+  "expect": {
+   "category": "healthcare"
+  },
+  "_why": "'home' without a loss"
+ },
+ {
+  "text": "The fire department fixed the smoke alarm in my apartment, now I need food",
+  "expect": {
+   "category": "food"
+  },
+  "_why": "a fire department visit is not a house fire"
  }
  ]
 }
