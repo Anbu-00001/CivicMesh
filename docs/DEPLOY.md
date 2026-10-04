@@ -130,6 +130,7 @@ unaffected.
 | `CIVICMESH_LLM_WAIT_S` | 2 | Wait for a free slot before refusing |
 | `CIVICMESH_LLM_BREAKER_FAILURES` | 5 | Consecutive failures that open the circuit |
 | `CIVICMESH_LLM_BREAKER_COOLDOWN_S` / `_MAX_COOLDOWN_S` | 60 / 900 | Open time, doubling on each re-trip up to the maximum |
+| `CIVICMESH_LLM_RETIRE_S` | 21600 | How long a model the provider answers 404 or 410 for is skipped (it never counts toward the breaker). When a provider retires a model, change `CIVICMESH_LLM_MODELS` or the defaults in `llm/stubs.jac` |
 | `CIVICMESH_LLM_DISABLED` | 0 | `1` turns every model call off (deterministic answers only) |
 
 ## Updating

@@ -30,7 +30,7 @@ import from engine.i18n { language_name, language_info, interpreter_card }
 import from engine.stats { record_turn }
 import from engine.privacy { redact, is_private_turn, need_summary, model_may_read_messages }
 import from engine.compose { merge_profiles, new_trace, span_begin, span_end, export_spans }
-import from walkers.eligibility { EligibilityWalker }
+import from walkers.eligibility { EligibilityWalker, quiet_summary }
 import from walkers.critique { CritiqueWalker }
 import from cmguard.tokens { issue as issue_token, content_hash }
 import from cmguard { telemetry }
@@ -143,77 +143,90 @@ walker IntakeWalker {
         # fallback language most speakers also use, plus an interpreter card.
         lang_out = (str(info["fallback"]) or "es") if interpreter else (lang_code or "en");
         narrate_lang = lang_out if interpreter else (lang_code or "auto");
-        if not profile.get("category") {
-            # Still nothing to route on: default to the broadest safety net
-            # and let the follow-up question narrow it down.
-            profile["category"] = "food" if ("hungry" in text.lower()) else "housing";
-            profile["category_conf"] = 0.1;
-            profile["defaulted_category"] = True;
-        }
-
-        sp = span_begin(tr, "graph.write person+need", "INTERNAL", rid);
-        existing = [root --> [?:PersonNode, user_id == self.user_id]];
-        person_node: PersonNode;
-        if existing {
-            person_node = existing[0];
+        # A turn that asks for nothing gets a short answer and a question, and
+        # nothing else: small talk ("hi", "thanks", "how are you?"), or a
+        # message with no need and no crisis words in it. No programs guessed
+        # or repeated, no crisis box, no narration, nothing written to the
+        # graph. Guessing a need here is how "Hello how are you??" once came
+        # back as "you're looking for housing help", with Section 8 to call.
+        quiet = bool(profile.get("small_talk")) or (not profile.get("category") and not list(profile.get("flags", [])));
+        result: dict = {};
+        if quiet {
+            result = quiet_summary(profile, lang_out, str(self.answering));
         } else {
-            created = root ++> PersonNode(user_id=self.user_id, language=lang_out, created_at=ts);
-            person_node = created[0];
-        }
-        setattr(person_node, "language", lang_out);
-        if int(profile.get("household_size", 0)) > 0 { setattr(person_node, "family_size", int(profile["household_size"])); }
-        if profile.get("zip") { setattr(person_node, "location_zip", str(profile["zip"])); }
-        if int(profile.get("income_annual", -1)) >= 0 { setattr(person_node, "income_bracket", str(profile["income_annual"])); }
-        attached = person_node +>: has_need() :+> NeedNode(
-            category=str(profile["category"]),
-            urgency=str(profile["urgency"]),
-            # The engine's reading, never the user's words: nothing typed is stored.
-            details=need_summary(profile),
-            created_at=ts
-        );
-        need_node: NeedNode = attached[0];
-        span_end(tr, sp);
-
-        elig = need_node spawn EligibilityWalker(
-            profile=profile,
-            person_node=person_node,
-            message=str(profile.get("case_text", text)),
-            language=lang_out,
-            trace=tr,
-            parent_span=rid
-        );
-        result: dict = elig.summary;
-
-        sp = span_begin(tr, "reflexion.critique", "INTERNAL", rid);
-        try {
-            ranked = list(result.get("matches", []));
-            # What actually ran this turn, read off the trace (not estimated).
-            fired: list = ["IntakeWalker"];
-            for x in tr["spans"] {
-                nm = str(x["name"]).split(" ")[0];
-                if nm.endswith("Walker") and nm not in fired { fired.append(nm); }
+            if not profile.get("category") {
+                # Crisis or warning-sign words but no need named: route on the
+                # broadest safety net so the pinned hotline leads, and ask what
+                # the need is (EligibilityWalker shows nothing else for a guess).
+                profile["category"] = "food" if ("hungry" in text.lower()) else "housing";
+                profile["category_conf"] = 0.1;
+                profile["defaulted_category"] = True;
             }
-            critique = person_node spawn CritiqueWalker(
-                user_id=self.user_id,
-                walker_events=[{"walker": w} for w in fired],
-                llm_calls=(1 if llm_sync else 0) + 1,
-                # The engine's reading, not the words: SessionInsight is stored.
-                user_prompt=need_summary(profile),
-                eligible_count=int(result.get("tiers", {}).get("likely", 0)),
-                escalated=bool(result.get("escalation")),
-                pathfinder_used=len(list(result.get("routes", []))) > 0,
-                navigation_used=len(list(result.get("plan", {}).get("steps", []))) > 0,
-                need_category=str(profile["category"]),
-                need_urgency=str(profile["urgency"]),
-                top_resource=str(ranked[0]["resource_name"]) if ranked else ""
+
+            sp = span_begin(tr, "graph.write person+need", "INTERNAL", rid);
+            existing = [root --> [?:PersonNode, user_id == self.user_id]];
+            person_node: PersonNode;
+            if existing {
+                person_node = existing[0];
+            } else {
+                created = root ++> PersonNode(user_id=self.user_id, language=lang_out, created_at=ts);
+                person_node = created[0];
+            }
+            setattr(person_node, "language", lang_out);
+            if int(profile.get("household_size", 0)) > 0 { setattr(person_node, "family_size", int(profile["household_size"])); }
+            if profile.get("zip") { setattr(person_node, "location_zip", str(profile["zip"])); }
+            if int(profile.get("income_annual", -1)) >= 0 { setattr(person_node, "income_bracket", str(profile["income_annual"])); }
+            attached = person_node +>: has_need() :+> NeedNode(
+                category=str(profile["category"]),
+                urgency=str(profile["urgency"]),
+                # The engine's reading, never the user's words: nothing typed is stored.
+                details=need_summary(profile),
+                created_at=ts
             );
+            need_node: NeedNode = attached[0];
             span_end(tr, sp);
-        } except Exception as ex {
-            span_end(tr, sp, {"error.type": type(ex).__name__}, "ERROR");
+
+            elig = need_node spawn EligibilityWalker(
+                profile=profile,
+                person_node=person_node,
+                message=str(profile.get("case_text", text)),
+                language=lang_out,
+                trace=tr,
+                parent_span=rid
+            );
+            result = elig.summary;
+
+            sp = span_begin(tr, "reflexion.critique", "INTERNAL", rid);
+            try {
+                ranked = list(result.get("matches", []));
+                # What actually ran this turn, read off the trace (not estimated).
+                fired: list = ["IntakeWalker"];
+                for x in tr["spans"] {
+                    nm = str(x["name"]).split(" ")[0];
+                    if nm.endswith("Walker") and nm not in fired { fired.append(nm); }
+                }
+                critique = person_node spawn CritiqueWalker(
+                    user_id=self.user_id,
+                    walker_events=[{"walker": w} for w in fired],
+                    llm_calls=(1 if llm_sync else 0) + 1,
+                    # The engine's reading, not the words: SessionInsight is stored.
+                    user_prompt=need_summary(profile),
+                    eligible_count=int(result.get("tiers", {}).get("likely", 0)),
+                    escalated=bool(result.get("escalation")),
+                    pathfinder_used=len(list(result.get("routes", []))) > 0,
+                    navigation_used=len(list(result.get("plan", {}).get("steps", []))) > 0,
+                    need_category=str(profile["category"]),
+                    need_urgency=str(profile["urgency"]),
+                    top_resource=str(ranked[0]["resource_name"]) if ranked else ""
+                );
+                span_end(tr, sp);
+            } except Exception as ex {
+                span_end(tr, sp, {"error.type": type(ex).__name__}, "ERROR");
+            }
         }
 
         span_end(tr, root_span, {"civicmesh.llm_calls_sync": 1 if llm_sync else 0});
-        record_turn(self.user_id, lang_code or "?", str(profile["category"]), float(root_span.get("duration_ms", 0.0)), llm_sync, llm_error.startswith("no answer within"));
+        record_turn(self.user_id, lang_code or "?", "" if quiet else str(profile["category"]), float(root_span.get("duration_ms", 0.0)), llm_sync, llm_error.startswith("no answer within"));
         spans = export_spans(tr);
 
         public_profile = {k: v for (k, v) in profile.items() if k not in ["evidence", "category_scores"]};
@@ -270,7 +283,7 @@ walker IntakeWalker {
                 "strings_token": issue_token("loc_strings", jid(root), content_hash("loc_strings", loc_strings, str(info["code"]))),
                 "text_token": issue_token("loc_text", jid(root), content_hash("loc_text", str(result.get("reply", "")), str(info["code"])))
             },
-            "llm": {"sync_used": llm_sync, "reason": llm_reason, "error": llm_error, "models": pool_model_names(), "narrate": not private_turn, "budget_s": SYNC_LLM_BUDGET_S},
+            "llm": {"sync_used": llm_sync, "reason": llm_reason, "error": llm_error, "models": pool_model_names(), "narrate": (not private_turn) and bool(result.get("facts", "")), "budget_s": SYNC_LLM_BUDGET_S},
             # Privacy, as measured behavior: the words were neither stored nor
             # sent to a model (unless an operator opted in and the engine could
             # not route them); crisis turns are never sent.

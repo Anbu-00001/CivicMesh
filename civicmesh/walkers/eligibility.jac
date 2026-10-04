@@ -81,6 +81,32 @@ def chips_for(ranked: list, profile: dict, lang: str = "en") -> list {
     return out[:3];
 }
 
+"""The answer to a turn that asks for nothing (see IntakeWalker), in the shape
+of EligibilityWalker's summary: a short reply and one question, nothing else.
+
+Small talk in a case re-asks the question still open ("One question to
+sharpen this: …"); otherwise it's "What do you need help with most right
+now?", which a message the engine couldn't read prefaces with "I'm not sure
+yet what kind of help you need".
+"""
+def quiet_summary(profile: dict, lang: str, pending: str) -> dict {
+    ui_lang = reply_language(lang);
+    small_talk = bool(profile.get("small_talk"));
+    key = pending if (small_talk and profile.get("category") and pending and pending != "need") else "need";
+    replies: dict = {};
+    for l in ([ui_lang] if ui_lang == "en" else [ui_lang, "en"]) {
+        q = question_for(key, l);
+        replies[l] = msg(l, "r.question", {"question": q}) if key != "need" else (q if small_talk else msg(l, "r.unsure"));
+    }
+    return {
+        "reply": replies[ui_lang], "reply_language": ui_lang, "reply_en": replies.get("en", "") if ui_lang != "en" else "",
+        "question": {"key": key, "text": question_for(key, ui_lang), "affects": 0, "gain": 0.0, "affects_label": "", "options": quick_options(key, ui_lang)},
+        "matches": [], "tiers": {"likely": 0, "possible": 0, "needs_info": 0, "unlikely": 0}, "near_misses": [],
+        "plan": {"steps": []}, "routes": [], "escalation": {}, "chips": [], "chip_labels": [],
+        "ui": ui_labels(ui_lang), "facts": ""
+    };
+}
+
 """Snapshot a node's fields into a plain dict for the pure engine."""
 def resource_dict(r: ResourceNode) -> dict {
     return {
@@ -231,17 +257,23 @@ walker EligibilityWalker {
                 goals[s["resource_name"]] = max(0.3, float(s["p_eligible"]));
             }
         }
-        pf = root spawn PathfinderWalker(
-            start_category=str(self.profile.get("category", "")),
-            sources=sources, goals=goals, p_of=p_of, trace=tr, parent_span=self.parent_span,
-            cache_key=str(self.person_node.user_id)
-        );
-        routes: list = list(pf.summary.get("paths", []));
+        guessed = bool(self.profile.get("defaulted_category"));
+        routes: list = [];
+        if not guessed {
+            pf = root spawn PathfinderWalker(
+                start_category=str(self.profile.get("category", "")),
+                sources=sources, goals=goals, p_of=p_of, trace=tr, parent_span=self.parent_span,
+                cache_key=str(self.person_node.user_id)
+            );
+            routes = list(pf.summary.get("paths", []));
+        }
 
         flags = list(self.profile.get("flags", []));
         escalation: dict = {};
         credible = ranking["tiers"]["likely"] + ranking["tiers"]["possible"];
-        if credible == 0 or "self_harm" in flags or "dv" in flags {
+        # "No credible match" means something when a need was named, not when
+        # the engine guessed one: a guess gets no shelter-placement crisis box.
+        if (credible == 0 and not guessed) or "self_harm" in flags or "dv" in flags {
             esc = self.person_node spawn EscalationWalker(
                 category=str(self.profile.get("category", "")), flags=flags,
                 language=ui_lang, ranked=ranked, trace=tr, parent_span=self.parent_span
@@ -258,7 +290,7 @@ walker EligibilityWalker {
             plan_en = build_plan(ranked, str(self.profile.get("urgency", "within_weeks")), "en");
             reply_en = compose_reply("en", self.profile, ranking, plan_en, routes, (question_for(str(ask["key"]), "en") if ask["key"] else ""));
         }
-        chips = chips_for(ranked, self.profile, ui_lang);
+        chips = [] if guessed else chips_for(ranked, self.profile, ui_lang);
         qkey = str(ask["key"]);
         self.summary = {
             "reply": reply,
@@ -278,7 +310,9 @@ walker EligibilityWalker {
             "chips": [c[0] for c in chips],
             "chip_labels": [c[1] for c in chips],
             "ui": ui_labels(ui_lang),
-            "facts": facts_for(ranking, plan, question, self.profile)
+            # What the narrator may say: only what was understood. A guessed
+            # need would come back as "it sounds like you need housing".
+            "facts": "" if guessed else facts_for(ranking, plan, question, self.profile)
         };
     }
 }

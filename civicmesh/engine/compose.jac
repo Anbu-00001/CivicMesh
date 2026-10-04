@@ -64,9 +64,14 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
         # reply written in a different script (conf ≥ 0.85) still does.
         out["language"] = prior.get("language");
     }
+    if cur.get("small_talk") and prior.get("language") {
+        # "Hello how are you??" in a Spanish conversation isn't a switch to English.
+        out["language"] = prior.get("language");
+    }
     out["case_text"] = (str(prior.get("case_text", "")) + " \n " + str(text))[-1500:];
     answered = list(prior.get("answered", []));
-    if answering {
+    # "thanks" doesn't answer the question that was pending.
+    if answering and not cur.get("small_talk") {
         if answering not in answered { answered.append(answering); }
         low = str(text).lower();
         # "Do you have a safe place to sleep tonight?" / "Are you safe at home?"

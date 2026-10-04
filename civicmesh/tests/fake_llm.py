@@ -4,7 +4,9 @@
 
 Answers POST /v1/chat/completions like a model would (structured output for
 narration, the source text back for translation), and records every request:
-GET /__stats returns {"requests", "max_concurrent", "auth_headers_seen"};
+GET /__stats returns {"requests", "max_concurrent", "auth_headers_seen", "by_model"};
+a model whose name contains "retired" answers 410 Gone, as NVIDIA's API did
+for a retired model;
 POST /__reset clears it. The container is pointed here with
 NVIDIA_NIM_API_BASE / OPENAI_API_BASE, so the tests can count exactly how
 many model calls the app made and prove the budget bounds them.
@@ -16,7 +18,7 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-STATE = {"requests": 0, "inflight": 0, "max_concurrent": 0, "auth": set()}
+STATE = {"requests": 0, "inflight": 0, "max_concurrent": 0, "auth": set(), "by_model": {}}
 LOCK = threading.Lock()
 DELAY_S = float(sys.argv[2]) if len(sys.argv) > 2 else 0.3
 
@@ -51,7 +53,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/__stats":
             with LOCK:
                 self._json(200, {"requests": STATE["requests"], "max_concurrent": STATE["max_concurrent"],
-                                 "auth_headers_seen": sorted(STATE["auth"])})
+                                 "auth_headers_seen": sorted(STATE["auth"]), "by_model": dict(STATE["by_model"])})
         else:
             self._json(404, {})
 
@@ -60,7 +62,7 @@ class Handler(BaseHTTPRequestHandler):
         raw = self.rfile.read(length) if length else b"{}"
         if self.path == "/__reset":
             with LOCK:
-                STATE.update(requests=0, max_concurrent=0, auth=set())
+                STATE.update(requests=0, max_concurrent=0, auth=set(), by_model={})
             self._json(200, {"ok": True})
             return
         with LOCK:
@@ -74,7 +76,13 @@ class Handler(BaseHTTPRequestHandler):
                 body = json.loads(raw or b"{}")
             except Exception:
                 body = {}
-            self._json(200, reply_for(body))
+            model = str(body.get("model", ""))
+            with LOCK:
+                STATE["by_model"][model] = STATE["by_model"].get(model, 0) + 1
+            if "retired" in model:
+                self._json(410, {"type": "about:blank", "title": "Gone", "status": 410, "detail": f"Model {model} has been retired."})
+            else:
+                self._json(200, reply_for(body))
         finally:
             with LOCK:
                 STATE["inflight"] -= 1

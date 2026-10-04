@@ -56,7 +56,10 @@ def invents_numbers(text: str, facts: str, user_message: str = "") -> bool {
     return False;
 }
 
-glob STRONG_NARRATION: list = ["en", "es", "fr", "de", "it", "pt", "ru", "zh", "yue", "ja", "ko"];
+# Languages the default pool's lead model narrates well. gpt-oss-20b was
+# trained on mostly English text, so everything else goes to the polyglot
+# pool (Gemma 4, pre-trained on 140+ languages) first.
+glob STRONG_NARRATION: list = ["en"];
 
 # The narrator only runs on a token IntakeWalker issued for exactly these facts,
 # for this visitor, within the last 15 minutes, once (cmguard/tokens.py): it
@@ -89,8 +92,6 @@ walker NarrateWalker {
         t0 = time.perf_counter();
         models = pool_model_names();
         out: dict = {"ok": False, "message": "", "chips": list(self.chips), "models": models};
-        # Mistral-Nemotron is benchmarked in 9 languages; everything else goes
-        # to the polyglot pool (Gemma 4, pre-trained on 140+ languages) first.
         code = str(self.language or "en");
         polyglot = code not in STRONG_NARRATION;
         if polyglot { models = polyglot_model_names(); out["models"] = models; }

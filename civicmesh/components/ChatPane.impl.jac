@@ -595,13 +595,16 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
     chips: list = chip_labels if (native_chips and len(chip_labels) > 0) else (list(loc_c["chips"]) if (loc_c and loc_c["chips"] and len(loc_c["chips"]) > 0) else (list(narr["chips"]) if (narr and narr["status"] == "ok" and narr["chips"] and len(narr["chips"]) == len(en_chips)) else en_chips));
     llm: Any = d["llm"] if d["llm"] else {};
 
+    # Small talk understood nothing new: no "Understood" row under "hi".
     facts: list = [];
-    if prof["category"] { facts = facts + [str(prof["category"]) + " · " + str(prof["urgency"]).replace("_", " ")]; }
-    if Number(prof["income_annual"]) >= 0 { facts = facts + ["$" + Number(prof["income_annual"]).toLocaleString() + "/yr"]; }
-    if Number(prof["household_size"]) > 0 { facts = facts + ["household " + str(prof["household_size"])]; }
-    if Number(prof["age"]) > 0 { facts = facts + ["age " + str(prof["age"])]; }
-    if prof["city"] or prof["state"] { facts = facts + [(str(prof["city"]) + ", " if prof["city"] else "") + str(prof["state"])]; }
-    if prof["citizenship"] { facts = facts + [str(prof["citizenship"]).replace("_", " ")]; }
+    if not prof["small_talk"] {
+        if prof["category"] { facts = facts + [str(prof["category"]) + " · " + str(prof["urgency"]).replace("_", " ")]; }
+        if Number(prof["income_annual"]) >= 0 { facts = facts + ["$" + Number(prof["income_annual"]).toLocaleString() + "/yr"]; }
+        if Number(prof["household_size"]) > 0 { facts = facts + ["household " + str(prof["household_size"])]; }
+        if Number(prof["age"]) > 0 { facts = facts + ["age " + str(prof["age"])]; }
+        if prof["city"] or prof["state"] { facts = facts + [(str(prof["city"]) + ", " if prof["city"] else "") + str(prof["state"])]; }
+        if prof["citizenship"] { facts = facts + [str(prof["citizenship"]).replace("_", " ")]; }
+    }
 
     return
         <div key={"m-" + str(idx)} className="cm-row msg-enter">
@@ -675,7 +678,7 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                     <span>{("1 LLM call (routing)" if llm["sync_used"] else "0 LLM calls on the critical path")}</span>
                     {Number(msg["rtt_ms"]) > 0 and <span>{"round trip " + fmtMs(msg["rtt_ms"])}</span>}
                     {(narr and narr["status"] == "ok") and <span className="cm-hud-llm">{"✦ narrated in " + fmtMs(narr["ms"]) + " · facts guard passed"}</span>}
-                    {(narr and narr["status"] == "failed") and <span className="cm-muted">{"LLM narration unavailable — engine answer shown"}</span>}
+                    {(narr and narr["status"] == "failed") and <span className="cm-muted" title={str(narr["error"] or "")}>{"LLM narration unavailable — engine answer shown"}</span>}
                     {(d["privacy"] and d["privacy"]["private_turn"]) and <span className="cm-hud-private">{"Not sent to any AI model"}</span>}
                     {(d["privacy"] and d["privacy"]["words_sent_to_model"]) and <span className="cm-hud-private">{"The engine couldn't place this, so an AI model read it (identifiers removed first)"}</span>}
                     <button className="cm-why" onClick={lambda _e: MouseEvent { waterfall_open = (-1 if waterfall_open == idx else idx); }}>{("Hide trace" if waterfall_open == idx else "Trace")}</button>

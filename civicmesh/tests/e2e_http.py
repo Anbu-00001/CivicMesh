@@ -68,6 +68,7 @@ def has_cjk(s):
     return any("一" <= c <= "鿿" for c in str(s))
 
 
+EN_Q_NEED = "What do you need help with most right now?"
 EN_Q = {
     "location": "What state or city do you live in?",
     "income": "About how much does your household earn per month (before taxes)?",
@@ -227,8 +228,10 @@ dsv, _ = turn(pu, pt, "Mi esposo me pega y tengo miedo")
 check("P13 a Spanish crisis line shows its English sentence", dsv is not None and dsv["escalation"].get("lead_line_en", "").startswith("Call "),
       dsv["escalation"].get("lead_line_en", "")[:60] if dsv else "")
 fw, _ = walker("ForgetWalker", {"user_id": pu}, pt)
+# One need per turn that named one: the unroutable "blorf…" turn stores none
+# (it used to store a guessed housing need).
 check("P8 Delete my data removes the person, needs, applications and insights",
-      fw is not None and fw["ok"] and fw["removed"]["PersonNode"] == 1 and fw["removed"]["NeedNode"] >= 7, fw)
+      fw is not None and fw["ok"] and fw["removed"]["PersonNode"] == 1 and fw["removed"]["NeedNode"] >= 6, fw)
 gs2, _ = walker("GraphSnapshotWalker", {"user_id": pu}, pt)
 check("P9 after deletion the graph is empty", gs2 is not None and gs2.get("empty") is True and gs2["counts"]["ResourceNode"] == 40,
       {k: gs2["counts"][k] for k in ["PersonNode", "NeedNode", "ResourceNode"]} if gs2 else "")
@@ -267,8 +270,25 @@ dcv, _ = turn(rv, rt, "My husband controls all my money and checks my phone")
 check("R4 an indirect abuse cue pins the Domestic Violence Hotline", dcv is not None and "dv_concern" in dcv["profile"]["flags"] and "799-7233" in dcv["reply"], dcv["reply"][:90] if dcv else "")
 rv2, rt2 = login()
 dun, _ = turn(rv2, rt2, "blorf wibble zzkq snorp")
-check("R5 an unrouted message gets 'what do you need?' and no guessed programs or plan",
-      dun is not None and dun["question"]["key"] == "need" and len(dun["matches"]) == 0 and len(dun["plan"].get("steps", [])) == 0, (len(dun["matches"]), dun["question"].get("key")) if dun else "")
+check("R5 an unrouted message gets 'what do you need?': no guessed programs, plan, crisis box, chips or narration",
+      dun is not None and dun["question"]["key"] == "need" and len(dun["matches"]) == 0 and len(dun["plan"].get("steps", [])) == 0
+      and not dun["escalation"] and not dun["chips"] and not dun["facts"] and not dun["llm"]["narrate"] and not dun["profile"]["category"],
+      (len(dun["matches"]), dun["question"].get("key"), bool(dun["escalation"]), dun["chips"], dun["llm"]["narrate"]) if dun else "")
+
+# ---- Q. Small talk (live report 2026-10-03: "Hello how are you??" came back
+# as "you're looking for housing help" with Section 8, a crisis box and chips) ----
+dh, _ = turn(rv2, rt2, "Hello how are you??")
+check("Q1 a greeting gets 'what do you need help with?' and nothing else: no need guessed, no model call",
+      dh is not None and dh["profile"].get("small_talk") is True and dh["reply"] == EN_Q_NEED and dh["question"]["key"] == "need"
+      and not dh["matches"] and not dh["escalation"] and not dh["chips"] and not dh["llm"]["narrate"] and not dh["llm"]["sync_used"],
+      (dh["reply"][:60], bool(dh["escalation"]), dh["chips"]) if dh else "")
+de1, _ = turn(rv2, rt2, "¿Dónde está el banco de comida más cercano abierto hoy? Vivo en Dallas")
+pend = de1["question"]["key"] if de1 else ""
+de2, _ = turn(rv2, rt2, "Hello how are you??", de1["profile"] if de1 else {}, pend)
+check("Q2 small talk mid-case keeps the case and its language and re-asks the open question, without repeating the answer",
+      de2 is not None and de2["profile"]["category"] == "food" and de2["language"] == "es" and de2["question"]["key"] == pend
+      and de2["reply"].startswith("**Una pregunta") and not de2["matches"] and not de2["llm"]["narrate"],
+      (de2["language"], de2["question"]["key"], pend, de2["reply"][:50]) if de2 else "")
 
 lat.sort()
 p50 = lat[len(lat) // 2] if lat else 0

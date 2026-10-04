@@ -105,6 +105,16 @@
         {"text": "about 1,800 a month", "answering": "income", "expect": {"household_size": 2, "income_annual": 21600}},
         {"text": "大概两千块", "answering": "income", "expect": {"income_annual": 21600}}
       ]
+    },
+    {
+      "name": "Small talk in the middle of a Spanish case",
+      "why": "\"Hello how are you??\" switched the case to English and repeated the whole answer; \"thanks\" marked the open question as answered",
+      "turns": [
+        {"text": "¿Dónde está el banco de comida más cercano abierto hoy? Vivo en Dallas", "expect": {"language": "es", "category": "food", "state": "TX"}},
+        {"text": "Hello how are you??", "answering": "household", "expect": {"language": "es", "category": "food", "small_talk": true, "state": "TX"}},
+        {"text": "gracias", "answering": "household", "expect": {"language": "es", "small_talk": true}},
+        {"text": "somos 4", "answering": "household", "expect": {"language": "es", "household_size": 4, "small_talk": false}}
+      ]
     }
   ]
 }

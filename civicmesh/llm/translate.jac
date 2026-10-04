@@ -10,7 +10,7 @@ screen. Routing by language:
      uk, fr, pl, tr, th, id, ro, hr, bg, …). Prompted with a direction
      ("en-vi") as the system message, as its model card specifies.
   2. Gemma 4 31B (NIM, pre-trained on 140+ languages) for everything else,
-     then Mistral-Nemotron as a last resort.
+     then gpt-oss-20b as a last resort.
 
 Translation keeps numbers intact, so a guard rejects any output containing a
 3+ digit number (phone, amount, ZIP — compared across scripts) that isn't in
@@ -34,7 +34,7 @@ glob MAX_SEGMENTS: int = 8;
 
 glob RIVA_MODEL: str = "nvidia_nim/nvidia/riva-translate-4b-instruct-v2";
 glob POLYGLOT_TRANSLATE_MODEL: str = "nvidia_nim/google/gemma-4-31b-it";
-glob FALLBACK_TRANSLATE_MODEL: str = "nvidia_nim/mistralai/mistral-nemotron";
+glob FALLBACK_TRANSLATE_MODEL: str = "nvidia_nim/openai/gpt-oss-20b";
 # Measured on the live Space (NIM free tier, 2026-09-27): Riva ~8-10 s per
 # segment and >9 s with four in parallel; Gemma 4 took <9 s for the numbered
 # strings batch but >9 s for a whole answer. This path is off the critical

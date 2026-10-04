@@ -18,7 +18,7 @@ Thank you. The most useful contributions, in order:
 
 ```bash
 cd civicmesh
-jac run tests/eval_engine.jac        # 413 cases, 13 conversations + metamorphic check; must PASS
+jac run tests/eval_engine.jac        # 426 cases, 14 conversations + metamorphic check; must PASS
 jac run tests/check_messages.jac     # every catalog: keys, placeholders, numbers
 jac run tests/check_privacy.jac      # scrubber: caught, kept, documented misses
 jac run tests/check_policy.jac       # dated rules vs the published figures

@@ -351,9 +351,11 @@
   },
   {
    "text": "hello",
+   "_why": "a greeting asks for nothing: no need guessed and no model call (it once came back as a housing request)",
    "expect": {
     "category": "",
-    "needs_llm": true
+    "small_talk": true,
+    "needs_llm": false
    }
   },
   {
