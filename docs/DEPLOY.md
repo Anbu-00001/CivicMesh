@@ -127,6 +127,7 @@ unaffected.
 | `CIVICMESH_LLM_MAX_TOKENS_PER_DAY` | 2000000 | Estimated tokens per day (prompt length / 4 + requested output, corrected by reported usage) |
 | `CIVICMESH_LLM_MAX_REQUEST_TOKENS` | 8000 | Largest single request |
 | `CIVICMESH_LLM_MAX_CONCURRENT` | 4 | Model calls at once |
+| `CIVICMESH_NARRATE_TIMEOUT_S` | 25 | Seconds each model gets for a narration (the answer is already on screen, so this isn't on the critical path). Two models must fit in the gateway's 60 s limit for model calls |
 | `CIVICMESH_LLM_WAIT_S` | 2 | Wait for a free slot before refusing |
 | `CIVICMESH_LLM_BREAKER_FAILURES` | 5 | Consecutive failures that open the circuit |
 | `CIVICMESH_LLM_BREAKER_COOLDOWN_S` / `_MAX_COOLDOWN_S` | 60 / 900 | Open time, doubling on each re-trip up to the maximum |
