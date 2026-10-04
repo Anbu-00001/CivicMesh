@@ -14,7 +14,8 @@ import unittest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from cmguard import tokens  # noqa: E402
-from cmguard.budget import ModelBudget, ModelBudgetExceeded, estimate_tokens  # noqa: E402
+from cmguard import budget as budget_mod  # noqa: E402
+from cmguard.budget import ModelBudget, ModelBudgetExceeded, estimate_tokens, guard  # noqa: E402
 from cmguard.clientip import client_ip  # noqa: E402
 from cmguard.config import BudgetConfig, parse_rate  # noqa: E402
 from cmguard.gateway import classify, json_shape_problem  # noqa: E402
@@ -184,6 +185,57 @@ class Budget(unittest.TestCase):
         [t.start() for t in threads]
         [t.join() for t in threads]
         self.assertEqual(len(done), 10)
+
+    def provider(self):
+        """A fake litellm.completion: 'gone' answers 410, 'down' 503, anything else works."""
+        calls = []
+
+        class ProviderError(Exception):
+            def __init__(self, code):
+                super().__init__(f"Error code: {code}")
+                self.status_code = code
+
+        def completion(model="", **_kw):
+            calls.append(model)
+            if model in ("gone", "down"):
+                raise ProviderError(410 if model == "gone" else 503)
+            return {"usage": {"total_tokens": 10}}
+        return completion, calls
+
+    def test_a_retired_model_is_skipped_and_never_trips_the_breaker(self):
+        # 2026-10-03: NVIDIA answered 410 for the narrator's first model, and
+        # the shared breaker then refused every fallback and translation.
+        budget_mod._RETIRED.clear()
+        b = ModelBudget(self.cfg(per_minute=100, breaker_failures=2))
+        fn, calls = self.provider()
+        call = guard(fn, b)
+        for _ in range(6):
+            with self.assertRaises(Exception) as err:
+                call(model="gone", messages=[])
+            self.assertEqual(getattr(err.exception, "status_code", None), 410)
+            call(model="alive", messages=[])  # the pool's next model still works
+        self.assertEqual(calls.count("gone"), 1)  # asked once, then skipped without a request
+        self.assertEqual(b.snapshot()["failures"], 0)
+        self.assertFalse(b.snapshot()["breaker_open"])
+        self.assertEqual(b.snapshot()["retired_models"], ["gone"])
+        budget_mod._RETIRED.clear()
+
+    def test_a_half_open_trial_passes_to_the_fallback(self):
+        budget_mod._RETIRED.clear()
+        b = ModelBudget(self.cfg(per_minute=100, breaker_failures=2, breaker_cooldown_s=0.1))
+        fn, _ = self.provider()
+        call = guard(fn, b)
+        for _ in range(2):
+            with self.assertRaises(Exception):
+                call(model="down", messages=[])  # a real outage opens the breaker
+        self.assertTrue(b.snapshot()["breaker_open"])
+        time.sleep(0.15)
+        with self.assertRaises(Exception):
+            call(model="gone", messages=[])  # the trial hits a retired model: no verdict
+        call(model="alive", messages=[])  # so the fallback is the trial, and it closes the breaker
+        self.assertFalse(b.snapshot()["breaker_open"])
+        call(model="alive", messages=[])
+        budget_mod._RETIRED.clear()
 
     def test_estimate(self):
         self.assertEqual(estimate_tokens({"messages": [{"content": "x" * 400}], "max_tokens": 100}), 200)

@@ -50,7 +50,7 @@ Details and the tests behind them are in the README ("Security notes",
 - Walker reports, client-error reports and request addresses are not written
   to server logs; security telemetry is aggregate counts only.
 - The routing model is off unless an operator opts in.
-- `tests/security_e2e.py` (58 attack simulations) and `tests/test_cmguard.py`
+- `tests/security_e2e.py` (59 attack simulations) and `tests/test_cmguard.py`
   run in CI on every push.
 
 ## Not yet done

@@ -11,12 +11,20 @@ fallback and parallel segment draws on the same budget:
   * a cap on the size of one request
   * a circuit breaker: after N consecutive failures, all calls are refused for
     a cooldown that doubles on each re-trip (up to a maximum)
+  * retired models: a model the provider answers 404 or 410 for is skipped
+    for CIVICMESH_LLM_RETIRE_S (6 h). Later calls to it fail at once with the
+    same error, with no request and no budget slot, so a fallback pool moves
+    on to its next model. It never counts toward the breaker: on 2026-10-03
+    NVIDIA retired the narrator's first model with a 410, and every half-open
+    trial hit it first, re-opened the breaker and refused the fallback, so
+    narration and long-tail translation stayed down.
 
 A refusal raises ModelBudgetExceeded before any network request. Callers
 (narration, translation, the optional routing fallback) already treat a model
 failure as "no optional text": the deterministic answer is unaffected.
 """
 
+import os
 import threading
 import time
 from collections import deque
@@ -98,12 +106,19 @@ class ModelBudget:
             self._deny("too many concurrent calls")
         return now
 
-    def release(self, ok: bool, actual_tokens: int = 0, est_tokens: int = 0) -> None:
+    def release(self, ok: bool, actual_tokens: int = 0, est_tokens: int = 0, counts: bool = True) -> None:
+        """End a call. counts=False: not a verdict on the provider (a retired
+        model); a half-open trial passes to the next call."""
         self._slots.release()
         with self._lock:
             if actual_tokens and actual_tokens > est_tokens:
                 self._tokens.append((time.time(), actual_tokens - est_tokens))
                 self.stats["tokens_est"] += actual_tokens - est_tokens
+            if not counts and not ok:
+                if self._half_open:
+                    self._half_open = False
+                    self._open_until = time.time()
+                return
             if ok:
                 self._fails = 0
                 self._half_open = False
@@ -125,7 +140,7 @@ class ModelBudget:
             self._trim(now)
             return dict(self.stats, calls_last_minute=len(self._minute), calls_last_hour=len(self._hour),
                         calls_last_day=len(self._day), tokens_last_day=sum(t for _, t in self._tokens),
-                        breaker_open=now < self._open_until, limits={
+                        breaker_open=now < self._open_until, retired_models=sorted(retired_models()), limits={
                             "per_minute": self.cfg.per_minute, "per_hour": self.cfg.per_hour,
                             "per_day": self.cfg.per_day, "tokens_per_day": self.cfg.tokens_per_day,
                             "concurrent": self.cfg.concurrent})
@@ -153,40 +168,83 @@ def _usage_tokens(resp) -> int:
         return 0
 
 
+RETIRE_S = float(os.environ.get("CIVICMESH_LLM_RETIRE_S", "21600"))
+_RETIRED: dict = {}  # model -> (skip until, the provider's error)
+
+
+def retired_models() -> list:
+    now = time.time()
+    return [m for m, (until, _) in list(_RETIRED.items()) if until > now]
+
+
+def _gone(exc) -> bool:
+    """The provider says the model doesn't exist (404) or was retired (410)."""
+    return getattr(exc, "status_code", None) in (404, 410)
+
+
+def _check_retired(model: str) -> None:
+    hit = _RETIRED.get(model)
+    if hit and hit[0] > time.time():
+        raise hit[1].with_traceback(None)
+
+
+def _settle(budget: ModelBudget, model: str, ok: bool, exc, tokens: int, est: int) -> None:
+    gone = (not ok) and exc is not None and _gone(exc)
+    if gone:
+        if model not in retired_models():
+            telemetry.count("model_retired:" + model)
+        _RETIRED[model] = (time.time() + RETIRE_S, exc)
+    budget.release(ok, tokens, est, counts=not gone)
+
+
+def guard(fn, budget: ModelBudget = BUDGET):
+    """litellm.completion under the budget (see the module docstring)."""
+    def completion(*args, **kwargs):
+        model = str(kwargs.get("model") or "")
+        _check_retired(model)
+        est = estimate_tokens(kwargs)
+        budget.acquire(est)
+        ok, tokens, err = False, 0, None
+        try:
+            resp = fn(*args, **kwargs)
+            ok, tokens = True, _usage_tokens(resp)
+            return resp
+        except Exception as exc:
+            err = exc
+            raise
+        finally:
+            _settle(budget, model, ok, err, tokens, est)
+    return completion
+
+
+def guard_async(fn, budget: ModelBudget = BUDGET):
+    """litellm.acompletion under the budget."""
+    async def acompletion(*args, **kwargs):
+        model = str(kwargs.get("model") or "")
+        _check_retired(model)
+        est = estimate_tokens(kwargs)
+        budget.acquire(est)
+        ok, tokens, err = False, 0, None
+        try:
+            resp = await fn(*args, **kwargs)
+            ok, tokens = True, _usage_tokens(resp)
+            return resp
+        except Exception as exc:
+            err = exc
+            raise
+        finally:
+            _settle(budget, model, ok, err, tokens, est)
+    return acompletion
+
+
 def install(budget: ModelBudget = BUDGET) -> bool:
     """Wrap litellm.completion and acompletion once. Idempotent."""
     import litellm
 
     if getattr(litellm.completion, "_civicmesh_budget", False):
         return True
-    orig_sync = litellm.completion
-    orig_async = litellm.acompletion
-
-    def completion(*args, **kwargs):
-        est = estimate_tokens(kwargs)
-        budget.acquire(est)
-        ok = False
-        tokens = 0
-        try:
-            resp = orig_sync(*args, **kwargs)
-            ok = True
-            tokens = _usage_tokens(resp)
-            return resp
-        finally:
-            budget.release(ok, tokens, est)
-
-    async def acompletion(*args, **kwargs):
-        est = estimate_tokens(kwargs)
-        budget.acquire(est)
-        ok = False
-        tokens = 0
-        try:
-            resp = await orig_async(*args, **kwargs)
-            ok = True
-            tokens = _usage_tokens(resp)
-            return resp
-        finally:
-            budget.release(ok, tokens, est)
+    completion = guard(litellm.completion, budget)
+    acompletion = guard_async(litellm.acompletion, budget)
 
     completion._civicmesh_budget = True
     acompletion._civicmesh_budget = True

@@ -23,7 +23,7 @@ Output contract (plain dict so it serialises straight into walker reports):
 """
 
 import re;
-import from engine.i18n { detect_script, detect_latin_other, route_i18n, negated, need_focus, LATIN_MARKERS, NEG_RIGHT }
+import from engine.i18n { detect_script, detect_latin_other, route_i18n, negated, need_focus, LATIN_MARKERS, NEG_RIGHT, is_small_talk }
 import from engine.facts_i18n { facts_i18n, place_i18n }
 
 # ---------- lexicons ----------
@@ -836,10 +836,13 @@ def parse_intake(text: str) -> dict {
 
     needs_llm = False;
     llm_reason = "";
+    # "hi", "thanks", "how are you": nothing to route (IntakeWalker answers it
+    # without guessing a need).
+    small_talk = is_small_talk(raw);
     # The LLM is consulted only when nothing could be routed. A language
     # outside the lexicon no longer forces it: the narration call writes
     # back in the user's language either way.
-    if not top_cat {
+    if not top_cat and not small_talk {
         needs_llm = True;
         llm_reason = "no category evidence" if lang else "unrecognized language";
     }
@@ -864,6 +867,7 @@ def parse_intake(text: str) -> dict {
         "evidence": evidence,
         "completeness": round(known / 5.0, 2),
         "needs_llm": needs_llm,
-        "llm_reason": llm_reason
+        "llm_reason": llm_reason,
+        "small_talk": small_talk
     };
 }

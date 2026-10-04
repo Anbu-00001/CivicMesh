@@ -5,7 +5,7 @@ limits so the tests run in about a minute (CI does exactly this):
 
     python3 civicmesh/tests/fake_llm.py 8799 0.3 &
     docker run -d --name cm-sec -p 7861:7860 --add-host=host.docker.internal:host-gateway \\
-      -e CIVICMESH_LLM_MODELS=openai/fake-narrator -e CIVICMESH_POLYGLOT_MODELS=openai/fake-polyglot \\
+      -e CIVICMESH_LLM_MODELS=openai/fake-retired,openai/fake-narrator -e CIVICMESH_POLYGLOT_MODELS=openai/fake-polyglot \\
       -e OPENAI_API_BASE=http://host.docker.internal:8799/v1 -e OPENAI_API_KEY=sk-test-DO-NOT-LEAK-openai-123456 \\
       -e NVIDIA_NIM_API_BASE=http://host.docker.internal:8799/v1 \\
       -e NVIDIA_NIM_API_KEY=nvapi-TESTSECRET-DO-NOT-LEAK-123456 -e NVIDIA_API_KEY=nvapi-TESTSECRET-DO-NOT-LEAK-123456 \\
@@ -120,6 +120,12 @@ def main():
     check("S1 the deterministic answer works through the gateway", s == 200 and len(r.get("matches", [])) > 0, s)
     s, n, _ = narrate(tok, r, "10.51.0.1", "I need food for my kids in Houston")
     check("S1 a narration with the server's token reaches the model and succeeds", s == 200 and n.get("ok") is True, n.get("error"))
+    # The pool's first model is retired (410), as NVIDIA's narrator was on
+    # 2026-10-03: it is asked once, then skipped, and never trips the breaker.
+    s, r2, _ = turn(uid, tok, "We are 3 and need food in Houston", "10.51.0.1")
+    s, n2, _ = narrate(tok, r2, "10.51.0.1", "We are 3 and need food in Houston")
+    retired_calls = fake_stats().get("by_model", {}).get("fake-retired", 0)
+    check("S1 a retired first model (410) is asked once, then skipped; narration keeps working", n2.get("ok") is True and retired_calls == 1, (n2.get("error"), retired_calls))
     s, rv, _ = turn(uid, tok, "Tôi cần thức ăn cho con ở Houston", "10.51.0.1")
     s, loc, _ = req("POST", "/walker/LocalizeWalker", {"text": rv.get("reply", ""), "language": rv.get("language_info", {}).get("code", ""),
                                                         "strings": [], "text_token": rv.get("loc", {}).get("text_token", "")}, tok, ip="10.51.0.1")
@@ -251,7 +257,9 @@ def main():
             if s != 200 or not rr.get("narrate_token"):
                 continue
             _, nn, dt = narrate(t, rr, ip, "We need food for my kids in Houston")
-            if "model budget" in str(nn.get("error")):
+            # Failing is the point; the error text isn't: the pool leads with a
+            # retired model, whose cached 410 is what the router reports.
+            if nn.get("ok") is False and not nn.get("private"):
                 budget_refusals += 1
     stats = fake_stats()
     spent = stats["requests"] - base_requests

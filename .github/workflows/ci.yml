@@ -1,13 +1,13 @@
 name: CI
 
 # Every push and pull request runs the same checks used locally:
-#   engine    — the 372-case eval (regression floor), message catalogs,
+#   engine    — the 426-case eval (regression floor), message catalogs,
 #               privacy guard, and in-process walker tests (Jac)
 #   portable  — the same eval on the engine ejected to plain Python, run in a
 #               venv with no Jac installed (the escape hatch from the stack)
 #   external  — the router on real people's posts (LegalBench learned_hands),
 #               held-out numbers printed to the run summary; never fails the run
-#   e2e       — the production Docker image, 64 HTTP checks, a scan of the
+#   e2e       — the production Docker image, 66 HTTP checks, a scan of the
 #               server logs for anything a user typed, and attack simulations
 #               against a second container (tests/security_e2e.py)
 # No secrets are needed: nothing on these paths calls a real LLM (the attack
@@ -43,7 +43,7 @@ jobs:
           cache-dependency-path: requirements.txt
       - name: Install pinned dependencies
         run: pip install -r ../requirements.txt
-      - name: Engine eval — 372 golden cases, fails below the regression floor
+      - name: Engine eval — 426 golden cases and 14 conversations, fails below the regression floor
         run: jac run tests/eval_engine.jac
       - name: Message catalogs — keys, placeholders, numbers, detector round trip
         run: jac run tests/check_messages.jac
@@ -151,7 +151,7 @@ jobs:
           docker run -d --name cm -p 7860:7860 civicmesh:ci
           for _ in $(seq 1 90); do curl -sf -o /dev/null http://localhost:7860/ && exit 0; sleep 2; done
           docker logs cm; exit 1
-      - name: HTTP end-to-end (64 checks, no LLM key)
+      - name: HTTP end-to-end (66 checks, no LLM key)
         run: python3 civicmesh/tests/e2e_http.py http://localhost:7860
       - name: Accessibility — axe-core on the chat, replies announced, focus returned
         run: |
@@ -168,7 +168,7 @@ jobs:
         run: |
           python3 civicmesh/tests/fake_llm.py 8799 0.3 &
           docker run -d --name cm-sec -p 7861:7860 --add-host=host.docker.internal:host-gateway \
-            -e CIVICMESH_LLM_MODELS=openai/fake-narrator -e CIVICMESH_POLYGLOT_MODELS=openai/fake-polyglot \
+            -e CIVICMESH_LLM_MODELS=openai/fake-retired,openai/fake-narrator -e CIVICMESH_POLYGLOT_MODELS=openai/fake-polyglot \
             -e OPENAI_API_BASE=http://host.docker.internal:8799/v1 -e OPENAI_API_KEY=sk-test-DO-NOT-LEAK-openai-123456 \
             -e NVIDIA_NIM_API_BASE=http://host.docker.internal:8799/v1 \
             -e NVIDIA_NIM_API_KEY=nvapi-TESTSECRET-DO-NOT-LEAK-123456 -e NVIDIA_API_KEY=nvapi-TESTSECRET-DO-NOT-LEAK-123456 \

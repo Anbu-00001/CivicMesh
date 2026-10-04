@@ -939,6 +939,40 @@ glob SUBSTRING_LANGS: list = ["zh", "yue", "ja", "ko", "th", "km", "my", "lo", "
 
 # Short yes / no replies to the agent's follow-up question.
 glob YES_WORDS: list = ["yes", "yeah", "yep", "sí", "si", "claro", "是", "是的", "对", "對", "有", "はい", "ええ", "네", "예", "có", "vâng", "dạ", "oo", "opo", "نعم", "أجل", "بله", "آره", "ہاں", "جی", "да", "так", "हाँ", "हां", "जी", "ஆம்", "ஆமாம்", "ஆமா", "అవును", "ಹೌದು", "അതെ", "হ্যাঁ", "હા", "ਹਾਂ", "sim", "oui", "wi", "ja", "sì", "tak", "evet", "ya", "iya", "ndiyo", "haa", "ใช่", "បាទ", "ចាស", "ဟုတ်", "አዎ", "כן", "ναι", "այո", "დიახ", "yog"];
+# Greetings, thanks, "how are you" and goodbyes: messages that ask for
+# nothing. Matched against the whole message, so "hi, I need food" is not
+# small talk. Yes/no words ("ok", "sí", "네") are not here: they answer
+# questions. Fillers ("ok", "great") count only next to one of these.
+glob SMALL_TALK: list = [
+    "hi+", "hello+", "hey+", "hiya", "howdy", "yo", "greetings", "good (?:morning|afternoon|evening|day)", "(?:hi|hello|hey) there",
+    "how (?:are|r) (?:you|u|ya)(?: doing| today)?", "how'?s it going", "what'?s up", "sup", "nice to meet you",
+    "thanks?(?: you)?(?: (?:so|very) much| a lot)?", "thx", "ty", "thank u", "many thanks", "much appreciated", "appreciate it",
+    "bye+", "goodbye", "good ?night", "see (?:you|ya)(?: later)?", "take care", "have a (?:good|nice) day",
+    "hola", "buen(?:os|as) (?:d[ií]as|tardes|noches)", "buenas", "qu[eé] tal", "c[oó]mo (?:est[aá]s?|le va|te va)", "(?:muchas )?gracias", "adi[oó]s", "chao", "hasta luego", "mucho gusto",
+    "ol[aá]", "oi", "bom dia", "boa (?:tarde|noite)", "tudo bem", "como vai(?: voc[eê])?", "(?:muito )?obrigad[oa]", "valeu", "tchau",
+    "bonjour", "bonsoir", "salut", "merci(?: beaucoup)?", "au revoir", "comment (?:[cç]a va|allez-vous)", "[cç]a va", "bonjou", "bonswa", "m[eè]si(?: anpil)?", "orevwa", "kijan ou ye",
+    "xin ch[aà]o", "ch[aà]o(?: b[aạ]n)?", "c[aả]m [oơ]n(?: b[aạ]n)?", "c[aá]m [oơ]n", "t[aạ]m bi[eệ]t", "b[aạ]n kh[oỏ]e kh[oô]ng",
+    "ka?mu?sta(?: ka| po)?", "magandang (?:umaga|hapon|gabi)", "(?:maraming )?salamat(?: po)?", "paalam",
+    "привет", "здравствуйте", "добрый (?:день|вечер)", "доброе утро", "спасибо(?: большое)?", "пока", "до свидания", "как дела", "дякую", "вітаю", "привіт",
+    "नमस्ते", "नमस्कार", "धन्यवाद", "शुक्रिया", "namaste", "namaskar", "shukriya", "dhanyavaa?d", "(?:aap )?kaise ho", "السلام علیکم", "شکریہ",
+    "مرحبا", "مرحباً", "السلام عليكم", "أهلا", "اهلا", "شكرا(?: جزيلا)?", "شكراً", "كيف حالك", "مع السلامة", "سلام", "ممنون", "مرسی", "خداحافظ",
+    "你好", "您好", "嗨", "哈喽", "你好吗", "你好嗎", "谢谢(?:你)?", "謝謝(?:你)?", "多谢", "多謝", "再见", "再見", "早上好", "晚上好",
+    "안녕하세요", "안녕", "감사합니다", "고맙습니다", "고마워요", "안녕히 계세요",
+    "こんにちは", "こんばんは", "おはよう(?:ございます)?", "ありがとう(?:ございます)?", "さようなら"
+];
+glob SMALL_TALK_FILLER: str = "(?:ok(?:ay)?|okey|great|cool|perfect|awesome|got it|alright|again|vale|bueno|perfecto|beleza|de nuevo|otra vez|好的|好)";
+glob SMALL_TALK_RE: str = "^(?:" + SMALL_TALK_FILLER + "\\s*)*(?:" + "|".join(SMALL_TALK) + ")(?:\\s*(?:and |y |e |et )?(?:" + SMALL_TALK_FILLER + "\\s*)*(?:" + "|".join(SMALL_TALK) + "))*(?:\\s*" + SMALL_TALK_FILLER + ")*$";
+
+"""True when the whole message is small talk: "hi", "thanks!", "Hello how are you??", "谢谢".
+
+Punctuation and emoji don't count; any other word makes it not small talk.
+"""
+def is_small_talk(text: str) -> bool {
+    t = re.sub("[!?.,;:¡¿。，！？、…~\"“”«»()\\[\\]*؟،\U0001F000-\U0001FAFF\u2600-\u27BF\uFE0F]+", " ", str(text).lower());
+    t = re.sub("\\s+", " ", t).strip();
+    return bool(t) and len(t) <= 60 and bool(re.match(SMALL_TALK_RE, t));
+}
+
 glob NO_WORDS: list = ["no", "nope", "nah", "不", "不是", "没有", "沒有", "いいえ", "아니", "아니요", "không", "hindi", "wala", "لا", "نه", "نہیں", "нет", "ні", "नहीं", "நஹி", "இல்லை", "లేదు", "ಇಲ್ಲ", "ഇല്ല", "না", "ના", "ਨਹੀਂ", "não", "nao", "non", "nein", "nie", "hayır", "tidak", "hapana", "maya", "ไม่", "ទេ", "မဟုတ်", "አይ", "לא", "όχι", "ոչ", "არა", "tsis"];
 
 """Script of one code point, or "" for Latin/digits/punctuation."""

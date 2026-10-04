@@ -61,13 +61,16 @@ import from cmguard.budget { install as install_model_budget, BUDGET as MODEL_BU
 glob MODEL_BUDGET_INSTALLED: bool = install_model_budget();
 
 # Tried in order (litellm Router fallback). NVIDIA retired
-# meta/llama-3.1-8b-instruct on 2026-08-26 and nv-mistralai/mistral-nemo-12b
-# answers 404 on our key, so the NIM chain is mistral-nemotron → gpt-oss-20b.
-# Groq's gpt-oss-20b (strict json_schema, ~1k tok/s) leads when GROQ_API_KEY is
-# set. CIVICMESH_LLM_MODELS (comma-separated litellm ids) overrides everything.
+# meta/llama-3.1-8b-instruct on 2026-08-26 and mistralai/mistral-nemotron by
+# 2026-10-03 (410 Gone), and nv-mistralai/mistral-nemo-12b answers 404 on our
+# key, so the NIM chain is gpt-oss-20b → Gemma 4 (both in NVIDIA's model list,
+# https://integrate.api.nvidia.com/v1/models). A model that answers 404/410 is
+# skipped from then on (cmguard/budget.py). Groq's gpt-oss-20b (strict
+# json_schema, ~1k tok/s) leads when GROQ_API_KEY is set. CIVICMESH_LLM_MODELS
+# (comma-separated litellm ids) overrides everything.
 glob NIM_MODELS: list[str] = [
-    "nvidia_nim/mistralai/mistral-nemotron",
-    "nvidia_nim/openai/gpt-oss-20b"
+    "nvidia_nim/openai/gpt-oss-20b",
+    "nvidia_nim/google/gemma-4-31b-it"
 ];
 glob GROQ_MODELS: list[str] = ["groq/openai/gpt-oss-20b"];
 

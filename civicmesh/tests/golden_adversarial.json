@@ -745,6 +745,93 @@
    "flag": "pregnant",
    "state": "MA"
   }
+ },
+ {
+  "text": "Hello how are you??",
+  "expect": {
+   "small_talk": true,
+   "needs_llm": false,
+   "category": ""
+  },
+  "_why": "came back as a housing request with Section 8 to call"
+ },
+ {
+  "text": "thanks!",
+  "expect": {
+   "small_talk": true,
+   "category": ""
+  }
+ },
+ {
+  "text": "ok thanks 🙏",
+  "expect": {
+   "small_talk": true
+  }
+ },
+ {
+  "text": "Gracias, buenas noches",
+  "expect": {
+   "small_talk": true
+  }
+ },
+ {
+  "text": "obrigada!",
+  "expect": {
+   "small_talk": true
+  }
+ },
+ {
+  "text": "谢谢你",
+  "expect": {
+   "small_talk": true
+  }
+ },
+ {
+  "text": "xin chào",
+  "expect": {
+   "small_talk": true
+  }
+ },
+ {
+  "text": "안녕하세요",
+  "expect": {
+   "small_talk": true
+  }
+ },
+ {
+  "text": "شكرا جزيلا",
+  "expect": {
+   "small_talk": true
+  }
+ },
+ {
+  "text": "ok",
+  "expect": {
+   "small_talk": false
+  },
+  "_why": "a yes/no answer, not small talk"
+ },
+ {
+  "text": "hi, I need food for my kids",
+  "expect": {
+   "small_talk": false,
+   "category": "food"
+  },
+  "_why": "a greeting before a need is a need"
+ },
+ {
+  "text": "Thanks for nothing, my landlord is evicting me tomorrow",
+  "expect": {
+   "small_talk": false,
+   "category": "housing"
+  }
+ },
+ {
+  "text": "Hello again",
+  "expect": {
+   "small_talk": true
+  },
+  "_why": "a returning greeting"
  }
  ]
 }
