@@ -55,7 +55,16 @@ glob CATEGORY_LEXICON: dict = {
         ("calefacci[oó]n", 2.0), ("luz", 1.0),
         ("place to (?:shower|wash)", 2.5), ("showers?", 1.5), ("laundry", 1.5),
         ("lugar (?:para|donde) (?:dormir|quedarnos|quedarme|vivir)", 2.5), ("d[oó]nde (?:dormir|vivir|quedarnos)", 2.0),
-        ("no tengo (?:casa|hogar|d[oó]nde vivir)", 2.5)
+        ("no tengo (?:casa|hogar|d[oó]nde vivir)", 2.5),
+        # Lost the home to a fire, flood or storm: a housing need even when no
+        # housing word is used ("my house was flooded").
+        ("(?:house|home|apartment|trailer|place)\\s+(?:\\w+\\s+){0,3}?(?:burn(?:ed|t)(?:\\s+down)?|destroyed|flooded|collapsed|washed\\s+away|blown\\s+(?:away|up)|wrecked|condemned)", 2.5),
+        ("(?:fire|flood|flooding|tornado|hurricane|storm|earthquake|wildfire)\\s+(?:destroyed|burn(?:ed|t)\\s+down|took|wiped\\s+out|flattened|ruined)\\s+(?:our|my|the)\\s+(?:house|home|apartment|place)", 2.5),
+        ("(?:blew|blown)\\s+(?:our|my|the)\\s+(?:house|home)\\s+(?:up|away)", 2.5), ("lost\\s+(?:my|our)\\s+(?:house|home|apartment)", 2.5),
+        ("(?:house|home|apartment)\\s+fire", 2.5), ("displaced\\s+(?:by|from)", 2.0),
+        ("(?:mi|nuestra|la)\\s+(?:casa|vivienda)\\s+(?:se\\s+)?(?:quem[oó]|inund[oó]|destruy[oó]|derrumb[oó])", 2.5),
+        ("(?:se\\s+)?(?:quem[oó]|inund[oó]|destruy[oó]|derrumb[oó])\\s+(?:mi|nuestra|la)\\s+(?:casa|vivienda|apartamento)", 2.5),
+        ("perd(?:imos|[ií])\\s+(?:mi|nuestra|la)\\s+(?:casa|vivienda|apartamento)", 2.5), ("incendio\\s+(?:en|de)\\s+(?:mi|nuestra|la)\\s+(?:casa|vivienda)", 2.5), ("damnificad[oa]s?", 2.0)
     ],
     "healthcare": [
         ("doctor", 2.0), ("medicaid", 2.5), ("medicine", 2.0), ("medication", 2.0),
@@ -306,6 +315,9 @@ glob ES_MARKERS: list = [
 
 glob UNEARNED_CUES: str = r"\b(?:social security|ssi|ssdi|pension|disability (?:check|benefits?|payments?)|retirement (?:check|benefits?|income)|unemployment (?:benefits?|insurance|checks?)|child support|alimony|seguro social|pensi[oó]n|jubilaci[oó]n)\b";
 glob EARNED_CUES: str = r"\b(?:earn|earns|earning|earnings|salary|wages?|paycheck|job|jobs|work|works|working|hourly|an hour|per hour|self.employed|sueldo|salario|trabajo)\b";
+# A message this long with one passing keyword and nothing else the engine can
+# use is a story, not a request (see parse_intake).
+glob LONG_MESSAGE: int = 500;
 glob INCOME_CUES: str ="(?:earn|earning|make|making|income|salary|paid|wage|wages|pension|social security|ssi|ssdi|disability|benefits?|gano|ganamos|ingresos?|sueldo|salario|pensi[oó]n|seguro social)";
 glob EXPENSE_CUES: str = "\\b(?:rent|owe|owed|debt|bill|bills|cost|costs|fee|fine|deposit|pay|paying|renta|alquiler|debo|deuda|factura|pago|pagamos|pagar)\\b";
 # A number with no currency mark counts as income only right after an income
@@ -833,6 +845,21 @@ def parse_intake(text: str) -> dict {
     if age > 0 { known += 1; }
     if loc["state"] or loc["zip"] { known += 1; }
     if citizenship { known += 1; }
+
+    # One passing keyword in a long message, with no income, household, age or
+    # status (a place says nothing about what someone needs) and no crisis
+    # words, is not a request: "…nobody had asked for food…" in a
+    # 2,000-character story routed it to food banks. Treat it as unrouted (the
+    # person is asked what they need, buttons offered), the same repair as for
+    # a message with no keyword at all. The place, if any, is kept.
+    cat_spans = len([e for e in evidence if e["field"] == "category"]);
+    personal_facts = known - (1 if (loc["state"] or loc["zip"]) else 0);
+    if top_cat and len(raw) >= LONG_MESSAGE and cat_spans <= 1 and personal_facts == 0 and not flags {
+        top_cat = "";
+        cat_conf = 0.0;
+        secondary = [];
+        evidence = [e for e in evidence if e["field"] != "category"];
+    }
 
     needs_llm = False;
     llm_reason = "";

@@ -451,7 +451,7 @@ impl ChatPane.renderMatchCard(m: Any, idx: int, j: int, ui: Any) -> JsxElement {
             <div className="cm-meter"><div style={{"width": str(pct) + "%", "background": ts["color"]}}/></div>
             <div className="cm-meter-row" title="A starting guess from how open the program is (open, waitlist or closed), not measured from real outcomes. Recording your own result changes only your copy, so it can't learn across people yet.">
                 <span>{L(ui, "ui.approval", "Approval odds")}</span>
-                <span className="cm-muted">{"~" + str(mean) + "% · rough guess"}</span>
+                <span className="cm-muted">{"~" + str(mean) + "% · " + L(ui, "ui.rough_guess", "rough guess")}</span>
             </div>
             {ben["label"] and <div className="cm-benefit" title={str(ben["basis"])}>
                 <span className="cm-benefit-amt">{str(ben["label"])}</span>
@@ -599,6 +599,7 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
     facts: list = [];
     if not prof["small_talk"] {
         if prof["category"] { facts = facts + [str(prof["category"]) + " · " + str(prof["urgency"]).replace("_", " ")]; }
+        if prof["secondary"] and len(prof["secondary"]) > 0 { facts = facts + ["also " + ", ".join(list(prof["secondary"]))]; }
         if Number(prof["income_annual"]) >= 0 { facts = facts + ["$" + Number(prof["income_annual"]).toLocaleString() + "/yr"]; }
         if Number(prof["household_size"]) > 0 { facts = facts + ["household " + str(prof["household_size"])]; }
         if Number(prof["age"]) > 0 { facts = facts + ["age " + str(prof["age"])]; }

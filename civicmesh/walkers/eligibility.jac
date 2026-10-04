@@ -48,10 +48,13 @@ def chip_name(name: str) -> str {
 "How do I apply for X?" for the best match; a situation chip only when a
 program is waiting on exactly that fact (a child under 5 for WIC, children
 for school meals); the category defaults fill the rest, minus any that
-assume facts the person hasn't mentioned (kids, a tenancy).
+assume facts the person hasn't mentioned (kids, a tenancy). A chip the
+person already sent (it's in the case text, as a tapped chip is sent as its
+English text) is not offered again.
 """
 def chips_for(ranked: list, profile: dict, lang: str = "en") -> list {
     flags = list(profile.get("flags", []));
+    asked = str(profile.get("case_text", "")).lower();
     keyed: list = [];
     # "How do I apply for X?" only for programs with a real application
     # (a food bank or community fridge has nothing to apply for).
@@ -70,9 +73,11 @@ def chips_for(ranked: list, profile: dict, lang: str = "en") -> list {
     elif "children" in asks and "children" not in flags { keyed.append(["chip.children", {}]); }
     if "homeless" in asks and "homeless" not in flags { keyed.append(["chip.homeless", {}]); }
     out: list = [[msg("en", k[0], k[1]), msg(lang, k[0], k[1])] for k in keyed];
+    out = [o for o in out if o[0].lower() not in asked];
     for key in list(CHIPS.get(str(profile.get("category", "")), CHIPS["housing"])) {
         if len(out) >= 3 { break; }
         c = msg("en", key);
+        if c.lower() in asked { continue; }
         if ("kids" in c or "children" in c) and "children" not in flags { continue; }
         if likely and chip_name(likely[0]["resource_name"]) in c { continue; }
         if c not in [o[0] for o in out] { out.append([c, msg(lang, key)]); }

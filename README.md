@@ -23,7 +23,7 @@ pinned: false
 [![byllm](https://img.shields.io/badge/byllm-0.6.7-22c55e?style=flat-square)](https://github.com/Jaseci-Labs/byllm)
 [![NVIDIA NIM](https://img.shields.io/badge/NVIDIA%20NIM-translation%20%2B%20narration-76b900?style=flat-square)](https://build.nvidia.com)
 [![Languages](https://img.shields.io/badge/languages-51%20drafted%20%C2%B7%200%20reviewed%20%C2%B7%20111%20selectable-2563eb?style=flat-square)](#languages-and-dialects)
-[![Eval](https://img.shields.io/badge/eval-426%20cases%20%C2%B7%2014%20conversations%20%C2%B7%20987%20checks-16a34a?style=flat-square)](#evaluation-and-hard-tests)
+[![Eval](https://img.shields.io/badge/eval-439%20cases%20%C2%B7%2014%20conversations%20%C2%B7%201009%20checks-16a34a?style=flat-square)](#evaluation-and-hard-tests)
 [![CI](https://github.com/Anbu-00001/CivicMesh/actions/workflows/ci.yml/badge.svg)](https://github.com/Anbu-00001/CivicMesh/actions/workflows/ci.yml)
 [![Privacy](https://img.shields.io/badge/privacy-scrubbed%20%C2%B7%20deletable%20%C2%B7%20no%20tracking-0f766e?style=flat-square)](./PRIVACY.md)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](./LICENSE)
@@ -68,7 +68,7 @@ Everything below is computed, cited and tested, but not all of it is measured. T
 | **Approval odds** ("~67% · rough guess") | A Beta posterior from a hand-set prior (open 6:3, waitlist 3:5), updated by that visitor's own marked outcomes | Learning across people: each visitor has a private copy of the rule nodes, so outcomes never pool |
 | **Plan order** | Smith's rule: steps by value ÷ minutes, where value = urgency × score × approval × access × benefit | Checked against how caseworkers sequence applications |
 | **Route cost** | days + 10·difficulty + 30·(−ln P(yes)), best routes by Yen's k-shortest paths | Tuned: 10 and 30 encode "a likely rejection costs more than a slow step", and no ablation shows they beat simpler choices |
-| **100% on the eval** | Regression gates: 426 cases and 14 multi-turn conversations the author wrote, run on every push | A benchmark. On real posts labeled by lawyers the held-out recall is domestic violence 66%, housing 77%, health 79%, immigration status 82% ([below](#external-check-real-peoples-words), with intervals) |
+| **100% on the eval** | Regression gates: 439 cases and 14 multi-turn conversations the author wrote, run on every push | A benchmark. On real posts labeled by lawyers the held-out recall is domestic violence 66%, housing 77%, health 79%, immigration status 82% ([below](#external-check-real-peoples-words), with intervals) |
 
 Turning these into measurements needs more than this repository has: the PolicyEngine US check extended from SNAP to Medicaid, WIC and school meals, an opt-in aggregate with a minimum cohort size for approval odds, and a supervised pilot where a caseworker marks every answer.
 
@@ -92,7 +92,7 @@ In September 2026 the author asked a chat model (an AI assistant, not a human ex
 | The criticism | What changed | Where to check |
 |---|---|---|
 | Built on Jac, a pre-1.0 language few people use; nobody else can maintain it | A written maintenance plan. The engine, where every eligibility decision lives, is transpiled to plain Python on every push and passes the same 784 checks with no Jac installed. `jac eject` was verified for the whole app. Every package is pinned, and Dependabot opens tested upgrade PRs | [docs/MAINTENANCE.md](./docs/MAINTENANCE.md) · `tools/eject_engine.sh` · CI job `portable` |
-| No CI | GitHub Actions on every push and PR: the eval and unit checks, the plain-Python engine, the external check on real posts (reported, not gating), and the production Docker image with 66 HTTP checks, an accessibility scan, a real-browser check of Quick exit and the first message, and a scan of the server logs for user text | [.github/workflows/ci.yml](./.github/workflows/ci.yml) |
+| No CI | GitHub Actions on every push and PR: the eval and unit checks, the plain-Python engine, the external check on real posts (reported, not gating), and the production Docker image with 69 HTTP checks, an accessibility scan, a real-browser check of Quick exit and the first message, and a scan of the server logs for user text | [.github/workflows/ci.yml](./.github/workflows/ci.yml) |
 | No privacy story, for users asked about immigration status, income, violence and self-harm | A [privacy notice](./PRIVACY.md) where every statement maps to a test. What users type is never stored and never sent to a model (below). **Delete my data** erases the case. jaclang's `report` had been printing every answer into the server logs; that echo is off | `engine/privacy.jac` · `walkers/forget.jac` · `walkers/log_privacy.jac` · E2E P1–P14 |
 | Machine-drafted translations shown to vulnerable people | **0 of 50 are reviewed** (Spanish included). Until they are, each follows HHS Section 1557 guidance for unreviewed machine translation: a notice in the user's language, the English original one tap away, the English sentence under every crisis line, numbers locked by a test, and a report-a-mistake form | [docs/TRANSLATION_REVIEW.md](./docs/TRANSLATION_REVIEW.md) · `tools/review_sheet.py` |
 | No evidence it holds up with a real person in crisis | Still true. The honest next step is a supervised pilot with a legal-aid clinic, library or 211 partner, where a caseworker reads every answer. Until then, the external check below measures the router on real people's words instead of the author's | — |
@@ -129,11 +129,15 @@ The fourth review (again a chat model, not an audit) credited the deliberate cho
 | "111 languages" reads as 111 reliable languages | The badge and landing page say 51 machine-drafted, 0 reviewed, 111 selectable |
 | No outside adoption | True, and not something code fixes. [CONTRIBUTING.md](./CONTRIBUTING.md) lists the most useful help: native-speaker review, real wording the engine misreads, and program-data corrections |
 
-**A fifth pass: conversations the way people have them, and five bugs from real use**
+**A fifth pass: conversations the way people have them, and eight bugs from real use**
 
 - **A language switch wiped the case.** A family wrote in Chinese (two children, Boston, $1,800 a month, food), added in Portuguese that the landlord wanted them out, then asked in English what documents to bring. The engine started a new case at each switch, so by the third message it had forgotten everything and asked "what do you need?". Violence disclosed in Chinese was dropped when the next message came in English, so that turn was neither private nor routed to domestic-violence help. A second need in the same language ("also, the rent") lost the income, household and state the same way. One conversation is now one person: facts and flags carry across languages and needs, the reply follows the language of the latest message, and **New case** is the one way to start over. `golden_conversations.json` replays 14 such conversations turn by turn (102 checks).
 - **"Hello how are you??" came back as a housing request.** A message with nothing in it to route was defaulted to housing at 10% confidence. The program list was withheld, but the rest of the pipeline kept going: the narrator was handed "need: housing" and wrote "you're looking for housing help quickly", a red "Call 2-1-1: shelter placement" box appeared because no program matched, and Section 8 chips were offered. After a food question it also switched the case to English and re-sent the whole answer. Now a turn that asks for nothing (small talk in 40+ languages, or a message with no need and no crisis words) gets one line and a question, and nothing else: no guessed need, no programs, no crisis box, no chips, no model call, nothing written to the graph. Mid-case it keeps the case and its language and re-asks the question still open, and "thanks" no longer counts as the answer to it. A message with crisis words but no named need still pins the hotline first. Conversation-design guidance agrees: recover with options based on what the person just said, don't repeat a vague fallback, and answer greetings briefly before steering back ([Dialogflow](https://developers.google.com/assistant/df-asdk/dialogflow/tips), [OpenDialog](https://docs.opendialog.ai/opendialog-platform/conversation-designer/conversation-design/conversational-patterns/building-robust-assistants/contextual-no-match-pattern)).
 - **"LLM narration unavailable" on every turn.** NVIDIA retired `mistral-nemotron` (HTTP 410 Gone), the first model in the narration chain. Every attempt failed, and because the failures counted toward the shared circuit breaker, it opened; each half-open trial then went to the dead model first, failed, and reopened it, so the working fallback behind it was never reached and narration and long-tail translation stayed down. The model chain is now `gpt-oss-20b → Gemma 4` (both in [NVIDIA's model list](https://integrate.api.nvidia.com/v1/models)). A model that answers 404 or 410 is skipped for six hours, asked once and then failed without a request, and never counts toward the breaker, so one retired model can't take the pool down again. The attack simulations now put a retired model at the head of the pool. The "unavailable" label shows the reason on hover.
+- **A 2,300-character story was routed to food banks.** One user pasted a long story in Spanish about being harassed by inspectors. The only thing the router found was "comida", in "nobody had asked for food", and it answered with food banks as if it were a request. A keyword router can't tell a passing word from a need, so a message of 500+ characters with one keyword and no income, household, age or status (a place alone doesn't count) is now treated as unrouted: the person is asked what they need, with buttons, and the highlight on the stray word is removed. Crisis words still route, and the same story with a real request ("I do need food right now") still does. This is the pattern in Rasa's [two-stage fallback](https://rasa.com/docs/rasa/reference/rasa/core/policies/two_stage_fallback), where low confidence leads to a question and choices rather than a guess, and the keyword-classifier literature is clear that false positives pile up in long texts that are mostly about something else.
+- **Losing a home to a fire, flood or storm wasn't a housing need.** "Our house burned down last night", "my house was flooded" and "a tornado destroyed our house" matched nothing, or only the food half of a two-need message. Housing now recognises the loss in English and Spanish. The catalog still has no disaster-relief program (FEMA assistance, Red Cross, D-SNAP); those need verified eligibility rules and a separate data change, so for now a disaster routes to emergency shelter and housing programs and the 211 line.
+- **The question you just asked was suggested again.** Tapping "Is there emergency shelter I can reach tonight?" brought back the same three suggestions, including that one. A suggestion already sent (it is in the case text, since a tapped chip is sent as its English text) is no longer offered, and the "Understood" row now names the other needs that were heard ("also housing").
+- **"Approval odds ~67% · rough guess" was half-English** inside a Spanish card; the words are now translated like the rest of the card (50 draft translations, unreviewed like the others). **Still English in a localized answer:** document names in the plan ("Photo ID", "Proof of income"), route notes, and the "Yen k-shortest paths" caption. They come from the program data, which is English only; translating the 40 programs once, with review, is the fix.
 - **Rent read as income.** "I pay $900 rent" was read as an income of $10,800 a year: expense words were only looked for before an amount, "pay" wasn't one, and "pa*rent*s" counted as rent. Also fixed from the same probing:
   - amounts written without a dollar sign: "I earn 1800 a month", "gano 1200 al mes", "12 an hour", "900 from social security";
   - stated hours: "$15 an hour, 30 hours a week" is $23,400, not $31,200;
@@ -616,10 +620,10 @@ flowchart LR
         direction TB
         G1[golden.json · 41<br/>EN/ES pipeline + policy cases]:::t
         G2[golden_i18n.json · 93<br/>73 languages, crisis, Mayan heuristic]:::t
-        G3[golden_adversarial.json · 107<br/>negation, idioms, traps, DV phrasing, income traps]:::t
+        G3[golden_adversarial.json · 117<br/>negation, idioms, traps, DV phrasing, income traps, disasters, long stories]:::t
         G4[golden_holdout.json · 40<br/>written after tuning, scored first]:::t
         G5[golden_facts_i18n.json · 48<br/>income · household · age · status · place<br/>in 20 more languages]:::t
-        G6[golden_probes.json · 97<br/>other senses · indirect crisis · local limits<br/>+ p_max / tier_not + metamorphic check]:::t
+        G6[golden_probes.json · 100<br/>other senses · indirect crisis · local limits<br/>+ p_max / tier_not + metamorphic check]:::t
         G7[golden_conversations.json · 14<br/>language switches · a second need · bare answers<br/>turn by turn through merge_profiles]:::t
     end
     S --> EV[eval_engine.jac<br/>policy date pinned]:::det
@@ -630,7 +634,7 @@ flowchart LR
     CM[check_messages.jac<br/>50 catalogs: keys · placeholders · numbers · round trip]:::t --> GATE
     PV[check_privacy.jac<br/>66 checks: scrub · over-scrub · same facts · crisis]:::t --> GATE
     WT[jac test · walkers in-process<br/>schema · 3 personas · stored-data privacy]:::t --> GATE
-    E2E[tests/e2e_http.py against the Docker image<br/>66 checks · 15 languages · crisis · privacy · a live conversation · relay]:::t --> PASS
+    E2E[tests/e2e_http.py against the Docker image<br/>69 checks · 15 languages · crisis · privacy · a live conversation · relay]:::t --> PASS
     BR[tests/browser_e2e.py · headless Chrome<br/>quick exit: own tab · Shift ×3 · private · HF frame<br/>first message during sign-in · return visit]:::t --> PASS
     PORT[same eval on the engine ejected to plain Python<br/>no Jac installed]:::t --> PASS
     EXT[eval_external.jac · real posts<br/>LegalBench learned_hands · measured, not gated]:::ext
@@ -646,11 +650,11 @@ flowchart LR
 
 ```
 cd civicmesh && jac run tests/eval_engine.jac
-  426 cases + 14 conversations · field accuracy 100% (987/987) · 73/73 languages · top-3 + plan checks 100% (54/54) · exclusion errors 0
+  439 cases + 14 conversations · field accuracy 100% (1009/1009) · 73/73 languages · top-3 + plan checks 100% (54/54) · exclusion errors 0
   metamorphic 228/228 neutral additions moved no verdict · latency / turn p50 ~1.6 ms · p95 ~18 ms
 
 cd civicmesh && jac run tests/check_messages.jac
-  50 languages + English source, 92 keys each · PASS
+  50 languages + English source, 93 keys each · PASS
 
 cd civicmesh && jac run tests/check_privacy.jac
   66 checks (34 scrub, 21 keep, 5 same-facts, 6 crisis) · PASS · known misses printed: 0/5 caught
@@ -662,7 +666,7 @@ cd civicmesh && rm -rf .jac/data && jac test tests/test_privacy_graph.jac   # + 
   OK
 
 python3 tests/e2e_http.py http://localhost:7860
-  66/66 passed · turn latency p50 ~0.4 s
+  69/69 passed · turn latency p50 ~0.4 s
 
 python3 tests/browser_e2e.py http://localhost:7860   # headless Chrome
   19 checks · PASS
@@ -674,10 +678,10 @@ cd civicmesh && jac run tests/eval_external.jac   # real posts, downloaded on fi
 |---|---|---|
 | `golden.json` | 41 | EN/ES full pipeline plus policy cases: refugee and SNAP, Texas childless adult and Medicaid, California expansion, 130% FPL for 4, the Alaska table, SNAP present in the plan |
 | `golden_i18n.json` | 93 | Language ID and routing in 73 languages including Cantonese, Pashto, Sorani and Kurmanji, Tigrinya, Romanian, both BCS scripts, Yoruba, Igbo, Hausa, Cebuano, Samoan, Tongan, Yiddish and Quechua. Also crisis and violence phrasing, an Estonian sentence that must stay unidentified, and the Mayan heuristic |
-| `golden_adversarial.json` | 107 | Cross-category traps ("no food at home", "debt collectors about hospital bills"), negation, possession, idioms ("dying of hunger"), code-switching, romanized scripts, no-signal input, everyday domestic-violence phrasing in five languages with false-alarm guards ("打我电话" is "call me"; a pounding heart is not violence). Income traps: rent paid, a date, a zip code, "3 years"; amounts without a dollar sign; ages in words; warning signs in ten more languages |
+| `golden_adversarial.json` | 117 | Cross-category traps ("no food at home", "debt collectors about hospital bills"), negation, possession, idioms ("dying of hunger"), code-switching, romanized scripts, no-signal input, everyday domestic-violence phrasing in five languages with false-alarm guards ("打我电话" is "call me"; a pounding heart is not violence). Income traps: rent paid, a date, a zip code, "3 years"; amounts without a dollar sign; ages in words; warning signs in ten more languages; a home lost to a fire, flood or storm; 500+ character stories with one passing keyword (English and Spanish), with the same story plus a real request as the control |
 | `golden_holdout.json` | 40 | Written *after* tuning on the adversarial set, then scored before any fix |
 | `golden_facts_i18n.json` | 48 | Income, household, age, status and location stated in Chinese, Cantonese, Korean, Vietnamese, Russian, Ukrainian, Arabic, Persian, Hindi, Bengali, Punjabi, Gujarati, Telugu, Tamil, Japanese, Tagalog, Haitian Creole, French, Portuguese and Polish, with traps: rent that isn't income, "not a citizen", an abusive partner outside the household, a child's age, other-script digits, 万 multipliers, Chinese numerals (两千五百), hourly pay with stated hours, Taglish and Hinglish counts |
-| `golden_probes.json` | 97 | Words in their other senses, each paired with the true positive it must not break: "social security" as a number, card or office; a college senior; retired from the army at 42; the Salvation Army; serving tables; a car parked on the street; adult children who moved out; a child-care job; substance-abuse treatment; "my back hurts me"; an injury at work; negated facts in English and Spanish; a temporary visa stated by the speaker vs. a friend's. Also indirect crisis wording (988 / Hotline warning signs) with benign counterparts, the scorer's situation targets under negation, household counts ("there are 3 people"), local HUD limits, and Danger Assessment phrasing (passive voice, hands around the neck, a knife pulled, threats to kill) with benign twins ("hit by a truck", "choked on a fishbone", "kill the deal"). `p_max` / `tier_not` fail the run if a wrong flag moves a verdict |
+| `golden_probes.json` | 100 | Words in their other senses, each paired with the true positive it must not break: "social security" as a number, card or office; a college senior; retired from the army at 42; the Salvation Army; serving tables; a car parked on the street; adult children who moved out; a child-care job; substance-abuse treatment; "my back hurts me"; an injury at work; negated facts in English and Spanish; a temporary visa stated by the speaker vs. a friend's. Also indirect crisis wording (988 / Hotline warning signs) with benign counterparts, the scorer's situation targets under negation, household counts ("there are 3 people"), local HUD limits, and Danger Assessment phrasing (passive voice, hands around the neck, a knife pulled, threats to kill) with benign twins ("hit by a truck", "choked on a fishbone", "kill the deal"). `p_max` / `tier_not` fail the run if a wrong flag moves a verdict |
 | `golden_conversations.json` | 14 (36 turns) | Multi-turn: Chinese → Portuguese → English with facts carried; violence disclosed in one language, shelter asked in another; a second need; bare answers ("3", "2000", "两千五", "15 an hour", "nada"); an answer to a different question; a corrected income |
 
 ### External check: real people's words
@@ -716,7 +720,7 @@ The domestic-violence number is the important one. A self-written suite at 100% 
 - hostile input: 6,000 characters, `<script>`, SQL-shaped text, emoji only, a prompt injection planting a phone number
 - privacy: the words typed (an SSN, a phone number) reach neither the stored need nor the stored self-critique, an unroutable message is not sent to a model, a crisis turn requests no narration and `NarrateWalker` refuses it, draft catalogs (Spanish included) carry the English original and English crisis lines, and **Delete my data** empties the graph without touching another visitor
 
-Result: **66/66** locally. It also covers the live conversation that got stuck (household 3, the disability "yes" applied, a visitor with no seeded catalog), a narrator that refuses unsigned facts, indirect crisis cues pinning 988 and the DV hotline, and unrouted messages getting a question instead of guessed programs. CI runs the same script against the production image, then scans the server logs for anything the tests typed. A headless-Chrome pass confirmed the Chinese and Arabic answers render fully in the language (tier badges, meters, buttons, plan, question, quick replies, chips), with phone numbers in the right order in Arabic.
+Result: **69/69** locally. It also covers the live conversation that got stuck (household 3, the disability "yes" applied, a visitor with no seeded catalog), a narrator that refuses unsigned facts, indirect crisis cues pinning 988 and the DV hotline, and unrouted messages getting a question instead of guessed programs. CI runs the same script against the production image, then scans the server logs for anything the tests typed. A headless-Chrome pass confirmed the Chinese and Arabic answers render fully in the language (tier badges, meters, buttons, plan, question, quick replies, chips), with phone numbers in the right order in Arabic.
 
 | Measure | Before (LLM per step) | Now |
 |---|---|---|

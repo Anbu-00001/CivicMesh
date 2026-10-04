@@ -832,6 +832,86 @@
    "small_talk": true
   },
   "_why": "a returning greeting"
+ },
+ {
+  "text": "Our house burned down last night, we are at a motel and out of money",
+  "expect": {
+   "category": "housing"
+  },
+  "_why": "lost the home to a fire: no housing word used, nothing was recognised"
+ },
+ {
+  "text": "my house was flooded",
+  "expect": {
+   "category": "housing"
+  }
+ },
+ {
+  "text": "A tornado destroyed our house and we have no food",
+  "expect": {
+   "category_in": [
+    "food",
+    "housing"
+   ],
+   "secondary_nonempty": true
+  },
+  "_why": "both needs are heard, not just food"
+ },
+ {
+  "text": "hurricane took our home, we need somewhere to stay and food for the kids in Florida",
+  "expect": {
+   "category_in": [
+    "food",
+    "housing"
+   ],
+   "state": "FL",
+   "flag": "children"
+  }
+ },
+ {
+  "text": "Se quemó mi casa anoche y no tenemos dónde dormir",
+  "expect": {
+   "category": "housing",
+   "language": "es"
+  }
+ },
+ {
+  "text": "Perdimos nuestra casa en la inundación",
+  "expect": {
+   "category": "housing",
+   "language": "es"
+  }
+ },
+ {
+  "text": "Last month the city sent two inspectors to my building because a neighbor said my kitchen smelled strange. They measured the hallway, photographed my bicycle, asked why I owned three coats, and wrote everything on a form with no title. The next week a second pair came and wanted to know whether I always waved at the mailman. Then there was a long letter about parking, and a call about a plant on my balcony that was apparently a zoning issue. At one meeting somebody joked that nobody had asked for food, and everyone laughed, although I never understood why. I spent most evenings reading the letters out loud to my cat, who has never once disagreed with me, and in the end I just wanted someone to hear all of it.",
+  "expect": {
+   "category": "",
+   "needs_llm": true
+  },
+  "_why": "a long story with one passing keyword (\"nobody had asked for food\") is not a request for food"
+ },
+ {
+  "text": "El mes pasado llegaron dos inspectores a mi edificio porque un vecino dijo que mi cocina olía raro. Midieron el pasillo, fotografiaron mi bicicleta, preguntaron por qué tenía tres abrigos y lo anotaron todo en un formulario sin título. La semana siguiente vino otra pareja que quería saber si siempre saludaba al cartero. Después hubo una carta larguísima sobre el estacionamiento y una llamada por una planta en mi balcón que, al parecer, era un problema de zonificación. En una reunión alguien bromeó con que nadie había pedido comida, y todos se rieron, aunque nunca entendí por qué. Pasé casi todas las noches leyendo las cartas en voz alta a mi gato, que jamás me ha contradicho, y al final solo quería que alguien lo escuchara todo.",
+  "expect": {
+   "category": "",
+   "needs_llm": true
+  },
+  "_why": "the same in Spanish (it was routed to food banks)"
+ },
+ {
+  "text": "Last month the city sent two inspectors to my building because a neighbor said my kitchen smelled strange. They measured the hallway, photographed my bicycle, asked why I owned three coats, and wrote everything on a form with no title. The next week a second pair came and wanted to know whether I always waved at the mailman. Then there was a long letter about parking, and a call about a plant on my balcony that was apparently a zoning issue. At one meeting somebody joked that nobody had asked for food, and everyone laughed, although I never understood why. I spent most evenings reading the letters out loud to my cat, who has never once disagreed with me, and in the end I just wanted someone to hear all of it. Honestly I do need food right now, we have not eaten today.",
+  "expect": {
+   "category": "food"
+  },
+  "_why": "the same story with an actual request is routed: more than one signal"
+ },
+ {
+  "text": "Last month the city sent two inspectors to my building because a neighbor said my kitchen smelled strange. They measured the hallway, photographed my bicycle, asked why I owned three coats, and wrote everything on a form with no title. The next week a second pair came and wanted to know whether I always waved at the mailman. Then there was a long letter about parking, and a call about a plant on my balcony that was apparently a zoning issue. At one meeting somebody joked that nobody had asked for food, and everyone laughed, although I never understood why. I spent most evenings reading the letters out loud to my cat, who has never once disagreed with me, and in the end I just wanted someone to hear all of it. I live in Houston.",
+  "expect": {
+   "category": "",
+   "state": "TX"
+  },
+  "_why": "a place alone doesn't make it a request, but it is kept"
  }
  ]
 }
