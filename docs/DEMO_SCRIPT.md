@@ -81,7 +81,7 @@ Target length: 3:00. Recorded at 1080p, screen capture + voiceover. Cursor visib
 **Action:** Point at the chained escape-path cards. Each card shows a from → to step with a difficulty pill and a typical-days estimate.
 
 **Voiceover:**
-> "Three escape paths, ranked by total time to resolution. Tenant Rights Hotline routes to Catholic Charities Emergency Rental Assistance — that pays the back rent and stops the eviction. From there, a 60-day path opens to Section 8 priority. The graph saw what the flat eligibility check could not. The civic safety net is a multi-step maze, and you navigate it with graph traversal, not keyword matching."
+> "Three escape paths, ranked by total time to resolution. LawHelp.org Tenant Help routes to Catholic Charities Emergency Rental Assistance — that pays the back rent and stops the eviction. From there, a 60-day path opens to Section 8 priority. The graph saw what the flat eligibility check could not. The civic safety net is a multi-step maze, and you navigate it with graph traversal, not keyword matching."
 
 **Action:** Click the **Graph** tab. Cyan beam overlay along the discovered path.
 

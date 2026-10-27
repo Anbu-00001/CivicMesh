@@ -78,6 +78,30 @@ Jac-specific part is plumbing.
   end-to-end script is stdlib Python. The translation review sheet
   (`tools/review_sheet.py`) is stdlib Python too.
 
+## Keeping the program data correct
+
+Benefit rules change every fiscal year, and phone numbers and links drift.
+Two jobs keep the catalog honest, and CI enforces the first:
+
+- **Contacts, at least yearly.** From `civicmesh/`, run
+  `python3 tools/check_contacts.py`. It fetches each program's page, records
+  the HTTP status and whether the listed phone number is on it, and dates the
+  record in `data/verification.json`. "Unconfirmed" means a person has to
+  look: about half of the government pages refuse scripted requests. When you
+  check one by hand, record what you saw under `contact_manual`
+  (`checked`, `how`, `source`). `tests/check_verification.py` fails CI when a
+  program has no record or its newest check is over a year old. The first run
+  (2026-10-27) found three numbers that belonged to someone else and two dead
+  links, so don't skip the hand checks.
+- **Rules, every October and after any new law.** USDA publishes SNAP's
+  October COLA around August; HHS publishes poverty guidelines in January;
+  HUD publishes income limits around April. Update `engine/policy.jac`, then
+  run both oracles against PolicyEngine US (`tools/oracle_policyengine.py`
+  for SNAP, `tools/oracle_programs.py` for Medicaid, CHIP, school meals and
+  WIC; setup is in each file's docstring) and record the result under `rules`
+  in `data/verification.json`. A disagreement is a lead: check the published
+  source before changing either side.
+
 ## For a new maintainer
 
 Jac reads like Python with braces. Start with `engine/`: it's plain functions,

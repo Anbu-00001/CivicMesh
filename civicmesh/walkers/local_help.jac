@@ -98,7 +98,7 @@ def counselors(city: str, st: str) -> list {
         "name": _clean(r["AGC_NAME"]).title(), "phone": fmt_phone(r["AGC_PHONE_NBR"]), "url": _clean(r["AGC_WEB_SITE"]),
         "address": _clean(r["AGC_ADDRESS"]) + ", " + _clean(r["AGC_CITY"]) + ", " + st + " " + _clean(r["AGC_ZIP_CODE"])[:5],
         "detail": "HUD-approved counseling: eviction, rental, foreclosure",
-        "kind": "Housing counselor", "for": ["Tenant Rights Hotline (National Housing Law Project)", "Catholic Charities Emergency Rental Assistance"],
+        "kind": "Housing counselor", "for": ["LawHelp.org Tenant Help (legal aid directory)", "Catholic Charities Emergency Rental Assistance"],
         "source": "HUD Housing Counseling Agencies (HUD eGIS open data)"
     } for r in rows];
 }

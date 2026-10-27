@@ -3,7 +3,7 @@
 Spawned on the turn's NeedNode. One traversal collects every
 ResourceNode →governed_by→ EligibilityRuleNode →requires_form→ FormNode triple
 (the graph IS the knowledge base), then engine/score.jac scores all of them in
-closed form: per-criterion reasons, calibrated tiers with abstention, Beta
+closed form: per-criterion reasons, tiers with abstention, Beta
 approval posteriors, counterfactuals, and the single most informative
 follow-up question. No LLM on this path.
 
@@ -163,7 +163,7 @@ def facts_for(ranking: dict, plan: dict, question: str, profile: dict) -> str {
 }
 
 # Per-visitor catalog snapshot (resource + rule + form dicts). The catalog is
-# static except for outcome learning, so MemoryWalker invalidates the entry
+# static except for recorded outcomes, so MemoryWalker invalidates the entry
 # whenever an approval/denial updates a rule's posterior. Saves ~60-90 ms of
 # anchor loads per turn on the server.
 glob CATALOG_CACHE: dict = {};

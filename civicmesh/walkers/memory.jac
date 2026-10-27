@@ -103,14 +103,13 @@ walker MemoryWalker {
                 setattr(app, "applied_at", ts);
             }
 
-            # Outcome-learning: when an application reaches a terminal
+            # Outcome tracking: when an application reaches a terminal
             # decision (approved / denied), walk back to the
             # EligibilityRuleNode that gated the underlying ResourceNode
-            # and update its Bayesian-style success prior. EligibilityWalker
-            # weights LLM match_scores by this prior on subsequent turns,
-            # so the graph genuinely learns from real outcomes. This is
-            # the "graph that gets smarter every time someone uses it"
-            # moment — pure Jac OSP, no external ML library.
+            # and update its Beta posterior, which the approval odds on
+            # this visitor's later cards read. Each visitor has a private
+            # copy of the rule nodes, so outcomes never pool across people:
+            # this tracks one person's applications, it doesn't learn.
             is_terminal = self.new_status == "approved" or self.new_status == "denied";
             if is_terminal {
                 # Find the ResourceNode by name to walk to its rule.

@@ -5,7 +5,7 @@ loader at `graph/seed_data.jac` only writes to the global module root, so
 freshly-registered users would otherwise see an empty graph and every
 EligibilityWalker call would escalate with `zero_eligible_resources`.
 
-This walker reads the same `data/resources.json` file and materializes 40
+This walker reads the same `data/resources.json` file and materializes 41
 ResourceNode + EligibilityRuleNode + FormNode triples into the caller's
 root. It's idempotent — re-running is a no-op once the resources are in.
 
@@ -70,7 +70,7 @@ walker SeedWalker {
             record: Any = record_raw;
             agency = str(record["agency_name"]);
             # Idempotency check: skip if this user's root already owns the
-            # ResourceNode. Cheap because the seed catalog is fixed at 40.
+            # ResourceNode. Cheap because the seed catalog is fixed at 41.
             existing = [root --> [?:ResourceNode, agency_name == agency]];
             if existing {
                 skipped += 1;
@@ -240,5 +240,5 @@ walker SeedWalker {
     }
 }
 
-sem SeedWalker is "Idempotent per-user graph bootstrap. Materializes the 40 ResourceNode/EligibilityRuleNode/FormNode triples from data/resources.json into the caller's root so EligibilityWalker has something to score against. Called once from the frontend after auth — re-runs are no-ops.";
+sem SeedWalker is "Idempotent per-user graph bootstrap. Materializes the 41 ResourceNode/EligibilityRuleNode/FormNode triples from data/resources.json into the caller's root so EligibilityWalker has something to score against. Called once from the frontend after auth — re-runs are no-ops.";
 sem SeedWalker.summary is "Mirror of the final {ok, inserted, skipped, total} payload. Spawning walkers can read this via .summary without going through .reports.";

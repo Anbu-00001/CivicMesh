@@ -96,7 +96,7 @@ def:pub TelemetryPanel(walker_events: list, user_id: str = "") -> JsxElement {
         "MemoryWalker": {
             "input": "user_id + mode (read_session | update_status)",
             "output": "Session snapshot · Beta posterior before/after an outcome",
-            "stub": "deterministic summary · Bayesian outcome learning",
+            "stub": "deterministic summary · per-visitor outcome tracking",
             "tools": False
         },
         "EscalationWalker": {

@@ -233,7 +233,7 @@ fw, _ = walker("ForgetWalker", {"user_id": pu}, pt)
 check("P8 Delete my data removes the person, needs, applications and insights",
       fw is not None and fw["ok"] and fw["removed"]["PersonNode"] == 1 and fw["removed"]["NeedNode"] >= 6, fw)
 gs2, _ = walker("GraphSnapshotWalker", {"user_id": pu}, pt)
-check("P9 after deletion the graph is empty", gs2 is not None and gs2.get("empty") is True and gs2["counts"]["ResourceNode"] == 40,
+check("P9 after deletion the graph is empty", gs2 is not None and gs2.get("empty") is True and gs2["counts"]["ResourceNode"] == 41,
       {k: gs2["counts"][k] for k in ["PersonNode", "NeedNode", "ResourceNode"]} if gs2 else "")
 dn, _ = turn(uid, tok, "I need food")
 check("P10 another visitor's case is untouched by the deletion", dn is not None and dn["profile"]["category"] == "food")
@@ -309,6 +309,16 @@ check("V2 a long story with one passing keyword gets 'what do you need?', not fo
       (dst["question"]["key"], len(dst["matches"]), dst["profile"]["category"], len(dst["evidence"])) if dst else "")
 dd, _ = turn(cs, cst, "Our house burned down last night and we are at a motel with no money")
 check("V3 a home lost to a fire is a housing need", dd is not None and dd["profile"]["category"] == "housing" and len(dd["matches"]) > 0, dd["profile"]["category"] if dd else "")
+
+# ---- Y. Outside review 2026-10: a minor, a stated amount after a job loss ----
+dy, _ = turn(cs, cst, "I'm 17 and my parents kicked me out")
+top = (dy["matches"][0].get("resource_name") or dy["matches"][0].get("name", "")) if dy and dy["matches"] else ""
+check("Y1 a 17-year-old who was kicked out gets the Runaway Safeline first (adult shelters and vouchers can't take a minor)",
+      dy is not None and "minor" in dy["profile"]["flags"] and top == "National Runaway Safeline", (dy["profile"]["flags"] if dy else "", top))
+yu, yt = login()
+dj, _ = turn(yu, yt, "i lost my job and cant feed my kids, we make about 1400 a month")
+check("Y2 'can't feed my kids' is a food need and the stated $1,400 a month is the income, not $0",
+      dj is not None and dj["profile"]["category"] == "food" and dj["profile"]["income_annual"] == 16800, (dj["profile"]["category"], dj["profile"]["income_annual"]) if dj else "")
 
 lat.sort()
 p50 = lat[len(lat) // 2] if lat else 0

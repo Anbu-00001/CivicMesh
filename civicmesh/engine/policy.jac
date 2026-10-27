@@ -97,6 +97,29 @@ def local_ami(city: str, pct: float, household: int) -> dict {
 glob HUD_SOURCE: str = "HUD FY2026 income limits (U.S. median family income $107,900)";
 
 glob MEDICAID_NOT_EXPANDED: list = ["AL", "FL", "GA", "KS", "MS", "SC", "TN", "TX", "WI", "WY"];
+# Parents and caretakers in the states that did not expand, % of poverty for a
+# family of three (KFF, Medicaid Income Eligibility Limits for Adults, as of
+# January 2026). Georgia: KFF lists 100% through Pathways, which needs 80
+# hours a month of work; the parent/caretaker category is 29% (MACPAC
+# Exhibit 36, 2025). A single "under 40%" figure was wrong both ways (Texas
+# 15%, Tennessee 105%; found by tools/oracle_programs.py).
+glob MEDICAID_PARENT_PCT: dict = {"AL": 18, "FL": 26, "GA": 29, "KS": 38, "MS": 21, "SC": 67, "TN": 105, "TX": 15, "WI": 100, "WY": 43};
+# Children's coverage through Medicaid or CHIP, whichever reaches higher, % of
+# poverty incl. the 5% disregard (CMS/MACPAC eligibility levels as compiled in
+# PolicyEngine US 2.68; spot-checked against KFF). The one national 255%
+# figure told a New York family at 300% their children couldn't be covered.
+glob CHILD_COVERAGE_PCT: dict = {
+    "AL": 317, "AK": 208, "AZ": 230, "AR": 216, "CA": 266, "CO": 265, "CT": 323, "DE": 217, "DC": 324, "FL": 215,
+    "GA": 252, "HI": 313, "ID": 190, "IL": 318, "IN": 255, "IA": 307, "KS": 255, "KY": 218, "LA": 255, "ME": 305,
+    "MD": 322, "MA": 305, "MI": 217, "MN": 280, "MS": 214, "MO": 305, "MT": 266, "NE": 218, "NV": 205, "NH": 323,
+    "NJ": 355, "NM": 245, "NY": 405, "NC": 216, "ND": 205, "OH": 211, "OK": 210, "OR": 305, "PA": 319, "RI": 266,
+    "SC": 213, "SD": 209, "TN": 255, "TX": 206, "UT": 205, "VT": 317, "VA": 205, "WA": 317, "WV": 305, "WI": 306,
+    "WY": 205
+};
+# Healthy School Meals for All: every public-school student eats free, at any
+# income (FRAC, HSMFA report 2025: CA CO ME MA MI MN NM VT; New York from the
+# 2025-26 school year; the same nine in PolicyEngine US 2.68, with statutes).
+glob UNIVERSAL_SCHOOL_MEALS: list = ["CA", "CO", "ME", "MA", "MI", "MN", "NM", "NY", "VT"];
 glob STATE_NAMES: dict = {
     "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas", "CA": "California", "CO": "Colorado",
     "CT": "Connecticut", "DE": "Delaware", "DC": "the District of Columbia", "FL": "Florida", "GA": "Georgia",
@@ -191,6 +214,7 @@ glob PROGRAMS: dict = {
     "chip-rule":             {"income": {"basis": "fpl", "pct": 255, "typical": True, "note": "state-set, from about 170% to 400%; 255% is the national median"}, "status": "medicaid"},
     "fqhc-rule":             {"income": {"basis": "none", "note": "sliding-scale discounts below 200% of poverty; no one is turned away for inability to pay"}, "status": ""},
     "988-rule":              {"income": {"basis": "none"}, "status": ""},
+    "nrs-rule":              {"income": {"basis": "none"}, "status": ""},
     "samhsa-rule":           {"income": {"basis": "none"}, "status": ""},
     "ryan-white-rule":       {"income": {"basis": "fpl", "pct": 400, "typical": True, "note": "states set 300–500%"}, "status": ""},
     "needymeds-rule":        {"income": {"basis": "none"}, "status": ""},
@@ -274,15 +298,24 @@ def income_limit(rule_id: str, profile: dict, flat_fallback: int = 0) -> dict {
     }
     inc = pol["income"];
     basis = str(inc.get("basis", "none"));
+    state = str(profile.get("state", "") or "").upper();
+    if str(rule_id) == "nslp-rule" and state in UNIVERSAL_SCHOOL_MEALS {
+        return {"none": True, "note": str(STATE_NAMES.get(state, state)) + " gives every public-school student free breakfast and lunch, at any income"};
+    }
     if basis == "none" {
         return {"none": True, "note": str(inc.get("note", ""))};
     }
     hh = int(profile.get("household_size", 0) or 0);
     assumed = hh <= 0;
     n = 1 if assumed else hh;
-    state = str(profile.get("state", "") or "").upper();
     pct = float(inc.get("pct", 100));
     note = str(inc.get("note", ""));
+    typical = bool(inc.get("typical", False));
+    if str(rule_id) == "chip-rule" and state in CHILD_COVERAGE_PCT {
+        pct = float(CHILD_COVERAGE_PCT[state]);
+        note = str(STATE_NAMES.get(state, state)) + " covers children up to " + str(int(pct)) + "% of poverty through Medicaid or CHIP";
+        typical = False;
+    }
     blocked = "";
     who = "a household of " + str(n);
     if basis == "ami" {
@@ -310,8 +343,8 @@ def income_limit(rule_id: str, profile: dict, flat_fallback: int = 0) -> dict {
                     pct = 100.0;
                     note = "Wisconsin covers adults up to 100% of poverty without the ACA expansion";
                 } elif has_kids {
-                    pct = 40.0;
-                    note = sname + " did not expand Medicaid: parents qualify only at very low incomes (often under 40% of poverty), but children usually qualify through Medicaid or CHIP";
+                    pct = float(MEDICAID_PARENT_PCT.get(state, 40));
+                    note = sname + " did not expand Medicaid: parents qualify up to " + str(int(pct)) + "% of poverty" + (" (Georgia Pathways reaches 100% with 80 hours a month of work)" if state == "GA" else "") + ", and children usually qualify through Medicaid or CHIP";
                 } else {
                     blocked = sname + " did not expand Medicaid, so adults without children, a disability or a pregnancy generally can't get it at any income. ACA Marketplace subsidies start at 100% of the poverty line; below that, a community health center (sliding-scale fees) is the fallback";
                     note = blocked;
@@ -338,7 +371,7 @@ def income_limit(rule_id: str, profile: dict, flat_fallback: int = 0) -> dict {
     }
     return {
         "limit": limit, "label": label, "per_person": per, "assumed_household": assumed,
-        "source": source, "note": note, "typical": bool(inc.get("typical", False)), "blocked": blocked
+        "source": source, "note": note, "typical": typical, "blocked": blocked
     };
 }
 

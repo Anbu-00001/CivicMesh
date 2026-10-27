@@ -155,7 +155,7 @@
     ]
    },
    "top3_any": [
-    "Tenant Rights Hotline (National Housing Law Project)",
+    "LawHelp.org Tenant Help (legal aid directory)",
     "LIHEAP (Low Income Home Energy Assistance Program)"
    ],
    "_why": "repairs: tenant rights"
@@ -278,7 +278,7 @@
     ]
    },
    "top3_any": [
-    "Tenant Rights Hotline (National Housing Law Project)"
+    "LawHelp.org Tenant Help (legal aid directory)"
    ]
   },
   {
@@ -912,6 +912,16 @@
    "state": "TX"
   },
   "_why": "a place alone doesn't make it a request, but it is kept"
- }
+ },
+  {"text": "i lost my job and cant feed my kids, we make about 1400 a month", "expect": {"category": "food", "income_annual": 16800, "flag": "children", "needs_llm": false}, "_why": "outside review 2026-10: no category, income 0; a hardship frame ('cant feed') is a food need, and a current amount beats the job loss"},
+  {"text": "I earn 2k a month with my mom and 2 brothers and we need food", "expect": {"category": "food", "income_annual": 24000, "household_size": 4}, "_why": "outside review 2026-10: household members counted one by one (me + mom + 2 brothers)"},
+  {"text": "I'm 17 and my parents kicked me out", "expect": {"category": "housing", "age": 17, "flag": "minor"}, "_why": "outside review 2026-10: a minor asking for themselves; adult programs exclude them, youth shelters don't"},
+  {"text": "I'm a teenager and I have nowhere to sleep", "expect": {"category": "housing", "flag": "minor", "flag_absent": "children"}, "_why": "the teen is the speaker, not a child in the household; nowhere to sleep is housing"},
+  {"text": "I lost my job, my old job paid $3000 a month", "expect": {"income_annual": 0}, "_why": "a past wage is not current income"},
+  {"text": "lost my job and only have $200 left for food", "expect": {"income_annual": 0, "category": "food"}, "_why": "money on hand is not income"},
+  {"text": "I had a fight with my brother and need a lawyer", "expect": {"category": "legal", "household_size": 0}, "_why": "a relative named outside a living or providing clause is not a household member"},
+  {"text": "we're struggling to keep the lights on", "expect": {"category": "housing"}, "_why": "hardship frame + utility"},
+  {"text": "No me alcanza para comprar comida para mis hijos", "expect": {"category": "food", "language": "es"}, "_why": "hardship frame in Spanish"},
+  {"text": "We moved into the place in March and paid the first month and a deposit. The building was fine at first, the neighbours are quiet and the bus stop is close, which matters because I work early shifts at the bakery on Fifth Street. In August we gave sixty days notice in writing, cleaned everything, took photos of every room and returned both keys on the last day. Six weeks later nothing has come back and nobody answers the phone at the office. My landlord kept the whole deposit without sending any list of damages, can he do that?", "expect": {"category_in": ["housing", "legal"]}, "_why": "a long message whose one keyword sits in a question is a request (held-out housing recall fell when it was dropped)"}
  ]
 }

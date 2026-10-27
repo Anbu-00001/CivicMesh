@@ -26,6 +26,16 @@ import re;
 import from engine.i18n { detect_script, detect_latin_other, route_i18n, negated, need_focus, LATIN_MARKERS, NEG_RIGHT, is_small_talk }
 import from engine.facts_i18n { facts_i18n, place_i18n }
 
+# The lexicons are ~1,000 distinct patterns, more than the 512 compiled
+# patterns Python's re module keeps, so every message recompiled ~360 of them
+# (25 ms of a 26 ms parse). A bigger cache makes a parse ~1-2 ms; the bound
+# still caps memory. tests/eval_engine.jac gates the latency, so a Python
+# that ignores these names fails CI instead of silently slowing down.
+with entry {
+    re._MAXCACHE = max(int(getattr(re, "_MAXCACHE", 512)), 4096);
+    if hasattr(re, "_MAXCACHE2") { re._MAXCACHE2 = max(int(re._MAXCACHE2), 4096); }
+}
+
 # ---------- lexicons ----------
 # (pattern, weight). Patterns are regex fragments matched on lowercase text
 # with word boundaries, so "legal" never fires inside "illegally".
@@ -42,7 +52,7 @@ glob CATEGORY_LEXICON: dict = {
         ("grocery store", 2.0), ("get to the store", 2.0), ("pa[ñn]ales", 1.5), ("leche de f[oó]rmula", 2.0)
     ],
     "housing": [
-        ("rent", 1.5), ("evict(?:ed|ion|ing)?", 2.5), ("landlord", 1.5),
+        ("rent", 1.5), ("evict(?:ed|ion|ing)?", 2.5), ("landlord", 1.5), ("tenants?", 1.5), ("(?:my|our|the) lease", 1.0), ("inquilin[oa]s?", 1.5),
         ("homeless", 2.5), ("shelter", 2.0), ("housing", 2.5), ("apartment", 1.0),
         ("section 8", 2.5), ("mortgage", 1.5), ("foreclos\\w*", 2.0),
         ("place to (?:stay|live|sleep)", 2.0), ("sleeping in (?:my|our|the) car", 2.5),
@@ -99,6 +109,21 @@ glob CATEGORY_LEXICON: dict = {
         ("inmigraci[oó]n", 2.0), ("asilo", 2.0), ("derechos", 1.5)
     ]
 };
+
+# What someone can't do or afford is a need even with no need keyword ("i
+# lost my job and cant feed my kids" was routed nowhere; outside review).
+# A frame composed with the thing it governs: one concept covers every frame
+# ("can't", "struggling to", "no money for", "help paying", "no alcanza
+# para") instead of a pattern per phrasing. Up to three words may sit
+# between them ("can't afford to feed").
+glob HARDSHIP_FRAME: str = "(?:can'?t|cant|cannot|can not|couldn'?t|unable to|not able to|struggl(?:e|es|ed|ing) to|hard to|trouble|no money (?:for|to)|not enough (?:money )?(?:for|to)|barely|help(?:ing)?(?: me| us)?|no (?:puedo|podemos)|no (?:me |nos )?alcanza|ayuda (?:para|con))";
+glob HARDSHIP_CONCEPTS: dict = {
+    "food": "feed|feeding|groceries|put food on the table|buy food|baby formula|alimentar|comprar comida",
+    "housing": "pay(?:ing)? (?:for )?(?:the |my |our )?rent|make rent|keep (?:a roof over|the lights on|(?:our|my|the) (?:home|house|apartment))|pay(?:ing)? (?:the |my |our )?(?:electric|electricity|power|gas|water|light|utility|heating) bills?|heat (?:the|our|my) (?:house|home|apartment)|pagar (?:la )?renta|pagar (?:el )?alquiler|pagar (?:la )?luz",
+    "healthcare": "see a (?:doctor|dentist)|(?:get|pay for|afford) (?:my |his |her |the |our )?(?:medicine|medication|meds|insulin|prescriptions?|inhaler|treatment|therapy)|ver a un m[eé]dico|comprar (?:las |mis )?medicinas",
+    "legal": "(?:get|afford|pay for|find) (?:a |an )?(?:lawyer|attorney)|pagar (?:un )?abogado"
+};
+glob HARDSHIP_WEIGHT: float = 2.5;
 
 glob FLAG_LEXICON: dict = {
     # "social security" alone is not an age: it's also a number, a card, an
@@ -318,6 +343,12 @@ glob EARNED_CUES: str = r"\b(?:earn|earns|earning|earnings|salary|wages?|paychec
 # A message this long with one passing keyword and nothing else the engine can
 # use is a story, not a request (see parse_intake).
 glob LONG_MESSAGE: int = 500;
+# A sentence that asks: a question mark or a request word.
+glob REQUEST_RE: str = "\\?|¿|\\b(?:i need|we need|need help|help me|help us|can i|can we|can (?:he|she|they)|could i|how (?:do|can|should) i|what (?:can|should|do) i|should i|is (?:it|this|that) legal|am i allowed|do i have to|please|necesito|necesitamos|ay[uú]d(?:a|eme|enos)|puedo|podemos|c[oó]mo (?:puedo|hago)|qu[eé] (?:puedo|debo|hago))\\b";
+# The speaker is under 18 without saying an age.
+glob MINOR_RE: str = "\\b(?:i'?m|i am) (?:only |just )?(?:a )?(?:minor|under 18|under eighteen|teenager|teen|high school(?:er| student))\\b|\\bsoy menor de edad\\b";
+# Before an amount: it was earned in the past, not lived on now.
+glob PAST_INCOME_CUES: str = "\\b(?:used to (?:make|earn|get)|was (?:making|earning|paid|getting)|were (?:making|earning)|earned|made|paid me|paid us|it paid|that paid|old job|last job|previous job|before|ganaba|ganábamos|me pagaban)\\b[^,.;!?]*$";
 glob INCOME_CUES: str ="(?:earn|earning|make|making|income|salary|paid|wage|wages|pension|social security|ssi|ssdi|disability|benefits?|gano|ganamos|ingresos?|sueldo|salario|pensi[oó]n|seguro social)";
 glob EXPENSE_CUES: str = "\\b(?:rent|owe|owed|debt|bill|bills|cost|costs|fee|fine|deposit|pay|paying|renta|alquiler|debo|deuda|factura|pago|pagamos|pagar)\\b";
 # A number with no currency mark counts as income only right after an income
@@ -413,6 +444,13 @@ def score_categories(low: str, evidence: list, text: str) -> dict {
             }
         }
     }
+    for (cat, concept) in HARDSHIP_CONCEPTS.items() {
+        for m in re.finditer("\\b" + HARDSHIP_FRAME + "(?:\\s+[\\w'-]+){0,3}?\\s+(?:" + concept + ")\\b", low) {
+            if negated(low, m.start(), m.end()) { continue; }
+            scores[cat] = scores[cat] + HARDSHIP_WEIGHT;
+            _ev(evidence, "category", cat, m.start(), m.end(), text);
+        }
+    }
     # An *unlawful* eviction is a tenant-rights (legal) problem first; the
     # housing programs still come along as the secondary category.
     if re.search(r"\billegal(?:ly)?\b|\bwithout (?:a )?notice\b|\bmy rights\b", low) and scores["housing"] > 0 {
@@ -427,10 +465,25 @@ Amounts in an expense context ("rent is $900") are ignored; a bare amount
 without a period is read as monthly below $5k and annual above.
 """
 def parse_income(low: str) -> tuple {
-    if re.search(r"\b(?:no income|zero income|unemployed|lost (?:my|our) jobs?|no job|out of work|sin trabajo|sin empleo|no tengo (?:ingresos|trabajo)|desempleado|desempleada)\b", low) {
-        m0 = re.search(r"\b(?:no income|zero income|unemployed|lost (?:my|our) jobs?|no job|out of work|sin trabajo|sin empleo|no tengo (?:ingresos|trabajo)|desempleado|desempleada)\b", low);
+    # A job loss means no earnings, but a current amount said in the same
+    # message is what the household lives on now: "i lost my job … we make
+    # about 1400 a month" is $16,800 a year, not $0 (outside review). Only an
+    # amount with an income word or a pay period counts ("have $200 left" is
+    # not income), and a past one ("my old job paid $3,000") doesn't.
+    m0 = re.search(r"\b(?:no income|zero income|unemployed|lost (?:my|our) jobs?|no job|out of work|sin trabajo|sin empleo|no tengo (?:ingresos|trabajo)|desempleado|desempleada)\b", low);
+    if m0 {
+        (amt, am) = _stated_income(low, True);
+        if am and not re.search(PAST_INCOME_CUES, low[max(0, am.start() - 40):am.start()]) {
+            return (amt, am);
+        }
         return (0, m0);
     }
+    return _stated_income(low, False);
+}
+
+"""The best-cued amount in the message: (income_annual, match) or (-1, None).
+`cued_only` drops a currency amount with neither an income word nor a period."""
+def _stated_income(low: str, cued_only: bool) -> tuple {
     best: any = None;
     best_score = -99.0;
     best_annual = -1;
@@ -456,7 +509,7 @@ def parse_income(low: str) -> tuple {
         after = re.split(r"[,.;!?]|\band\b|\bbut\b|\by\b|\bpero\b", tail)[0];
         if re.search(EXPENSE_CUES, clause) or re.search(EXPENSE_CUES, after) { cue -= 3.0; }
         if period { cue += 1.0; }
-        if cue < 0 { continue; }
+        if cue < 0 or (cued_only and cue < 1.0) { continue; }
         if cue > best_score {
             best_score = cue;
             best = m;
@@ -497,6 +550,77 @@ def _annualize(amount: float, period: str, low: str) -> int {
     return int(round(amount));
 }
 
+# Who someone lives with or provides for, counted member by member ("with my
+# mom and 2 brothers" had no household size; outside review). A relation word
+# is one person, a pair word (parents, grandparents, padres) two, a counted
+# one ("2 brothers") its number, an uncounted plural at least two. Only in a
+# clause about living together, providing or shared income: "a fight with my
+# brother" says nothing about a household.
+glob MEMBER_REL: str = "mother-in-law|father-in-law|in-laws?|stepmom|stepmother|stepdad|stepfather|grandparents|grandmother|grandfather|grandma|grandpa|grandkids|grandchildren|grandsons?|granddaughters?|parents|mother|mom|mum|mama|father|dad|papa|brothers?|sisters?|siblings?|aunts?|uncles?|cousins?|nephews?|nieces?|husband|wife|partner|spouse|boyfriend|girlfriend|fianc[eé]e?|sons?|daughters?|kids?|children|child|babies|baby|suegr[oa]s?|abuel[oa]s?|padres|madre|mam[aá]|padre|pap[aá]|herman[oa]s?|t[ií][oa]s?|prim[oa]s?|sobrin[oa]s?|espos[oa]|pareja|marido|novi[oa]|hij[oa]s?|ni[nñ][oa]s?|beb[eé]s?|niet[oa]s?";
+glob MEMBER_PAIRS: list = ["parents", "grandparents", "in-laws", "padres", "abuelos", "suegros"];
+glob MEMBER_PARTNERS: str = "^(?:husband|wife|partner|spouse|boyfriend|girlfriend|fianc[eé]e?|espos[oa]|pareja|marido|novi[oa])$";
+glob MEMBER_ITEM_RE: str = "(?:(?:my|our|his|her|their|mi|mis|su|sus|nuestr[oa]s?)\\s+)?(?:(\\d{1,2}|a|an|one|two|three|four|five|six|seven|eight|nine|ten|un|uno|una|dos|tres|cuatro|cinco|seis)\\s+)?(?:(?:little|younger|older|elderly|baby|teenage|young|step|half|disabled|sick|peque[nñ][oa]s?)\\s+)?(" + MEMBER_REL + ")\\b";
+glob MEMBER_SEP_RE: str = "\\s*(?:,\\s*(?:and\\s+|y\\s+|plus\\s+)?|&\\s*|\\s(?:and|plus|y|e)\\s+(?:also\\s+)?)";
+glob MEMBER_ANCHOR_RE: str = "\\b(?:(?:live|lives|living|lived|stay|stays|staying|reside|resides|residing|moved in|share (?:a|an|the) (?:house|home|apartment|place|room)|vivo|vivimos|vive|viven|estoy|estamos) (?:with|con)|(?:support|supporting|provide for|providing for|take care of|taking care of|care for|caring for|mantengo a|cuido a)|me,? and|it'?s (?:just )?me,?|yo y)\\s+";
+glob MEMBER_SHARED_CLAUSE_RE: str = "\\b(?:earn|earns|earning|make|makes|making|income|we|household|family|rent|gano|ganamos|ingresos|familia)\\b";
+
+"""Members named in one list starting at `pos`: (people, end), (0, pos) if none."""
+def _member_list(low: str, pos: int, flags: list) -> tuple {
+    people = 0;
+    end = pos;
+    i = pos;
+    while True {
+        m = re.compile(MEMBER_ITEM_RE).match(low, i);
+        if not m { break; }
+        rel = m.group(2);
+        n = _num(m.group(1)) if m.group(1) else 0;
+        if n <= 0 {
+            n = 2 if (rel in MEMBER_PAIRS or (rel.endswith("s") and rel not in ["mis", "sus"] and not re.match(MEMBER_PARTNERS, rel)) or rel in ["children", "grandchildren"]) else 1;
+        }
+        # Someone fleeing an abusive partner is not in that partner's household.
+        if not ("dv" in flags and re.match(MEMBER_PARTNERS, rel)) and n < 15 {
+            people += n;
+        }
+        end = m.end();
+        sep = re.compile(MEMBER_SEP_RE).match(low, end);
+        if not sep { break; }
+        i = sep.end();
+    }
+    return (people, end);
+}
+
+"""Household members other than the speaker, from co-residence or providing
+clauses: (others, start, end), others 0 when none were named."""
+def household_members(low: str, flags: list) -> tuple {
+    best = (0, -1, -1);
+    starts: list = [m.end() for m in re.finditer(MEMBER_ANCHOR_RE, low)];
+    for w in re.finditer("\\b(?:with|con)\\s+(?=(?:my|our|mi|mis|nuestr[oa]s?)\\s)", low) {
+        clause = re.split("[.;!?]", low[max(0, w.start() - 80):w.start()])[-1];
+        if re.search(MEMBER_SHARED_CLAUSE_RE, clause) { starts.append(w.end()); }
+    }
+    for s in starts {
+        (people, end) = _member_list(low, s, flags);
+        if people > best[0] { best = (people, s, end); }
+    }
+    # "my mom, my 2 brothers and I"
+    for m in re.finditer("\\b(?:my|our|mi|mis)\\s", low) {
+        (people, end) = _member_list(low, m.start(), flags);
+        if people > best[0] and re.compile("\\s*,?\\s*(?:and|&|y)\\s+(?:i|me|myself|yo)\\b").match(low, end) {
+            best = (people, m.start(), end);
+        }
+    }
+    return best;
+}
+
+"""Is the span at [start, end) inside a sentence that asks for something?"""
+def _in_request(low: str, start: int, end: int) -> bool {
+    left = re.split("[.!?\\n]", low[max(0, start - 200):start])[-1];
+    rest = low[end:end + 200];
+    stop = re.search("[.!\\n]", rest);
+    right = rest[:stop.start()] if stop else rest;
+    return bool(re.search(REQUEST_RE, left + " " + low[start:end] + " " + right));
+}
+
 """Household size and whether it was stated: (n, stated).
 
 Stated: an explicit count ("family of 4", "we're 3", "somos 5") or living
@@ -526,6 +650,11 @@ def parse_household(low: str, evidence: list, text: str, flags: list) -> tuple {
     # Someone fleeing an abusive partner is not in that partner's household.
     if partner and ("dv" in flags or re.search(r"\b(?:hits|beats|hurts|abus\w*|threaten\w*)\b|\bme golpea\b|\bmaltrat\w*", low)) {
         partner = 0;
+    }
+    (others, ms, me) = household_members(low, flags);
+    if others > 0 and 1 + others > 1 + kids + partner and 1 + others < 20 {
+        _ev(evidence, "household_size", 1 + others, ms, me, text);
+        return (1 + others, False);
     }
     if kids > 0 {
         return (1 + kids + partner, False);
@@ -744,6 +873,11 @@ def parse_intake(text: str) -> dict {
         top_cat = "housing";
         cat_conf = 0.8;
     }
+    # "I have nowhere to sleep" is a housing need even without a housing word.
+    if "homeless" in flags and not top_cat {
+        top_cat = "housing";
+        cat_conf = 0.7;
+    }
 
     urgency = "within_weeks";
     for pat in URGENT_PATTERNS {
@@ -793,6 +927,19 @@ def parse_intake(text: str) -> dict {
     # A stated age wins over a word: "retired from the army at 42".
     if 0 < age < 60 and "senior" in flags {
         flags.remove("senior");
+    }
+    # Someone under 18 asking for themselves: adult shelters and most housing
+    # programs can't take them, youth shelters and the Runaway Safeline can
+    # ("I'm 17 and my parents kicked me out" got adult programs; outside review).
+    mm = re.search(MINOR_RE, low);
+    if ((0 < age < 18) or mm) and "minor" not in flags {
+        flags.append("minor");
+        if mm and not (0 < age < 18) { _ev(evidence, "flag", "minor", mm.start(), mm.end(), raw); }
+        # "I'm a teenager" is the speaker, not a child in their household.
+        if mm and "children" in flags and not re.search("\\b(?:kids?|children|child|sons?|daughters?|baby|toddler|infant|hij[oa]s?|ni[nñ][oa]s?|beb[eé])\\b", low[:mm.start()] + low[mm.end():]) {
+            flags.remove("children");
+            evidence = [e for e in evidence if not (e["field"] == "flag" and e["value"] == "children")];
+        }
     }
     loc = parse_location(raw, low, evidence);
     citizenship = parse_citizenship(low, evidence, raw);
@@ -854,7 +1001,14 @@ def parse_intake(text: str) -> dict {
     # a message with no keyword at all. The place, if any, is kept.
     cat_spans = len([e for e in evidence if e["field"] == "category"]);
     personal_facts = known - (1 if (loc["state"] or loc["zip"]) else 0);
-    if top_cat and len(raw) >= LONG_MESSAGE and cat_spans <= 1 and personal_facts == 0 and not flags {
+    # A lone keyword in a question or request is still the need, story or not:
+    # "…my landlord kept the deposit, can he do that?" (held-out housing
+    # recall fell 2.7 points when every long one-keyword message was dropped).
+    asked = False;
+    for e in evidence {
+        if e["field"] == "category" and _in_request(low, int(e["start"]), int(e["end"])) { asked = True; }
+    }
+    if top_cat and len(raw) >= LONG_MESSAGE and cat_spans <= 1 and personal_facts == 0 and not flags and not asked {
         top_cat = "";
         cat_conf = 0.0;
         secondary = [];

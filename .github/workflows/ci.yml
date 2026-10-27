@@ -55,6 +55,8 @@ jobs:
         run: jac run tests/check_privacy.jac
       - name: Policy dates — SNAP FY2027, net test, P.L. 119-21 rules, against published figures
         run: jac run tests/check_policy.jac
+      - name: Catalog verification — every program checked within a year
+        run: python3 tests/check_verification.py
       - name: In-process walker tests — schema, personas, stored-data privacy
         run: |
           for t in tests/test_schema.jac tests/persona_single_mother.jac tests/persona_undocumented.jac \
