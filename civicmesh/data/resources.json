@@ -87,9 +87,9 @@
         "targets": ["homeless"]
       },
       "form": {
-        "form_id": "rrh-vi-spdat",
-        "form_name": "VI-SPDAT assessment + RRH application",
-        "url": "https://www.hudexchange.info/resource/3804/vi-spdat-vulnerability-index-and-service-prioritization-decision-assistance-tool/",
+        "form_id": "rrh-coordinated-entry",
+        "form_name": "Coordinated entry assessment (through 2-1-1 or the local Continuum of Care)",
+        "url": "",
         "required_documents": ["Photo ID", "Homeless verification", "Income documentation if any"],
         "deadline_type": "rolling",
         "submission_method": "in_person",
@@ -261,7 +261,7 @@
       "category": "housing",
       "capacity": "waitlist",
       "languages_supported": ["en", "es"],
-      "contact_phone": "1-800-728-7825",
+      "contact_phone": "1-800-725-2769",
       "contact_email": "",
       "address": "Local Salvation Army Corps offices",
       "online_url": "https://www.salvationarmyusa.org/usn/provide-shelter/",
@@ -293,9 +293,9 @@
       "category": "housing",
       "capacity": "open",
       "languages_supported": ["en", "es"],
-      "contact_phone": "1-800-919-9338",
+      "contact_phone": "2-1-1",
       "contact_email": "",
-      "address": "Local Catholic Charities offices",
+      "address": "Find the nearest of 170 local Catholic Charities agencies by ZIP code on the website",
       "online_url": "https://www.catholiccharitiesusa.org/find-help/",
       "description": "One-time emergency rental and utility assistance to prevent eviction or restore utilities, typically up to 1-3 months of past-due rent. Pairs with budget counseling. Funds are limited and refresh quarterly.",
       "eligibility": {
@@ -318,6 +318,38 @@
         "deadline_type": "rolling",
         "submission_method": "in_person",
         "estimated_minutes": 50
+      }
+    },
+    {
+      "agency_name": "National Runaway Safeline",
+      "category": "housing",
+      "capacity": "open",
+      "languages_supported": ["en", "es"],
+      "contact_phone": "1-800-786-2929",
+      "contact_email": "",
+      "address": "Available by phone, text, and chat",
+      "online_url": "https://www.1800runaway.org/",
+      "description": "Free, confidential 24/7 call, text and chat line for young people who have run away, been kicked out or are thinking of leaving home, and for their families. Can find a youth shelter: federally funded Basic Center Programs give youth under 18 up to 21 days of emergency shelter and counseling.",
+      "eligibility": {
+        "rule_id": "nrs-rule",
+        "income_limit_annual": 0,
+        "residency_requirement": "none",
+        "min_family_size": 0,
+        "citizenship_required": false,
+        "age_min": 0,
+        "age_max": 21,
+        "exceptions": "Most adult shelters can't take someone under 18 without a parent; youth shelters can. Caregivers can call too.",
+        "criteria_summary": "Young people up to 21 who ran away, were forced out of home or are thinking of leaving, and their families. No eligibility check.",
+        "targets": ["minor"]
+      },
+      "form": {
+        "form_id": "nrs-call",
+        "form_name": "Call, text or chat (no form)",
+        "url": "https://www.1800runaway.org/",
+        "required_documents": [],
+        "deadline_type": "rolling",
+        "submission_method": "phone",
+        "estimated_minutes": 0
       }
     },
     {
@@ -357,7 +389,7 @@
       "category": "food",
       "capacity": "open",
       "languages_supported": ["en", "es"],
-      "contact_phone": "1-800-942-3678",
+      "contact_phone": "2-1-1",
       "contact_email": "",
       "address": "Local WIC clinics",
       "online_url": "https://www.fns.usda.gov/wic",
@@ -601,7 +633,7 @@
       "form": {
         "form_id": "fridge-walkup",
         "form_name": "No application; open access",
-        "url": "https://freedge.org/freedges/",
+        "url": "https://freedge.org/locations/",
         "required_documents": [],
         "deadline_type": "rolling",
         "submission_method": "in_person",
@@ -648,7 +680,7 @@
       "contact_phone": "1-877-267-2323",
       "contact_email": "",
       "address": "State Medicaid offices and Healthcare.gov",
-      "online_url": "https://www.medicaid.gov/about-us/contact-us/contact-state-page.html",
+      "online_url": "https://www.medicaid.gov/about-us/where-can-people-get-help-medicaid-chip",
       "description": "Joint federal-state public health insurance for low-income adults, children, pregnant women, elderly, and people with disabilities. Covers doctor visits, hospital stays, prescriptions, mental health, long-term care, and more. Free or near-free.",
       "eligibility": {
         "rule_id": "medicaid-rule",
@@ -709,7 +741,7 @@
       "category": "healthcare",
       "capacity": "open",
       "languages_supported": ["en", "es", "zh", "vi", "ar"],
-      "contact_phone": "1-877-464-4772",
+      "contact_phone": "2-1-1",
       "contact_email": "",
       "address": "1,400+ FQHC sites nationwide",
       "online_url": "https://findahealthcenter.hrsa.gov/",
@@ -805,10 +837,10 @@
       "category": "healthcare",
       "capacity": "open",
       "languages_supported": ["en", "es"],
-      "contact_phone": "1-800-448-0440",
+      "contact_phone": "2-1-1",
       "contact_email": "",
       "address": "Local Ryan White clinics",
-      "online_url": "https://ryanwhite.hrsa.gov/",
+      "online_url": "https://findhivcare.hrsa.gov/",
       "description": "Federally funded comprehensive HIV care for low-income people living with HIV who are uninsured or underinsured. Covers antiretroviral therapy, primary care, mental health, dental, transportation, and case management.",
       "eligibility": {
         "rule_id": "ryan-white-rule",
@@ -921,7 +953,7 @@
       "form": {
         "form_id": "eyecare-america-app",
         "form_name": "EyeCare America Online Questionnaire",
-        "url": "https://www.aao.org/eyecare-america/eligibility-questionnaire",
+        "url": "https://www.aao.org/eyecare-america",
         "required_documents": [],
         "deadline_type": "rolling",
         "submission_method": "online",
@@ -1057,15 +1089,15 @@
       }
     },
     {
-      "agency_name": "Tenant Rights Hotline (National Housing Law Project)",
+      "agency_name": "LawHelp.org Tenant Help (legal aid directory)",
       "category": "legal",
       "capacity": "open",
       "languages_supported": ["en", "es"],
-      "contact_phone": "415-546-7000",
-      "contact_email": "info@nhlp.org",
-      "address": "Phone-based; refers to local tenant advocates",
-      "online_url": "https://www.nhlp.org/",
-      "description": "National advocacy organization with a referral hotline and self-help tenant rights information. For active eviction defense, refers callers to local legal aid; runs trainings for tenant-side advocates.",
+      "contact_phone": "2-1-1",
+      "contact_email": "",
+      "address": "Online: free legal aid programs in every state",
+      "online_url": "https://www.lawhelp.org/",
+      "description": "Directory of nonprofit legal aid programs in each state, run by Pro Bono Net with legal aid partners, with free self-help guides and LawHelp Interactive for preparing court documents. It points renters to the local office that can take an eviction, repair, deposit or lockout case.",
       "eligibility": {
         "rule_id": "tenant-rights-rule",
         "income_limit_annual": 0,
@@ -1074,17 +1106,17 @@
         "citizenship_required": false,
         "age_min": 0,
         "age_max": 0,
-        "exceptions": "Self-help materials are free to all; direct representation is via local legal aid, not NHLP itself.",
-        "criteria_summary": "Any renter facing eviction, lease problems, or habitability issues; referral and self-help focused.",
+        "exceptions": "Represents no one itself: the local legal aid office it lists decides whom it can take.",
+        "criteria_summary": "Any renter facing eviction, lease problems, or habitability issues. No eligibility check to use the directory.",
         "targets": ["tenant"]
       },
       "form": {
-        "form_id": "nhlp-referral",
-        "form_name": "Self-help intake / referral",
-        "url": "https://www.nhlp.org/resources/",
+        "form_id": "lawhelp-find",
+        "form_name": "Find your state's legal aid (no form)",
+        "url": "https://www.lawhelp.org/",
         "required_documents": ["Lease", "Eviction notice", "Communications with landlord"],
         "deadline_type": "rolling",
-        "submission_method": "phone",
+        "submission_method": "online",
         "estimated_minutes": 30
       }
     },

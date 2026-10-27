@@ -138,7 +138,7 @@ def:pub ChatPane(
                             Deterministic eligibility engine · 2026 federal rules · 51 machine-drafted languages, 111 selectable · 1 LLM call per turn, off the critical path
                         </div>
                     </div>
-                    {is_loading and <div className="cm-badge badge-glow"><span className="cm-dot-live"/>Scoring 40 programs…</div>}
+                    {is_loading and <div className="cm-badge badge-glow"><span className="cm-dot-live"/>Scoring 41 programs…</div>}
                     {renderLangPicker()}
                     <button className="cm-ghost-btn" onClick={lambda _e: MouseEvent { resetCase(); }} title="Start a new case">New case</button>
                 </div>

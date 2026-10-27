@@ -1,0 +1,584 @@
+{
+  "_about": "What was checked for each program, and when. contact_*: written by tools/check_contacts.py (the program page answers 200 and shows the listed phone; 'unconfirmed' = a bot shield, a page that renders the number with JavaScript, or a real problem: a person must look). rules: written by hand when a program's eligibility rules were compared with an independent source; null = never checked. tests/check_verification.py fails when a record is over a year old.",
+  "programs": {
+    "section8-hcv-rule": {
+      "program": "Section 8 Housing Choice Voucher Program",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "form_url_status": 403,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "esg-shelter-rule": {
+      "program": "Emergency Solutions Grant Shelter Network",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "rrh-rule": {
+      "program": "Rapid Re-Housing Program",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 404,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-27",
+        "how": "Form corrected: VI-SPDAT was retired by its publisher; rapid re-housing is reached through coordinated entry. HUD Exchange pages answer 404 to scripted requests: link not confirmed",
+        "source": "https://www.hudexchange.info/"
+      }
+    },
+    "liheap-rule": {
+      "program": "LIHEAP (Low Income Home Energy Assistance Program)",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "form_url_status": 0,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "public-housing-rule": {
+      "program": "Public Housing (HUD)",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "form_url_status": 403,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "ndv-shelter-rule": {
+      "program": "National Domestic Violence Hotline Shelter Referral",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "form_url_status": 200,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "coc-psh-rule": {
+      "program": "Continuum of Care Permanent Supportive Housing",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "hud-vash-rule": {
+      "program": "HUD-VASH (Veterans Affairs Supportive Housing)",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "form_url_status": 200,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "salvation-army-th-rule": {
+      "program": "Salvation Army Transitional Housing",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 200,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-27",
+        "how": "Corrected: 1-800-SAL-ARMY is 1-800-725-2769 (national headquarters, routes to local corps); the catalog had 1-800-728-7825",
+        "source": "https://installations.militaryonesource.mil/military-installation/fort-hamilton/base-essentials/emergency-assistance"
+      }
+    },
+    "cc-era-rule": {
+      "program": "Catholic Charities Emergency Rental Assistance",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-27",
+        "how": "Corrected: the listed 1-800-919-9338 appears nowhere; the national office says it does not provide direct services, so the route is the ZIP locator or 2-1-1",
+        "source": "https://www.catholiccharitiesusa.org/find-help/"
+      }
+    },
+    "nrs-rule": {
+      "program": "National Runaway Safeline",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-27",
+        "how": "Phone, text, chat, 24/7, free and confidential on the program's own site",
+        "source": "https://www.1800runaway.org/"
+      }
+    },
+    "snap-rule": {
+      "program": "SNAP (Supplemental Nutrition Assistance Program)",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "form_url_status": 403,
+      "rules": {
+        "checked": "2026-09-29",
+        "how": "Eligibility and benefit compared with PolicyEngine US 2.16 on 384 households (12 states, sizes 1/2/4, 0–205% of poverty): 98.2% eligibility agreement",
+        "source": "tools/oracle_policyengine.py"
+      },
+      "contact_manual": {
+        "checked": "2026-10-27",
+        "how": "1-800-221-5689 is USDA's SNAP information line (USDA-hosted page)",
+        "source": "https://fns-prod.azureedge.us/node/1043"
+      }
+    },
+    "wic-rule": {
+      "program": "WIC (Women, Infants and Children)",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "form_url_status": 200,
+      "rules": {
+        "checked": "2026-10-27",
+        "how": "WIC income test (185% of poverty) for a household with a 2-year-old, 132/132 agree",
+        "source": "tools/oracle_programs.py (PolicyEngine US 2.68, 2026-10)"
+      },
+      "contact_manual": {
+        "checked": "2026-10-27",
+        "how": "Corrected: the listed 1-800-942-3678 is Texas WIC's complaints line; 2-1-1 or the state WIC office instead",
+        "source": "https://texaswic.org/node/214"
+      }
+    },
+    "feeding-america-rule": {
+      "program": "Feeding America Food Bank Network",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "nslp-rule": {
+      "program": "National School Lunch Program",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "form_url_status": 403,
+      "rules": {
+        "checked": "2026-10-27",
+        "how": "Free or reduced-price eligibility, 132/132 agree after the nine universal-meal states (before: 120/132)",
+        "source": "tools/oracle_programs.py (PolicyEngine US 2.68, 2026-10)"
+      }
+    },
+    "mow-rule": {
+      "program": "Meals on Wheels America",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-27",
+        "how": "1-888-998-6325 is on the Meals on Wheels America contact page",
+        "source": "https://www.mealsonwheelsamerica.org/about/contact/"
+      }
+    },
+    "tefap-rule": {
+      "program": "TEFAP (The Emergency Food Assistance Program)",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "sfsp-rule": {
+      "program": "Summer Food Service Program",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "form_url_status": 403,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "sfmnp-rule": {
+      "program": "Senior Farmers Market Nutrition Program",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "fridge-rule": {
+      "program": "Community Fridge Network",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": false,
+      "form_url_status": 200,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-27",
+        "how": "Map link corrected (old /freedges/ 404)",
+        "source": "https://freedge.org/locations/"
+      }
+    },
+    "csfp-rule": {
+      "program": "Commodity Supplemental Food Program",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "medicaid-rule": {
+      "program": "Medicaid",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 200,
+      "phone_on_page": false,
+      "form_url_status": 200,
+      "rules": {
+        "checked": "2026-10-27",
+        "how": "Income test for adults without children and for parents, 12 states x 11 incomes each: 264/264 agree with PolicyEngine US after the parent limits were taken from KFF (before: 262/264, Tennessee)",
+        "source": "tools/oracle_programs.py (PolicyEngine US 2.68, 2026-10)"
+      },
+      "contact_manual": {
+        "checked": "2026-10-27",
+        "how": "Corrected link (old state-contact page 404): medicaid.gov state selector; 877-267-2323 is the CMS line for after the state agency",
+        "source": "https://www.medicaid.gov/about-us/where-can-people-get-help-medicaid-chip"
+      }
+    },
+    "chip-rule": {
+      "program": "CHIP (Children's Health Insurance Program)",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "form_url_status": 200,
+      "rules": {
+        "checked": "2026-10-27",
+        "how": "Children's Medicaid/CHIP limits, 132/132 agree, but NOT independent: the per-state table comes from the same CMS/MACPAC figures PolicyEngine compiles (spot-checked against KFF). Before the table: 121/132",
+        "source": "tools/oracle_programs.py (PolicyEngine US 2.68, 2026-10)"
+      }
+    },
+    "fqhc-rule": {
+      "program": "Federally Qualified Health Center Sliding-Scale Care",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-27",
+        "how": "Corrected: 1-877-464-4772 is HRSA's grants contact center, not for patients; the locator or 2-1-1 instead",
+        "source": "https://findahealthcenter.hrsa.gov/"
+      }
+    },
+    "988-rule": {
+      "program": "988 Suicide and Crisis Lifeline",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "form_url_status": 403,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "samhsa-rule": {
+      "program": "SAMHSA National Helpline (Substance Use Treatment Referral)",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "form_url_status": 200,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "ryan-white-rule": {
+      "program": "Ryan White HIV/AIDS Program",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": false,
+      "form_url_status": 403,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-27",
+        "how": "Corrected: 1-800-448-0440 is NIH's HIVinfo information line, not care; link now HRSA's Ryan White provider locator",
+        "source": "https://findhivcare.hrsa.gov/"
+      }
+    },
+    "needymeds-rule": {
+      "program": "NeedyMeds Prescription Assistance",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 200,
+      "phone_on_page": false,
+      "form_url_status": 200,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-27",
+        "how": "1-800-503-6897 is the NeedyMeds helpline (general guidance, not case help)",
+        "source": "https://www.needymeds.org/"
+      }
+    },
+    "dental-clinic-rule": {
+      "program": "Free Dental Clinic Network (NASDOH)",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "eyecare-america-rule": {
+      "program": "EyeCare America Senior Program",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-27",
+        "how": "Form link corrected (old questionnaire URL 404)",
+        "source": "https://www.aao.org/eyecare-america"
+      }
+    },
+    "cmhc-rule": {
+      "program": "Community Mental Health Center Sliding-Scale Therapy",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "lsc-rule": {
+      "program": "Legal Services Corporation Civil Legal Aid",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": false,
+      "form_url_status": 200,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "imm-legal-rule": {
+      "program": "National Immigration Legal Services Directory",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "pd-rule": {
+      "program": "Public Defender Service",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "tenant-rights-rule": {
+      "program": "LawHelp.org Tenant Help (legal aid directory)",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-27",
+        "how": "Replaced: NHLP serves attorneys and advocates and has no tenant hotline; LawHelp.org (Pro Bono Net) lists free legal aid by state",
+        "source": "https://www.lawhelp.org/"
+      }
+    },
+    "dv-legal-rule": {
+      "program": "National Domestic Violence Legal Advocacy",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "dr-rule": {
+      "program": "Disability Rights Network Protection and Advocacy",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "cfpb-rule": {
+      "program": "Consumer Financial Protection Bureau Complaint System",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "expungement-rule": {
+      "program": "Expungement and Record Sealing Clinic",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "aba-fla-rule": {
+      "program": "ABA Free Legal Answers",
+      "contact_checked": "2026-10-27",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "law-clinic-rule": {
+      "program": "Law School Pro Bono Clinic",
+      "contact_checked": "2026-10-27",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    }
+  }
+}

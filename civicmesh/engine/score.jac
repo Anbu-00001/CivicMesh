@@ -1,4 +1,8 @@
-"""Explainable eligibility engine — deterministic, calibrated, sub-millisecond.
+"""Explainable eligibility engine — deterministic and under a millisecond.
+
+The scores are hand-set weights over published rules, not calibrated
+probabilities: no set of real eligibility decisions exists to calibrate
+them against (README, "What the numbers mean").
 
 Replaces one LLM call per resource with closed-form math over the typed graph
 data (EligibilityRuleNode fields + resource descriptions):
@@ -11,11 +15,12 @@ data (EligibilityRuleNode fields + resource descriptions):
     reads 0.77 and 25% under 0.95. L itself comes from engine/policy.jac: a
     percentage of the 2026 poverty line or HUD area median for this household.
   * Unknown ≠ fail: an unknown field contributes its prior expectation and
-    lowers *coverage*. Low coverage triggers calibrated abstention — the tier
+    lowers *coverage*. Low coverage triggers abstention — the tier
     becomes "needs_info" instead of a confident guess.
-  * Approval odds come from a Beta-Binomial posterior over real outcomes the
-    MemoryWalker records (approved / denied), with a capacity-informed prior
-    and an 80% UCB exploration bonus for ranking.
+  * Approval odds come from a Beta-Binomial posterior: a hand-set,
+    capacity-informed prior updated only by this visitor's own recorded
+    outcomes (approved / denied), plus an 80% UCB exploration bonus for
+    ranking. Nothing pools across visitors.
   * Counterfactuals: the smallest change that flips a resource to eligible
     ("you'd qualify if yearly income ≤ $30,000 — you're $2,400 over").
   * Value of information: which single unknown fact would move the most
@@ -61,6 +66,7 @@ glob TARGETS: dict = {
     "conviction": ("conviction|criminal record|expunge|my record|felony|antecedentes", "", "people with a past conviction", "personas con antecedentes penales"),
     "young_child": ("pregnant|embarazada|\\bbaby\\b|infant|newborn|toddler|beb[eé]|breastfeed|under (?:5|five)", "young_child", "families with a baby, a child under 5, or a pregnancy", "familias con bebé, niño menor de 5 años o embarazo"),
     "children": ("\\bkids?\\b|children|\\bchild\\b|\\bsons?\\b|daughters?|hij[oa]s|ni[nñ][oa]s|teen", "children", "children and teens", "niños y adolescentes"),
+    "minor": ("\\bminor\\b|under 18|menor de edad", "", "young people under 18", "jóvenes menores de 18 años"),
     "eviction_risk": ("evict|behind on rent|past due|shut ?off|disconnect|landlord|desalo|atrasad[oa] con la renta|corte de luz", "eviction", "people facing eviction or a utility shutoff", "personas ante desalojo o corte de servicios"),
     "immigration": ("immigra|deport|asylum|visa|green card|citizenship|undocumented|inmigra|asilo|papeles|indocumentad", "", "people with immigration questions", "personas con dudas de inmigración"),
     "crisis": ("suicid|kill myself|end my life|want to die|self[- ]harm|crisis|panic attack|quitarme la vida|no quiero vivir|matarme", "", "people in a mental-health crisis", "personas en crisis de salud mental"),
@@ -81,7 +87,7 @@ glob TARGET_GATE: float = 0.35;
 # guards ("the Salvation Army", "a car parked on the street"). Matching the
 # raw TARGETS regex here counted those as evidence (found by probing a real
 # conversation after the flag fixes). Other targets are topics, not facts.
-glob FLAG_TARGETS: dict = {"homeless": "homeless", "veteran": "veteran", "disability": "disabled", "dv": "dv", "children": "children"};
+glob FLAG_TARGETS: dict = {"homeless": "homeless", "veteran": "veteran", "disability": "disabled", "dv": "dv", "children": "children", "minor": "minor"};
 
 """Is target `t` evidenced for this person?"""
 def target_hit(t: str, low_msg: str, flags: list) -> bool {
@@ -419,7 +425,7 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
     hard_fail = len([c for c in crits if c["hard"] and c["status"] == "unmet"]) > 0;
     soft_unmet = len([c for c in crits if (not c["hard"]) and c["status"] == "unmet"]);
 
-    # Calibrated abstention: never call a program "likely" on thin evidence.
+    # Abstention: never call a program "likely" on thin evidence.
     if hard_fail or p_elig < 0.2 {
         tier = "unlikely";
     } elif targeted_unconfirmed or (coverage < 0.6 and p_elig >= 0.3) {

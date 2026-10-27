@@ -121,7 +121,7 @@
   },
   {
    "from": "Legal Services Corporation Civil Legal Aid",
-   "to": "Tenant Rights Hotline (National Housing Law Project)",
+   "to": "LawHelp.org Tenant Help (legal aid directory)",
    "reason": "When LSC programs can't take a tenant case directly, they refer to NHLP-affiliated tenant defender coalitions.",
    "days": 7,
    "difficulty": "moderate"
@@ -176,7 +176,7 @@
    "difficulty": "easy"
   },
   {
-   "from": "Tenant Rights Hotline (National Housing Law Project)",
+   "from": "LawHelp.org Tenant Help (legal aid directory)",
    "to": "Catholic Charities Emergency Rental Assistance",
    "reason": "Tenant rights advocates refer eviction-defense clients to ERA programs to pay back rent and stop the case.",
    "days": 7,

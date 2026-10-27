@@ -70,11 +70,9 @@ node EligibilityRuleNode {
         age_max: int = 0,
         exceptions: str = "",
         criteria_summary: str = "",
-        # Outcome-learning fields. MemoryWalker updates these whenever
-        # an ApplicationNode this rule gated transitions to approved or
-        # denied. EligibilityWalker reads prior_success_rate as a
-        # prior on the LLM's match_score so the graph genuinely learns
-        # from real outcomes.
+        # Outcome-tracking fields (this visitor's copy only). MemoryWalker
+        # updates them whenever an ApplicationNode this rule gated
+        # transitions to approved or denied; the approval odds read them.
         prior_success_rate: float = 0.5,
         prior_attempts: int = 0,
         prior_approvals: int = 0,
@@ -97,9 +95,9 @@ sem EligibilityRuleNode.prior_approvals is "Count of those attempts that ended i
 
 # SessionInsight — Reflexion-style self-reflection persisted in the graph.
 # After every chat turn, CritiqueWalker computes a quality score from the
-# walker chain telemetry (no LLM call) and writes one of these. Future
-# IntakeWalker turns read the last few back as context-prefix so the agent
-# literally learns from its own past performance.
+# walker chain telemetry (no LLM call) and writes one of these, for the
+# Telemetry tab. They are not fed back into later turns (that polluted
+# category detection; see walkers/critique.jac).
 node SessionInsight {
     has session_id: str = "",
         ts: str = "",

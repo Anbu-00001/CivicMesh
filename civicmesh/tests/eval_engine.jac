@@ -29,6 +29,10 @@ import from engine.paths { plan_routes }
 import from engine.compose { merge_profiles }
 
 glob FLOORS: dict = {"field_accuracy": 0.9, "top3_hit_rate": 0.85, "exclusion_violations": 0};
+# A whole turn (parse, rank 41 programs, plan, routes) is ~2 ms here; 15 ms of
+# headroom absorbs a slow CI runner but not the regex-cache thrash that made
+# it 28 ms (engine/parse.jac).
+glob LATENCY_P50_MS: float = 15.0;
 
 """Percentile of a sorted list (nearest-rank)."""
 def pct(xs: list, q: float) -> float {
@@ -220,13 +224,13 @@ with entry {
         if p0["language"] != "en" { continue; }
         t0: dict = {};
         q0: dict = {};
-        for s in rank_resources(items, p0, c["text"], 40, "en")["ranked"] { t0[s["resource_name"]] = s["tier"]; q0[s["resource_name"]] = float(s["p_eligible"]); }
+        for s in rank_resources(items, p0, c["text"], len(items), "en")["ranked"] { t0[s["resource_name"]] = s["tier"]; q0[s["resource_name"]] = float(s["p_eligible"]); }
         for extra in NEUTRAL {
             meta_total += 1;
             t2 = c["text"] + " " + extra;
             p2 = parse_intake(t2);
             moved: list = [];
-            for s in rank_resources(items, p2, t2, 40, "en")["ranked"] {
+            for s in rank_resources(items, p2, t2, len(items), "en")["ranked"] {
                 nm = s["resource_name"];
                 if t0.get(nm, "") and (t0[nm] != s["tier"] or abs(q0[nm] - float(s["p_eligible"])) > 0.10) {
                     moved.append(nm[:28] + " " + t0[nm] + f" {q0[nm]:.2f}→" + s["tier"] + f" {float(s['p_eligible']):.2f}");
@@ -271,6 +275,10 @@ with entry {
     }, open(report_path, "w"), indent=2);
     if field_acc < FLOORS["field_accuracy"] or top_rate < FLOORS["top3_hit_rate"] or excl_viol > FLOORS["exclusion_violations"] {
         print("  FAIL: below regression floor");
+        sys.exit(1);
+    }
+    if pct(lat, 0.5) > LATENCY_P50_MS {
+        print(f"  FAIL: turn latency p50 {pct(lat, 0.5):.2f} ms is over {LATENCY_P50_MS:.0f} ms");
         sys.exit(1);
     }
     print("  PASS");

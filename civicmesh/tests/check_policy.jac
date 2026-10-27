@@ -25,7 +25,7 @@ so a typo in a table fails the run:
 import os;
 import sys;
 import json;
-import from engine.policy { snap_estimate, snap_year, income_limit, status_rule }
+import from engine.policy { snap_estimate, snap_year, income_limit, status_rule, fpl_annual }
 import from engine.score { score_resource }
 import from engine.parse { parse_intake }
 
@@ -156,6 +156,15 @@ with entry {
     gap = income_limit("medicaid-rule", prof(1, 900, "TX", [], 40));
     check("100% of the poverty line" in str(gap.get("blocked", "")), "coverage gap names the 100% subsidy floor");
     check("Marketplace is the fallback" not in str(gap.get("blocked", "")), "Marketplace no longer called the fallback");
+
+    # ---- 5. Per-state limits (tools/oracle_programs.py vs PolicyEngine US) ----
+    check(abs(int(income_limit("medicaid-rule", prof(3, 1000, "TN", ["children"], 35))["limit"]) - int(round(fpl_annual(3, "TN") * 1.05))) <= 1, "Tennessee parents: 105% of poverty, not the old flat 40%");
+    check(abs(int(income_limit("medicaid-rule", prof(3, 1000, "TX", ["children"], 35))["limit"]) - int(round(fpl_annual(3, "TX") * 0.15))) <= 1, "Texas parents: 15% of poverty");
+    ny = income_limit("chip-rule", prof(3, 5000, "NY", ["children"], 35));
+    check(abs(int(ny["limit"]) - int(round(fpl_annual(3, "NY") * 4.05))) <= 1 and not ny["typical"], "New York children: 405%, a state figure, not the typical one");
+    check(bool(income_limit("chip-rule", prof(3, 5000, "", ["children"], 35))["typical"]), "unknown state keeps the typical CHIP figure, labelled as such");
+    check(bool(income_limit("nslp-rule", prof(3, 9000, "CA", ["children"], 35)).get("none")), "California: school meals free at any income");
+    check(int(income_limit("nslp-rule", prof(3, 9000, "TX", ["children"], 35)).get("limit", 0)) > 0, "Texas: school meals keep the income test");
 
     print("CivicMesh policy-date checks — " + str(total[0]) + " checks");
     for f in fails { print("  FAIL " + f); }

@@ -17,7 +17,7 @@ edge eligible_for {
         benefit_monthly: int = 0;
 }
 sem eligible_for is "The engine's verdict for one need against one program, persisted: EligibilityWalker writes one edge per top match (tier, P(eligible), rank, estimated monthly benefit). The Graph tab is a query over these edges.";
-sem eligible_for.tier is "likely | possible | needs_info | unlikely — the calibrated abstention tier.";
+sem eligible_for.tier is "likely | possible | needs_info | unlikely — the abstention tier.";
 sem eligible_for.p_eligible is "P(eligible) from engine/score.jac for this need.";
 sem eligible_for.rank is "0-based position in the ranked answer the user saw.";
 

@@ -188,7 +188,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     </button>
                     <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.62)", "textAlign": "left", "lineHeight": "1.5"}}>
                         <div style={{"color": "rgba(255,255,255,0.65)"}}>No signup — an anonymous account lives in this browser</div>
-                        <div>{"40 national programs · 2026 federal income rules · local offices from HUD & HRSA open data"}</div>
+                        <div>{"41 national programs · 2026 federal income rules · local offices from HUD & HRSA open data"}</div>
                     </div>
                 </div>
 
@@ -255,7 +255,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     "gridTemplateColumns": "repeat(4, 1fr)",
                     "gap": "14px"
                 }}>
-                    {renderStatTile((str(platform["programs"]) if platform else "40"), "Programs scored per turn", "Federal + national programs · 2026 poverty & HUD limits by household size", "#FFE500")}
+                    {renderStatTile((str(platform["programs"]) if platform else "41"), "Programs scored per turn", "Federal + national programs · 2026 poverty & HUD limits by household size", "#FFE500")}
                     {renderStatTile((str(platform["languages_native"]) if (platform and platform["languages_native"]) else "51"), "Languages answered natively", ("Whole answer composed from reviewed templates · " + (str(platform["languages_routed"]) if platform else "75") + " routed without an LLM"), "#00FF88")}
                     {renderStatTile(((str(platform["stats"]["engine_ms_p50"]) + " ms") if (platform and Number(platform["stats"]["turns"]) > 0) else "< 1 s"), "Median engine time per turn", ((str(platform["stats"]["turns"]) + " live turns since last restart") if (platform and Number(platform["stats"]["turns"]) > 0) else "Answer on screen before any LLM call"), "#4488FF")}
                     {renderStatTile("1", "LLM call per turn", "Async narration with a facts guard — never on the critical path", "#FF88AA")}
@@ -301,7 +301,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                         Nine walkers, one traced pipeline.
                     </h2>
                     <p style={{"fontSize": "14px", "color": "rgba(255,255,255,0.5)", "margin": "0", "maxWidth": "560px", "marginLeft": "auto", "marginRight": "auto"}}>
-                        Each walker owns one concern and writes its result to the graph. Escalation, Memory (outcome learning) and Critique run alongside these five.
+                        Each walker owns one concern and writes its result to the graph. Escalation, Memory (your recorded outcomes) and Critique run alongside these five.
                     </p>
                 </div>
 
