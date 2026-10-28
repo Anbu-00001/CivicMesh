@@ -48,6 +48,8 @@
   "chip.legal.2": "Ku mund të gjej ndihmë ligjore falas për emigracionin?",
   "r.unsure": "Ende nuk e di çfarë ndihme ju duhet. Zgjidhni një opsion më poshtë ose më tregoni pak më shumë — ndërkohë, **211** ju lidh me ndihmë vendore 24/7.",
   "r.safety": "**Së pari, siguria juaj:** {name} — {phone} (24/7, falas dhe konfidenciale).",
+  "r.emergency": "**Nëse jeta e dikujt është në rrezik tani, telefononi 911.**",
+  "r.crisis_net": "Jeni në rrezik apo mendoni për vetëvrasje? Telefononi **911**, ose telefononi ose dërgoni SMS në **988**.",
   "r.found": "Gjeta **{n}** programe për të cilat ka shumë të ngjarë të kualifikoheni.",
   "r.found_more": "Gjeta **{n}** programe për të cilat ka shumë të ngjarë të kualifikoheni dhe {m} të tjera që mund të shkojnë.",
   "r.maybe": "Ende asgjë e sigurt, por **{m}** programe mund të shkojnë kur të di pak më shumë.",
@@ -92,5 +94,9 @@
   "esc.housing": "strehë për të njëjtën natë dhe drejtim për ndihmë me qiranë",
   "esc.healthcare": "klinika me tarifa sipas të ardhurave dhe regjistrim në Medicaid",
   "esc.legal": "ndihmë ligjore civile falas pranë jush",
+  "esc.emergency": "ndihmë mjekësore urgjente dhe policia, menjëherë",
+  "esc.child_abuse": "ndihmë 24/7 për fëmijët që lëndohen dhe për të rriturit që shqetësohen për një fëmijë",
+  "esc.trafficking": "ndihmë konfidenciale 24/7 për këdo që detyrohet të punojë ose të bëjë seks; SMS në 233733",
+  "esc.sexual_assault": "mbështetje konfidenciale 24/7 pas një sulmi seksual",
   "esc.interp": "Përkthyesi është falas: kur t'ju përgjigjen, thoni në anglisht \"{language}\"."
 }

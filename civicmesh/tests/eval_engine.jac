@@ -4,6 +4,7 @@ Runs every case in tests/golden.json (EN/ES, full pipeline) and
 tests/golden_i18n.json (language ID + routing in 70+ more languages) and
 tests/golden_adversarial.json (negation, idioms, cross-category traps,
 crisis, code-switching, romanized scripts, no-signal input) and
+tests/golden_crisis.json (crisis recall, strict) and
 tests/golden_facts_i18n.json (income, household, age, status and location
 stated in 20 other languages, with traps) through
 parse → rank → plan → routes, and tests/golden_conversations.json
@@ -29,7 +30,7 @@ import from engine.paths { plan_routes }
 import from engine.compose { merge_profiles }
 
 glob FLOORS: dict = {"field_accuracy": 0.9, "top3_hit_rate": 0.85, "exclusion_violations": 0};
-# A whole turn (parse, rank 41 programs, plan, routes) is ~2 ms here; 15 ms of
+# A whole turn (parse, rank 44 programs, plan, routes) is ~2 ms here; 15 ms of
 # headroom absorbs a slow CI runner but not the regex-cache thrash that made
 # it 28 ms (engine/parse.jac).
 glob LATENCY_P50_MS: float = 15.0;
@@ -60,7 +61,9 @@ with entry {
     for c in fact_cases { c["suite"] = "facts"; }
     probe_cases = json.load(open("tests/golden_probes.json", encoding="utf-8"))["cases"];
     for c in probe_cases { c["suite"] = "probes"; }
-    cases = cases + i18n_cases + adv_cases + hold_cases + fact_cases + probe_cases;
+    crisis_cases = json.load(open("tests/golden_crisis.json", encoding="utf-8"))["cases"];
+    for c in crisis_cases { c["suite"] = "crisis"; }
+    cases = cases + i18n_cases + adv_cases + hold_cases + fact_cases + probe_cases + crisis_cases;
     suite_tot: dict = {};
     suite_ok: dict = {};
     langs_ok: dict = {};
@@ -107,6 +110,18 @@ with entry {
             } elif k == "secondary_nonempty" {
                 got = p.get("secondary", []);
                 ok = len(got) > 0;
+            } elif k == "flag_any" {
+                got = p.get("flags", []);
+                ok = any([f in got for f in v]);
+            } elif k == "flags_absent" {
+                got = p.get("flags", []);
+                ok = not any([f in got for f in v]);
+            } elif k == "category_nonempty" {
+                got = p.get("category");
+                ok = bool(got);
+            } elif k in ["pinned", "unpinned"] {
+                got = [s["resource_name"] for s in rk["ranked"] if s.get("pinned", False)];
+                ok = any([v.lower() in n.lower() for n in got]) == (k == "pinned");
             }
             su = str(c.get("suite", "golden"));
             suite_tot[su] = int(suite_tot.get(su, 0)) + 1;
@@ -273,6 +288,11 @@ with entry {
         "latency_ms": {"p50": round(pct(lat, 0.5), 3), "p95": round(pct(lat, 0.95), 3), "max": round(max(lat), 3)},
         "failures": failures
     }, open(report_path, "w"), indent=2);
+    # Crisis recall has no floor below 100%: one miss hides a hotline.
+    if int(suite_ok.get("crisis", 0)) < int(suite_tot.get("crisis", 0)) {
+        print(f"  FAIL: crisis suite {int(suite_ok.get('crisis', 0))}/{int(suite_tot.get('crisis', 0))}; every crisis check must pass");
+        sys.exit(1);
+    }
     if field_acc < FLOORS["field_accuracy"] or top_rate < FLOORS["top3_hit_rate"] or excl_viol > FLOORS["exclusion_violations"] {
         print("  FAIL: below regression floor");
         sys.exit(1);

@@ -278,7 +278,7 @@ walker EligibilityWalker {
         credible = ranking["tiers"]["likely"] + ranking["tiers"]["possible"];
         # "No credible match" means something when a need was named, not when
         # the engine guessed one: a guess gets no shelter-placement crisis box.
-        if (credible == 0 and not guessed) or "self_harm" in flags or "dv" in flags {
+        if (credible == 0 and not guessed) or [f for f in ["self_harm", "dv", "child_abuse", "sexual_assault", "trafficking", "emergency"] if f in flags] {
             esc = self.person_node spawn EscalationWalker(
                 category=str(self.profile.get("category", "")), flags=flags,
                 language=ui_lang, ranked=ranked, trace=tr, parent_span=self.parent_span

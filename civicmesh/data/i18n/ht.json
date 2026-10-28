@@ -48,6 +48,8 @@
   "chip.legal.2": "Ki kote m ka jwenn èd legal gratis pou imigrasyon?",
   "r.unsure": "Mwen poko sèten ki kalite èd ou bezwen. Chwazi youn anba a oswa di m yon ti kras plis — pandan tan sa a, **211** ap konekte w ak èd lokal 24/7.",
   "r.safety": "**Anvan tout bagay, sekirite w:** {name} — {phone} (24/7, gratis epi konfidansyèl).",
+  "r.emergency": "**Si lavi yon moun an danje kounye a, rele 911.**",
+  "r.crisis_net": "Ou an danje, oswa w ap panse pou w touye tèt ou? Rele **911**, oswa rele oswa voye tèks bay **988**.",
   "r.found": "Mwen jwenn **{n}** pwogram ou gen anpil chans kalifye pou yo.",
   "r.found_more": "Mwen jwenn **{n}** pwogram ou gen anpil chans kalifye pou yo, ak {m} lòt ki ka mache.",
   "r.maybe": "Poko gen anyen ki sèten, men **{m}** pwogram ka mache lè m konnen yon ti kras plis.",
@@ -92,5 +94,9 @@
   "esc.housing": "abri pou menm swa a ak referans pou èd lwaye",
   "esc.healthcare": "klinik ki fè pri selon revni ak enskripsyon Medicaid",
   "esc.legal": "èd legal sivil gratis toupre w",
+  "esc.emergency": "èd medikal ijans ak lapolis, touswit",
+  "esc.child_abuse": "èd 24/7 pou timoun yo ap maltrete ak pou granmoun ki enkyete pou yon timoun",
+  "esc.trafficking": "èd konfidansyèl 24/7 pou nenpòt moun yo fòse travay oswa fè sèks; voye tèks bay 233733",
+  "esc.sexual_assault": "sipò konfidansyèl 24/7 apre yon agresyon seksyèl",
   "esc.interp": "Entèprèt gratis: lè yon moun reponn, di \"{language}\"."
 }

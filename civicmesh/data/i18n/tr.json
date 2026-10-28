@@ -48,6 +48,8 @@
   "chip.legal.2": "Ücretsiz göçmenlik hukuki yardımını nerede bulabilirim?",
   "r.unsure": "Hangi yardıma ihtiyacınız olduğunu henüz anlayamadım. Aşağıdan birini seçin ya da biraz daha anlatın — bu arada **211** sizi 24/7 yerel yardıma bağlar.",
   "r.safety": "**Önce güvenliğiniz:** {name} — {phone} (24/7, ücretsiz ve gizli).",
+  "r.emergency": "**Şu anda birinin hayatı tehlikedeyse 911'i arayın.**",
+  "r.crisis_net": "Tehlikede misiniz ya da intiharı mı düşünüyorsunuz? **911**'i arayın ya da **988**'i arayın veya mesaj atın.",
   "r.found": "Muhtemelen uygun olduğunuz **{n}** program buldum.",
   "r.found_more": "Muhtemelen uygun olduğunuz **{n}** program ve işinize yarayabilecek {m} program daha buldum.",
   "r.maybe": "Henüz kesin bir eşleşme yok, ama biraz daha bilgi alınca **{m}** program uygun olabilir.",
@@ -92,5 +94,9 @@
   "esc.housing": "aynı gece barınak ve kira yardımı yönlendirmesi",
   "esc.healthcare": "gelire göre ücret alan klinikler ve Medicaid kaydı",
   "esc.legal": "yakınınızda ücretsiz medeni hukuk yardımı",
+  "esc.emergency": "acil tıbbi yardım ve polis, hemen",
+  "esc.child_abuse": "zarar gören çocuklar ve bir çocuk için endişelenen yetişkinler için 24/7 yardım",
+  "esc.trafficking": "çalışmaya ya da cinsel ilişkiye zorlanan herkes için 24/7 gizli yardım; 233733'e mesaj",
+  "esc.sexual_assault": "cinsel saldırıdan sonra 24/7 gizli destek",
   "esc.interp": "Tercüman ücretsizdir: biri açınca İngilizce \"{language}\" deyin."
 }

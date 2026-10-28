@@ -48,6 +48,8 @@
   "chip.legal.2": "Di mana saya bisa mendapat bantuan hukum imigrasi gratis?",
   "r.unsure": "Saya belum yakin bantuan apa yang Anda butuhkan. Pilih salah satu di bawah atau ceritakan sedikit lagi — sementara itu, **211** menghubungkan Anda dengan bantuan setempat 24/7.",
   "r.safety": "**Pertama, keselamatan Anda:** {name} — {phone} (24/7, gratis dan rahasia).",
+  "r.emergency": "**Jika nyawa seseorang dalam bahaya sekarang, telepon 911.**",
+  "r.crisis_net": "Anda dalam bahaya, atau sedang memikirkan bunuh diri? Telepon **911**, atau telepon atau kirim SMS ke **988**.",
   "r.found": "Saya menemukan **{n}** program yang kemungkinan besar bisa Anda dapatkan.",
   "r.found_more": "Saya menemukan **{n}** program yang kemungkinan besar bisa Anda dapatkan dan {m} lagi yang mungkin cocok.",
   "r.maybe": "Belum ada yang pasti cocok, tetapi **{m}** program mungkin cocok setelah saya tahu sedikit lagi.",
@@ -92,5 +94,9 @@
   "esc.housing": "penampungan malam itu juga dan rujukan bantuan sewa",
   "esc.healthcare": "klinik bertarif sesuai penghasilan dan pendaftaran Medicaid",
   "esc.legal": "bantuan hukum perdata gratis di dekat Anda",
+  "esc.emergency": "bantuan medis darurat dan polisi, sekarang juga",
+  "esc.child_abuse": "bantuan 24/7 untuk anak yang disakiti dan untuk orang dewasa yang khawatir tentang seorang anak",
+  "esc.trafficking": "bantuan rahasia 24/7 untuk siapa pun yang dipaksa bekerja atau berhubungan seks; SMS ke 233733",
+  "esc.sexual_assault": "dukungan rahasia 24/7 setelah kekerasan seksual",
   "esc.interp": "Penerjemah gratis: saat ada yang menjawab, ucapkan dalam bahasa Inggris \"{language}\"."
 }

@@ -92,5 +92,5 @@ def model_may_read_messages -> bool {
 """True when the parsed turn is a crisis that must stay on the server."""
 def is_private_turn(flags: list) -> bool {
     f = list(flags or []);
-    return "self_harm" in f or "dv" in f or "self_harm_concern" in f or "dv_concern" in f;
+    return any([x in f for x in ["self_harm", "dv", "self_harm_concern", "dv_concern", "child_abuse", "sexual_assault", "trafficking", "emergency"]]);
 }

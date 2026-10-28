@@ -12,6 +12,7 @@ so re-checking is a scheduled job (docs/MAINTENANCE.md), not a hope.
 import datetime
 import json
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -42,6 +43,23 @@ def main():
             rules += 1
             if (today - datetime.date.fromisoformat(rule_date)).days > MAX_AGE_DAYS:
                 fails.append(f"{rid}: rules last checked {rule_date}")
+    # Every number a person is told to call has been confirmed on the
+    # program's page or checked by hand (outside judge, 2026-10-28: federal
+    # headquarters lines were plan step 1). 2-1-1, 911 and 988 are universal.
+    universal = {"", "2-1-1", "211", "911", "988"}
+    checked = set(universal)
+    for p in progs:
+        rec = ver.get(p["eligibility"]["rule_id"]) or {}
+        phone = str(p.get("contact_phone", ""))
+        if phone in universal or rec.get("contact_result") == "confirmed" or rec.get("contact_manual"):
+            checked.add(phone)
+        else:
+            fails.append(f"{p['eligibility']['rule_id']}: phone {phone} is shown but neither confirmed nor checked by hand")
+    esc = open(os.path.join(HERE, "walkers", "escalation.jac"), encoding="utf-8").read()
+    leads = esc[esc.index("glob LEADS"):esc.index("};", esc.index("glob LEADS"))]
+    for phone in re.findall(r'^\s*"\w+": \("[^"]*", "([^"]*)"', leads, re.M):
+        if phone not in checked:
+            fails.append(f"escalation lead {phone} is not a checked catalog number")
     stale = set(ver) - {p["eligibility"]["rule_id"] for p in progs}
     for rid in sorted(stale):
         fails.append(f"{rid}: record for a program that is no longer in the catalog")

@@ -48,6 +48,8 @@
   "chip.legal.2": "Gdzie znaleźć darmową pomoc prawną w sprawach imigracyjnych?",
   "r.unsure": "Jeszcze nie wiem, jakiej pomocy potrzebujesz. Wybierz opcję poniżej albo napisz trochę więcej — w międzyczasie **211** połączy Cię z lokalną pomocą 24/7.",
   "r.safety": "**Najpierw Twoje bezpieczeństwo:** {name} — {phone} (24/7, bezpłatnie i poufnie).",
+  "r.emergency": "**Jeśli czyjeś życie jest teraz w niebezpieczeństwie, dzwoń pod 911.**",
+  "r.crisis_net": "Jesteś w niebezpieczeństwie albo myślisz o samobójstwie? Zadzwoń pod **911** albo zadzwoń lub napisz SMS pod **988**.",
   "r.found": "Programy, do których najpewniej się kwalifikujesz: **{n}**.",
   "r.found_more": "Programy, do których najpewniej się kwalifikujesz: **{n}**; inne, które mogą pasować: {m}.",
   "r.maybe": "Nic jeszcze nie jest pewne, ale gdy dowiem się trochę więcej, mogą pasować programy: **{m}**.",
@@ -92,5 +94,9 @@
   "esc.housing": "schronienie na tę noc i skierowania do pomocy z czynszem",
   "esc.healthcare": "przychodnie z opłatami zależnymi od dochodu i zapisy do Medicaid",
   "esc.legal": "bezpłatna pomoc prawna w sprawach cywilnych w pobliżu",
+  "esc.emergency": "pomoc medyczna w nagłych wypadkach i policja, natychmiast",
+  "esc.child_abuse": "pomoc 24/7 dla krzywdzonych dzieci i dla dorosłych, którzy martwią się o dziecko",
+  "esc.trafficking": "poufna pomoc 24/7 dla każdego zmuszanego do pracy lub seksu; SMS pod 233733",
+  "esc.sexual_assault": "poufne wsparcie 24/7 po napaści seksualnej",
   "esc.interp": "Tłumacz jest bezpłatny: gdy ktoś odbierze, powiedz po angielsku „{language}”."
 }

@@ -128,6 +128,13 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
             if 0 < n < 20 { out["household_size"] = n; }
         }
     }
+    # "Are you a U.S. citizen or permanent resident?" → "yes" / "no". A yes
+    # can be either, so it stays "citizen or green card".
+    if answering == "citizenship" and not cur.get("citizenship") {
+        yn_c = yes_no(text);
+        if re.search(YES_RE, str(text).lower()) or yn_c == "yes" { out["citizenship"] = "citizen_or_lpr"; }
+        elif re.search(NO_RE, str(text).lower()) or yn_c == "no" { out["citizenship"] = "non_citizen"; }
+    }
     # "About how much does your household earn per month?" → "2000", "两千五".
     if answering == "income" and int(out.get("income_annual", -1)) < 0 {
         annual = answer_income(str(text));
@@ -189,9 +196,10 @@ def compose_catalog(lang: str, profile: dict, ranking: dict, plan: dict, routes:
     steps = list(plan.get("steps", []));
     pinned = [s for s in ranked if s.get("pinned", False)];
     if profile.get("defaulted_category") and not pinned {
-        return msg(lang, "r.unsure");
+        return msg(lang, "r.unsure") + "\n\n" + msg(lang, "r.crisis_net");
     }
     lines: list = [];
+    if "emergency" in list(profile.get("flags", [])) { lines.append(msg(lang, "r.emergency")); }
     if pinned {
         lines.append(msg(lang, "r.safety", {"name": pinned[0]["resource_name"], "phone": pinned[0]["contact_phone"]}));
     }
@@ -234,8 +242,11 @@ def compose_reply(lang: str, profile: dict, ranking: dict, plan: dict, routes: l
 
     if profile.get("defaulted_category") and not pinned {
         lines.append("No estoy seguro de qué tipo de ayuda busca. Elija una opción abajo o cuénteme un poco más; mientras tanto, el **211** conecta con ayuda local las 24 horas." if es else "I'm not sure yet what kind of help you need. Pick one below or tell me a little more — meanwhile, **211** connects you to local help 24/7.");
+        # A missed crisis still sees 911 and 988 (outside judge, 2026-10-28).
+        lines.append(msg(lang, "r.crisis_net"));
         return "\n\n".join(lines);
     }
+    if "emergency" in list(profile.get("flags", [])) { lines.append(msg(lang, "r.emergency")); }
     if pinned {
         p = pinned[0];
         lines.append(("**Primero, su seguridad:** " if es else "**First, your safety:** ") + p["resource_name"] + " — " + p["contact_phone"] + (" (24/7, gratis y confidencial)." if es else " (24/7, free and confidential)."));

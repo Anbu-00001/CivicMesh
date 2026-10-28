@@ -48,6 +48,8 @@
   "chip.legal.2": "Ninaweza kupata wapi msaada wa kisheria wa uhamiaji bila malipo?",
   "r.unsure": "Bado sijui ni msaada wa aina gani unaohitaji. Chagua mojawapo hapa chini au niambie kidogo zaidi — wakati huo huo, **211** inakuunganisha na msaada wa karibu 24/7.",
   "r.safety": "**Kwanza, usalama wako:** {name} — {phone} (24/7, bure na siri).",
+  "r.emergency": "**Ikiwa maisha ya mtu yako hatarini sasa hivi, piga 911.**",
+  "r.crisis_net": "Uko hatarini, au unafikiria kujiua? Piga **911**, au piga au tuma ujumbe kwa **988**.",
   "r.found": "Nimepata programu **{n}** ambazo huenda unastahili.",
   "r.found_more": "Nimepata programu **{n}** ambazo huenda unastahili, na nyingine {m} zinazoweza kufaa.",
   "r.maybe": "Bado hakuna inayofaa kwa uhakika, lakini programu **{m}** zinaweza kufaa nikijua zaidi kidogo.",
@@ -92,5 +94,9 @@
   "esc.housing": "makazi ya usiku huo huo na rufaa ya msaada wa kodi ya nyumba",
   "esc.healthcare": "kliniki zinazotoza kulingana na mapato na usajili wa Medicaid",
   "esc.legal": "msaada wa kisheria wa kiraia bila malipo karibu nawe",
+  "esc.emergency": "msaada wa dharura wa matibabu na polisi, sasa hivi",
+  "esc.child_abuse": "msaada wa 24/7 kwa watoto wanaoumizwa na kwa watu wazima wanaomhofia mtoto",
+  "esc.trafficking": "msaada wa siri wa 24/7 kwa yeyote anayelazimishwa kufanya kazi au ngono; tuma ujumbe kwa 233733",
+  "esc.sexual_assault": "msaada wa siri wa 24/7 baada ya shambulio la kingono",
   "esc.interp": "Mkalimani ni bure: mtu akijibu, sema kwa Kiingereza \"{language}\"."
 }

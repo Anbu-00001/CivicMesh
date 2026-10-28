@@ -151,8 +151,8 @@ glob LEX: dict = {
         "housing": ["住房", "房租", "租金", "租房", "租屋", "房子", "公寓", "找房", "房屋", "房贷", "房貸", "房东", "房東", "驱逐", "驅逐", "赶出", "趕出", "住的地方", "住处", "住處", "住所", "睡觉的地方", "睡覺的地方", "收容所", "庇护所", "庇護所", "电费", "電費", "水电费", "水電費", "暖气", "暖氣", "无家可归", "無家可歸"],
         "healthcare": ["医生", "醫生", "看病", "医院", "醫院", "药店", "藥局", "药物", "藥物", "医疗", "醫療", "保险", "保險", "生病", "牙医", "牙醫", "诊所", "診所", "心理"],
         "legal": ["律师", "律師", "法律", "法院", "移民", "驱逐出境", "驅逐出境", "政治庇护", "政治庇護", "签证", "簽證", "绿卡", "綠卡", "诈骗", "詐騙", "权利", "權利"],
-        "self_harm": ["自杀", "自殺", "想死", "不想活", "结束生命", "結束生命"],
-        "dv": ["家暴", "家庭暴力", "被打", "殴打", "毆打", "他打我", "她打我", "老公打", "丈夫打", "男朋友打", "打伤", "打傷", "打了我一", "虐待", "威胁我", "威脅我", "要杀我", "要殺我", "怕我老公", "怕我丈夫", "暴力"],
+        "self_harm": ["自杀", "自殺", "想死", "不想活", "结束生命", "結束生命", "活不下去", "结束这一切", "結束這一切"],
+        "dv": ["家暴", "家庭暴力", "被打", "殴打", "毆打", "他打我", "她打我", "老公打", "丈夫打", "男朋友打", "打伤", "打傷", "打了我一", "虐待", "威胁我", "威脅我", "要杀我", "要殺我", "要杀了我", "要殺了我", "威胁要杀", "威脅要殺", "怕我老公", "怕我丈夫", "暴力"],
         "self_harm_concern": ["活着没意思", "活著沒意思", "活着没有意义", "活著沒有意義", "没有我会更好", "沒有我會更好", "我是累赘", "我是累贅", "我是负担", "我是負擔", "想消失", "不想醒来", "不想醒來", "没有出路", "沒有出路"],
         "dv_concern": ["不敢回家", "怕回家", "在家不安全", "控制我的钱", "控制我的錢", "查我手机", "查我手機", "不让我出门", "不讓我出門", "不让我工作", "不讓我工作", "威胁要带走孩子", "威脅要帶走孩子", "威胁要举报我", "威脅要舉報我", "威胁叫移民局", "威脅叫移民局"],
         "urgent": ["今天", "今晚", "马上", "馬上", "紧急", "緊急"],
@@ -201,7 +201,7 @@ glob LEX: dict = {
         "housing": ["bahay", "upahan", "renta", "pinapaalis", "pinalayas", "palayasin", "tirahan", "matutuluyan", "kuryente"],
         "healthcare": ["doktor", "ospital", "gamot", "may sakit", "klinika", "dentista", "ngipin", "kalusugan"],
         "legal": ["abogado", "korte", "hukuman", "imigrasyon", "karapatan", "deport"],
-        "self_harm": ["magpakamatay", "patayin ang sarili", "gusto ko nang mamatay"],
+        "self_harm": ["magpakamatay", "patayin ang sarili", "gusto ko nang mamatay", "gusto ko na mamatay", "gusto ko ng mamatay", "ayoko nang mabuhay", "ayoko na mabuhay"],
         "dv": ["karahasan sa tahanan", "sinasaktan ako", "binubugbog", "sinasaktan", "pinagbabantaan", "sinasampal", "takot sa asawa"],
         "self_harm_concern": ["pabigat ako", "gusto ko nang mawala", "wala nang saysay ang buhay", "mas mabuti kung wala na ako"],
         "dv_concern": ["takot akong umuwi", "hindi ako ligtas sa bahay", "kinokontrol ang pera ko", "kinukuha ang pera ko", "hindi ako pinapalabas", "kukunin daw ang mga anak ko", "isusumbong daw ako sa immigration"],
@@ -214,7 +214,7 @@ glob LEX: dict = {
         "housing": ["سكن", "إيجار", "ايجار", "منزل", "بيت", "صاحب البيت", "طرد", "إخلاء", "مأوى", "كهرباء", "شقة"],
         "healthcare": ["طبيب", "دكتور", "مستشفى", "دواء", "علاج", "تأمين صحي", "مريض", "صحة", "أسنان", "عيادة"],
         "legal": ["محامي", "محام", "قانون", "محكمة", "هجرة", "ترحيل", "لجوء", "تأشيرة", "احتيال", "حقوق"],
-        "self_harm": ["انتحار", "أقتل نفسي", "أريد أن أموت"],
+        "self_harm": ["انتحار", "أقتل نفسي", "أريد أن أموت", "أنتحر", "انتحر", "بدي موت", "أريد الموت"],
         "dv": ["عنف أسري", "عنف منزلي", "يضربني", "ضربني", "يضرب", "يهددني", "يهدد بقتلي", "أخاف من زوجي", "اخاف من زوجي", "عنف"],
         "self_harm_concern": ["أريد أن أختفي", "أنا عبء", "لا فائدة من الحياة", "سيكونون أفضل بدوني", "لا يوجد مخرج"],
         "dv_concern": ["أخاف أن أعود إلى البيت", "خائفة من العودة إلى البيت", "لست آمنة في البيت", "يأخذ كل أموالي", "يتحكم في أموالي", "لا يسمح لي بالخروج", "يهددني بأخذ الأطفال", "يهددني بالترحيل"],
@@ -245,12 +245,12 @@ glob LEX: dict = {
         "children": ["بچے", "بچوں", "بیٹا", "بیٹی"]
     },
     "ru": {
-        "food": ["еда", "еды", "продукт", "голод", "поесть", "питани"],
+        "food": ["еда", "еды", "едой", "продукт", "голод", "поесть", "питани", "нечего есть"],
         "housing": ["жиль", "квартир", "аренд", "хозяин", "высел", "бездомн", "ночевать", "приют", "коммунал", "электричеств"],
         "healthcare": ["врач", "больниц", "лекарств", "лечени", "страховк", "болен", "болею", "стоматолог", "медицин"],
         "legal": ["адвокат", "юрист", "суд", "иммиграц", "депорт", "убежищ", "виза", "мошенни", "права"],
-        "self_harm": ["самоубийств", "покончить с собой", "не хочу жить", "суицид"],
-        "dv": ["домашнее насилие", "бьет меня", "бьёт меня", "избивает", "избил", "угрожает", "боюсь мужа", "насили"],
+        "self_harm": ["самоубийств", "покончить с собой", "не хочу жить", "суицид", "хочу умереть", "покончить с жизнью", "убить себя"],
+        "dv": ["домашнее насилие", "бьет меня", "бьёт меня", "избивает", "избил", "угрожает", "боюсь мужа", "насили", "меня бьёт", "меня бьет"],
         "self_harm_concern": ["хочу исчезнуть", "я обуза", "всем будет лучше без меня", "больше не могу так жить", "не вижу выхода", "нет смысла жить", "устал жить", "устала жить"],
         "dv_concern": ["боюсь идти домой", "боюсь возвращаться домой", "дома небезопасно", "забирает мои деньги", "контролирует мои деньги", "не выпускает из дома", "не даёт работать", "не дает работать", "угрожает забрать детей", "угрожает депортацией"],
         "urgent": ["сегодня", "срочно", "немедленно"],
@@ -262,7 +262,7 @@ glob LEX: dict = {
         "housing": ["житл", "квартир", "оренд", "господар", "виселенн", "безхатьк", "притулок", "електроенерг", "комунал"],
         "healthcare": ["лікар", "лікарн", "лік", "ліки", "лікуванн", "страхуванн", "хвор", "стоматолог"],
         "legal": ["адвокат", "юрист", "суд", "імміграц", "депорт", "притулку", "віза", "шахра", "права"],
-        "self_harm": ["самогубств", "суїцид", "не хочу жити"],
+        "self_harm": ["самогубств", "суїцид", "не хочу жити", "хочу померти"],
         "dv": ["домашнє насильство", "б'є мене", "бʼє мене", "б'є", "бʼє", "побив", "погрожує", "боюся чоловіка", "насильств"],
         "urgent": ["сьогодні", "терміново"],
         "homeless": ["безхатьк", "на вулиці", "ніде жити"],
@@ -273,8 +273,8 @@ glob LEX: dict = {
         "housing": ["घर", "किराया", "किराए", "किराये", "मकान", "बेघर", "निकाल", "आश्रय", "रहने की जगह", "बिजली"],
         "healthcare": ["डॉक्टर", "डाक्टर", "अस्पताल", "दवा", "दवाई", "इलाज", "बीमार", "बीमा", "स्वास्थ्य", "दांत"],
         "legal": ["वकील", "अदालत", "कोर्ट", "कानून", "कानूनी", "इमिग्रेशन", "आप्रवासन", "वीज़ा", "वीजा", "निर्वासन", "धोखा"],
-        "self_harm": ["आत्महत्या", "मरना चाहता", "मरना चाहती", "जान दे"],
-        "dv": ["घरेलू हिंसा", "मारता है", "पीटता", "मारता", "पीटती", "धमकी", "मारपीट", "हिंसा"],
+        "self_harm": ["आत्महत्या", "मरना चाहता", "मरना चाहती", "जान दे", "मरना चाहत"],
+        "dv": ["घरेलू हिंसा", "मारता है", "पीटता", "मारता", "पीटती", "धमकी", "मारपीट", "हिंसा", "मुझे मारते", "मारते हैं"],
         "self_harm_concern": ["गायब हो जाना चाहता", "गायब हो जाना चाहती", "बोझ हूँ", "बोझ हूं", "जीने का कोई मतलब नहीं", "जीना नहीं चाहता", "जीना नहीं चाहती"],
         "dv_concern": ["घर जाने से डर", "घर में सुरक्षित नहीं", "मेरे पैसे ले लेता", "बाहर नहीं जाने देता", "बच्चों को छीनने की धमकी"],
         "urgent": ["आज", "तुरंत", "जल्दी"],
@@ -486,7 +486,7 @@ glob LEX: dict = {
         "housing": ["logement", "loyer", "propriétaire", "expuls", "sans-abri", "sans abri", "sdf", "hébergement", "refuge", "électricité", "chauffage", "appartement"],
         "healthcare": ["médecin", "docteur", "hôpital", "médicament", "santé", "assurance maladie", "malade", "dentiste", "clinique", "soins"],
         "legal": ["avocat", "tribunal", "juridique", "immigration", "asile", "titre de séjour", "papiers", "déportation", "arnaque", "fraude", "mes droits"],
-        "self_harm": ["suicide", "me tuer", "envie de mourir", "en finir"],
+        "self_harm": ["suicide", "me tuer", "envie de mourir", "en finir", "veux mourir", "me suicider"],
         "dv": ["violence conjugale", "violence domestique", "me frappe", "me bat", "me menace", "violent avec moi", "peur de mon mari", "me tape"],
         "self_harm_concern": ["je veux disparaître", "je suis un fardeau", "ils seraient mieux sans moi", "je n'en peux plus de vivre", "je ne vois pas d'issue", "plus aucune raison de vivre", "fatigué de vivre", "fatiguée de vivre"],
         "dv_concern": ["peur de rentrer à la maison", "peur de rentrer chez moi", "pas en sécurité chez moi", "contrôle mon argent", "prend mon argent", "m'empêche de sortir", "m'empêche de travailler", "menace de prendre les enfants", "menace d'appeler l'immigration"],
@@ -554,7 +554,7 @@ glob LEX: dict = {
         "housing": ["kay", "lwaye", "pwopriyetè", "mete deyò", "san kay", "abri", "kouran"],
         "healthcare": ["doktè", "lopital", "medikaman", "renmèd", "maladi", "malad", "asirans", "dantis"],
         "legal": ["avoka", "tribinal", "imigrasyon", "depòte", "azil", "viza", "dwa"],
-        "self_harm": ["touye tèt mwen", "swisid"],
+        "self_harm": ["touye tèt mwen", "swisid", "vle mouri"],
         "dv": ["vyolans domestik", "bat mwen", "frape mwen", "menase mwen", "vyolans"],
         "self_harm_concern": ["mwen vle disparèt", "mwen se yon chay", "yo t ap pi byen san mwen"],
         "dv_concern": ["mwen pè ale lakay", "mwen pa an sekirite lakay", "li pran tout lajan mwen", "li pa kite m soti", "li menase pran pitit yo"],
@@ -1196,6 +1196,46 @@ def route_i18n(code: str, low: str) -> dict {
     if u {
         out["urgent"] = True;
         out["spans"].append({"field": "urgency", "value": "immediate", "start": u[0][0], "end": u[0][1]});
+    }
+    return out;
+}
+
+# Every language's crisis words, run on every message whatever its detected
+# language: a short message often has no language at all ("Mon mari me
+# frappe", "Mari m bat mwen" came back as ""), and a missed crisis hides a
+# hotline. Words in Latin script only count when they are phrases, so a
+# single foreign word that is also English ("suicide" aside) can't fire.
+glob CRISIS_KEYS: list = ["self_harm", "dv", "self_harm_concern", "dv_concern"];
+glob _CRISIS_RE: dict = {};
+
+def _crisis_patterns() -> dict {
+    if _CRISIS_RE { return _CRISIS_RE; }
+    for key in CRISIS_KEYS {
+        spaced: list = [];
+        unspaced: list = [];
+        for (code, lex) in LEX.items() {
+            for w in lex.get(key, []) {
+                wl = str(w).lower();
+                latin = all([ord(c) < 0x250 for c in wl]);
+                if latin and not (" " in wl and len(wl) >= 7) { continue; }
+                if code in SUBSTRING_LANGS { unspaced.append(re.escape(wl)); }
+                else { spaced.append(re.escape(wl)); }
+            }
+        }
+        parts: list = [];
+        if spaced { parts.append("(?<![^\\W\\d_])(?:" + "|".join(sorted(set(spaced), key=len, reverse=True)) + ")"); }
+        if unspaced { parts.append("(?:" + "|".join(sorted(set(unspaced), key=len, reverse=True)) + ")"); }
+        _CRISIS_RE[key] = re.compile("|".join(parts));
+    }
+    return _CRISIS_RE;
+}
+
+"""Crisis flags from any language's lexicon: [(flag, start, end)]."""
+def crisis_any_language(low: str) -> list {
+    out: list = [];
+    for (key, rx) in _crisis_patterns().items() {
+        m = rx.search(low);
+        if m { out.append((key, m.start(), m.end())); }
     }
     return out;
 }

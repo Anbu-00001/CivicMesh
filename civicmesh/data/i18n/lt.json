@@ -48,6 +48,8 @@
   "chip.legal.2": "Kur rasti nemokamą imigracijos teisinę pagalbą?",
   "r.unsure": "Dar nežinau, kokios pagalbos jums reikia. Pasirinkite ką nors žemiau arba papasakokite šiek tiek daugiau — tuo tarpu **211** sujungs jus su vietine pagalba 24/7.",
   "r.safety": "**Pirmiausia — jūsų saugumas:** {name} — {phone} (24/7, nemokamai ir konfidencialiai).",
+  "r.emergency": "**Jei kieno nors gyvybei dabar gresia pavojus, skambinkite 911.**",
+  "r.crisis_net": "Esate pavojuje ar galvojate apie savižudybę? Skambinkite **911** arba skambinkite ar rašykite SMS **988**.",
   "r.found": "Programos, kurioms tikriausiai tinkate: **{n}**.",
   "r.found_more": "Programos, kurioms tikriausiai tinkate: **{n}**; kitos, kurios gali tikti: {m}.",
   "r.maybe": "Kol kas nieko tikro, bet sužinojus šiek tiek daugiau gali tikti programos: **{m}**.",
@@ -92,5 +94,9 @@
   "esc.housing": "prieglauda tą pačią naktį ir nukreipimas dėl nuomos pagalbos",
   "esc.healthcare": "klinikos su mokesčiais pagal pajamas ir registracija į Medicaid",
   "esc.legal": "nemokama civilinė teisinė pagalba šalia jūsų",
+  "esc.emergency": "skubi medicinos pagalba ir policija, iš karto",
+  "esc.child_abuse": "pagalba 24/7 skriaudžiamiems vaikams ir suaugusiesiems, kurie nerimauja dėl vaiko",
+  "esc.trafficking": "konfidenciali pagalba 24/7 visiems, verčiamiems dirbti ar turėti lytinių santykių; SMS 233733",
+  "esc.sexual_assault": "konfidenciali pagalba 24/7 po seksualinės prievartos",
   "esc.interp": "Vertėjas nemokamas: kai atsilieps, pasakykite angliškai „{language}“."
 }

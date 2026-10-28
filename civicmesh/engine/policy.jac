@@ -120,6 +120,20 @@ glob CHILD_COVERAGE_PCT: dict = {
 # income (FRAC, HSMFA report 2025: CA CO ME MA MI MN NM VT; New York from the
 # 2025-26 school year; the same nine in PolicyEngine US 2.68, with statutes).
 glob UNIVERSAL_SCHOOL_MEALS: list = ["CA", "CO", "ME", "MA", "MI", "MN", "NM", "NY", "VT"];
+# Medicaid for pregnant women, % of poverty incl. the 5% disregard (KFF state
+# indicator, January 2026, Medicaid column). Pregnancy limits are set by each
+# state and sit far above the 138% adult line (outside judge, 2026-10-28: an
+# eligible pregnant woman in Texas was told she was $7,975 over).
+glob PREGNANCY_MEDICAID_PCT: dict = {
+    "AL": 146, "AK": 230, "AZ": 161, "AR": 214, "CA": 213, "CO": 195, "CT": 263, "DE": 217, "DC": 324, "FL": 196,
+    "GA": 225, "HI": 196, "ID": 138, "IL": 213, "IN": 213, "IA": 220, "KS": 171, "KY": 195, "LA": 138, "ME": 214,
+    "MD": 264, "MA": 205, "MI": 200, "MN": 283, "MS": 199, "MO": 196, "MT": 162, "NE": 199, "NV": 205, "NH": 201,
+    "NJ": 194, "NM": 255, "NY": 223, "NC": 201, "ND": 175, "OH": 205, "OK": 210, "OR": 190, "PA": 220, "RI": 190,
+    "SC": 199, "SD": 138, "TN": 255, "TX": 203, "UT": 144, "VT": 213, "VA": 143, "WA": 215, "WV": 185, "WI": 306,
+    "WY": 159
+};
+glob PREGNANCY_SOURCE: str = "KFF, Medicaid and CHIP income limits for pregnant women (January 2026)";
+
 glob STATE_NAMES: dict = {
     "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas", "CA": "California", "CO": "Colorado",
     "CT": "Connecticut", "DE": "Delaware", "DC": "the District of Columbia", "FL": "Florida", "GA": "Georgia",
@@ -215,6 +229,9 @@ glob PROGRAMS: dict = {
     "fqhc-rule":             {"income": {"basis": "none", "note": "sliding-scale discounts below 200% of poverty; no one is turned away for inability to pay"}, "status": ""},
     "988-rule":              {"income": {"basis": "none"}, "status": ""},
     "nrs-rule":              {"income": {"basis": "none"}, "status": ""},
+    "childhelp-rule":        {"income": {"basis": "none"}, "status": ""},
+    "nhth-rule":             {"income": {"basis": "none"}, "status": ""},
+    "rainn-rule":            {"income": {"basis": "none"}, "status": ""},
     "samhsa-rule":           {"income": {"basis": "none"}, "status": ""},
     "ryan-white-rule":       {"income": {"basis": "fpl", "pct": 400, "typical": True, "note": "states set 300–500%"}, "status": ""},
     "needymeds-rule":        {"income": {"basis": "none"}, "status": ""},
@@ -311,13 +328,17 @@ def income_limit(rule_id: str, profile: dict, flat_fallback: int = 0) -> dict {
     pct = float(inc.get("pct", 100));
     note = str(inc.get("note", ""));
     typical = bool(inc.get("typical", False));
+    # A pregnant woman counts as herself plus the expected child for Medicaid
+    # (42 CFR 435.603(b)) and for WIC (7 CFR 246.7(d)(2)(viii)).
+    pregnant = "pregnant" in list(profile.get("flags", [])) and str(rule_id) in ["medicaid-rule", "wic-rule"];
+    if pregnant { n = n + 1; }
     if str(rule_id) == "chip-rule" and state in CHILD_COVERAGE_PCT {
         pct = float(CHILD_COVERAGE_PCT[state]);
         note = str(STATE_NAMES.get(state, state)) + " covers children up to " + str(int(pct)) + "% of poverty through Medicaid or CHIP";
         typical = False;
     }
     blocked = "";
-    who = "a household of " + str(n);
+    who = "a household of " + str(n) + (" (counting the baby on the way)" if pregnant else "");
     if basis == "ami" {
         loc = local_ami(str(profile.get("city", "")), pct, n);
         if loc {
@@ -333,7 +354,11 @@ def income_limit(rule_id: str, profile: dict, flat_fallback: int = 0) -> dict {
             note = (note + "; " if note else "") + "HUD sets this limit by county or metro area; tell me your city for the exact figure";
         }
     } else {
-        if basis == "medicaid" {
+        if basis == "medicaid" and pregnant {
+            pct = float(PREGNANCY_MEDICAID_PCT.get(state, 200));
+            typical = state not in PREGNANCY_MEDICAID_PCT;
+            note = (str(STATE_NAMES.get(state, state)) + " covers pregnant women up to " + str(int(pct)) + "% of poverty through Medicaid; some states go higher through CHIP") if state in PREGNANCY_MEDICAID_PCT else "pregnancy limits are set by each state, from 138% to over 300% of poverty; 200% is typical — tell me your state";
+        } elif basis == "medicaid" {
             flags = list(profile.get("flags", []));
             has_kids = "children" in flags or "pregnant" in flags or n >= 2 and "family" in flags;
             covered_group = "pregnant" in flags or "senior" in flags or "disabled" in flags;
@@ -368,6 +393,7 @@ def income_limit(rule_id: str, profile: dict, flat_fallback: int = 0) -> dict {
         per = int(round(fpl_annual(n + 1, state) * pct / 100.0)) - limit;
         label = str(int(pct)) + "% of the " + str(FPL_YEAR) + " poverty line for " + who;
         source = FPL_SOURCE + (" (" + str(STATE_NAMES.get(state, state)) + " table)" if state in ["AK", "HI"] else "") + ("; " + SNAP_BBCE_SOURCE if str(rule_id) == "snap-rule" else "");
+        if basis == "medicaid" and pregnant { source = source + "; " + PREGNANCY_SOURCE; }
     }
     return {
         "limit": limit, "label": label, "per_person": per, "assumed_household": assumed,
@@ -397,6 +423,31 @@ def status_rule(rule_id: str, profile: dict) -> dict {
     }
     if st == "citizen" {
         return {"status": "met", "detail": "U.S. citizen", "change_note": ""};
+    }
+    # Children's programs follow the child's status: citizen children of a
+    # parent with TPS or no papers can enroll.
+    if str(rule_id) == "chip-rule" and "citizen_children" in flags {
+        return {"status": "met", "detail": "Your children are U.S. citizens; their status is what counts", "change_note": ""};
+    }
+    # "Yes" to "Are you a U.S. citizen or permanent resident?"
+    if st == "citizen_or_lpr" {
+        return {"status": "met", "detail": "U.S. citizens and green-card holders qualify" + (" (a green card held under 5 years can mean a wait for adults)" if kind in ["snap", "medicaid"] else ""), "change_note": ""};
+    }
+    # P.L. 119-21 kept SNAP and Medicaid for Cuban/Haitian entrants and COFA
+    # citizens (§10108, §71109; USDA FNS OBBB alien-eligibility guidance).
+    if st in ["cuban_haitian_entrant", "cofa"] {
+        if kind == "lsc" {
+            return {"status": "unknown", "detail": "The legal-aid office checks which statuses it can serve", "change_note": ""};
+        }
+        who = "Cuban and Haitian entrants" if st == "cuban_haitian_entrant" else "Citizens of Micronesia, the Marshall Islands and Palau (COFA)";
+        return {"status": "met", "detail": who + " still qualify under P.L. 119-21" + (", with no 5-year wait" if st == "cuban_haitian_entrant" else ""), "change_note": ""};
+    }
+    # The 5-year bar (PRWORA §403): adults with a green card under 5 years
+    # wait for SNAP and federal Medicaid; children under 18 don't for SNAP,
+    # and many states cover lawfully residing children and pregnant people.
+    recent = st == "eligible_immigrant" and "lpr_recent" in flags and kind in ["snap", "medicaid"];
+    if recent and not kids {
+        return {"status": "unknown", "detail": "With a green card under 5 years most adults must wait for " + ("SNAP" if kind == "snap" else "federal Medicaid") + " (exceptions: refugee or asylee before the green card, veterans, disability benefits" + (", 40 quarters of work" if kind == "snap" else "") + "); some states cover you with their own funds", "change_note": ""};
     }
     if kind == "hud" {
         if st in ["eligible_immigrant", "humanitarian"] {

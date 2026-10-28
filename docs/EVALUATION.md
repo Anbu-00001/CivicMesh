@@ -82,10 +82,10 @@ To avoid tuning to the test, each task's posts are split by index. Misses were r
 
 | Task (engine output checked) | Held-out recall, first run | Held-out recall now (95% CI) | False positives (held-out, now) |
 |---|---|---|---|
-| Domestic violence (the dv flag or the concern layer, which pin the hotline) | 38.6% (17/44) | **65.9%** (29/44; 51–78%) | 2.3% (1/43) |
-| Housing (routed to housing) | 77.0% | 77.1% (863/1,120; 75–79%) | 11.5% |
-| Health (routed to healthcare) | 78.9% | 78.9% (45/57; 67–88%) | 10.7% |
-| Immigration (an immigration status read) | 67.6% (23/34) | **82.4%** (28/34; 66–92%) | 3.0% |
+| Domestic violence (the dv flag or the concern layer, which pin the hotline) | 38.6% (17/44) | **68.2%** (30/44; 53–80%) | 2.3% (1/43) |
+| Housing (routed to housing) | 77.0% | 81.2% (910/1,120; 79–83%) | 12.1% |
+| Health (routed to healthcare) | 78.9% | 77.2% (44/57; 65–86%) | 10.7% |
+| Immigration (an immigration status read) | 67.6% (23/34) | **79.4%** (27/34; 63–90%) | 3.0% |
 
 The domestic-violence number is the important one. A self-written suite at 100% had hidden that most real descriptions of abuse ("he kicked me in the stomach", "a restraining order", "my attacker", "terrified for her life") never raised the flag. The latest round added, as patterns, the [Danger Assessment](https://www.dangerassessment.org/)'s strongest predictors of partner homicide (strangulation, threats to kill, weapons, forced sex, escalating violence) and the [Hotline](https://www.thehotline.org/identify-abuse/domestic-abuse-warning-signs/)'s warning signs, each with a benign probe. That moved the dev half from 74% to 81% and the held-out half by one post (63.6% → 65.9%), well inside the interval: word patterns are near their ceiling on long narratives, and it still misses about a third. So the design no longer depends on detection to show a number. **911, 988 and the Domestic Violence Hotline (call 1-800-799-7233 or text START to 88788) are shown under the chat box on every screen**, and detection only decides whether the hotline is also pinned to the top of the plan. These are long Reddit narratives, which are harder than the short requests the router is built for, and some labels are noisy (6 of the 11 dev-half misses are about a speeding ticket, unpaid wages, a psychiatric hold or sleeplessness). This suite is a measurement, not a gate: CI prints it on every run. Regression cases from real intake conversations with a legal-aid or 211 partner would be the next step up.
 

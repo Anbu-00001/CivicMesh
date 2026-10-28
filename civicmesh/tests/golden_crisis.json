@@ -1,0 +1,1364 @@
+{
+ "_about": "Crisis recall: the outside judge's messages of 2026-10-28 (self-harm 67, violence 44, 12 figurative false-alarm traps, 16 danger routes: child abuse, trafficking, sexual assault, 911). The parser was fixed toward these, so this is a development set, not a held-out one. The gate is strict: one miss fails CI, because a missed crisis hides a hotline.",
+ "cases": [
+  {
+   "text": "i wanna die",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I want to die",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "i want to kill my self",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I'm going to kill myself tonight",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "i wanna kms",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I'm thinking of ending it",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I don't want to exist anymore",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I'm suicidal",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I have a plan to end my life",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I took a whole bottle of pills",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I'm going to overdose",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I've been cutting again",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I keep hurting myself on purpose",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I bought a gun to use on myself",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I'm standing on the bridge right now",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I just want to go to sleep and never wake up",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "everyone would be better off if I was gone",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I'm a burden to everyone",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "there's no point in living anymore",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I can't do this anymore, I'm done with life",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I want to disappear forever",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I wrote my goodbye letters",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I'm giving away my stuff because I won't need it",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "life isn't worth living",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I'd be better off dead",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "i dont wanna be alive",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I wish I was never born",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I want to end my suffering for good",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "thinking about unaliving myself",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I feel like dying",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "my son says he wants to kill himself",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "my wife tried to kill herself last night",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "my friend is talking about suicide",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I tried to hang myself last week",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I want to jump in front of a train",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "planning to drive my car off the road",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "nobody would care if I died",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I can't go on",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I hate my life and want it over",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "I'm ready to die",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "me quiero matar",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "quiero morirme",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "me voy a suicidar",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "ya no quiero estar en este mundo",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "mi hija dice que se quiere morir",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "Я хочу умереть",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "Хочу покончить с жизнью",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "我想死",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "活不下去了",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "我想结束这一切",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "Tôi muốn tự tử",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "Tôi không muốn sống nữa",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "أريد أن أنتحر",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "أفكر في الانتحار",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "Mwen vle touye tèt mwen",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "Mwen vle mouri",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "Gusto ko nang mamatay",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "Ayoko nang mabuhay",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "Eu quero me matar",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "Je veux mourir",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "죽고 싶어요",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "자살하고 싶어",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "मैं मरना चाहता हूँ",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "मुझे आत्महत्या करनी है",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "Muero por dentro, ya no puedo más",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "wo xiang zisha",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "gusto ko na mamatay",
+   "expect": {
+    "flag_any": [
+     "self_harm",
+     "self_harm_concern"
+    ],
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "he chokes me when he's drunk",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "my husband slaps me",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "my boyfriend punches me",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "he hits me and the kids",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "she beats me",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "my partner kicked me in the stomach while I'm pregnant",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "he strangled me last night",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "my husband pushed me down the stairs",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "he threatens to kill me if I leave",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "he said he'll kill me",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "my ex keeps showing up at my work",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "I'm afraid of my husband",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "he takes my paycheck and gives me an allowance",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "he took my passport and my green card",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "he locks me in the house",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "my husband says he will call ICE on me if I leave",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "he won't let me see my family",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "he tracks my phone and reads my texts",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "my boyfriend forced me to have sex",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "my husband rapes me",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "I need a restraining order against my ex",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "I'm being abused at home",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "my son hits me and takes my money",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "my dad beats my mom",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "my stepdad hits me",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "my mom's boyfriend touches me",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "mi esposo me golpea",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "mi pareja me pega",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "mi marido me amenaza con matarme",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "mi esposo me quita el dinero y no me deja salir",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "我老公打我",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "我丈夫打我",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "他威胁要杀了我",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "Chồng tôi đánh tôi",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "زوجي يضربني",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "Mari m bat mwen",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "Мой муж меня бьёт",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "Муж избивает меня",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "Sinasaktan ako ng asawa ko",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "Binubugbog ako ng asawa ko",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "Meu marido me bate",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "Mon mari me frappe",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "남편이 때려요",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "मेरा पति मुझे मारता है",
+   "expect": {
+    "flag_any": [
+     "dv",
+     "dv_concern"
+    ],
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "my phone is dying, need food bank address quick",
+   "expect": {
+    "flags_absent": [
+     "self_harm",
+     "dv"
+    ]
+   }
+  },
+  {
+   "text": "this rent is killing me, need help paying it",
+   "expect": {
+    "flags_absent": [
+     "self_harm",
+     "dv"
+    ]
+   }
+  },
+  {
+   "text": "I'm dying to know if I qualify for SNAP",
+   "expect": {
+    "flags_absent": [
+     "self_harm",
+     "dv"
+    ]
+   }
+  },
+  {
+   "text": "I could kill for a hot meal right now",
+   "expect": {
+    "flags_absent": [
+     "self_harm",
+     "dv"
+    ]
+   }
+  },
+  {
+   "text": "the heat is killing my plants lol, need help with the electric bill",
+   "expect": {
+    "flags_absent": [
+     "self_harm",
+     "dv"
+    ]
+   }
+  },
+  {
+   "text": "my car died and I can't get to work",
+   "expect": {
+    "flags_absent": [
+     "self_harm",
+     "dv"
+    ]
+   }
+  },
+  {
+   "text": "I need a lawyer to fight a speeding ticket",
+   "expect": {
+    "flags_absent": [
+     "self_harm",
+     "dv"
+    ]
+   }
+  },
+  {
+   "text": "my landlord is threatening to raise the rent",
+   "expect": {
+    "flags_absent": [
+     "self_harm",
+     "dv"
+    ]
+   }
+  },
+  {
+   "text": "my kid hit his head at school, do I need a doctor",
+   "expect": {
+    "flags_absent": [
+     "self_harm",
+     "dv"
+    ]
+   }
+  },
+  {
+   "text": "my boss yelled at me and cut my hours",
+   "expect": {
+    "flags_absent": [
+     "self_harm",
+     "dv"
+    ]
+   }
+  },
+  {
+   "text": "I'm dead tired from two jobs and still can't pay rent",
+   "expect": {
+    "flags_absent": [
+     "self_harm",
+     "dv"
+    ]
+   }
+  },
+  {
+   "text": "I was hit by a car and need a doctor",
+   "expect": {
+    "flags_absent": [
+     "self_harm",
+     "dv"
+    ]
+   }
+  },
+  {
+   "text": "I'm 12 and my stepdad touches me and says not to tell anyone",
+   "expect": {
+    "flag": "child_abuse",
+    "pinned": "Childhelp",
+    "category_nonempty": true,
+    "urgency": "immediate"
+   }
+  },
+  {
+   "text": "my baby has a fever of 104 and won't wake up",
+   "expect": {
+    "flag": "emergency",
+    "category": "healthcare",
+    "urgency": "immediate"
+   }
+  },
+  {
+   "text": "my brother is overdosing and he's not breathing",
+   "expect": {
+    "flag": "emergency",
+    "category": "healthcare",
+    "urgency": "immediate"
+   }
+  },
+  {
+   "text": "My employer took my passport and makes me work 16 hours a day with no pay, I can't leave the house",
+   "expect": {
+    "flag": "trafficking",
+    "pinned": "Trafficking",
+    "category_nonempty": true
+   }
+  },
+  {
+   "text": "I was raped last night and don't know what to do",
+   "expect": {
+    "flag": "sexual_assault",
+    "pinned": "RAINN"
+   }
+  },
+  {
+   "text": "my husband rapes me",
+   "expect": {
+    "flag": "dv",
+    "pinned": "RAINN"
+   }
+  },
+  {
+   "text": "I took a whole bottle of pills",
+   "expect": {
+    "flag": "emergency",
+    "pinned": "988"
+   }
+  },
+  {
+   "text": "my mom's boyfriend touches me",
+   "expect": {
+    "flag": "child_abuse"
+   }
+  },
+  {
+   "text": "he hits me and the kids",
+   "expect": {
+    "flag": "child_abuse",
+    "pinned": "Domestic Violence"
+   }
+  },
+  {
+   "text": "my kid won't wake up for school on time, need help with childcare",
+   "expect": {
+    "flags_absent": [
+     "emergency",
+     "child_abuse"
+    ]
+   }
+  },
+  {
+   "text": "I need a lawyer, my boss cut my hours",
+   "expect": {
+    "flags_absent": [
+     "trafficking",
+     "child_abuse"
+    ]
+   }
+  },
+  {
+   "text": "need food stamps for me and my 3 kids",
+   "expect": {
+    "flags_absent": [
+     "child_abuse",
+     "emergency"
+    ],
+    "unpinned": "Childhelp"
+   }
+  },
+  {
+   "text": "landlord won't fix the heat, I need legal help",
+   "expect": {
+    "unpinned": "Trafficking"
+   }
+  },
+  {
+   "text": "my dad is 70 and I take care of him, he needs medicaid",
+   "expect": {
+    "flags_absent": [
+     "child_abuse"
+    ]
+   }
+  },
+  {
+   "text": "I'm 30 and my dad hits me",
+   "expect": {
+    "flag": "dv",
+    "flags_absent": [
+     "child_abuse"
+    ]
+   }
+  },
+  {
+   "text": "can I get free grape juice from WIC",
+   "expect": {
+    "flags_absent": [
+     "sexual_assault"
+    ]
+   }
+  },
+  {
+   "text": "I'm 17 and my parents kicked me out",
+   "expect": {
+    "flag": "minor",
+    "flags_absent": [
+     "child_abuse"
+    ]
+   }
+  },
+  {
+   "text": "my stepdad kicked me in the stomach",
+   "expect": {
+    "flag": "child_abuse"
+   }
+  }
+ ]
+}

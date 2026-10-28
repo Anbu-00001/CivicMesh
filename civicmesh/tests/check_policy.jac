@@ -135,6 +135,49 @@ with entry {
     on("2026-10-01");
     check(status_rule("medicaid-rule", refugee)["status"] == "unmet", "refugee federally funded Medicaid ends Oct 1 2026");
     check(status_rule("snap-rule", refugee)["status"] == "unmet", "refugee SNAP ended Jul 4 2025");
+    # §10108 / §71109 kept Cuban/Haitian entrants and COFA citizens (outside judge, 2026-10-28).
+    for st in ["cuban_haitian_entrant", "cofa"] {
+        p_st = dict(refugee, citizenship=st);
+        check(status_rule("snap-rule", p_st)["status"] == "met", st + " keeps SNAP");
+        check(status_rule("medicaid-rule", p_st)["status"] == "met", st + " keeps Medicaid");
+    }
+    recent = {"household_size": 1, "income_annual": 12000, "state": "IL", "flags": ["lpr_recent"], "age": 30, "citizenship": "eligible_immigrant"};
+    check(status_rule("snap-rule", recent)["status"] == "unknown", "green card under 5 years: adult SNAP is not a plain yes");
+    check(status_rule("snap-rule", dict(recent, flags=["lpr_recent", "children"]))["status"] == "met", "green card under 5 years: children are exempt");
+    tps_parent = {"household_size": 3, "income_annual": 24000, "state": "TX", "flags": ["children", "citizen_children"], "age": 35, "citizenship": "non_citizen"};
+    check(status_rule("chip-rule", tps_parent)["status"] == "met", "citizen children of a parent with no status can get CHIP");
+    check(status_rule("medicaid-rule", dict(refugee, citizenship="citizen_or_lpr"))["status"] == "met", "'yes' to citizen-or-green-card meets Medicaid status");
+    for (txt, want) in [("im not a citizen but i have a green card, been here 7 yrs, need medicaid", "eligible_immigrant"),
+                        ("I am a Guatemalan citizen, I came 2 years ago, I need a doctor", "non_citizen"),
+                        ("my son was born here but I don't have papers. we need food", "non_citizen"),
+                        ("I'm Cuban, came on parole in 2023, need food stamps", "cuban_haitian_entrant"),
+                        ("I don't have a green card yet, my husband does", "non_citizen"),
+                        ("I lost my green card and need a replacement", "eligible_immigrant"),
+                        ("I'm a senior citizen and need help with meals", "")] {
+        check(parse_intake(txt)["citizenship"] == want, "status of: " + txt[:40]);
+    }
+    # Pregnancy: the expected child counts, and the state's pregnancy limit
+    # applies (KFF Jan 2026; PolicyEngine US agrees for these three).
+    preg_tx = {"household_size": 1, "income_annual": 30000, "state": "TX", "flags": ["pregnant"], "age": 25, "citizenship": "citizen"};
+    lim_tx = income_limit("medicaid-rule", preg_tx);
+    check(int(lim_tx["limit"]) >= 30000 and "203%" in str(lim_tx["label"]) + str(lim_tx["note"]), "pregnant, alone in Texas, $2,500/mo: under the 203% pregnancy limit for 2");
+    check(int(income_limit("wic-rule", dict(preg_tx, income_annual=38400))["limit"]) >= 38400, "pregnant, alone, $3,200/mo: WIC counts her as 2");
+    check(int(income_limit("medicaid-rule", dict(preg_tx, state="CA", income_annual=33000))["limit"]) >= 33000, "pregnant, alone in California, $2,750/mo: under 213% for 2");
+    check(int(income_limit("medicaid-rule", dict(preg_tx, flags=[]))["limit"]) < 30000, "not pregnant: the adult limit still applies");
+    senior_oh = {"household_size": 1, "income_annual": 22800, "state": "OH", "flags": ["senior", "unearned_income"], "age": 70, "citizenship": "citizen"};
+    sr_oh = score_resource(SNAP_RES, SNAP_RES["eligibility"], senior_oh, "I'm 70 and need food stamps");
+    check(not [c for c in sr_oh["criteria"] if c["key"] == "income" and (c["status"] == "unmet" or " is over " in str(c["detail"]))] and "re $" not in str(sr_oh.get("counterfactual", "")) and sr_oh["tier"] != "unlikely", "a 70-year-old over 130% isn't told she's over a gross test that doesn't apply");
+    # A known income over a strict limit is "unlikely", not "possible" (F9).
+    all_res = json.load(open("data/resources.json"))["resources"];
+    by_rule = {r["eligibility"]["rule_id"]: r for r in all_res};
+    rich1 = {"household_size": 1, "income_annual": 360000, "state": "OH", "flags": [], "age": 40, "citizenship": "citizen"};
+    check(score_resource(by_rule["lsc-rule"], by_rule["lsc-rule"]["eligibility"], rich1, "I need a lawyer for a contract dispute")["tier"] == "unlikely", "$360,000 alone: legal aid is unlikely");
+    ny4 = {"household_size": 4, "income_annual": 90000, "state": "NY", "flags": ["children"], "age": 40, "citizenship": "citizen"};
+    check(score_resource(by_rule["medicaid-rule"], by_rule["medicaid-rule"]["eligibility"], ny4, "need health insurance")["tier"] == "unlikely", "$90,000 family of 4 in NY: adult Medicaid unlikely");
+    near = dict(rich1, income_annual=24000);
+    check(score_resource(by_rule["lsc-rule"], by_rule["lsc-rule"]["eligibility"], near, "I need a lawyer, eviction")["tier"] != "unlikely", "legal aid stays open up to 200% with expenses");
+    check("lpr_recent" in parse_intake("I got my green card 2 years ago and need food stamps")["flags"], "green card 2 years ago is under the 5-year bar");
+    check("lpr_recent" not in parse_intake("I have had my green card for 7 years, need food stamps")["flags"], "green card 7 years is past the bar");
 
     single = prof(1, 1000, "IL", [], 40);
     check("3 months in 3 years" in income_limit("snap-rule", single)["note"], "SNAP time limit shown to a single 40-year-old");

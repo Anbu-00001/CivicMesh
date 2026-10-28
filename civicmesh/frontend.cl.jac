@@ -85,12 +85,17 @@ def:pub ClientApp -> JsxElement {
                 } elif palette_open and k == "Escape" {
                     palette_open = False;
                 }
+                # Three Shift presses in a row, nothing between them (GOV.UK
+                # exit-this-page): any other key resets the count, so typing
+                # "My Landlord In Ohio" never leaves (outside judge, 2026-10-28).
                 if k == "Shift" and not e.repeat {
                     now = Date.now();
-                    kept: list = [t for t in list(CM_SHIFTS["t"]) if now - Number(t) < 5000];
+                    kept: list = [t for t in list(CM_SHIFTS["t"]) if now - Number(t) < 2000];
                     kept.append(now);
                     CM_SHIFTS["t"] = kept;
                     if len(CM_SHIFTS["t"]) >= 3 { quickExit(); }
+                } elif k != "Shift" {
+                    CM_SHIFTS["t"] = [];
                 }
             });
             # A private session (crisis turns switch it on) leaves nothing in

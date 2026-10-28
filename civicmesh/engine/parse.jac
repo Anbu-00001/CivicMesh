@@ -23,7 +23,7 @@ Output contract (plain dict so it serialises straight into walker reports):
 """
 
 import re;
-import from engine.i18n { detect_script, detect_latin_other, route_i18n, negated, need_focus, LATIN_MARKERS, NEG_RIGHT, is_small_talk }
+import from engine.i18n { detect_script, detect_latin_other, route_i18n, crisis_any_language, negated, need_focus, LATIN_MARKERS, NEG_RIGHT, is_small_talk }
 import from engine.facts_i18n { facts_i18n, place_i18n }
 
 # The lexicons are ~1,000 distinct patterns, more than the 512 compiled
@@ -49,13 +49,15 @@ glob CATEGORY_LEXICON: dict = {
         ("cook", 1.5), ("cooking", 1.5), ("cocinar", 1.5),
         ("(?:baby )?formula", 2.0), ("diapers?", 1.5), ("nothing to eat", 2.5),
         ("(?:fridge|refrigerator|pantry) is empty", 2.5), ("empty (?:fridge|refrigerator)", 2.5),
-        ("grocery store", 2.0), ("get to the store", 2.0), ("pa[ñn]ales", 1.5), ("leche de f[oó]rmula", 2.0)
+        ("grocery store", 2.0), ("get to the store", 2.0), ("pa[ñn]ales", 1.5), ("leche de f[oó]rmula", 2.0),
+        ("(?:free|reduced|school) (?:or reduced )?(?:price )?(?:lunch|lunches|breakfast|meals)", 2.5), ("meals on wheels", 2.5), ("help with meals", 2.0)
     ],
     "housing": [
         ("rent", 1.5), ("evict(?:ed|ion|ing)?", 2.5), ("landlord", 1.5), ("tenants?", 1.5), ("(?:my|our|the) lease", 1.0), ("inquilin[oa]s?", 1.5),
         ("homeless", 2.5), ("shelter", 2.0), ("housing", 2.5), ("apartment", 1.0),
         ("section 8", 2.5), ("mortgage", 1.5), ("foreclos\\w*", 2.0),
         ("place to (?:stay|live|sleep)", 2.0), ("sleeping in (?:my|our|the) car", 2.5),
+        ("(?:lose|losing|lost) (?:my|our|the) (?:house|home|apartment|place)", 2.5),
         ("(?:where can (?:i|we)|somewhere to|anywhere to) (?:stay|sleep)", 2.0),
         ("(?:kicked|threw|thrown|put|kick|throw|throwing|kicking) (?:me|us) out", 2.0), ("me (?:ech[oó]|corri[oó]) de (?:la )?casa", 2.0),
         ("renta", 1.5), ("alquiler", 1.5), ("desalo(?:jo|jar|jan)", 2.5),
@@ -78,6 +80,7 @@ glob CATEGORY_LEXICON: dict = {
     ],
     "healthcare": [
         ("doctor", 2.0), ("medicaid", 2.5), ("medicine", 2.0), ("medication", 2.0),
+        ("prenatal(?: care)?", 2.5), ("(?:ob-?gyn|obstetrician|midwife)", 2.0), ("control prenatal", 2.5),
         ("prescriptions?", 2.0), ("hospital", 2.0), ("clinic", 2.0), ("dental", 2.0),
         ("dentist", 2.0), ("therapy", 1.5), ("mental health", 2.5), ("sick", 1.5),
         ("health insurance", 2.5), ("insulin", 2.5), ("depress\\w*", 1.5),
@@ -145,7 +148,7 @@ glob FLAG_LEXICON: dict = {
            "protection order", "no[- ]contact order", "my (?:attacker|abuser)", "sexually assaulted", "sexual assault", "raped",
            "(?:terrified|afraid|scared|fear(?:ful)?) for (?:my|her|his|our) (?:life|lives|safety)", "stalking (?:me|her|him)",
            "threatens (?:me|to hurt me|to kill me)", "fleeing (?:abuse|violence|domestic|my (?:husband|wife|partner|ex|boyfriend|girlfriend|abuser))",
-           "(?:he|she|husband|wife|boyfriend|girlfriend|bf|gf|partner|spouse|fianc[eé]e?|ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|brother|sister|father|dad|stepdad|stepfather|mother|mom|stepmom|son|daughter|uncle|cousin|roommate|in-laws?)\\b[^.!?]{0,40}\\b(?:punched|kicked|choked|strangled|slapped|shoved|pushed|hit|beat|assaulted|attacked|raped|stabbed|threatened to kill|sucker punched|grabbed)\\b[^.!?]{0,15}\\b(?:me|her|him|us|my|our)",
+           "(?:he|she|husband|wife|boyfriend|girlfriend|bf|gf|partner|spouse|fianc[eé]e?|ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|brother|sister|father|dad|stepdad|stepfather|mother|mom|stepmom|son|daughter|uncle|cousin|roommate|in-laws?)\\b[^.!?]{0,40}\\b(?:punch(?:es|ed)?|kick(?:s|ed)?|chok(?:es|ed)|strangl(?:es|ed)|slap(?:s|ped)?|smack(?:s|ed)?|shov(?:es|ed)|push(?:es|ed)|hits?|beats?|assault(?:s|ed)|attack(?:s|ed)|rapes?|raped|stab(?:s|bed)?|threaten(?:s|ed)? to kill|sucker punched|grab(?:s|bed)?|molest(?:s|ed)?)\\b[^.!?]{0,15}\\b(?:me|her|him|us|my|our)",
            "(?:punched|kicked|choked|strangled|slapped|shoved|pushed|hit|beaten|assaulted|attacked|raped|abused|stabbed|threatened|sucker punched|battered) (?:\\w+ ){0,3}?by (?:my|her|his|our|a|an) (?:[\\w'-]+ ){0,5}?(?:he|she|husband|wife|boyfriend|girlfriend|bf|gf|partner|spouse|fianc[eé]e?|ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|brother|sister|father|dad|stepdad|stepfather|mother|mom|stepmom|son|daughter|uncle|cousin|roommate|in-laws?)",
            # Danger Assessment items (Campbell; strongest predictors of partner
            # homicide: strangulation, threats to kill, weapons, forced sex) and
@@ -158,10 +161,27 @@ glob FLAG_LEXICON: dict = {
            "(?:he|she|husband|wife|boyfriend|girlfriend|bf|gf|partner|spouse|fianc[eé]e?|ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|brother|sister|father|dad|stepdad|stepfather|mother|mom|stepmom|son|daughter|uncle|cousin|roommate|in-laws?)\\b[^.!?]{0,30}\\b(?:pulled|held|pointed|waved) (?:a )?(?:gun|knife|weapon) (?:on|at) (?:me|her|us)",
            "threatened (?:me|her|us) with (?:a )?(?:gun|knife|weapon|bat)",
            "(?:forced|forces|pressured|pressures|made|makes) (?:me|her) (?:to )?(?:have sex|into (?:having )?sex|do sexual)",
-           "me (?:amenaz[oó]|amenaza) con (?:matarme|un cuchillo|una pistola|un arma)", "me (?:ahorc[oó]|estrangul[oó]|ahorca)", "me (?:oblig[oó]|obliga) a tener relaciones"],
+           "me (?:amenaz[oó]|amenaza) con (?:matarme|un cuchillo|una pistola|un arma)", "me (?:ahorc[oó]|estrangul[oó]|ahorca)", "me (?:oblig[oó]|obliga) a tener relaciones",
+           "(?:touch(?:es|ed)?|molest(?:s|ed)?|fondl(?:es|ed)) (?:me|my (?:daughter|son|kids?|child|children|sister|brother))\\b(?! (?:up|base)\\b)"],
     "self_harm": ["suicid\\w*", "kill myself", "end my life", "want to die", "self[- ]harm", "hurt myself", "quitarme la vida", "matarme", "no quiero vivir",
                   "(?:don'?t|do not) want to (?:live|be alive|be here|wake up)", "no reason to (?:live|go on)", "better off dead", "end it all",
-                  "take my (?:own )?life", "can'?t go on (?:anymore|like this)?", "quiero morir(?:me)?", "suicidarme", "no quiero seguir viviendo"],
+                  "take my (?:own )?life", "(?:can'?t|cant|cannot) go on(?: anymore| like this| living)?(?=\\s*(?:$|[.!,;]))", "quiero morir(?:me)?", "suicidarme", "no quiero seguir viviendo",
+                  # How people write it (outside judge, 2026-10-28: 11 of 40 English
+                  # messages caught). Intent + act, slang, methods, third person.
+                  "kill (?:my ?self|my own self)", "unaliv\\w*", "(?:wanna|gonna|going to|about to|want to|i'?ll|i will|might|just) kms",
+                  "(?:wanna|want to|wanted to|ready to|wish i could|deserve to|i just want to|i'?m going to|i'?m gonna|about to) die",
+                  "(?:want|wanna|going|gonna|plan(?:ning)?|ready|trying|tried|about|thinking (?:of|about)|thought about|decided)(?: to)? (?:just )?(?:end|ending) (?:it|it all|things|everything|my life|my suffering|my pain|this life)(?! (?:with|between|on|for)\\b)",
+                  "(?:don'?t|dont|do not) (?:want|wanna)(?: to)? (?:exist|be alive|live|be here|wake up)", "(?:going to|gonna|want to|wanna|plan to|planning to|trying to|tried to|about to) (?:overdose|od on)",
+                  "(?:took|swallowed|taken|take|swallow) (?:a |the |my )?(?:whole |entire )?(?:bottle|handful|pack|box) of (?:pills|tablets|meds|medication|sleeping pills|painkillers)",
+                  "(?:took|swallowed) all (?:my|the|of my|of the) (?:pills|meds|medication|tablets)", "(?:cutting|burning|harming|hurting) myself", "(?:been|started|keep) cutting(?: again| myself)?",
+                  "(?:hang|hanged|hanging) myself", "(?:gun|rope|pills|knife|blade)\\b[^.!?]{0,20}\\b(?:on|for|to kill) myself", "standing on (?:the|a) (?:bridge|ledge|rooftop|roof edge)",
+                  "jump (?:off|from) (?:a|the|this) (?:bridge|building|roof|ledge|cliff|overpass)", "jump in front of (?:a|the) (?:train|bus|car|truck|subway)",
+                  "drive (?:my car |the car )?(?:off|into) (?:the road|a cliff|a bridge|a wall|a tree|oncoming)", "(?:go to sleep|sleep|fall asleep) and never wake up",
+                  "(?:goodbye|farewell|suicide) (?:letters?|notes?)", "(?:life|living)(?: really)? (?:isn'?t|is not|ain'?t) worth (?:living|it)", "not worth living",
+                  "want (?:my life|it all|everything) (?:to be )?over", "hate my life\\b[^.!?]{0,20}\\bwant it (?:to be )?over", "end my suffering",
+                  "kill (?:himself|herself|themselves|themself)", "end (?:his|her|their) (?:own )?life", "(?:hang|hanged) (?:himself|herself|themselves)",
+                  "(?:me|te|se) (?:quiero|quiere|quieres|voy a|va a) matar", "(?:me|te|se) (?:quiere|quiero|quieres) morir", "quiere morirse", "ya no quiero estar (?:en este mundo|aqu[ií]|viv[oa])",
+                  "no quiero estar viv[oa]", "(?:wo )?xiang (?:zisha|si le)", "wo xiang si", "(?:he|she|they) (?:wants?|wanted|wanna) to die", "muon (?:chet|tu tu|tu sat)", "khong muon song"],
     # "on the street" / "en la calle" only with a verb of living there: a car
     # parked on the street is not homelessness.
     "homeless": ["homeless", "on the streets", "(?:living|live|lived|sleeping|sleep|slept|staying|stay|ended up|end up|been|out) on the street",
@@ -236,7 +256,10 @@ glob CONCERN_LEXICON: dict = {
         "(?:feel|feeling|i'?m|i am) (?:so )?trapped(?! in (?:a|my|the|this) (?:lease|contract|job|loan|apartment|car|elevator|building))", "unbearable pain", "(?:wish|want) (?:it|everything|this) (?:would|to|could) (?:just )?(?:end|stop)",
         "wish i (?:was|were|could be) (?:dead|gone)", "wish i could (?:disappear|just disappear|not wake up)", "(?:don'?t|do not) see a way out",
         "no way out(?! of (?:the|this|my|a) (?:lease|contract|loan|deal|parking))", "tired of (?:living|being alive|life)", "giving away (?:all )?my (?:things|stuff|belongings)",
-        "nobody would (?:care|miss me|notice) if i", "(?:estar[ií]an|estarian) mejor sin m[ií]", "soy una carga", "ya no puedo m[aá]s",
+        "nobody would (?:care|miss me|notice) if i", "better off if i (?:was|were|wasn'?t|weren'?t) (?:gone|dead|here|around|alive)", "wish i (?:was|were|had) never (?:been )?born",
+        "(?:want|wanna) (?:to )?disappear (?:forever|for good)", "feel like dying",
+        "(?:easier|better) (?:for everyone )?if i (?:just )?(?:wasn'?t|weren'?t|was not|were not) (?:here|around|alive)", "tired of everything",
+        "(?:i'?ve|i have|she'?s|she has|he'?s|he has) lived too long", "nobody needs (?:me|her|him) any ?more", "(?:estar[ií]an|estarian) mejor sin m[ií]", "soy una carga", "ya no puedo m[aá]s",
         "no (?:le )?veo (?:el )?sentido (?:a|de) (?:la vida|vivir|seguir)", "quisiera desaparecer", "no hay salida", "estoy cansad[oa] de vivir"],
     "dv_concern": [
         "(?:scared|afraid|terrified) (?:to|of going) (?:go )?(?:back )?home", "(?:don'?t|do not) feel safe (?:at|in my) home", "(?:isn'?t|is not|not) safe (?:at|in my) home",
@@ -245,6 +268,8 @@ glob CONCERN_LEXICON: dict = {
         "(?:won'?t|will not|doesn'?t|does not) let me (?:see|talk to|leave|work|go out|have a phone|call|visit)",
         "(?:threatens|threatened|says he'?ll|says she'?ll|keeps saying he'?ll|keeps saying she'?ll) (?:to )?(?:take (?:the|my) (?:kids|children)|call (?:immigration|ice)|report me|have me deported|deport me|kick me out)",
         "locks me (?:in|out)", "walking on eggshells",
+        "(?:took|has taken|hid|hides|confiscated|holds|is holding|kept) (?:away )?(?:all )?(?:my|our) (?:passports?|green cards?|papers|documents|ids?|visas?)",
+        "(?:says|said|told me|keeps saying|threatens|threatened) (?:that )?(?:he|she)?(?:'ll| will|'d| would| is going to| was going to| to)? ?(?:call (?:ice|immigration|la migra)|report me to (?:ice|immigration)|have me deported|get me deported|deport me)",
         "(?:my )?(?:ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|ex-partner|husband|wife|boyfriend|girlfriend|partner)\\b[^.!?]{0,40}\\b(?:threaten(?:s|ed|ing)? me|stalk(?:s|ed|ing)? me|keeps? showing up|shows? up at my|follow(?:s|ed|ing)? me (?:home|around|to (?:work|my job|school)|everywhere)|won'?t leave me alone)",
         "mi (?:ex|expareja|exesposo|exesposa|exnovio|exnovia|esposo|esposa|pareja|novio|novia)\\b[^.!?]{0,40}\\b(?:me amenaza|me acosa|me sigue|me persigue|no me deja en paz)", "(?:he|she) (?:gets|got) (?:really )?(?:violent|aggressive) when",
         "tengo miedo de (?:volver|regresar|ir) a (?:la )?casa", "me quita (?:el|mi) dinero", "(?:revisa|vigila) mi (?:tel[eé]fono|celular)",
@@ -295,8 +320,13 @@ glob STATES: dict = {
     "rhode island": "RI", "south carolina": "SC", "south dakota": "SD",
     "tennessee": "TN", "texas": "TX", "utah": "UT", "vermont": "VT",
     "virginia": "VA", "washington": "WA", "west virginia": "WV",
-    "wisconsin": "WI", "wyoming": "WY", "puerto rico": "PR"
+    "wisconsin": "WI", "wyoming": "WY", "puerto rico": "PR",
+    "district of columbia": "DC", "washington dc": "DC", "washington d.c.": "DC", "washington, dc": "DC", "washington, d.c.": "DC"
 };
+# Longest name first: "west virginia" before "virginia", "washington dc" before "washington".
+glob STATE_NAMES: list = sorted(STATES.keys(), key=len, reverse=True);
+# Two-letter codes that are also words ("Hi, OK so…", "IN A LOT OF DEBT").
+glob AMBIGUOUS_CODES: list = ["OK", "IN", "ME", "OR", "HI", "OH", "AL", "LA", "MA", "PA", "DE", "CO", "ID", "MO", "MI", "AS"];
 
 glob CITIES: dict = {
     "houston": "TX", "dallas": "TX", "austin": "TX", "san antonio": "TX",
@@ -348,6 +378,15 @@ glob REQUEST_RE: str = "\\?|¿|\\b(?:i need|we need|need help|help me|help us|ca
 # The speaker is under 18 without saying an age.
 glob MINOR_RE: str = "\\b(?:i'?m|i am) (?:only |just )?(?:a )?(?:minor|under 18|under eighteen|teenager|teen|high school(?:er| student))\\b|\\bsoy menor de edad\\b";
 # Before an amount: it was earned in the past, not lived on now.
+# Danger with its own line (outside judge, 2026-10-28: a 12-year-old touched by
+# a stepdad, a worker whose employer holds her passport, a baby who won't wake
+# all got a generic answer). Childhelp, the Trafficking Hotline, RAINN, 911.
+glob PARENT_FIGURE: str = "(?:dad|father|stepdad|stepfather|mom|mother|stepmom|stepmother|mom'?s boyfriend|dad'?s girlfriend|uncle|aunt|grandpa|grandfather|grandma|grandmother|parents?|babysitter|coach|teacher|padrastro|madrastra|pap[aá]|mam[aá]|t[ií]o)";
+glob CHILD_ABUSE_RE: str = "\\b(?:child abuse|abus(?:e|es|ed|ing) (?:my|our|the|a|his|her) (?:child|kid|son|daughter|baby|kids|children)|(?:hits|beats|hurts|touches|molests|burns|starves|chokes) (?:my|our|the|his|her) (?:child|kid|son|daughter|baby|kids|children)|(?:hits?|beats?|hurts?) me and (?:the|my|our) (?:kids|children|baby)|maltrato infantil|abuso infantil)\\b|\\b" + PARENT_FIGURE + "\\b[^.!?]{0,20}\\b(?:touch(?:es|ed)?|molest\\w*|fondl\\w*|hits?|beats?|hurts?|punch\\w*|kick\\w*|burns?|chok\\w*|slap\\w*|rapes?|raped) me\\b(?! out\\b)|\\bme (?:toca|toc[oó]|pega|golpea)\\b[^.!?]{0,20}\\bmi (?:padrastro|pap[aá]|t[ií]o)";
+glob SEXUAL_ASSAULT_RE: str = "\\b(?:rap(?:e|es|ed|ing) (?:me|her|my)|raped|sexually (?:assault|abus)\\w*|sexual assault|molest\\w*|(?:forces|forced|pressures|pressured|made|makes) (?:me|her) (?:to )?(?:have sex|into (?:having )?sex|do sexual))\\b|\\bme viol[oó]\\b|\\babus[oó] (?:sexualmente )?de m[ií]\\b";
+glob TRAFFICKING_RE: str = "\\b(?:human trafficking|traffick(?:ed|ing|er)|trata de personas)\\b|\\b(?:employer|boss|manager|recruiter|agency|agent|smuggler|coyote|owner|patr[oó]n|jefe)\\b[^.!?]{0,40}\\b(?:took|takes|keeps?|kept|holds?|held|has|confiscated|quit[oó]|tiene) (?:away )?(?:my|our|mi|mis) (?:passports?|papers|documents|ids?|visas?|pasaporte|papeles|documentos)|\\b(?:won'?t|will not|doesn'?t|don'?t) (?:let|allow) (?:me|us) (?:to )?(?:leave|quit|go home)\\b[^.!?]{0,40}\\b(?:work|job|boss|employer|farm|factory|restaurant)|\\b(?:work|working|worked|make me work|makes me work) \\d{1,2} hours?\\b[^.!?]{0,30}\\b(?:no pay|not paid|without pay|unpaid|for free|for nothing|no money)|\\b(?:forced|forces|made|makes) (?:me|us|her) (?:to )?(?:have sex with (?:men|customers|clients|strangers)|sell sex|prostitut\\w*)";
+glob EMERGENCY_RE: str = "\\b(?:(?:not|isn'?t|stopped|can'?t|cannot|is not|barely) breathing|(?:won'?t|will not|can'?t|cannot|doesn'?t|does not) wake(?: up| him| her| them)?(?!(?: up| him| her| them)? (?:for|in time|on time|early|in the morning|at night|before|till|until)\\b)|unconscious|unresponsive|(?:is|he'?s|she'?s|they'?re|i'?m) overdosing|overdosed|having a (?:heart attack|stroke|seizure)|crushing chest pain|chest pains? (?:right now|and can'?t breathe)|(?:bleeding (?:a lot|heavily|badly|everywhere)|(?:won'?t|will not) stop bleeding)|fever (?:of |is |at )?10[4-9]|10[4-9] (?:degree|f\\b)|(?:turning|turned|lips are) blue|(?:took|swallowed) (?:a |the )?(?:whole |entire )?(?:bottle|handful|pack) of|no respira|no despierta|est[aá] inconsciente|sobredosis)";
+
 glob PAST_INCOME_CUES: str = "\\b(?:used to (?:make|earn|get)|was (?:making|earning|paid|getting)|were (?:making|earning)|earned|made|paid me|paid us|it paid|that paid|old job|last job|previous job|before|ganaba|ganábamos|me pagaban)\\b[^,.;!?]*$";
 glob INCOME_CUES: str ="(?:earn|earning|make|making|income|salary|paid|wage|wages|pension|social security|ssi|ssdi|disability|benefits?|gano|ganamos|ingresos?|sueldo|salario|pensi[oó]n|seguro social)";
 glob EXPENSE_CUES: str = "\\b(?:rent|owe|owed|debt|bill|bills|cost|costs|fee|fine|deposit|pay|paying|renta|alquiler|debo|deuda|factura|pago|pagamos|pagar)\\b";
@@ -360,7 +399,7 @@ glob BARE_AMOUNT_RE: str = "(?<![\\d,.$/:-])(\\d{1,3}(?:,\\d{3})+|\\d{1,6})(?:\\
 # form retried every position inside a digit run, and 10,000 digits took
 # 3.5 s (outside review; tests/check_input_limits.jac pins the budget).
 glob MONEY_RE: str = "\\$\\s?(\\d[\\d,]{0,14}(?:\\.\\d{1,2})?)\\s*(k)?|(?<![\\d,.])(\\d[\\d,]{0,14}(?:\\.\\d{1,2})?)\\s*(k)?\\s*(?:dollars?|d[oó]lares|usd|bucks)";
-glob PERIOD_RE: str = "^\\s*(?:/|a|an|per|every|each|al|por|cada|a la|al a[nñ]o)?\\s*(month|mo|monthly|year|yr|yearly|annually|annual|week|wk|weekly|hour|hr|hourly|mes|mensual(?:es)?|a[nñ]o|anual(?:es)?|semana|semanal(?:es)?|hora|mahin[ae])\\b";
+glob PERIOD_RE: str = "^\\s*(?:/|a|an|per|every|each|al|por|cada|a la|al a[nñ]o)?\\s*(two weeks|2 weeks|other week|bi-?weekly|fortnight|fortnightly|dos semanas|2 semanas|quincenal(?:es)?|month|mo|monthly|year|yr|yearly|annually|annual|week|wk|weekly|hour|hr|hourly|mes|mensual(?:es)?|a[nñ]o|anual(?:es)?|semana|semanal(?:es)?|hora|mahin[ae])\\b";
 
 # ---------- helpers ----------
 
@@ -464,13 +503,29 @@ def score_categories(low: str, evidence: list, text: str) -> dict {
 Amounts in an expense context ("rent is $900") are ignored; a bare amount
 without a period is read as monthly below $5k and annual above.
 """
+glob SPELLED_UNITS: dict = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15, "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19, "a": 1};
+glob SPELLED_MONEY_RE: str = "\\b(?:(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)(?:[\\s-](one|two|three|four|five|six|seven|eight|nine))?|(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|a))\\s+(thousand|grand|hundred)\\b(?!\\s*(?:percent|%|people|miles|times|years|hours|days))";
+
+"""Spelled amounts as digits, padded to the same length so spans still line
+up: "twenty five thousand a year" → "25000                a year"."""
+def spell_money(low: str) -> str {
+    return re.sub(SPELLED_MONEY_RE, _spelled_amount, low);
+}
+
+def _spelled_amount(m: any) -> str {
+    n = (int(AGE_TENS[m.group(1)]) + (int(SPELLED_UNITS[m.group(2)]) if m.group(2) else 0)) if m.group(1) else int(SPELLED_UNITS[m.group(3)]);
+    v = str(n * (100 if m.group(4) == "hundred" else 1000));
+    return v + " " * max(0, len(m.group(0)) - len(v));
+}
+
 def parse_income(low: str) -> tuple {
+    low = spell_money(low);
     # A job loss means no earnings, but a current amount said in the same
     # message is what the household lives on now: "i lost my job … we make
     # about 1400 a month" is $16,800 a year, not $0 (outside review). Only an
     # amount with an income word or a pay period counts ("have $200 left" is
     # not income), and a past one ("my old job paid $3,000") doesn't.
-    m0 = re.search(r"\b(?:no income|zero income|unemployed|lost (?:my|our) jobs?|no job|out of work|sin trabajo|sin empleo|no tengo (?:ingresos|trabajo)|desempleado|desempleada)\b", low);
+    m0 = re.search(r"\b(?:no income|zero income|unemployed|lost (?:my|our|his|her|their|su|sus) (?:jobs?|trabajos?)|no job|out of work|sin trabajo|sin empleo|no tengo (?:ingresos|tra[bv]ajo)|perdi[oó] (?:su|mi|el) trabajo|desempleado|desempleada)\b", low);
     if m0 {
         (amt, am) = _stated_income(low, True);
         if am and not re.search(PAST_INCOME_CUES, low[max(0, am.start() - 40):am.start()]) {
@@ -544,7 +599,11 @@ def _annualize(amount: float, period: str, low: str) -> int {
         weekly_hours = int(hm.group(1)) if (hm and 0 < int(hm.group(1)) <= 80) else 40;
         return int(round(amount * weekly_hours * 52.0));
     }
+    # Paid every two weeks: 26 checks a year ("$1,200 each check, every two weeks").
+    if re.match("two weeks|2 weeks|other week|bi-?weekly|fortnight|dos semanas|2 semanas", period) { return int(round(amount * 26.0)); }
+    if period.startswith("quincenal") { return int(round(amount * 24.0)); }
     if period.startswith("w") or period.startswith("seman") { return int(round(amount * 52.0)); }
+    if period == "" and re.search("\\b(?:paid|get paid|paycheck|checks?) (?:every (?:two|2|other) weeks?|bi-?weekly)\\b|\\b(?:every (?:two|2|other) weeks?|bi-?weekly)\\b[^.!?]{0,30}\\b(?:each|per|a) (?:pay)?check\\b", low) and re.search("\\b(?:each|per|a|every) (?:pay)?check\\b", low) { return int(round(amount * 26.0)); }
     if period.startswith("mo") or period.startswith("mes") or period.startswith("mensual") or period.startswith("mahin") { return int(round(amount * 12.0)); }
     if period == "" and amount < 5000.0 { return int(round(amount * 12.0)); }
     return int(round(amount));
@@ -627,7 +686,8 @@ Stated: an explicit count ("family of 4", "we're 3", "somos 5") or living
 alone. Otherwise inferred from children and a partner (1 + kids + partner).
 """
 def parse_household(low: str, evidence: list, text: str, flags: list) -> tuple {
-    m = re.search(r"\b(?:family|household) of (\d+|\w+)\b|\bfamilia de (\d+|\w+)\b|\bsomos (\d+|\w+)\b|\bwe(?:'re| are) (\d+|\w+)(?: (?:people|persons|of us)| in (?:the|my|our) (?:family|household|house|home))\b|\bwe(?:'re| are) (\d+|\w+)(?=\s*(?:[,.;!?]|$))|\bhum (\d+) log\b|\bthere (?:are|is) (\d+|\w+) (?:people|persons|of us)\b|\b(\d+|\w+) (?:people|persons) (?:live|living|in (?:my|our|the) (?:house|home|household|apartment|family))\b", low);
+    # "Somos una familia de 4": the count, not the article ("una" read as 1).
+    m = re.search(r"\b(?:family|household) of (\d+|\w+)\b|\bfamilia de (\d+|\w+)\b", low) or re.search(r"\bsomos (?!un\b|una\b|uno\b)(\d+|\w+)\b|\bwe(?:'re| are) (\d+|\w+)(?: (?:people|persons|of us)| in (?:the|my|our) (?:family|household|house|home))\b|\bwe(?:'re| are) (\d+|\w+)(?=\s*(?:[,.;!?]|$))|\bhum (\d+) log\b|\bthere (?:are|is) (\d+|\w+) (?:people|persons|of us)\b|\b(\d+|\w+) (?:people|persons) (?:live|living|in (?:my|our|the) (?:house|home|household|apartment|family))\b", low);
     if m {
         tok = [g for g in m.groups() if g][0];
         n = _num(tok);
@@ -722,7 +782,8 @@ def parse_location(text: str, low: str, evidence: list) -> dict {
         }
     }
     if not out["state"] {
-        for (name, st) in STATES.items() {
+        for name in STATE_NAMES {
+            st = STATES[name];
             m = re.search("(?<![a-z])" + re.escape(name) + "(?![a-z])", low);
             if m {
                 out["state"] = st;
@@ -739,13 +800,19 @@ def parse_location(text: str, low: str, evidence: list) -> dict {
     if not out["state"] {
         # Two-letter codes only in their capitalised form after "in" or a
         # comma, so "in" / "or" / "me" as words never match.
-        m = re.search(r"(?:\bin |, )([A-Z]{2})\b", text);
+        letters = [c for c in text if c.isalpha()];
+        shouting = len(letters) >= 12 and len([c for c in letters if c.isupper()]) > 0.6 * len(letters);
+        m = None if shouting else re.search(r"(?:\bin |, )([A-Z]{2})\b(?![-'’]?[A-Za-z])", text);
+        # "Tulsa, OK" is a state; "Hi, OK so" and "in OK shape" are not.
+        if m and m.group(1) in AMBIGUOUS_CODES and not re.search(r"\b(?!(?:Hi|Hello|Hey|Yes|Yeah|No|Ok|Okay|Well|So|Please|Thanks|Help|Sorry|Wait|Oh)\b)[A-Z][a-z]+,\s*$", text[max(0, m.start(1) - 24):m.start(1)]) { m = None; }
         if m and m.group(1) in STATES.values() {
             out["state"] = m.group(1);
             _ev(evidence, "location", m.group(1), m.start(1), m.end(1), text);
         }
     }
-    z = re.search(r"(?<![\$\d,.])\b(\d{5})\b(?![\d,.]|\s*(?:dollars|a (?:year|month)|/))", text);
+    z = re.search(r"(?<![\$\d,.])\b(\d{5})\b(?![\d,.]|\s*(?:dollars|bucks|usd|k\b|(?:a|an|per|every|each|al|por) (?:year|yr|month|mo|week|a[nñ]o|mes)|yearly|annually|monthly|/))", text);
+    # "I make 30000 per year" is income, not a ZIP code.
+    if z and re.search(INCOME_CUES + "\\W*(?:about|around|like|roughly)?\\W*$", low[max(0, z.start(1) - 24):z.start(1)]) { z = None; }
     if z {
         out["zip"] = z.group(1);
         _ev(evidence, "location", z.group(1), z.start(1), z.end(1), text);
@@ -753,30 +820,53 @@ def parse_location(text: str, low: str, evidence: list) -> dict {
     return out;
 }
 
-"""Citizenship / immigration status hints."""
+# Citizenship / immigration status hints. Someone else's status ("my son was born here", "my husband has a green
+# card") is not the speaker's; a nationality ("a Guatemalan citizen") is not
+# U.S. citizenship; "no green card" / "applying for a green card" is not one
+# (outside judge, 2026-10-28: all four flipped the answer).
+glob STATUS_OTHER_LEFT: str = "\\b(?:my|our|his|her|their) (?:son|sons|daughter|daughters|kids?|children|child|baby|boys|girls|husband|wife|partner|spouse|boyfriend|girlfriend|mom|mother|dad|father|brother|sister|parents)\\b(?:'s)?[^.!?]{0,24}$";
+# "No green card" / "applying for a green card": not a permanent resident yet.
+# (A lost or expired card is still a green card: the status doesn't expire.)
+glob STATUS_NEG_LEFT: str = "(?:\\bno|n'?t have|not have|without|applying for|applied for|apply for|waiting (?:for|on)|sin|no tengo|tramitando)\\s+(?:a |an |my |the |our |any |mi )?$";
+glob NATIONALITY_LEFT: str = "\\b(?!american\\b)(?:[a-z]+(?:an|ese|ish|ian|ch|ean)|[a-z]+i|filipino|thai)\\s+$";
+
+"""Speaker's status: citizen | eligible_immigrant | humanitarian |
+cuban_haitian_entrant | cofa | non_citizen | "" (unknown)."""
 def parse_citizenship(low: str, evidence: list, text: str) -> str {
     rules: list = [
-        (r"\b(?:undocumented|no papers|without papers|no documents|illegal immigrant|not a (?:us )?citizen|out of status|indocumentad[oa]s?|sin papeles|sin documentos)\b", "non_citizen"),
-        (r"\b(?:seeking asylum|asylum seeker|solicitando asilo|pidiendo asilo)\b", "non_citizen"),
+        (r"\b(?:cuban(?:/| or | and |-)haitian entrants?|cuban entrants?|haitian entrants?)\b|\b(?:from cuba|from haiti|cuban|haitian|cubano|haitiano)\b[^.!?]{0,60}\b(?:parole[ed]?|parol[ae]d[oa]|i-94)\b|\b(?:parole[ed]?|i-94)\b[^.!?]{0,60}\b(?:from cuba|from haiti|cuban|haitian)\b", "cuban_haitian_entrant"),
+        (r"\b(?:cofa|compact of free association|from (?:micronesia|the marshall islands|marshall islands|palau)|(?:micronesian|marshallese|palauan) citizen)\b", "cofa"),
+        (r"\b(?:green card|permanent resident|lpr|residente permanente|tarjeta verde|residencia permanente)\b", "eligible_immigrant"),
         (r"\b(?:refugee|asylee|granted asylum|parolee|humanitarian parole|refugiad[oa]|asilad[oa]|asilo aprobado)\b", "humanitarian"),
-        (r"\b(?:green card|permanent resident|lpr|residente permanente|tarjeta verde)\b", "eligible_immigrant"),
+        (r"\b(?:undocumented|no papers|without papers|no documents|illegal immigrant|not a (?:us |u\.s\. )?citizen|out of status|indocumentad[oa]s?|sin papeles|sin documentos|no tengo papeles)\b|\b(?:don'?t|do not|doesn'?t|does not) have (?:any )?(?:papers|documents|legal status|immigration status)\b", "non_citizen"),
+        (r"\b(?:seeking asylum|asylum seeker|(?:applied|applying|filed) for asylum|asylum (?:case|application|claim|interview|hearing)|immigration court|solicitando asilo|pidiendo asilo|caso de asilo|corte de inmigraci[oó]n)\b", "non_citizen"),
         (r"\b(?:daca|dreamer|visa holder|on a visa|work visa|tps)\b", "non_citizen"),
         # A temporary visa, stated by the speaker (external check: real posts
         # name the visa: "on the Visa Waiver Program", "my H4 status expired").
         # "Her visa is up" or "he'll get deported" is someone else's status.
         (r"\b(?:i'?m|i am|i was|we'?re|we are|we were|i have|i hold|i got|i came|we came|my|our)\b(?:(?!\w+'s\b)[^.!?]){0,30}\b(?:(?:h-?1b|h-?4|f-?1|j-?1|k-?1|b-?[12]|l-?1|o-?1|tn|student|tourist|work|visitor|fianc[eé]e?|spouse)\s+(?:visa|status)|visa waiver|visa|work permit|ead card|i-94)\b", "non_citizen"),
         (r"\b(?:i|we) (?:hold|have|got|received) (?:us |u\.s\. |american )?citizenship\b", "citizen"),
-        (r"\b(?:us citizen|u\.s\. citizen|american citizen|citizen|born here|ciudadan[oa])\b", "citizen")
+        (r"\b(?:us citizen|u\.s\. citizen|american citizen|citizen|born here|born in (?:the )?(?:us|u\.s\.|usa|united states|america)|ciudadan[oa])\b", "citizen")
     ];
     for (pat, status) in rules {
-        m = re.search(pat, low);
-        if m {
+        for m in re.finditer(pat, low) {
+            left = low[max(0, m.start() - 40):m.start()];
+            if status in ["eligible_immigrant", "citizen", "humanitarian"] and re.search(STATUS_OTHER_LEFT, left) { continue; }
+            if status == "eligible_immigrant" and re.search(STATUS_NEG_LEFT, left) { status = "non_citizen"; }
+            if status == "citizen" and re.search("\\bsenior\\s+$", left) { continue; }
+            # "A Guatemalan citizen": a foreign national, not a U.S. citizen.
+            if status == "citizen" and m.group(0) in ["citizen", "ciudadano", "ciudadana"] and re.search(NATIONALITY_LEFT, left) { status = "non_citizen"; }
             _ev(evidence, "citizenship", status, m.start(), m.end(), text);
             return status;
         }
     }
     return "";
 }
+
+# Children's own status, which is what counts for their programs.
+glob CITIZEN_CHILDREN_RE: str = "\\b(?:my|our|the|his|her) (?:\\w+ )?(?:son|sons|daughter|daughters|kids?|children|child|baby|boys|girls)\\b[^.!?]{0,30}\\b(?:are|is|was|were) (?:all |both )?(?:u\\.?s\\.? |american )?(?:citizens?|born here|born in (?:the )?(?:us|u\\.s\\.|usa|united states|america)|american)\\b|\\bmis hij[oa]s (?:son|nacieron) (?:ciudadan[oa]s|aqu[ií])";
+# A green card held under five years: most adults wait for SNAP and Medicaid.
+glob LPR_YEARS_RE: str = "\\b(?:got|received|have had|had|'ve had|holding|hold) (?:my |our |a |the )?green cards? (?:for |about |only |just )*(?:([1-4]|one|two|three|four|a couple of|a few) (?:years?|yrs?)|(?:\\d{1,2}|a few|several|six) months|last year|this year|recently)\\b(?! ago)|\\bgreen cards? (?:since|in) (?:last year|this year|202[2-9])\\b|\\b(?:got|received) (?:my |our |a |the )?green cards? (?:([1-4]|one|two|three|four|a couple of|a few) (?:years?|yrs?)|(?:\\d{1,2}|a few|several|six) months|last year|this year|recently)(?: ago)?\\b";
 
 # ---------- entry point ----------
 
@@ -850,6 +940,12 @@ def parse_intake(text: str) -> dict {
     }
     for f in i18n_flags {
         if f not in flags { flags.append(f); }
+    }
+    for (f, cs, ce) in crisis_any_language(low) {
+        if f not in flags and f.replace("_concern", "") not in flags {
+            flags.append(f);
+            _ev(evidence, "flag", f, cs, ce, raw);
+        }
     }
     # Indirect cues: added only when the direct flag isn't already there.
     for (cflag, cpats) in CONCERN_LEXICON.items() {
@@ -941,8 +1037,27 @@ def parse_intake(text: str) -> dict {
             evidence = [e for e in evidence if not (e["field"] == "flag" and e["value"] == "children")];
         }
     }
+    for (sflag, srx) in [("child_abuse", CHILD_ABUSE_RE), ("sexual_assault", SEXUAL_ASSAULT_RE), ("trafficking", TRAFFICKING_RE), ("emergency", EMERGENCY_RE)] {
+        sm = re.search(srx, low);
+        # An adult hurt by a parent is a DV call, not Childhelp's.
+        if sm and sflag == "child_abuse" and age >= 18 and not re.search("\\b(?:child|kid|son|daughter|baby|kids|children)\\b", sm.group(0)) { sm = None; }
+        if sm and sflag not in flags {
+            flags.append(sflag);
+            _ev(evidence, "flag", sflag, sm.start(), sm.end(), raw);
+        }
+    }
+    if "minor" in flags and ("dv" in flags or "sexual_assault" in flags) and "child_abuse" not in flags { flags.append("child_abuse"); }
+    if [f for f in ["emergency", "child_abuse", "sexual_assault", "trafficking"] if f in flags] {
+        urgency = "immediate";
+        if not top_cat {
+            top_cat = "healthcare" if ("emergency" in flags or "sexual_assault" in flags) else "legal";
+            cat_conf = 0.8;
+        }
+    }
     loc = parse_location(raw, low, evidence);
     citizenship = parse_citizenship(low, evidence, raw);
+    if re.search(CITIZEN_CHILDREN_RE, low) and "citizen_children" not in flags { flags.append("citizen_children"); }
+    if citizenship == "eligible_immigrant" and re.search(LPR_YEARS_RE, low) { flags.append("lpr_recent"); }
 
     # Other languages: the same five facts from per-language tables
     # (engine/facts_i18n.jac), filling whatever the EN/ES patterns missed.

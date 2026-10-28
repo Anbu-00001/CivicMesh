@@ -12,7 +12,7 @@ pattern):
 
 1. The button sends the tab to the neutral site, and the app is gone from the
    tab's history, so Back can't return to it.
-2. Pressing Shift three times does the same.
+2. Pressing Shift three times does the same; typing capital letters does not.
 3. In a private session (a crisis turn switches it on), Quick exit also
    erases the case on the server, and the next visit gets a new identity.
 4. Inside a sandboxed frame like the huggingface.co Space page, which doesn't
@@ -160,6 +160,20 @@ def shift_three_times(tab):
         time.sleep(0.15)
 
 
+def type_with_capitals(tab, text):
+    # Real key events, Shift held for each capital, as a person types.
+    tab.js("document.querySelector('.cm-input').focus()")
+    for ch in text:
+        up = ch.isupper()
+        if up:
+            tab.call("Input.dispatchKeyEvent", type="rawKeyDown", key="Shift", code="ShiftLeft", windowsVirtualKeyCode=16, modifiers=8)
+        for kind in ("keyDown", "keyUp"):
+            tab.call("Input.dispatchKeyEvent", type=kind, key=ch, text=ch if kind == "keyDown" else "", modifiers=8 if up else 0)
+        if up:
+            tab.call("Input.dispatchKeyEvent", type="keyUp", key="Shift", code="ShiftLeft", windowsVirtualKeyCode=16, modifiers=0)
+        time.sleep(0.05)
+
+
 def wait_for(fn, timeout=20.0):
     end = time.time() + timeout
     while time.time() < end:
@@ -264,6 +278,16 @@ def main(app: str) -> int:
         tab.call("Page.bringToFront")
         shift_three_times(tab)
         check("2 Shift pressed three times leaves too", left_for_exit(tab), tab.current_url()[:80])
+        tab.close()
+
+        # 2b. Typing capitals is not the exit (outside judge: "My Landlord In
+        # Ohio" left mid-sentence and lost the message).
+        tab = new_tab()
+        open_chat(tab, app)
+        tab.call("Page.bringToFront")
+        type_with_capitals(tab, "My Landlord In Ohio Wants Me Out")
+        time.sleep(1.5)
+        check("2b typing capital letters keeps the chat open", tab.current_url().startswith(app), tab.current_url()[:80])
         tab.close()
 
         # 3. A private session: a crisis turn switches it on.
