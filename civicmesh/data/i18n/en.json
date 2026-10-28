@@ -53,6 +53,8 @@
   "chip.legal.2": "How do I find free immigration legal help?",
   "r.unsure": "I'm not sure yet what kind of help you need. Pick one below or tell me a little more — meanwhile, **211** connects you to local help 24/7.",
   "r.safety": "**First, your safety:** {name} — {phone} (24/7, free and confidential).",
+  "r.emergency": "**If anyone's life is in danger right now, call 911.**",
+  "r.crisis_net": "In danger, or thinking about suicide? Call **911**, or call or text **988**.",
   "r.found": "I found **{n}** programs you likely qualify for.",
   "r.found_more": "I found **{n}** programs you likely qualify for and {m} more that could work.",
   "r.maybe": "Nothing is a sure match yet, but **{m}** programs could work once I know a bit more.",
@@ -97,5 +99,9 @@
   "esc.housing": "same-night shelter placement and rental help referrals",
   "esc.healthcare": "sliding-scale clinics and Medicaid enrollment",
   "esc.legal": "free civil legal aid near you",
+  "esc.emergency": "emergency medical help and police, right now",
+  "esc.child_abuse": "24/7 help for children being hurt and for adults worried about a child",
+  "esc.trafficking": "24/7 confidential help for anyone forced to work or to have sex; text 233733",
+  "esc.sexual_assault": "24/7 confidential support after sexual assault",
   "esc.interp": "Interpreters are free: say \"{language}\" when someone answers."
 }

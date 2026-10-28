@@ -19,8 +19,17 @@ glob LEADS: dict = {
     "food": ("2-1-1", "211", "nearest food bank, pantry and SNAP office", "banco de comida, despensa y oficina de SNAP más cercanos"),
     "housing": ("2-1-1", "211", "same-night shelter placement and rental help referrals", "refugio para esta noche y ayuda con la renta"),
     "healthcare": ("2-1-1", "211", "sliding-scale clinics and Medicaid enrollment", "clínicas de pago según ingresos e inscripción en Medicaid"),
-    "legal": ("Legal Services Corporation", "1-800-815-9614", "free civil legal aid near you", "asistencia legal civil gratuita cerca de usted")
+    # LSC publishes no public intake line (1-800-815-9614 could not be traced
+    # to it; outside judge, 2026-10-28): 2-1-1 refers to local legal aid.
+    "legal": ("2-1-1", "211", "free civil legal aid near you", "asistencia legal civil gratuita cerca de usted"),
+    # Checked on each line's own site, 2026-10-28.
+    "emergency": ("911", "911", "emergency medical help and police, right now", "ayuda médica de emergencia y policía, ahora mismo"),
+    "child_abuse": ("Childhelp National Child Abuse Hotline", "1-800-422-4453", "24/7 help for children being hurt and for adults worried about a child", "ayuda 24/7 para niños que sufren maltrato y para adultos preocupados por un niño"),
+    "trafficking": ("National Human Trafficking Hotline", "1-888-373-7888", "24/7 confidential help if someone is forced or held to work or to have sex; text 233733", "ayuda confidencial 24/7 si alguien es obligado o retenido para trabajar o tener sexo; texto 233733"),
+    "sexual_assault": ("RAINN National Sexual Assault Hotline", "1-800-656-4673", "24/7 confidential support after sexual assault", "apoyo confidencial 24/7 después de una agresión sexual")
 };
+# Which line leads when several dangers show at once: life first.
+glob LEAD_ORDER: list = ["emergency", "self_harm", "child_abuse", "trafficking", "sexual_assault", "dv"];
 
 walker EscalationWalker {
     has category: str = "";
@@ -37,7 +46,8 @@ walker EscalationWalker {
         sp = span_begin(self.trace, "EscalationWalker crisis_route", "INTERNAL", self.parent_span, {"gen_ai.agent.name": "EscalationWalker"}) if self.trace else {};
         cat = self.category if self.category else str(self.context.profile.category);
         flags = list(self.flags);
-        key = "self_harm" if "self_harm" in flags else ("dv" if "dv" in flags else (cat if cat in LEADS else "housing"));
+        danger = [k for k in LEAD_ORDER if k in flags];
+        key = danger[0] if danger else (cat if cat in LEADS else "housing");
         lead = LEADS[key];
         es = self.language == "es";
         lead_line = ("Llame a " if es else "Call ") + lead[0] + ": " + lead[1] + " — " + (lead[3] if es else lead[2]) + ".";
@@ -49,13 +59,13 @@ walker EscalationWalker {
             lead_line = msg(self.language, "esc.call", {"name": lead[0], "phone": lead[1], "what": msg(self.language, "esc." + key)});
             # 988 and the DV hotline interpret 200+ languages for free
             # (988lifeline.org/interpretation-services; thehotline.org).
-            if key in ["self_harm", "dv"] {
+            if key in ["self_harm", "dv", "child_abuse", "trafficking", "sexual_assault"] {
                 lead_line = lead_line + " " + msg(self.language, "esc.interp", {"language": str(language_info(self.language)["name"])});
             }
             # The English original rides along: the number and instructions of
             # a crisis line must be checkable by anyone who reads English.
             lead_line_en = msg("en", "esc.call", {"name": lead[0], "phone": lead[1], "what": msg("en", "esc." + key)});
-            if key in ["self_harm", "dv"] {
+            if key in ["self_harm", "dv", "child_abuse", "trafficking", "sexual_assault"] {
                 lead_line_en = lead_line_en + " " + msg("en", "esc.interp", {"language": str(language_info(self.language)["name"])});
             }
         }
@@ -75,8 +85,8 @@ walker EscalationWalker {
 
         payload = {
             "type": "escalation_complete",
-            "trigger": str(self.context.trigger_reason) if self.context.trigger_reason else ("risk_flag" if key in ["self_harm", "dv"] else "no_credible_match"),
-            "is_emergency": key in ["self_harm", "dv"] or "homeless" in flags,
+            "trigger": str(self.context.trigger_reason) if self.context.trigger_reason else ("risk_flag" if key in LEAD_ORDER else "no_credible_match"),
+            "is_emergency": key in LEAD_ORDER or "homeless" in flags,
             "lead_line": lead_line,
             "lead_line_en": lead_line_en,
             "personalized_message": lead_line,

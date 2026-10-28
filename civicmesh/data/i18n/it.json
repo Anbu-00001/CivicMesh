@@ -48,6 +48,8 @@
   "chip.legal.2": "Dove trovo assistenza legale gratuita per l'immigrazione?",
   "r.unsure": "Non ho ancora capito di che tipo di aiuto ha bisogno. Scelga un'opzione qui sotto o mi dica qualcosa in più — nel frattempo, il **211** la mette in contatto con l'aiuto locale 24/7.",
   "r.safety": "**Prima di tutto, la sua sicurezza:** {name} — {phone} (24/7, gratuito e riservato).",
+  "r.emergency": "**Se la vita di qualcuno è in pericolo adesso, chiama il 911.**",
+  "r.crisis_net": "In pericolo, o pensi al suicidio? Chiama il **911**, oppure chiama o scrivi al **988**.",
   "r.found": "Ho trovato **{n}** programmi per cui probabilmente ha diritto.",
   "r.found_more": "Ho trovato **{n}** programmi per cui probabilmente ha diritto e altri {m} che potrebbero andare bene.",
   "r.maybe": "Niente di sicuro per ora, ma **{m}** programmi potrebbero andare bene appena ne so un po' di più.",
@@ -92,5 +94,9 @@
   "esc.housing": "alloggio per la notte e segnalazioni per aiuti sull'affitto",
   "esc.healthcare": "cliniche con tariffe in base al reddito e iscrizione a Medicaid",
   "esc.legal": "assistenza legale civile gratuita vicino a lei",
+  "esc.emergency": "soccorso medico d'emergenza e polizia, subito",
+  "esc.child_abuse": "aiuto 24/7 per bambini maltrattati e per adulti preoccupati per un bambino",
+  "esc.trafficking": "aiuto riservato 24/7 per chi è costretto a lavorare o ad avere rapporti sessuali; SMS al 233733",
+  "esc.sexual_assault": "sostegno riservato 24/7 dopo una violenza sessuale",
   "esc.interp": "Gli interpreti sono gratuiti: quando rispondono, dica \"{language}\"."
 }

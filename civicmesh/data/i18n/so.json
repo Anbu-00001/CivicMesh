@@ -48,6 +48,8 @@
   "chip.legal.2": "Xaggee ka heli karaa caawimaad sharci socdaal oo bilaash ah?",
   "r.unsure": "Weli ma hubo nooca caawimaadda aad u baahan tahay. Hoos ka dooro mid ama wax yar ii sheeg — inta lagu jiro, **211** wuxuu kugu xiraa caawimaad deegaan 24/7.",
   "r.safety": "**Marka hore, badbaadadaada:** {name} — {phone} (24/7, bilaash iyo qarsoodi).",
+  "r.emergency": "**Haddii nolosha qof ay hadda khatar ku jirto, wac 911.**",
+  "r.crisis_net": "Ma khatar baad ku jirtaa, mise waxaad ka fikiraysaa is-dil? Wac **911**, ama wac ama fariin u dir **988**.",
   "r.found": "Waxaan helay **{n}** barnaamij oo ay u badan tahay inaad u qalanto.",
   "r.found_more": "Waxaan helay **{n}** barnaamij oo ay u badan tahay inaad u qalanto iyo {m} kale oo shaqeyn kara.",
   "r.maybe": "Weli wax la hubo ma jiraan, laakiin **{m}** barnaamij ayaa shaqeyn kara marka aan wax yar oo dheeraad ah ogaado.",
@@ -92,5 +94,9 @@
   "esc.housing": "hoy isla habeenkaas ah iyo u gudbin caawimaad kirada",
   "esc.healthcare": "rugo caafimaad oo lacagta ku qaata dakhliga iyo diiwaangelinta Medicaid",
   "esc.legal": "caawimaad sharci madani ah oo bilaash ah oo kaa dhow",
+  "esc.emergency": "gargaar caafimaad oo degdeg ah iyo booliis, hadda",
+  "esc.child_abuse": "caawimaad 24/7 ah oo loogu talagalay carruurta la dhibaateeyo iyo dadka waaweyn ee ka welwelsan ilmo",
+  "esc.trafficking": "caawimaad qarsoodi ah 24/7 qof kasta oo lagu qasbo shaqo ama galmo; fariin u dir 233733",
+  "esc.sexual_assault": "taageero qarsoodi ah 24/7 kadib weerar galmo",
   "esc.interp": "Turjubaanku waa bilaash: marka qof jawaabo, ku dheh Ingiriis \"{language}\"."
 }

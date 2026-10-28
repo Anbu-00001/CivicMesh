@@ -48,6 +48,8 @@
   "chip.legal.2": "Kur atrast bezmaksas juridisko palīdzību imigrācijas jautājumos?",
   "r.unsure": "Vēl nezinu, kāda palīdzība jums vajadzīga. Izvēlieties kaut ko zemāk vai pastāstiet nedaudz vairāk — tikmēr **211** jūs savieno ar vietējo palīdzību 24/7.",
   "r.safety": "**Vispirms jūsu drošība:** {name} — {phone} (24/7, bez maksas un konfidenciāli).",
+  "r.emergency": "**Ja kāda dzīvība šobrīd ir briesmās, zvaniet 911.**",
+  "r.crisis_net": "Esat briesmās vai domājat par pašnāvību? Zvaniet **911** vai zvaniet vai rakstiet SMS uz **988**.",
   "r.found": "Programmas, kurām jūs, visticamāk, atbilstat: **{n}**.",
   "r.found_more": "Programmas, kurām jūs, visticamāk, atbilstat: **{n}**; citas, kas varētu derēt: {m}.",
   "r.maybe": "Pagaidām nekas nav droši, bet, uzzinot nedaudz vairāk, varētu derēt programmas: **{m}**.",
@@ -92,5 +94,9 @@
   "esc.housing": "patversme tajā pašā naktī un nosūtīšana īres palīdzībai",
   "esc.healthcare": "klīnikas ar maksu atkarībā no ienākumiem un reģistrācija Medicaid",
   "esc.legal": "bezmaksas civiltiesiskā palīdzība jūsu tuvumā",
+  "esc.emergency": "neatliekamā medicīniskā palīdzība un policija, tūlīt",
+  "esc.child_abuse": "palīdzība 24/7 bērniem, kuriem nodara pāri, un pieaugušajiem, kuri uztraucas par bērnu",
+  "esc.trafficking": "konfidenciāla palīdzība 24/7 ikvienam, kuru spiež strādāt vai stāties dzimumattiecībās; SMS uz 233733",
+  "esc.sexual_assault": "konfidenciāls atbalsts 24/7 pēc seksuālas vardarbības",
   "esc.interp": "Tulks ir bez maksas: kad atbild, pasakiet angliski „{language}”."
 }

@@ -453,7 +453,7 @@
       "category": "food",
       "capacity": "open",
       "languages_supported": ["en", "es"],
-      "contact_phone": "703-305-2590",
+      "contact_phone": "",
       "contact_email": "",
       "address": "All public schools",
       "online_url": "https://www.fns.usda.gov/nslp",
@@ -472,11 +472,11 @@
       },
       "form": {
         "form_id": "nslp-app",
-        "form_name": "Free and Reduced-Price Meal Application",
+        "form_name": "Free and Reduced-Price Meal Application (from your child's school office)",
         "url": "https://www.fns.usda.gov/cn/applying-free-and-reduced-price-school-meals",
         "required_documents": ["Names and birthdates of all children", "Last month's income for household"],
         "deadline_type": "annual",
-        "submission_method": "online",
+        "submission_method": "in_person",
         "estimated_minutes": 15
       }
     },
@@ -517,7 +517,7 @@
       "category": "food",
       "capacity": "open",
       "languages_supported": ["en", "es"],
-      "contact_phone": "703-305-2680",
+      "contact_phone": "2-1-1",
       "contact_email": "",
       "address": "Distributed via local food banks and pantries",
       "online_url": "https://www.fns.usda.gov/tefap/emergency-food-assistance-program",
@@ -581,7 +581,7 @@
       "category": "food",
       "capacity": "open",
       "languages_supported": ["en", "es"],
-      "contact_phone": "703-305-2746",
+      "contact_phone": "2-1-1",
       "contact_email": "",
       "address": "Local Area Agency on Aging",
       "online_url": "https://www.fns.usda.gov/sfmnp/senior-farmers-market-nutrition-program",
@@ -645,7 +645,7 @@
       "category": "food",
       "capacity": "waitlist",
       "languages_supported": ["en", "es"],
-      "contact_phone": "703-305-2746",
+      "contact_phone": "2-1-1",
       "contact_email": "",
       "address": "Local food banks and senior centers",
       "online_url": "https://www.fns.usda.gov/csfp/commodity-supplemental-food-program",
@@ -677,7 +677,7 @@
       "category": "healthcare",
       "capacity": "open",
       "languages_supported": ["en", "es", "zh", "vi", "ko"],
-      "contact_phone": "1-877-267-2323",
+      "contact_phone": "1-800-318-2596",
       "contact_email": "",
       "address": "State Medicaid offices and Healthcare.gov",
       "online_url": "https://www.medicaid.gov/about-us/where-can-people-get-help-medicaid-chip",
@@ -1310,6 +1310,102 @@
         "deadline_type": "monthly",
         "submission_method": "phone",
         "estimated_minutes": 45
+      }
+    },
+    {
+      "agency_name": "Childhelp National Child Abuse Hotline",
+      "category": "legal",
+      "capacity": "open",
+      "languages_supported": ["en", "es"],
+      "contact_phone": "1-800-422-4453",
+      "contact_email": "",
+      "address": "Available by phone, text, and chat",
+      "online_url": "https://www.childhelphotline.org/",
+      "description": "Free, confidential 24/7 call, text and chat line for children and teens being hurt or touched, and for adults worried about a child. Counselors help make a safety plan and a report to child protective services. Not connected to 911: call 911 if anyone is in danger now.",
+      "eligibility": {
+        "rule_id": "childhelp-rule",
+        "income_limit_annual": 0,
+        "residency_requirement": "none",
+        "min_family_size": 0,
+        "citizenship_required": false,
+        "age_min": 0,
+        "age_max": 0,
+        "exceptions": "Text \"GO\" to 1-800-422-4453, or chat on the website. Interpreters available.",
+        "criteria_summary": "Children and teens being abused, and any adult worried about a child. No eligibility check.",
+        "targets": ["child_abuse"]
+      },
+      "form": {
+        "form_id": "childhelp-call",
+        "form_name": "Call, text or chat (no form)",
+        "url": "https://www.childhelphotline.org/",
+        "required_documents": [],
+        "deadline_type": "rolling",
+        "submission_method": "phone",
+        "estimated_minutes": 0
+      }
+    },
+    {
+      "agency_name": "National Human Trafficking Hotline",
+      "category": "legal",
+      "capacity": "open",
+      "languages_supported": ["en", "es"],
+      "contact_phone": "1-888-373-7888",
+      "contact_email": "",
+      "address": "Available by phone and text",
+      "online_url": "https://humantraffickinghotline.org/",
+      "description": "Free, confidential 24/7 hotline for anyone forced, tricked or held to work or to have sex, including an employer holding a passport or a debt that can never be paid off. Text 233733. Interpreters in many languages; help is given whatever the immigration status.",
+      "eligibility": {
+        "rule_id": "nhth-rule",
+        "income_limit_annual": 0,
+        "residency_requirement": "none",
+        "min_family_size": 0,
+        "citizenship_required": false,
+        "age_min": 0,
+        "age_max": 0,
+        "exceptions": "Text 233733; TTY 711. Victims may qualify for a T visa and federal benefits through a certification letter.",
+        "criteria_summary": "Anyone who may be trafficked, or worried about someone who is. No eligibility check.",
+        "targets": ["trafficking"]
+      },
+      "form": {
+        "form_id": "nhth-call",
+        "form_name": "Call or text (no form)",
+        "url": "https://humantraffickinghotline.org/",
+        "required_documents": [],
+        "deadline_type": "rolling",
+        "submission_method": "phone",
+        "estimated_minutes": 0
+      }
+    },
+    {
+      "agency_name": "RAINN National Sexual Assault Hotline",
+      "category": "healthcare",
+      "capacity": "open",
+      "languages_supported": ["en", "es"],
+      "contact_phone": "1-800-656-4673",
+      "contact_email": "",
+      "address": "Available by phone and online chat",
+      "online_url": "https://hotline.rainn.org/online",
+      "description": "Free, confidential 24/7 phone and online chat support after rape or sexual assault, at any time since it happened. Calls are routed to the local rape crisis center, which can arrange a free forensic exam and an advocate.",
+      "eligibility": {
+        "rule_id": "rainn-rule",
+        "income_limit_annual": 0,
+        "residency_requirement": "none",
+        "min_family_size": 0,
+        "citizenship_required": false,
+        "age_min": 0,
+        "age_max": 0,
+        "exceptions": "Online chat at hotline.rainn.org/online; Spanish at rainn.org/es.",
+        "criteria_summary": "Anyone affected by sexual violence, and people supporting them. No eligibility check.",
+        "targets": ["sexual_assault"]
+      },
+      "form": {
+        "form_id": "rainn-call",
+        "form_name": "Call or chat (no form)",
+        "url": "https://hotline.rainn.org/online",
+        "required_documents": [],
+        "deadline_type": "rolling",
+        "submission_method": "phone",
+        "estimated_minutes": 0
       }
     }
   ]

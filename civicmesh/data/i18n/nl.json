@@ -48,6 +48,8 @@
   "chip.legal.2": "Waar vind ik gratis juridische hulp bij immigratie?",
   "r.unsure": "Ik weet nog niet welke hulp u nodig heeft. Kies hieronder een optie of vertel me iets meer — ondertussen brengt **211** u 24/7 in contact met hulp in de buurt.",
   "r.safety": "**Eerst uw veiligheid:** {name} — {phone} (24/7, gratis en vertrouwelijk).",
+  "r.emergency": "**Is iemands leven nu in gevaar, bel dan 911.**",
+  "r.crisis_net": "In gevaar, of denkt u aan zelfdoding? Bel **911**, of bel of sms **988**.",
   "r.found": "Ik heb **{n}** programma's gevonden waarvoor u waarschijnlijk in aanmerking komt.",
   "r.found_more": "Ik heb **{n}** programma's gevonden waarvoor u waarschijnlijk in aanmerking komt, en nog {m} die zouden kunnen passen.",
   "r.maybe": "Nog niets past zeker, maar **{m}** programma's kunnen passen zodra ik iets meer weet.",
@@ -92,5 +94,9 @@
   "esc.housing": "opvang voor dezelfde nacht en doorverwijzing voor huurhulp",
   "esc.healthcare": "klinieken met tarieven naar inkomen en inschrijving bij Medicaid",
   "esc.legal": "gratis civielrechtelijke hulp bij u in de buurt",
+  "esc.emergency": "medische noodhulp en politie, meteen",
+  "esc.child_abuse": "hulp 24/7 voor kinderen die mishandeld worden en voor volwassenen die zich zorgen maken om een kind",
+  "esc.trafficking": "vertrouwelijke hulp 24/7 voor iedereen die gedwongen wordt te werken of seks te hebben; sms naar 233733",
+  "esc.sexual_assault": "vertrouwelijke steun 24/7 na seksueel geweld",
   "esc.interp": "Tolken zijn gratis: zeg \"{language}\" als er wordt opgenomen."
 }

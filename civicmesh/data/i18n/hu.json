@@ -48,6 +48,8 @@
   "chip.legal.2": "Hol találok ingyenes bevándorlási jogi segítséget?",
   "r.unsure": "Még nem tudom, milyen segítségre van szüksége. Válasszon lent egyet, vagy mondjon el kicsit többet — addig is a **211** összeköti a helyi segítséggel 24/7.",
   "r.safety": "**Először is, az Ön biztonsága:** {name} — {phone} (24/7, ingyenes és bizalmas).",
+  "r.emergency": "**Ha most valakinek az élete veszélyben van, hívja a 911-et.**",
+  "r.crisis_net": "Veszélyben van, vagy öngyilkosságra gondol? Hívja a **911**-et, vagy hívja a **988**-at, illetve írjon SMS-t.",
   "r.found": "**{n}** olyan programot találtam, amelyre valószínűleg jogosult.",
   "r.found_more": "**{n}** olyan programot találtam, amelyre valószínűleg jogosult, és még {m} másikat, ami szóba jöhet.",
   "r.maybe": "Még semmi sem biztos, de ha kicsit többet tudok, **{m}** program szóba jöhet.",
@@ -92,5 +94,9 @@
   "esc.housing": "szállás még aznap éjjelre és lakbértámogatási irányítás",
   "esc.healthcare": "jövedelemfüggő díjú klinikák és Medicaid-regisztráció",
   "esc.legal": "ingyenes polgári jogi segítség a közelében",
+  "esc.emergency": "sürgősségi orvosi segítség és rendőrség, azonnal",
+  "esc.child_abuse": "segítség 24/7 bántalmazott gyerekeknek és felnőtteknek, akik aggódnak egy gyerekért",
+  "esc.trafficking": "bizalmas segítség 24/7 bárkinek, akit munkára vagy szexre kényszerítenek; SMS: 233733",
+  "esc.sexual_assault": "bizalmas támogatás 24/7 szexuális erőszak után",
   "esc.interp": "A tolmács ingyenes: amikor felveszik, mondja angolul: „{language}”."
 }

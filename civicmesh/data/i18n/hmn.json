@@ -48,6 +48,8 @@
   "chip.legal.2": "Kuv nrhiav kev pab dawb txog kev cai lij choj neeg tsiv teb tsaws chaw qhov twg?",
   "r.unsure": "Kuv tseem tsis tau paub tias koj xav tau kev pab zoo li cas. Xaiv ib qho hauv qab no los yog qhia kuv ntxiv me ntsis — lub sijhawm no, **211** txuas koj rau kev pab hauv zos 24/7.",
   "r.safety": "**Ua ntej tshaj, koj txoj kev nyab xeeb:** {name} — {phone} (24/7, dawb thiab zais cia).",
+  "r.emergency": "**Yog tias leej twg txoj sia muaj kev txaus ntshai tam sim no, hu 911.**",
+  "r.crisis_net": "Koj puas muaj kev txaus ntshai, los yog xav tua koj tus kheej? Hu **911**, los yog hu los yog xa ntawv rau **988**.",
   "r.found": "Kuv nrhiav tau **{n}** qhov kev pab uas koj zoo li tsim nyog tau.",
   "r.found_more": "Kuv nrhiav tau **{n}** qhov kev pab uas koj zoo li tsim nyog tau thiab {m} qhov ntxiv uas yuav siv tau.",
   "r.maybe": "Tseem tsis tau muaj qhov twg paub tseeb, tab sis **{m}** qhov kev pab yuav siv tau thaum kuv paub ntxiv me ntsis.",
@@ -92,5 +94,9 @@
   "esc.housing": "chaw nkaum hmo no thiab xa mus rau kev pab nqi xauj tsev",
   "esc.healthcare": "chaw kho mob sau nqi raws li nyiaj khwv thiab sau npe Medicaid",
   "esc.legal": "kev pab dawb txog kev cai lij choj pej xeem ze koj",
+  "esc.emergency": "kev pab kho mob xwm txheej ceev thiab tub ceev xwm, tam sim no",
+  "esc.child_abuse": "kev pab 24/7 rau cov menyuam raug tsim txom thiab rau cov neeg laus uas txhawj txog ib tug menyuam",
+  "esc.trafficking": "kev pab zais cia 24/7 rau txhua tus uas raug yuam ua haujlwm los yog sib deev; xa ntawv rau 233733",
+  "esc.sexual_assault": "kev txhawb nqa zais cia 24/7 tom qab raug yuam deev",
   "esc.interp": "Tus neeg txhais lus yog pub dawb: thaum muaj neeg teb, hais ua lus Askiv tias \"{language}\"."
 }

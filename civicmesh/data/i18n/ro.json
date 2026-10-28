@@ -48,6 +48,8 @@
   "chip.legal.2": "Unde găsesc ajutor juridic gratuit pentru imigrare?",
   "r.unsure": "Încă nu știu de ce fel de ajutor aveți nevoie. Alegeți o opțiune de mai jos sau spuneți-mi puțin mai mult — între timp, **211** vă pune în legătură cu ajutor local 24/7.",
   "r.safety": "**Mai întâi, siguranța dumneavoastră:** {name} — {phone} (24/7, gratuit și confidențial).",
+  "r.emergency": "**Dacă viața cuiva este în pericol chiar acum, sunați la 911.**",
+  "r.crisis_net": "Sunteți în pericol sau vă gândiți la sinucidere? Sunați la **911**, sau sunați ori trimiteți SMS la **988**.",
   "r.found": "Am găsit programe pentru care probabil sunteți eligibil: **{n}**.",
   "r.found_more": "Am găsit programe pentru care probabil sunteți eligibil: **{n}**, plus altele care s-ar putea potrivi: {m}.",
   "r.maybe": "Nimic sigur încă, dar când aflu puțin mai mult s-ar putea potrivi programe: **{m}**.",
@@ -92,5 +94,9 @@
   "esc.housing": "adăpost pentru aceeași noapte și îndrumare pentru ajutor la chirie",
   "esc.healthcare": "clinici cu tarife în funcție de venit și înscriere în Medicaid",
   "esc.legal": "asistență juridică civilă gratuită lângă dumneavoastră",
+  "esc.emergency": "ajutor medical de urgență și poliție, chiar acum",
+  "esc.child_abuse": "ajutor 24/7 pentru copiii care sunt răniți și pentru adulții îngrijorați pentru un copil",
+  "esc.trafficking": "ajutor confidențial 24/7 pentru oricine este forțat să muncească sau să facă sex; SMS la 233733",
+  "esc.sexual_assault": "sprijin confidențial 24/7 după o agresiune sexuală",
   "esc.interp": "Interpreții sunt gratuiți: când vă răspunde cineva, spuneți în engleză „{language}”."
 }

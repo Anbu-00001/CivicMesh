@@ -48,6 +48,8 @@
   "chip.legal.2": "Saan ako makakahanap ng libreng tulong legal sa imigrasyon?",
   "r.unsure": "Hindi ko pa alam kung anong tulong ang kailangan mo. Pumili ng isa sa ibaba o magkuwento pa nang kaunti — samantala, ikinokonekta ka ng **211** sa lokal na tulong 24/7.",
   "r.safety": "**Una, ang kaligtasan mo:** {name} — {phone} (24/7, libre at kumpidensyal).",
+  "r.emergency": "**Kung may buhay na nasa panganib ngayon, tumawag sa 911.**",
+  "r.crisis_net": "Nasa panganib ka ba, o iniisip mong magpakamatay? Tumawag sa **911**, o tumawag o mag-text sa **988**.",
   "r.found": "Nakakita ako ng **{n}** programa na malamang ay kwalipikado ka.",
   "r.found_more": "Nakakita ako ng **{n}** programa na malamang ay kwalipikado ka at {m} pa na puwedeng bagay sa iyo.",
   "r.maybe": "Wala pang siguradong tugma, pero **{m}** programa ang puwedeng bagay kapag may alam pa ako nang kaunti.",
@@ -92,5 +94,9 @@
   "esc.housing": "matutuluyan ngayong gabi at tulong sa upa",
   "esc.healthcare": "mga klinikang ayon sa kita ang singil at pagpapatala sa Medicaid",
   "esc.legal": "libreng tulong legal na sibil malapit sa iyo",
+  "esc.emergency": "pang-emergency na tulong medikal at pulis, ngayon din",
+  "esc.child_abuse": "tulong 24/7 para sa mga batang sinasaktan at sa mga nasa hustong gulang na nag-aalala para sa isang bata",
+  "esc.trafficking": "kumpidensyal na tulong 24/7 para sa sinumang pinipilit magtrabaho o makipagtalik; mag-text sa 233733",
+  "esc.sexual_assault": "kumpidensyal na suporta 24/7 pagkatapos ng sekswal na pang-aabuso",
   "esc.interp": "Libre ang interpreter: sabihin ang \"{language}\" kapag may sumagot."
 }

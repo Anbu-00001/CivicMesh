@@ -48,6 +48,8 @@
   "chip.legal.2": "Tôi tìm trợ giúp pháp lý di trú miễn phí ở đâu?",
   "r.unsure": "Tôi chưa rõ bạn cần loại giúp đỡ nào. Hãy chọn một mục bên dưới hoặc kể thêm cho tôi — trong lúc đó, gọi **211** để được kết nối với trợ giúp địa phương 24/7.",
   "r.safety": "**Trước hết, sự an toàn của bạn:** {name} — {phone} (24/7, miễn phí và bảo mật).",
+  "r.emergency": "**Nếu tính mạng của ai đó đang gặp nguy hiểm ngay lúc này, hãy gọi 911.**",
+  "r.crisis_net": "Bạn đang gặp nguy hiểm, hay đang nghĩ đến chuyện tự tử? Hãy gọi **911**, hoặc gọi hay nhắn tin đến **988**.",
   "r.found": "Tôi tìm thấy **{n}** chương trình mà bạn nhiều khả năng đủ điều kiện.",
   "r.found_more": "Tôi tìm thấy **{n}** chương trình mà bạn nhiều khả năng đủ điều kiện và thêm {m} chương trình có thể phù hợp.",
   "r.maybe": "Chưa có chương trình nào chắc chắn phù hợp, nhưng **{m}** chương trình có thể phù hợp khi tôi biết thêm một chút.",
@@ -92,5 +94,9 @@
   "esc.housing": "chỗ tạm trú ngay trong đêm và giới thiệu trợ giúp tiền thuê nhà",
   "esc.healthcare": "phòng khám tính phí theo thu nhập và ghi danh Medicaid",
   "esc.legal": "trợ giúp pháp lý dân sự miễn phí gần bạn",
+  "esc.emergency": "cấp cứu y tế và cảnh sát, ngay lập tức",
+  "esc.child_abuse": "trợ giúp 24/7 cho trẻ em bị ngược đãi và cho người lớn lo lắng về một đứa trẻ",
+  "esc.trafficking": "trợ giúp bảo mật 24/7 cho bất kỳ ai bị ép làm việc hoặc quan hệ tình dục; nhắn tin đến 233733",
+  "esc.sexual_assault": "hỗ trợ bảo mật 24/7 sau khi bị tấn công tình dục",
   "esc.interp": "Thông dịch viên miễn phí: khi có người nghe máy, hãy nói \"{language}\"."
 }

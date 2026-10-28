@@ -48,6 +48,8 @@
   "chip.legal.2": "Gdje mogu naći besplatnu pravnu pomoć za imigraciju?",
   "r.unsure": "Još nisam siguran kakva vam pomoć treba. Odaberite nešto ispod ili mi recite malo više — u međuvremenu vas **211** povezuje s lokalnom pomoći 24/7.",
   "r.safety": "**Prvo, vaša sigurnost:** {name} — {phone} (24/7, besplatno i povjerljivo).",
+  "r.emergency": "**Ako je nečiji život sada u opasnosti, zovite 911.**",
+  "r.crisis_net": "U opasnosti ste ili mislite o samoubistvu? Zovite **911**, ili zovite ili pošaljite SMS na **988**.",
   "r.found": "Programi za koje vjerojatno ispunjavate uvjete: **{n}**.",
   "r.found_more": "Programi za koje vjerojatno ispunjavate uvjete: **{n}**; drugi koji bi mogli odgovarati: {m}.",
   "r.maybe": "Još ništa nije sigurno, ali kad saznam malo više, mogli bi odgovarati programi: **{m}**.",
@@ -92,5 +94,9 @@
   "esc.housing": "smještaj za istu noć i upućivanje na pomoć za najamninu",
   "esc.healthcare": "klinike koje naplaćuju prema prihodima i upis u Medicaid",
   "esc.legal": "besplatna građanskopravna pomoć u vašoj blizini",
+  "esc.emergency": "hitna medicinska pomoć i policija, odmah",
+  "esc.child_abuse": "pomoć 24/7 za djecu koju neko povređuje i za odrasle koji brinu za dijete",
+  "esc.trafficking": "povjerljiva pomoć 24/7 za svakoga ko je prisiljen na rad ili seks; SMS na 233733",
+  "esc.sexual_assault": "povjerljiva podrška 24/7 nakon seksualnog napada",
   "esc.interp": "Prevoditelj je besplatan: kad se netko javi, recite na engleskom „{language}”."
 }

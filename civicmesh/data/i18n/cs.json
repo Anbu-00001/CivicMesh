@@ -48,6 +48,8 @@
   "chip.legal.2": "Kde najdu bezplatnou právní pomoc v imigraci?",
   "r.unsure": "Zatím nevím, jakou pomoc potřebujete. Vyberte něco níže nebo mi řekněte trochu víc — mezitím vás **211** spojí s místní pomocí 24/7.",
   "r.safety": "**Nejdřív vaše bezpečí:** {name} — {phone} (24/7, zdarma a důvěrně).",
+  "r.emergency": "**Pokud je teď něčí život v ohrožení, volejte 911.**",
+  "r.crisis_net": "Jste v nebezpečí nebo myslíte na sebevraždu? Volejte **911**, nebo volejte či pište SMS na **988**.",
   "r.found": "Programy, na které máte pravděpodobně nárok: **{n}**.",
   "r.found_more": "Programy, na které máte pravděpodobně nárok: **{n}**; další, které by mohly sedět: {m}.",
   "r.maybe": "Zatím nic jistého, ale až budu vědět trochu víc, mohly by sedět programy: **{m}**.",
@@ -92,5 +94,9 @@
   "esc.housing": "ubytování na tutéž noc a doporučení na pomoc s nájmem",
   "esc.healthcare": "kliniky s poplatky podle příjmu a registrace do Medicaid",
   "esc.legal": "bezplatná občanskoprávní pomoc ve vašem okolí",
+  "esc.emergency": "zdravotnická záchranná pomoc a policie, hned",
+  "esc.child_abuse": "pomoc 24/7 pro týrané děti a pro dospělé, kteří se o dítě bojí",
+  "esc.trafficking": "důvěrná pomoc 24/7 pro každého, kdo je nucen pracovat nebo k sexu; SMS na 233733",
+  "esc.sexual_assault": "důvěrná podpora 24/7 po sexuálním napadení",
   "esc.interp": "Tlumočník je zdarma: když to někdo zvedne, řekněte anglicky „{language}“."
 }

@@ -12,6 +12,11 @@
         "checked": null,
         "how": "",
         "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-28",
+        "how": "HUD PIH Customer Service Center (800) 955-2232, weekdays 9-5 ET; finds the local public housing agency, which holds the waiting list",
+        "source": "https://hud.gov/program_offices/public_indian_housing/programs/hcv/about"
       }
     },
     "esg-shelter-rule": {
@@ -67,6 +72,11 @@
         "checked": null,
         "how": "",
         "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-28",
+        "how": "HUD PIH Customer Service Center (800) 955-2232, weekdays 9-5 ET; finds the local public housing agency",
+        "source": "https://www.hud.gov/contactus"
       }
     },
     "ndv-shelter-rule": {
@@ -217,6 +227,11 @@
         "checked": "2026-10-27",
         "how": "Free or reduced-price eligibility, 132/132 agree after the nine universal-meal states (before: 120/132)",
         "source": "tools/oracle_programs.py (PolicyEngine US 2.68, 2026-10)"
+      },
+      "contact_manual": {
+        "checked": "2026-10-28",
+        "how": "No phone: the application comes from the child's school office; the FNS policy-office number 703-305-2590 was removed (outside judge, 2026-10-28)",
+        "source": "https://www.fns.usda.gov/cn/applying-free-and-reduced-price-school-meals"
       }
     },
     "mow-rule": {
@@ -246,6 +261,11 @@
         "checked": null,
         "how": "",
         "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-28",
+        "how": "2-1-1 or the local food bank distributes TEFAP; the FNS Food Distribution line 703-305-2680 was removed (outside judge, 2026-10-28)",
+        "source": "https://www.211.org/"
       }
     },
     "sfsp-rule": {
@@ -259,6 +279,11 @@
         "checked": null,
         "how": "",
         "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-28",
+        "how": "USDA National Hunger Hotline 1-866-3-HUNGRY (1-866-348-6479), weekdays 8-8 ET; Spanish 1-877-842-6273",
+        "source": "https://www.fns.usda.gov/national-hunger-hotline"
       }
     },
     "sfmnp-rule": {
@@ -271,6 +296,11 @@
         "checked": null,
         "how": "",
         "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-28",
+        "how": "2-1-1 finds the state agency; the FNS line 703-305-2746 was removed (outside judge, 2026-10-28)",
+        "source": "https://www.211.org/"
       }
     },
     "fridge-rule": {
@@ -301,6 +331,11 @@
         "checked": null,
         "how": "",
         "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-28",
+        "how": "2-1-1 finds the state agency; the FNS line 703-305-2746 was removed (outside judge, 2026-10-28)",
+        "source": "https://www.211.org/"
       }
     },
     "medicaid-rule": {
@@ -316,9 +351,9 @@
         "source": "tools/oracle_programs.py (PolicyEngine US 2.68, 2026-10)"
       },
       "contact_manual": {
-        "checked": "2026-10-27",
-        "how": "Corrected link (old state-contact page 404): medicaid.gov state selector; 877-267-2323 is the CMS line for after the state agency",
-        "source": "https://www.medicaid.gov/about-us/where-can-people-get-help-medicaid-chip"
+        "checked": "2026-10-28",
+        "how": "HealthCare.gov Marketplace Call Center 1-800-318-2596, 24/7 (healthcare.gov/contact-us); a Marketplace application is screened for Medicaid/CHIP and sent to the state agency. Replaces the CMS main line 1-877-267-2323 (outside judge, 2026-10-28)",
+        "source": "https://www.healthcare.gov/contact-us/"
       }
     },
     "chip-rule": {
@@ -362,6 +397,11 @@
         "checked": null,
         "how": "",
         "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-28",
+        "how": "988 Suicide and Crisis Lifeline: call or text 988, chat at 988lifeline.org, 24/7",
+        "source": "https://988lifeline.org/"
       }
     },
     "samhsa-rule": {
@@ -375,6 +415,11 @@
         "checked": null,
         "how": "",
         "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-28",
+        "how": "SAMHSA National Helpline 1-800-662-HELP (4357), free, confidential, 24/7, English and Spanish",
+        "source": "https://www.samhsa.gov/find-help/helplines/national-helpline"
       }
     },
     "ryan-white-rule": {
@@ -578,6 +623,57 @@
         "checked": null,
         "how": "",
         "source": ""
+      }
+    },
+    "childhelp-rule": {
+      "program": "Childhelp National Child Abuse Hotline",
+      "contact_checked": "2026-10-28",
+      "contact_result": "unconfirmed",
+      "url_status": null,
+      "phone_on_page": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-28",
+        "how": "Phone 1-800-422-4453, text and chat on the program's own site",
+        "source": "https://www.childhelphotline.org/"
+      }
+    },
+    "nhth-rule": {
+      "program": "National Human Trafficking Hotline",
+      "contact_checked": "2026-10-28",
+      "contact_result": "unconfirmed",
+      "url_status": null,
+      "phone_on_page": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-28",
+        "how": "Phone 1-888-373-7888, text 233733, 24/7 confidential on the program's own site",
+        "source": "https://humantraffickinghotline.org/en"
+      }
+    },
+    "rainn-rule": {
+      "program": "RAINN National Sexual Assault Hotline",
+      "contact_checked": "2026-10-28",
+      "contact_result": "unconfirmed",
+      "url_status": null,
+      "phone_on_page": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-28",
+        "how": "Phone 800.656.HOPE (4673) and 24/7 online chat, per RAINN",
+        "source": "https://hotline.rainn.org/online"
       }
     }
   }

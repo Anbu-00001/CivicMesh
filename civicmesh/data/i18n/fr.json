@@ -48,6 +48,8 @@
   "chip.legal.2": "Où trouver une aide juridique gratuite en immigration ?",
   "r.unsure": "Je ne sais pas encore de quelle aide vous avez besoin. Choisissez une option ci-dessous ou dites-m'en un peu plus — en attendant, le **211** vous met en contact avec l'aide locale 24/7.",
   "r.safety": "**D'abord, votre sécurité :** {name} — {phone} (24/7, gratuit et confidentiel).",
+  "r.emergency": "**Si la vie de quelqu'un est en danger en ce moment, appelez le 911.**",
+  "r.crisis_net": "En danger, ou vous pensez au suicide ? Appelez le **911**, ou appelez ou envoyez un SMS au **988**.",
   "r.found": "J'ai trouvé **{n}** programme(s) auxquels vous avez probablement droit.",
   "r.found_more": "J'ai trouvé **{n}** programme(s) auxquels vous avez probablement droit, et {m} autre(s) qui pourraient convenir.",
   "r.maybe": "Rien de certain pour l'instant, mais **{m}** programme(s) pourraient convenir quand j'en saurai un peu plus.",
@@ -92,5 +94,9 @@
   "esc.housing": "hébergement pour la nuit et orientation pour l'aide au loyer",
   "esc.healthcare": "cliniques à tarif selon les revenus et inscription à Medicaid",
   "esc.legal": "aide juridique civile gratuite près de chez vous",
+  "esc.emergency": "secours médicaux d'urgence et police, tout de suite",
+  "esc.child_abuse": "aide 24/7 pour les enfants maltraités et pour les adultes inquiets pour un enfant",
+  "esc.trafficking": "aide confidentielle 24/7 pour toute personne forcée à travailler ou à avoir des relations sexuelles ; SMS au 233733",
+  "esc.sexual_assault": "soutien confidentiel 24/7 après une agression sexuelle",
   "esc.interp": "Les interprètes sont gratuits : quand on vous répond, dites « {language} »."
 }

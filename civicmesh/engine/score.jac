@@ -67,6 +67,9 @@ glob TARGETS: dict = {
     "young_child": ("pregnant|embarazada|\\bbaby\\b|infant|newborn|toddler|beb[eé]|breastfeed|under (?:5|five)", "young_child", "families with a baby, a child under 5, or a pregnancy", "familias con bebé, niño menor de 5 años o embarazo"),
     "children": ("\\bkids?\\b|children|\\bchild\\b|\\bsons?\\b|daughters?|hij[oa]s|ni[nñ][oa]s|teen", "children", "children and teens", "niños y adolescentes"),
     "minor": ("\\bminor\\b|under 18|menor de edad", "", "young people under 18", "jóvenes menores de 18 años"),
+    "child_abuse": ("", "", "children being hurt, and adults worried about a child", "niños que sufren maltrato y adultos preocupados por un niño"),
+    "trafficking": ("", "", "people forced or held to work or to have sex", "personas obligadas o retenidas para trabajar o tener sexo"),
+    "sexual_assault": ("", "", "survivors of sexual assault", "sobrevivientes de agresión sexual"),
     "eviction_risk": ("evict|behind on rent|past due|shut ?off|disconnect|landlord|desalo|atrasad[oa] con la renta|corte de luz", "eviction", "people facing eviction or a utility shutoff", "personas ante desalojo o corte de servicios"),
     "immigration": ("immigra|deport|asylum|visa|green card|citizenship|undocumented|inmigra|asilo|papeles|indocumentad", "", "people with immigration questions", "personas con dudas de inmigración"),
     "crisis": ("suicid|kill myself|end my life|want to die|self[- ]harm|crisis|panic attack|quitarme la vida|no quiero vivir|matarme", "", "people in a mental-health crisis", "personas en crisis de salud mental"),
@@ -81,13 +84,18 @@ glob TARGETS: dict = {
     "tenant": ("evict|landlord|lease|repairs|\\bmold|\\brent\\b|tenant|desalo|casero|renta|inquilin", "eviction", "renters with landlord problems", "inquilinos con problemas con el casero")
 };
 glob TARGET_GATE: float = 0.35;
+# Programs whose income limit is a gate once income is known: limit × factor.
+glob HARD_INCOME_CAP: dict = {"medicaid-rule": 1.0, "chip-rule": 1.0, "lsc-rule": 1.6};
 
 # Person facts have one source of truth: the parser's flags, which apply fact
 # negation ("we're not homeless", "I don't have a disability") and other-sense
 # guards ("the Salvation Army", "a car parked on the street"). Matching the
 # raw TARGETS regex here counted those as evidence (found by probing a real
 # conversation after the flag fixes). Other targets are topics, not facts.
-glob FLAG_TARGETS: dict = {"homeless": "homeless", "veteran": "veteran", "disability": "disabled", "dv": "dv", "children": "children", "minor": "minor"};
+glob FLAG_TARGETS: dict = {"homeless": "homeless", "veteran": "veteran", "disability": "disabled", "dv": "dv", "children": "children", "minor": "minor",
+                            "child_abuse": "child_abuse", "trafficking": "trafficking", "sexual_assault": "sexual_assault"};
+# Lines for one danger: shown only when the message shows it, never as clutter.
+glob DANGER_TARGETS: list = ["child_abuse", "trafficking", "sexual_assault"];
 
 """Is target `t` evidenced for this person?"""
 def target_hit(t: str, low_msg: str, flags: list) -> bool {
@@ -257,6 +265,17 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
             asks.append("income");
         } elif income <= limit {
             cr = _crit("income", "Income", "met", sigmoid(INCOME_K * (limit - income) / float(limit)), W_INCOME, False, usd(income) + "/yr is under " + basis);
+        } elif rule_id == "snap-rule" and ("senior" in flags or "disabled" in flags) {
+            # A household with someone 60+ or disabled skips the gross test
+            # (7 CFR 273.9(a)); the net test after rent and medical costs
+            # decides (outside judge, 2026-10-28: a 70-year-old on $1,900 of
+            # Social Security was told she was "$2,052 over").
+            est = snap_estimate(profile);
+            if est {
+                cr = _crit("income", "Income", "met", 0.8, W_INCOME, False, "Someone 60+ or disabled: no gross-income test, and the net test is met (" + str(est["label"]) + ")");
+            } else {
+                cr = _crit("income", "Income", "unknown", 0.45, W_INCOME, False, "Someone 60+ or disabled: no gross-income test; the net test after rent and medical costs decides");
+            }
         } elif lim.get("assumed_household") and per > 0 and income <= limit + 7 * per {
             # Over the 1-person line, but household size is unknown and the
             # limit grows with every person: ask before ruling it out.
@@ -266,6 +285,15 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         } else {
             cr = _crit("income", "Income", "unmet", sigmoid(INCOME_K * (limit - income) / float(limit)), W_INCOME, False, usd(income) + "/yr is over " + basis);
             cfs.append({"key": "income", "effort": (income - limit) / float(limit), "text": cf_text("income", lang, usd(limit), usd(income - limit))});
+            # A known income over a strict limit is a "no", not a "maybe"
+            # (outside judge, 2026-10-28: $360,000 a year read "possible" for
+            # legal aid). Legal aid can stretch to 200% with expenses; Medicaid
+            # for people 60+ or disabled runs on other tests.
+            cap = float(HARD_INCOME_CAP.get(rule_id, 0.0));
+            if cap > 0 and not lim.get("typical") and income > limit * cap and not (rule_id == "medicaid-rule" and ("senior" in flags or "disabled" in flags)) {
+                cr["hard"] = True;
+                cr["score"] = 0.0;
+            }
             if rule_id == "snap-rule" and not ("senior" in flags or "disabled" in flags) {
                 # SNAP's gross test is a gate, not a preference: over the
                 # state's limit only a household with someone 60+ or disabled
@@ -306,7 +334,7 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
     } elif bool(rule.get("citizenship_required", False)) {
         cit = str(profile.get("citizenship", ""));
         waiver = bool(re.search(r"immigra|lpr|refugee|asylee|qualified non-citizen|legal resident", (str(rule.get("exceptions", "")) + " " + str(rule.get("criteria_summary", ""))).lower()));
-        if cit in ["citizen", "eligible_immigrant", "humanitarian"] {
+        if cit in ["citizen", "eligible_immigrant", "humanitarian", "citizen_or_lpr", "cuban_haitian_entrant", "cofa"] {
             crits.append(_crit("citizenship", "Status", "met", 1.0, 0.0, True, "Citizen or eligible immigrant"));
         } elif cit == "non_citizen" {
             crits.append(_crit("citizenship", "Status", "unmet", 0.0, 0.0, True, "Needs citizenship or an eligible immigration status"));
@@ -496,11 +524,17 @@ def rank_resources(items: list, profile: dict, message: str, limit: int = 6, lan
         if ("self_harm" in flags or "self_harm_concern" in flags) and "988" in name_low { pinned = True; }
         if "dv" in flags and "domestic violence" in name_low { pinned = True; }
         if "dv_concern" in flags and "domestic violence hotline" in name_low { pinned = True; }
+        danger = [str(t) for t in list(it["rule"].get("targets", []) or []) if str(t) in DANGER_TARGETS];
+        if danger {
+            if not [t for t in danger if t in flags] { continue; }
+            pinned = True;
+        }
         if w <= 0.0 and not pinned { continue; }
         s = score_resource(res, it["rule"], profile, message, lang);
         s["form"] = it.get("form", {});
         s["pinned"] = pinned;
-        s["rank_score"] = round(float(s["rank_score"]) * (w if w > 0 else 1.0) + (10.0 if pinned else 0.0), 4);
+        # The line for the specific danger comes before the general ones.
+        s["rank_score"] = round(float(s["rank_score"]) * (w if w > 0 else 1.0) + ((12.0 if danger else 10.0) if pinned else 0.0), 4);
         scored.append(s);
     }
     scored.sort(key=lambda s: dict : -float(s["rank_score"]));
@@ -515,7 +549,7 @@ def rank_resources(items: list, profile: dict, message: str, limit: int = 6, lan
     # eligibility mass it gates among the current top candidates.
     voi: dict = {};
     answered = list(profile.get("answered", []));
-    crisis = "self_harm" in flags or "dv" in flags;
+    crisis = any([f in flags for f in ["self_harm", "dv", "child_abuse", "sexual_assault", "trafficking", "emergency"]]);
     for (i, s) in enumerate(scored[:10]) {
         rw = 1.0 / (1.0 + i);
         if crisis { break; }
