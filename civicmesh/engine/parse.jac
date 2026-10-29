@@ -930,14 +930,30 @@ def middle_danger(text: str) -> list {
         return [];
     }
     half = MAX_MESSAGE_CHARS // 2;
-    mid = t[half:len(t) - half][:MIDDLE_SCAN_CHARS];
+    low = t[half:len(t) - half][:MIDDLE_SCAN_CHARS].lower();
+    # Danger patterns only: the full parse (households, ages) cost a second
+    # on a slow CI runner for 40,000 characters of "my mom, ".
     found: list = [];
-    for i in range(0, len(mid), MAX_MESSAGE_CHARS) {
-        for f in list(parse_intake(mid[i:i + MAX_MESSAGE_CHARS]).get("flags", [])) {
-            if f in DANGER_FLAGS and f not in found { found.append(f); }
+    for flag in ["self_harm", "dv"] {
+        for pat in FLAG_LEXICON[flag] {
+            if [m for m in re.finditer("\\b" + pat + "\\b", low) if not flag_other_sense(flag, low, m.start(), m.end())] {
+                found.append(flag);
+                break;
+            }
         }
     }
-    return found;
+    for (f, cs, ce) in crisis_any_language(low) {
+        if f not in found and f.replace("_concern", "") not in found { found.append(f); }
+    }
+    for (cflag, cpats) in CONCERN_LEXICON.items() {
+        if cflag.replace("_concern", "") not in found and cflag not in found and [cp for cp in cpats if re.search("\\b" + cp + "\\b", low)] {
+            found.append(cflag);
+        }
+    }
+    for (sflag, srx) in [("child_abuse", CHILD_ABUSE_RE), ("sexual_assault", SEXUAL_ASSAULT_RE), ("trafficking", TRAFFICKING_RE), ("emergency", EMERGENCY_RE)] {
+        if sflag not in found and re.search(srx, low) { found.append(sflag); }
+    }
+    return [f for f in found if f in DANGER_FLAGS];
 }
 
 """Parse one user message into a structured, evidence-backed profile."""
