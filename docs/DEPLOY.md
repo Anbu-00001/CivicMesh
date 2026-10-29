@@ -83,6 +83,12 @@ refilled over SECONDS). Override any cell with
 Body caps: `CIVICMESH_BODY_MAX_<CLASS>` (bytes). Timeouts:
 `CIVICMESH_TIMEOUT_<CLASS>` (seconds).
 
+**Cross-origin and framing.** `CIVICMESH_ALLOWED_ORIGINS` (comma-separated,
+empty by default) lists the origins whose browsers may read API answers; every
+other origin gets no CORS headers. `CIVICMESH_FRAME_ANCESTORS` (default
+`'self' https://huggingface.co`) is the CSP `frame-ancestors` list: the Space
+page frames the app from huggingface.co, and nothing else may.
+
 | Class | Routes | Per address | Per visitor | Server-wide | Max body | Timeout |
 |---|---|---|---|---|---|---|
 | `static` | pages, scripts, images, API docs | 600/60 | — | 12000/60 | — | 30 s |

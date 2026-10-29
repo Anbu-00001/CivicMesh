@@ -18,7 +18,7 @@ from cmguard import budget as budget_mod  # noqa: E402
 from cmguard.budget import ModelBudget, ModelBudgetExceeded, estimate_tokens, guard  # noqa: E402
 from cmguard.clientip import client_ip  # noqa: E402
 from cmguard.config import BudgetConfig, parse_rate  # noqa: E402
-from cmguard.gateway import classify, json_shape_problem  # noqa: E402
+from cmguard.gateway import classify, content_security_policy, cors_filter, json_shape_problem  # noqa: E402
 from cmguard.limits import ExpiringSet, InflightCounter, TokenBuckets  # noqa: E402
 from cmguard.redact import redact, safe_error  # noqa: E402
 
@@ -289,6 +289,22 @@ class Gateway(unittest.TestCase):
     def test_favicon_is_a_png(self):
         from cmguard.gateway import FAVICON
         self.assertTrue(FAVICON.startswith(b"\x89PNG"))
+
+    def test_cors_is_allow_listed_and_never_credentialed(self):
+        up = [(b"Access-Control-Allow-Origin", b"https://evil.example"), (b"access-control-allow-credentials", b"true"),
+              (b"access-control-allow-methods", b"POST"), (b"content-type", b"application/json")]
+        # Same-origin default: every CORS header is dropped.
+        self.assertEqual(cors_filter(up, b"https://evil.example", frozenset()), [(b"content-type", b"application/json")])
+        self.assertEqual(cors_filter(up, b"", frozenset({"https://ok.example"})), [(b"content-type", b"application/json")])
+        kept = dict((k.lower(), v) for k, v in cors_filter(up, b"https://ok.example", frozenset({"https://ok.example"})))
+        self.assertEqual(kept[b"access-control-allow-origin"], b"https://ok.example")
+        self.assertNotIn(b"access-control-allow-credentials", kept)
+
+    def test_framing_is_limited(self):
+        csp = content_security_policy("'self' https://huggingface.co").decode()
+        self.assertIn("frame-ancestors 'self' https://huggingface.co", csp)
+        self.assertIn("object-src 'none'", csp)
+        self.assertEqual(cors_filter([(b"Content-Security-Policy", b"x")], b"", frozenset()), [])
 
     def test_json_shape_caps(self):
         self.assertEqual(json_shape_problem({"a": "b"}, 12, 5000, 20000), "")

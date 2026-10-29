@@ -98,5 +98,11 @@
   "esc.child_abuse": "ndihmë 24/7 për fëmijët që lëndohen dhe për të rriturit që shqetësohen për një fëmijë",
   "esc.trafficking": "ndihmë konfidenciale 24/7 për këdo që detyrohet të punojë ose të bëjë seks; SMS në 233733",
   "esc.sexual_assault": "mbështetje konfidenciale 24/7 pas një sulmi seksual",
-  "esc.interp": "Përkthyesi është falas: kur t'ju përgjigjen, thoni në anglisht \"{language}\"."
+  "esc.interp": "Përkthyesi është falas: kur t'ju përgjigjen, thoni në anglisht \"{language}\".",
+  "ui.safety_danger": "Në rrezik tani:",
+  "ui.safety_crisis": "Vetëvrasje ose krizë: telefononi ose dërgoni mesazh te",
+  "ui.safety_home": "Nuk jeni i sigurt në shtëpi:",
+  "ui.safety_text": "ose dërgoni START te 88788",
+  "ui.details": "Detaje",
+  "ui.hide_details": "Fshih detajet"
 }

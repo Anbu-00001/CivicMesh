@@ -103,5 +103,11 @@
   "esc.child_abuse": "24/7 help for children being hurt and for adults worried about a child",
   "esc.trafficking": "24/7 confidential help for anyone forced to work or to have sex; text 233733",
   "esc.sexual_assault": "24/7 confidential support after sexual assault",
-  "esc.interp": "Interpreters are free: say \"{language}\" when someone answers."
+  "esc.interp": "Interpreters are free: say \"{language}\" when someone answers.",
+  "ui.safety_danger": "In danger now:",
+  "ui.safety_crisis": "Suicide or crisis: call or text",
+  "ui.safety_home": "Not safe at home:",
+  "ui.safety_text": "or text START to 88788",
+  "ui.details": "Details",
+  "ui.hide_details": "Hide details"
 }

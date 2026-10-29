@@ -98,5 +98,11 @@
   "esc.child_abuse": "caawimaad 24/7 ah oo loogu talagalay carruurta la dhibaateeyo iyo dadka waaweyn ee ka welwelsan ilmo",
   "esc.trafficking": "caawimaad qarsoodi ah 24/7 qof kasta oo lagu qasbo shaqo ama galmo; fariin u dir 233733",
   "esc.sexual_assault": "taageero qarsoodi ah 24/7 kadib weerar galmo",
-  "esc.interp": "Turjubaanku waa bilaash: marka qof jawaabo, ku dheh Ingiriis \"{language}\"."
+  "esc.interp": "Turjubaanku waa bilaash: marka qof jawaabo, ku dheh Ingiriis \"{language}\".",
+  "ui.safety_danger": "Hadda khatar ku jirta:",
+  "ui.safety_crisis": "Is-dil ama xiisad: wac ama fariin u dir",
+  "ui.safety_home": "Gurigaaga kuma nabadgelin:",
+  "ui.safety_text": "ama u dir START 88788",
+  "ui.details": "Faahfaahin",
+  "ui.hide_details": "Qari faahfaahinta"
 }

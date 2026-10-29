@@ -98,5 +98,11 @@
   "esc.child_abuse": "èd 24/7 pou timoun yo ap maltrete ak pou granmoun ki enkyete pou yon timoun",
   "esc.trafficking": "èd konfidansyèl 24/7 pou nenpòt moun yo fòse travay oswa fè sèks; voye tèks bay 233733",
   "esc.sexual_assault": "sipò konfidansyèl 24/7 apre yon agresyon seksyèl",
-  "esc.interp": "Entèprèt gratis: lè yon moun reponn, di \"{language}\"."
+  "esc.interp": "Entèprèt gratis: lè yon moun reponn, di \"{language}\".",
+  "ui.safety_danger": "An danje kounye a:",
+  "ui.safety_crisis": "Swisid oswa kriz: rele oswa voye tèks bay",
+  "ui.safety_home": "Ou pa an sekirite lakay ou:",
+  "ui.safety_text": "oswa voye START bay 88788",
+  "ui.details": "Detay",
+  "ui.hide_details": "Kache detay yo"
 }

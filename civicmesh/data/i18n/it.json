@@ -98,5 +98,11 @@
   "esc.child_abuse": "aiuto 24/7 per bambini maltrattati e per adulti preoccupati per un bambino",
   "esc.trafficking": "aiuto riservato 24/7 per chi è costretto a lavorare o ad avere rapporti sessuali; SMS al 233733",
   "esc.sexual_assault": "sostegno riservato 24/7 dopo una violenza sessuale",
-  "esc.interp": "Gli interpreti sono gratuiti: quando rispondono, dica \"{language}\"."
+  "esc.interp": "Gli interpreti sono gratuiti: quando rispondono, dica \"{language}\".",
+  "ui.safety_danger": "In pericolo ora:",
+  "ui.safety_crisis": "Suicidio o crisi: chiama o scrivi al",
+  "ui.safety_home": "Non al sicuro a casa:",
+  "ui.safety_text": "oppure scrivi START al 88788",
+  "ui.details": "Dettagli",
+  "ui.hide_details": "Nascondi dettagli"
 }

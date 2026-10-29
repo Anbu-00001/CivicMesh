@@ -77,6 +77,33 @@ SECURITY_HEADERS = [
     (b"permissions-policy", b"camera=(), microphone=(), geolocation=(), payment=(), usb=()"),
 ]
 
+CORS_PREFIX = b"access-control-"
+
+
+def content_security_policy(frame_ancestors: str) -> bytes:
+    """Framing, plugins, <base> and form targets locked down; scripts and
+    styles stay as the client bundle needs them."""
+    return ("frame-ancestors " + frame_ancestors + "; base-uri 'self'; object-src 'none'; form-action 'self'").encode("latin-1")
+
+
+def cors_filter(raw_headers, origin: bytes, allowed: frozenset):
+    """The server behind the gateway echoed any Origin with credentials
+    (outside judge, 2026-10-28). Keep CORS headers only for an allow-listed
+    origin, and never with credentials: auth is a bearer token, not a cookie."""
+    keep = bool(origin) and origin.decode("latin-1").rstrip("/") in allowed
+    out = []
+    for k, v in raw_headers:
+        kl = k.lower()
+        if kl == b"content-security-policy":
+            continue
+        if kl.startswith(CORS_PREFIX):
+            if not keep or kl == b"access-control-allow-credentials":
+                continue
+            if kl == b"access-control-allow-origin":
+                v = origin
+        out.append((k, v))
+    return out
+
 
 STARTING_PAGE = (b"<!doctype html><html lang='en'><head><meta charset='utf-8'><meta http-equiv='refresh' content='3'>"
                  b"<meta name='viewport' content='width=device-width, initial-scale=1'><title>CivicMesh is starting</title></head>"
@@ -252,10 +279,17 @@ class Gateway:
             telemetry.maybe_log(self.cfg.telemetry_interval_s, "gateway")
 
     # -- request handling --------------------------------------------------
-    async def _http(self, scope, receive, send):
+    async def _http(self, scope, receive, raw_send):
         method = scope["method"].upper()
         path = scope.get("path", "/") or "/"
         headers = {k.lower(): v for k, v in scope.get("headers", [])}
+        origin = headers.get(b"origin", b"")
+        csp = (b"content-security-policy", content_security_policy(self.cfg.frame_ancestors))
+
+        async def send(message):
+            if message["type"] == "http.response.start":
+                message = dict(message, headers=cors_filter(message.get("headers", []), origin, self.cfg.allowed_origins) + [csp])
+            await raw_send(message)
         cls, walker = classify(method, path)
         if cls == "blocked":
             telemetry.count("rejected:blocked_route")

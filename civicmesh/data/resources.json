@@ -1407,6 +1407,38 @@
         "submission_method": "phone",
         "estimated_minutes": 0
       }
+    },
+    {
+      "agency_name": "U.S. Department of Labor Wage and Hour Division",
+      "category": "legal",
+      "capacity": "open",
+      "languages_supported": ["en", "es"],
+      "contact_phone": "1-866-487-9243",
+      "contact_email": "",
+      "address": "Phone, online, or a local Wage and Hour office",
+      "online_url": "https://www.dol.gov/agencies/whd/contact/complaints",
+      "description": "Federal agency that investigates unpaid wages, unpaid overtime and minimum-wage violations and can recover back pay. Complaints are confidential, and employers may not retaliate for filing one. Free; interpreters available.",
+      "eligibility": {
+        "rule_id": "whd-rule",
+        "income_limit_annual": 0,
+        "residency_requirement": "none",
+        "min_family_size": 0,
+        "citizenship_required": false,
+        "age_min": 0,
+        "age_max": 0,
+        "exceptions": "Some workers (certain salaried, farm or tipped jobs) are covered by different rules; many states also have their own labor office for state wage law.",
+        "criteria_summary": "Any worker in the U.S. who was not paid the wages or overtime they are owed.",
+        "targets": ["wage"]
+      },
+      "form": {
+        "form_id": "whd-complaint",
+        "form_name": "Wage and Hour complaint (by phone or online)",
+        "url": "https://www.dol.gov/agencies/whd/contact/complaints",
+        "required_documents": ["Employer's name and address", "Dates and hours worked", "Pay stubs or records of pay received"],
+        "deadline_type": "rolling",
+        "submission_method": "phone",
+        "estimated_minutes": 20
+      }
     }
   ]
 }

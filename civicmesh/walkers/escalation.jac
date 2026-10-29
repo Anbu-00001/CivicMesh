@@ -71,11 +71,18 @@ walker EscalationWalker {
         }
 
         crisis: list = [];
+        # A danger gets only the lines pinned for it: the DV box listed
+        # HUD-VASH (veterans only) for a non-veteran (outside judge, 2026-10-28).
+        pinned_names = [str(s["resource_name"]) for s in list(self.ranked) if s.get("pinned", False)];
         for r in [root --> [?:ResourceNode]] {
             if str(r.capacity) == "closed" { continue; }
             name = str(r.agency_name);
             low = name.lower();
-            relevant = ("hotline" in low or "lifeline" in low or "helpline" in low) or (str(r.category) == cat and str(r.capacity) == "open");
+            if key in LEAD_ORDER {
+                relevant = name in pinned_names;
+            } else {
+                relevant = ("hotline" in low or "lifeline" in low or "helpline" in low) or (str(r.category) == cat and str(r.capacity) == "open");
+            }
             if relevant {
                 crisis.append({"name": name, "phone": str(r.contact_phone), "category": str(r.category)});
             }

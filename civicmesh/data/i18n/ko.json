@@ -98,5 +98,11 @@
   "esc.child_abuse": "학대받는 아이들과 아이를 걱정하는 어른을 위한 24/7 도움",
   "esc.trafficking": "일이나 성관계를 강요당하는 모든 사람을 위한 비밀 보장 24/7 도움, 233733으로 문자",
   "esc.sexual_assault": "성폭력 이후 비밀 보장 24/7 지원",
-  "esc.interp": "통역은 무료입니다: 상담원이 받으면 영어로 \"{language}\"라고 말씀하세요."
+  "esc.interp": "통역은 무료입니다: 상담원이 받으면 영어로 \"{language}\"라고 말씀하세요.",
+  "ui.safety_danger": "지금 위험하다면:",
+  "ui.safety_crisis": "자살 또는 위기: 전화 또는 문자",
+  "ui.safety_home": "집이 안전하지 않다면:",
+  "ui.safety_text": "또는 88788로 START 문자",
+  "ui.details": "자세히",
+  "ui.hide_details": "자세히 숨기기"
 }

@@ -98,5 +98,11 @@
   "esc.child_abuse": "為受到傷害嘅兒童同擔心小朋友嘅成年人提供24/7幫助",
   "esc.trafficking": "為任何被逼工作或者發生性行為嘅人提供保密嘅24/7幫助；send短訊去233733",
   "esc.sexual_assault": "遭受性侵犯之後嘅保密24/7支援",
-  "esc.interp": "傳譯服務免費：接通之後請用英文講 \"{language}\"。"
+  "esc.interp": "傳譯服務免費：接通之後請用英文講 \"{language}\"。",
+  "ui.safety_danger": "而家有危險:",
+  "ui.safety_crisis": "自殺或者危機: 打電話或者send短訊去",
+  "ui.safety_home": "喺屋企唔安全:",
+  "ui.safety_text": "或者send START去88788",
+  "ui.details": "詳情",
+  "ui.hide_details": "隱藏詳情"
 }

@@ -98,5 +98,11 @@
   "esc.child_abuse": "kev pab 24/7 rau cov menyuam raug tsim txom thiab rau cov neeg laus uas txhawj txog ib tug menyuam",
   "esc.trafficking": "kev pab zais cia 24/7 rau txhua tus uas raug yuam ua haujlwm los yog sib deev; xa ntawv rau 233733",
   "esc.sexual_assault": "kev txhawb nqa zais cia 24/7 tom qab raug yuam deev",
-  "esc.interp": "Tus neeg txhais lus yog pub dawb: thaum muaj neeg teb, hais ua lus Askiv tias \"{language}\"."
+  "esc.interp": "Tus neeg txhais lus yog pub dawb: thaum muaj neeg teb, hais ua lus Askiv tias \"{language}\".",
+  "ui.safety_danger": "Muaj kev phom sij tam sim no:",
+  "ui.safety_crisis": "Tua tus kheej los yog muaj teeb meem: hu los yog xa ntawv rau",
+  "ui.safety_home": "Tsis muaj kev nyab xeeb hauv tsev:",
+  "ui.safety_text": "los yog xa START rau 88788",
+  "ui.details": "Ntsiab lus",
+  "ui.hide_details": "Muab ntsiab lus zais"
 }

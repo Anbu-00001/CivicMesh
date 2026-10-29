@@ -98,5 +98,11 @@
   "esc.child_abuse": "Hilfe rund um die Uhr (24/7) für Kinder, denen Gewalt angetan wird, und für Erwachsene, die sich um ein Kind sorgen",
   "esc.trafficking": "vertrauliche Hilfe 24/7 für alle, die zur Arbeit oder zu Sex gezwungen werden; SMS an 233733",
   "esc.sexual_assault": "vertrauliche Unterstützung 24/7 nach sexueller Gewalt",
-  "esc.interp": "Dolmetscher sind kostenlos: Sagen Sie „{language}“, wenn sich jemand meldet."
+  "esc.interp": "Dolmetscher sind kostenlos: Sagen Sie „{language}“, wenn sich jemand meldet.",
+  "ui.safety_danger": "Jetzt in Gefahr:",
+  "ui.safety_crisis": "Suizid oder Krise: anrufen oder SMS an",
+  "ui.safety_home": "Zu Hause nicht sicher:",
+  "ui.safety_text": "oder SMS mit START an 88788",
+  "ui.details": "Details",
+  "ui.hide_details": "Details ausblenden"
 }

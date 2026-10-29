@@ -109,6 +109,7 @@ def:pub ChatPane(
     async def forgetMe -> None;
     def setPrivate(on: bool) -> None;
     def renderPrivacy -> JsxElement;
+    def footerUi -> Any;
     def spansToEvents(spans: list) -> list;
     def fmtMs(ms: float) -> str;
     def tierStyle(tier: str, ui: Any) -> dict;
@@ -128,17 +129,18 @@ def:pub ChatPane(
     def renderProfilePanel -> JsxElement;
     def renderPipeline -> JsxElement;
 
+    fui: Any = footerUi();
     return
         <div className="cm-chat-grid">
             <div className="cm-panel cm-chat-col">
                 <div className="cm-chat-head">
                     <div style={{"flex": "1", "minWidth": "0"}}>
                         <h2 style={{"fontSize": "14px", "fontWeight": "600", "margin": "0"}}>CivicMesh Navigator</h2>
-                        <div className="cm-muted" style={{"fontSize": "11px", "marginTop": "2px"}}>
+                        <div className="cm-muted cm-chat-sub" style={{"fontSize": "11px", "marginTop": "2px"}}>
                             Deterministic eligibility engine · 2026 federal rules · 51 machine-drafted languages, 111 selectable · 1 LLM call per turn, off the critical path
                         </div>
                     </div>
-                    {is_loading and <div className="cm-badge badge-glow"><span className="cm-dot-live"/>Scoring 41 programs…</div>}
+                    {is_loading and <div className="cm-badge badge-glow"><span className="cm-dot-live"/>Scoring 45 programs…</div>}
                     {renderLangPicker()}
                     <button className="cm-ghost-btn" onClick={lambda _e: MouseEvent { resetCase(); }} title="Start a new case">New case</button>
                 </div>
@@ -172,10 +174,10 @@ def:pub ChatPane(
                         →
                     </button>
                 </div>
-                <p className="cm-safety-line">
-                    {"In danger now: "}<a href="tel:911">911</a>
-                    {" · Suicide or crisis: call or text "}<a href="tel:988">988</a>
-                    {" · Not safe at home: "}<a href="tel:18007997233">1-800-799-7233</a>{" or text START to 88788"}
+                <p className="cm-safety-line" dir="auto">
+                    {L(fui, "ui.safety_danger", "In danger now:") + " "}<a href="tel:911">911</a>
+                    {" · " + L(fui, "ui.safety_crisis", "Suicide or crisis: call or text") + " "}<a href="tel:988">988</a>
+                    {" · " + L(fui, "ui.safety_home", "Not safe at home:") + " "}<a href="tel:18007997233">1-800-799-7233</a>{" " + L(fui, "ui.safety_text", "or text START to 88788")}
                 </p>
                 {renderPrivacy()}
             </div>

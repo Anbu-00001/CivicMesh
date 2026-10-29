@@ -98,5 +98,11 @@
   "esc.child_abuse": "pomoc 24/7 dla krzywdzonych dzieci i dla dorosłych, którzy martwią się o dziecko",
   "esc.trafficking": "poufna pomoc 24/7 dla każdego zmuszanego do pracy lub seksu; SMS pod 233733",
   "esc.sexual_assault": "poufne wsparcie 24/7 po napaści seksualnej",
-  "esc.interp": "Tłumacz jest bezpłatny: gdy ktoś odbierze, powiedz po angielsku „{language}”."
+  "esc.interp": "Tłumacz jest bezpłatny: gdy ktoś odbierze, powiedz po angielsku „{language}”.",
+  "ui.safety_danger": "W niebezpieczeństwie teraz:",
+  "ui.safety_crisis": "Samobójstwo lub kryzys: zadzwoń lub napisz SMS na",
+  "ui.safety_home": "W domu nie jest bezpiecznie:",
+  "ui.safety_text": "lub wyślij START na 88788",
+  "ui.details": "Szczegóły",
+  "ui.hide_details": "Ukryj szczegóły"
 }

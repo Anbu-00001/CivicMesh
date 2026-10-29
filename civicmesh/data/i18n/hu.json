@@ -98,5 +98,11 @@
   "esc.child_abuse": "segítség 24/7 bántalmazott gyerekeknek és felnőtteknek, akik aggódnak egy gyerekért",
   "esc.trafficking": "bizalmas segítség 24/7 bárkinek, akit munkára vagy szexre kényszerítenek; SMS: 233733",
   "esc.sexual_assault": "bizalmas támogatás 24/7 szexuális erőszak után",
-  "esc.interp": "A tolmács ingyenes: amikor felveszik, mondja angolul: „{language}”."
+  "esc.interp": "A tolmács ingyenes: amikor felveszik, mondja angolul: „{language}”.",
+  "ui.safety_danger": "Most veszélyben van:",
+  "ui.safety_crisis": "Öngyilkosság vagy krízis: hívja vagy írjon SMS-t:",
+  "ui.safety_home": "Otthon nincs biztonságban:",
+  "ui.safety_text": "vagy küldje: START a 88788-ra",
+  "ui.details": "Részletek",
+  "ui.hide_details": "Részletek elrejtése"
 }

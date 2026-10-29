@@ -60,6 +60,16 @@ with entry {
     opening = "My husband hits me. " + "The notice says the lease ends. " * 200;
     if "dv" not in parse_intake(opening)["flags"] { fails.append("a violence sentence at the start of a long letter was clipped away"); }
 
+    middle = "The notice says the lease ends. " * 120 + "My husband hits me and I am scared. " + "The notice says the lease ends. " * 120;
+    if "dv" not in parse_intake(middle)["flags"] { fails.append("a violence sentence in the middle of a long message was never read"); }
+    # The middle is scanned for danger too, so a long hostile message costs
+    # up to three parses: it must still fit the budget.
+    t0 = time.perf_counter();
+    parse_intake("my mom, " * 5000);
+    dt = time.perf_counter() - t0;
+    if dt > BUDGET_S { fails.append(f"a 40,000-character repeated-relation message took {dt:.2f} s"); }
+    print(f"  40,000 characters of 'my mom, ': {dt * 1000:.0f} ms");
+
     print("Input-cost checks: MONEY_RE linear, 4,000-character clip, " + str(len(hostile)) + " hostile inputs");
     print(f"  slowest hostile input: {worst_name} ({worst * 1000:.0f} ms, budget {BUDGET_S * 1000:.0f} ms)");
     for f in fails { print("  FAIL " + f); }

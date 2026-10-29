@@ -13,7 +13,7 @@ flowchart LR
         G4[golden_holdout.json · 40<br/>written after tuning, scored first]:::t
         G5[golden_facts_i18n.json · 48<br/>income · household · age · status · place<br/>in 20 more languages]:::t
         G6[golden_probes.json · 100<br/>other senses · indirect crisis · local limits<br/>+ p_max / tier_not + metamorphic check]:::t
-        G7[golden_conversations.json · 14<br/>language switches · a second need · bare answers<br/>turn by turn through merge_profiles]:::t
+        G7[golden_conversations.json · 22<br/>language switches · a second need · bare answers<br/>turn by turn through merge_profiles]:::t
     end
     S --> EV[eval_engine.jac<br/>policy date pinned]:::det
     EV --> MX[fields · languages · top-3 · plan · exclusions · latency]:::det
@@ -39,26 +39,29 @@ flowchart LR
 
 ```
 cd civicmesh && jac run tests/eval_engine.jac
-  439 cases + 14 conversations · field accuracy 100% (1009/1009) · 73/73 languages · top-3 + plan checks 100% (54/54) · exclusion errors 0
-  metamorphic 228/228 neutral additions moved no verdict · latency / turn p50 ~1.6 ms · p95 ~18 ms
+  620 cases + 22 conversations (52 turns) · field accuracy 100% (1362/1362) · 73/73 languages · top-3 100% · exclusion errors 0
+  metamorphic 228/228 neutral additions moved no verdict · latency / turn p50 ~1.2 ms · p95 ~2.4 ms
 
 cd civicmesh && jac run tests/check_messages.jac
-  50 languages + English source, 93 keys each · PASS
+  50 languages + English source, 105 keys each · PASS
 
 cd civicmesh && jac run tests/check_privacy.jac
   66 checks (34 scrub, 21 keep, 5 same-facts, 6 crisis) · PASS · known misses printed: 0/5 caught
 
 cd civicmesh && jac run tests/check_policy.jac
-  69 checks: SNAP FY2026 → FY2027 on 2026-10-01, state gross limits, net test, state minimums, unearned income, P.L. 119-21 dates and notes · PASS
+  100 checks: SNAP FY2026 → FY2027 on 2026-10-01, state gross limits, net test, state minimums, unearned income, P.L. 119-21 dates and notes · PASS
 
 cd civicmesh && rm -rf .jac/data && jac test tests/test_privacy_graph.jac   # + test_schema, persona_* (8 tests); clean store, see docs/MAINTENANCE.md
   OK
 
 python3 tests/e2e_http.py http://localhost:7860
-  69/69 passed · turn latency p50 ~0.4 s
+  71/71 passed · turn latency p50 ~0.4 s
+
+cd civicmesh && jac run tests/check_prior.jac
+  9 checks: the client-held profile is range-checked, and flags and the household count must be supported by the person's own words · PASS
 
 python3 tests/browser_e2e.py http://localhost:7860   # headless Chrome
-  19 checks · PASS
+  16 checks · PASS
 
 cd civicmesh && jac run tests/eval_external.jac   # real posts, downloaded on first run
 ```
@@ -67,11 +70,12 @@ cd civicmesh && jac run tests/eval_external.jac   # real posts, downloaded on fi
 |---|---|---|
 | `golden.json` | 41 | EN/ES full pipeline plus policy cases: refugee and SNAP, Texas childless adult and Medicaid, California expansion, 130% FPL for 4, the Alaska table, SNAP present in the plan |
 | `golden_i18n.json` | 93 | Language ID and routing in 73 languages including Cantonese, Pashto, Sorani and Kurmanji, Tigrinya, Romanian, both BCS scripts, Yoruba, Igbo, Hausa, Cebuano, Samoan, Tongan, Yiddish and Quechua. Also crisis and violence phrasing, an Estonian sentence that must stay unidentified, and the Mayan heuristic |
-| `golden_adversarial.json` | 117 | Cross-category traps ("no food at home", "debt collectors about hospital bills"), negation, possession, idioms ("dying of hunger"), code-switching, romanized scripts, no-signal input, everyday domestic-violence phrasing in five languages with false-alarm guards ("打我电话" is "call me"; a pounding heart is not violence). Income traps: rent paid, a date, a zip code, "3 years"; amounts without a dollar sign; ages in words; warning signs in ten more languages; a home lost to a fire, flood or storm; 500+ character stories with one passing keyword (English and Spanish), with the same story plus a real request as the control |
+| `golden_adversarial.json` | 157 | Cross-category traps ("no food at home", "debt collectors about hospital bills"), negation, possession, idioms ("dying of hunger"), code-switching, romanized scripts, no-signal input, everyday domestic-violence phrasing in five languages with false-alarm guards ("打我电话" is "call me"; a pounding heart is not violence). Income traps: rent paid, a date, a zip code, "3 years"; amounts without a dollar sign; ages in words; warning signs in ten more languages; a home lost to a fire, flood or storm; 500+ character stories with one passing keyword (English and Spanish), with the same story plus a real request as the control |
 | `golden_holdout.json` | 40 | Written *after* tuning on the adversarial set, then scored before any fix |
 | `golden_facts_i18n.json` | 48 | Income, household, age, status and location stated in Chinese, Cantonese, Korean, Vietnamese, Russian, Ukrainian, Arabic, Persian, Hindi, Bengali, Punjabi, Gujarati, Telugu, Tamil, Japanese, Tagalog, Haitian Creole, French, Portuguese and Polish, with traps: rent that isn't income, "not a citizen", an abusive partner outside the household, a child's age, other-script digits, 万 multipliers, Chinese numerals (两千五百), hourly pay with stated hours, Taglish and Hinglish counts |
 | `golden_probes.json` | 100 | Words in their other senses, each paired with the true positive it must not break: "social security" as a number, card or office; a college senior; retired from the army at 42; the Salvation Army; serving tables; a car parked on the street; adult children who moved out; a child-care job; substance-abuse treatment; "my back hurts me"; an injury at work; negated facts in English and Spanish; a temporary visa stated by the speaker vs. a friend's. Also indirect crisis wording (988 / Hotline warning signs) with benign counterparts, the scorer's situation targets under negation, household counts ("there are 3 people"), local HUD limits, and Danger Assessment phrasing (passive voice, hands around the neck, a knife pulled, threats to kill) with benign twins ("hit by a truck", "choked on a fishbone", "kill the deal"). `p_max` / `tier_not` fail the run if a wrong flag moves a verdict |
-| `golden_conversations.json` | 14 (36 turns) | Multi-turn: Chinese → Portuguese → English with facts carried; violence disclosed in one language, shelter asked in another; a second need; bare answers ("3", "2000", "两千五", "15 an hour", "nada"); an answer to a different question; a corrected income |
+| `golden_conversations.json` | 22 (52 turns) | Multi-turn: Chinese → Portuguese → English with facts carried; violence disclosed in one language, shelter asked in another; a second need; bare answers ("3", "2000", "两千五", "15 an hour", "nada"); an answer to a different question; a corrected income; a corrected household ("we are 4 not 5"); flags taken back ("I have a place to sleep", "no kids", "not a veteran", a "yes" to the shelter question) while a crisis flag stays; a mother's age after the speaker's; "also" keeping the first need. The eval passes each earlier turn through `sanitize_prior`, as the server does |
+| `golden_crisis.json` | 141 | The second outside reviewer's self-harm, violence, child-abuse, trafficking, sexual-assault and emergency messages, with figurative traps ("this rent is killing me"). Fails on a single miss. The parser was fixed toward these messages, so they are a development set, not a measure of recall on unseen messages |
 
 
 ## External check: real people's words

@@ -98,5 +98,11 @@
   "esc.child_abuse": "傷つけられている子どもと、子どものことが心配な大人のための24/7の相談",
   "esc.trafficking": "働くことや性行為を強いられている人のための秘密厳守の24/7の相談。233733にテキスト",
   "esc.sexual_assault": "性暴力を受けた後の秘密厳守の24/7のサポート",
-  "esc.interp": "通訳は無料です：電話がつながったら英語で \"{language}\" と言ってください。"
+  "esc.interp": "通訳は無料です：電話がつながったら英語で \"{language}\" と言ってください。",
+  "ui.safety_danger": "今、危険な状態なら:",
+  "ui.safety_crisis": "自殺や危機: 電話またはテキスト",
+  "ui.safety_home": "家が安全でないなら:",
+  "ui.safety_text": "または88788にSTARTと送信",
+  "ui.details": "詳細",
+  "ui.hide_details": "詳細を隠す"
 }

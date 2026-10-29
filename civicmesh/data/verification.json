@@ -675,6 +675,23 @@
         "how": "Phone 800.656.HOPE (4673) and 24/7 online chat, per RAINN",
         "source": "https://hotline.rainn.org/online"
       }
+    },
+    "whd-rule": {
+      "program": "U.S. Department of Labor Wage and Hour Division",
+      "contact_checked": "2026-10-29",
+      "contact_result": "unconfirmed",
+      "url_status": null,
+      "phone_on_page": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-29",
+        "how": "Phone 1-866-487-9243 (1-866-4-US-WAGE) on the agency's complaints page; complaints are confidential",
+        "source": "https://www.dol.gov/agencies/whd/contact/complaints"
+      }
     }
   }
 }

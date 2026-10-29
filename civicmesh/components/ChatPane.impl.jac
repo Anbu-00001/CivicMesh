@@ -437,6 +437,10 @@ impl ChatPane.renderMatchCard(m: Any, idx: int, j: int, ui: Any) -> JsxElement {
     # A policy change that affects this person (e.g. the Oct 1, 2026 Medicaid
     # rule for refugees) is surfaced on the card, not hidden under "Why?".
     notes: list = [str(c["note"]) for c in crits if c["note"] and c["key"] == "citizenship"];
+    # A 24/7 line has no application to approve: odds there only confuse
+    # someone in crisis (outside judge, 2026-10-28).
+    nm_low = str(m["resource_name"]).toLowerCase();
+    is_line = nm_low.includes("hotline") or nm_low.includes("lifeline") or nm_low.includes("helpline") or nm_low.includes("safeline");
     return
         <div key={"card-" + card_key} className="cm-card card-enter">
             <div className="cm-card-top">
@@ -449,10 +453,10 @@ impl ChatPane.renderMatchCard(m: Any, idx: int, j: int, ui: Any) -> JsxElement {
                 <span style={{"color": ts["color"]}}>{str(pct) + "%"}</span>
             </div>
             <div className="cm-meter"><div style={{"width": str(pct) + "%", "background": ts["color"]}}/></div>
-            <div className="cm-meter-row" title="A starting guess from how open the program is (open, waitlist or closed), not measured from real outcomes. Recording your own result changes only your copy, so it can't learn across people yet.">
+            {(is_open and not is_line) and <div className="cm-meter-row" title="A starting guess from how open the program is (open, waitlist or closed), not measured from real outcomes. Recording your own result changes only your copy, so it can't learn across people yet.">
                 <span>{L(ui, "ui.approval", "Approval odds")}</span>
                 <span className="cm-muted">{"~" + str(mean) + "% · " + L(ui, "ui.rough_guess", "rough guess")}</span>
-            </div>
+            </div>}
             {ben["label"] and <div className="cm-benefit" title={str(ben["basis"])}>
                 <span className="cm-benefit-amt">{str(ben["label"])}</span>
                 <span className="cm-muted">{"estimated benefit · household of " + str(ben["household"]) + (" (assumed)" if ben["assumed_household"] else "")}</span>
@@ -663,7 +667,7 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                 </div>}
                 {(plan["steps"] and len(plan["steps"]) > 0) and renderPlan(plan, ui)}
                 {renderLocal(locals[msg["id"]])}
-                {len(routes) > 0 and <div className="cm-block">
+                {(len(routes) > 0 and waterfall_open == idx) and <div className="cm-block">
                     <div className="cm-block-title">
                         <span>{L(ui, "ui.routes", "Longer-term routes")}</span>
                         <span className="cm-muted">Yen k-shortest paths · cost = days + λ·difficulty − μ·ln P(yes)</span>
@@ -675,14 +679,14 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                     {[renderChip(str(chips[c]), str(en_chips[c]) if c < len(en_chips) else str(chips[c]), "") for c in range(len(chips))]}
                 </div>}
                 <div className="cm-hud">
-                    <span className="cm-hud-fast">{"⚡ " + fmtMs(trace["total_ms"]) + " engine"}</span>
-                    <span>{("1 LLM call (routing)" if llm["sync_used"] else "0 LLM calls on the critical path")}</span>
-                    {Number(msg["rtt_ms"]) > 0 and <span>{"round trip " + fmtMs(msg["rtt_ms"])}</span>}
-                    {(narr and narr["status"] == "ok") and <span className="cm-hud-llm">{"✦ narrated in " + fmtMs(narr["ms"]) + " · facts guard passed"}</span>}
-                    {(narr and narr["status"] == "failed") and <span className="cm-muted" title={str(narr["error"] or "")}>{"LLM narration unavailable — engine answer shown"}</span>}
+                    {waterfall_open == idx and <span className="cm-hud-fast">{"⚡ " + fmtMs(trace["total_ms"]) + " engine"}</span>}
+                    {waterfall_open == idx and <span>{("1 LLM call (routing)" if llm["sync_used"] else "0 LLM calls on the critical path")}</span>}
+                    {(Number(msg["rtt_ms"]) > 0 and waterfall_open == idx) and <span>{"round trip " + fmtMs(msg["rtt_ms"])}</span>}
+                    {(narr and narr["status"] == "ok" and waterfall_open == idx) and <span className="cm-hud-llm">{"✦ narrated in " + fmtMs(narr["ms"]) + " · facts guard passed"}</span>}
+                    {(narr and narr["status"] == "failed" and waterfall_open == idx) and <span className="cm-muted">{"Narration unavailable — engine answer shown"}</span>}
                     {(d["privacy"] and d["privacy"]["private_turn"]) and <span className="cm-hud-private">{"Not sent to any AI model"}</span>}
                     {(d["privacy"] and d["privacy"]["words_sent_to_model"]) and <span className="cm-hud-private">{"The engine couldn't place this, so an AI model read it (identifiers removed first)"}</span>}
-                    <button className="cm-why" onClick={lambda _e: MouseEvent { waterfall_open = (-1 if waterfall_open == idx else idx); }}>{("Hide trace" if waterfall_open == idx else "Trace")}</button>
+                    <button className="cm-why" onClick={lambda _e: MouseEvent { waterfall_open = (-1 if waterfall_open == idx else idx); }}>{(L(ui, "ui.hide_details", "Hide details") if waterfall_open == idx else L(ui, "ui.details", "Details"))}</button>
                 </div>
                 {waterfall_open == idx and renderWaterfall(trace, narr, idx)}
             </div>
@@ -803,6 +807,14 @@ impl ChatPane.forgetMe -> None {
         }
         setTimeout(lambda { window.location.reload(); }, 1400);
     }
+}
+
+impl ChatPane.footerUi -> Any {
+    for i in range(len(messages) - 1, -1, -1) {
+        d: Any = messages[i]["data"];
+        if d and d["ui"] { return d["ui"]; }
+    }
+    return {};
 }
 
 impl ChatPane.renderPrivacy -> JsxElement {
