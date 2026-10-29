@@ -290,7 +290,14 @@ def main():
         check(f"S14 no response (API, pages, scripts, errors) contains a provider key ({secret[:10]}…)", secret not in blob and secret[:20] not in blob, "found")
     logs = ""
     if CONTAINER:
+        # The app writes its telemetry line only on a request at least one
+        # window (5 s here) after its last one: wait it out and send a turn, so
+        # the S12 budget refusals are flushed before the logs are read (CI
+        # read them a moment too early once, 2026-10-29).
         time.sleep(6)
+        u_f, t_f, _ = visitor("10.67.0.1")
+        turn(u_f, t_f, "I need food for my family in Ohio", "10.67.0.1")
+        time.sleep(1)
         logs = subprocess.run(["docker", "logs", CONTAINER], capture_output=True, text=True).stdout
         logs += subprocess.run(["docker", "logs", CONTAINER], capture_output=True, text=True).stderr
         for secret in SECRETS:
