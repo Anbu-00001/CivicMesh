@@ -79,6 +79,7 @@ glob TARGETS: dict = {
     "dental": ("dental|dentist|tooth|teeth|toothache|muela|diente|dentista", "", "dental care", "atención dental"),
     "vision": ("\\beyes?\\b|vision|glasses|cataract|ojos|vista|lentes", "", "eye care", "atención de la vista"),
     "homebound": ("homebound|can'?t leave (?:the|my) house|bedridden|can'?t cook|can'?t shop|wheelchair|no puedo salir|dementia|alzheimer|memory loss|\\bfrail\\b|help with (?:meals|cooking)|meals delivered|home.delivered|not (?:been )?eating|demencia", "", "homebound seniors", "adultos mayores que no pueden salir de casa"),
+    "school": ("schooling|\\bschool\\b|enroll|education|classes|escuela|inscrib", "", "families and youth enrolling in or staying in school", "familias y jóvenes que quieren inscribirse o seguir en la escuela"),
     "wage": ("wage theft|unpaid (?:wages|pay|overtime)|(?:hasn'?t|haven'?t|has not|have not|didn'?t|did not|won'?t|refuses? to|stopped) (?:been )?pa(?:id|y) (?:me|us)|not (?:been )?paid|owe[sd]? (?:me|us) (?:\\$|money|wages|pay)|overtime|minimum wage|final (?:pay ?check|pay)|no me (?:ha |han )?pagad|no me pag|salario no pagado", "", "workers owed wages", "trabajadores a quienes les deben salario"),
     "consumer": ("debt collector|credit card|\\bloan|\\bbank\\b|scam|fraud|payday|credit report|cobrador|estafa|pr[eé]stamo", "", "problems with a bank, lender or debt collector", "problemas con un banco, prestamista o cobrador"),
     "energy": ("electric|heating|\\bheat\\b|gas bill|utilit|power bill|power (?:is|was) (?:off|cut)|\\bluz\\b|calefacci|factura de gas", "", "heating or power bills", "facturas de luz o calefacción"),
@@ -101,7 +102,7 @@ glob FLAG_TARGETS: dict = {"homeless": "homeless", "veteran": "veteran", "disabi
 # and NeedyMeds at 25% (outside judge, 2026-10-28). Person facts the engine
 # can ask about (homeless, veteran, children) still show as "needs info".
 glob TOPIC_TARGETS: list = ["hiv", "crisis", "mental_health", "substance", "medication", "dental", "vision",
-                            "criminal", "conviction", "immigration", "consumer", "dv", "wage", "tenant", "disability"];
+                            "criminal", "conviction", "immigration", "consumer", "dv", "wage", "tenant", "disability", "school"];
 # A topic that also counts as evidence for another: 988 serves mental-health
 # distress, not only suicide.
 glob TOPIC_ALSO: dict = {"crisis": ["mental_health"]};

@@ -18,6 +18,10 @@ import from engine.facts_i18n { zh_number }
 import from engine.messages { msg, has_messages }
 
 glob MERGE_FIELDS: list = ["income_annual", "household_size", "age", "state", "city", "zip", "citizenship"];
+glob LOCATION_FIELDS: list = ["state", "city", "zip"];
+# "I don't know where to start": a person asking where to begin, not a
+# follow-up on the need the last turn answered.
+glob OVERWHELM_RE: str = "(?:(?:do ?n[o'’]?t|do not) (?:even |really )?know|dunno|not sure) (?:where|how) to (?:start|begin)|(?:do ?n[o'’]?t|do not) (?:even |really )?know who to (?:ask|call|turn to)|\\b(?:really|so|very|too) complicated\\b|\\boverwhelm(?:ed|ing)\\b|(?:so|too) much going on";
 # A later message can take back a person fact said earlier ("wait, I mean I
 # have a place to sleep"); crisis flags are never taken back (outside judge,
 # 2026-10-28: flags only ever accumulated).
@@ -95,7 +99,18 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
         }
     }
     out["answered"] = answered;
+    # A place is one unit: "Miami" this turn and "OH" from an earlier one is
+    # nowhere (live Space, 2026-10-29). A demoted story's places ("ohio…miami")
+    # aren't where the person is, so they never replace a known location.
+    demoted = bool(cur.get("story_demoted")) and not answering;
+    if demoted {
+        for k in LOCATION_FIELDS { out[k] = prior.get(k, "") or ""; }
+    }
+    new_place = (not demoted) and bool([k for k in LOCATION_FIELDS if cur.get(k)]);
+    # Only a state, and the same one as before ("Houston", then "Texas"), keeps the city.
+    same_state = new_place and not cur.get("city") and not cur.get("zip") and cur.get("state") == prior.get("state");
     for k in MERGE_FIELDS {
+        if k in LOCATION_FIELDS and (demoted or (new_place and not same_state)) { continue; }
         v = cur.get(k);
         unknown = (v is None) or (v == "") or (k == "income_annual" and int(v) < 0) or (k in ["household_size", "age"] and int(v) == 0);
         if unknown and prior.get(k) not in [None, ""] {
@@ -107,7 +122,16 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
     if not cur.get("household_stated") and int(prior.get("household_size", 0) or 0) > int(out.get("household_size", 0) or 0) {
         out["household_size"] = prior.get("household_size");
     }
-    if not cur.get("category") and prior.get("category") {
+    # A turn with nothing usable (no need, fact or flag) in an unrecognized
+    # language or a long story doesn't inherit the earlier need: gibberish
+    # re-ran the whole answer, once in Spanish (live Space, 2026-10-29). The
+    # person is asked what they need instead.
+    no_signal = (not cur.get("category")) and (not cur.get("flags")) and int(cur.get("income_annual", -1)) < 0 and int(cur.get("household_size", 0) or 0) == 0 and int(cur.get("age", 0) or 0) == 0 and not cur.get("citizenship") and not cur.get("state") and not cur.get("zip") and not cur.get("small_talk") and not answering and (not cur.get("language") or len(str(text)) >= 150);
+    # A story whose keywords were demoted names places too ("Illinois…ohio…miami"):
+    # the place alone doesn't make it a follow-up on the earlier need.
+    no_signal = no_signal or (bool(cur.get("story_demoted")) and not answering);
+    no_signal = no_signal or ((not cur.get("category")) and (not cur.get("flags")) and not answering and bool(re.search(OVERWHELM_RE, str(text).lower())));
+    if not cur.get("category") and prior.get("category") and not no_signal {
         out["category"] = prior.get("category");
         out["secondary"] = list(prior.get("secondary", []));
         out["category_conf"] = float(prior.get("category_conf", 0.5));

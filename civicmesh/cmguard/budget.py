@@ -188,7 +188,17 @@ def _check_retired(model: str) -> None:
         raise hit[1].with_traceback(None)
 
 
+def failure_kind(exc) -> str:
+    """Class name and HTTP status of a provider error, never its message: on
+    2026-10-29 the live breaker opened and the logs couldn't say whether the
+    key, the quota or the latency was the cause."""
+    status = getattr(exc, "status_code", None)
+    return type(exc).__name__ + (":" + str(status) if isinstance(status, int) else "")
+
+
 def _settle(budget: ModelBudget, model: str, ok: bool, exc, tokens: int, est: int) -> None:
+    if not ok and exc is not None:
+        telemetry.count("model_error:" + model.split("/")[-1] + ":" + failure_kind(exc))
     gone = (not ok) and exc is not None and _gone(exc)
     if gone:
         if model not in retired_models():

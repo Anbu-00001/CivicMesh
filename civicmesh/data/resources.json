@@ -1439,6 +1439,38 @@
         "submission_method": "phone",
         "estimated_minutes": 20
       }
+    },
+    {
+      "agency_name": "National Center for Homeless Education Helpline (school enrollment rights)",
+      "category": "legal",
+      "capacity": "open",
+      "languages_supported": ["en", "es"],
+      "contact_phone": "1-800-308-2145",
+      "contact_email": "homeless@serve.org",
+      "address": "Phone and email; connects you to your school district's homeless education liaison",
+      "online_url": "https://nche.ed.gov/",
+      "description": "Every child can enroll in free public school (K-12) whatever their immigration status (Plyler v. Doe, 1982). A child or youth without a fixed, adequate home can enroll right away, even without the usual records, keep their school, and get transportation (McKinney-Vento Act). The U.S. Department of Education's helpline finds the district liaison who makes this happen.",
+      "eligibility": {
+        "rule_id": "nche-rule",
+        "income_limit_annual": 0,
+        "residency_requirement": "none",
+        "min_family_size": 0,
+        "citizenship_required": false,
+        "age_min": 0,
+        "age_max": 0,
+        "exceptions": "Public school is free for all children; McKinney-Vento rights apply to children and unaccompanied youth without a fixed, regular and adequate nighttime residence. Many districts serve students up to 21.",
+        "criteria_summary": "Any family or youth with a question about enrolling in or staying in school, especially without a stable home or immigration papers.",
+        "targets": ["school"]
+      },
+      "form": {
+        "form_id": "nche-call",
+        "form_name": "Call or email (no form); enroll at the school or district office",
+        "url": "https://nche.ed.gov/",
+        "required_documents": [],
+        "deadline_type": "rolling",
+        "submission_method": "phone",
+        "estimated_minutes": 15
+      }
     }
   ]
 }

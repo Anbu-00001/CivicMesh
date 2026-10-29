@@ -77,11 +77,14 @@ def:pub ChatPane(
         } except Exception as _ex {}
     }
 
-    # Keep the newest turn in view (also when a narration lands).
+    # Keep the newest turn in view (also when a narration lands), unless the
+    # person has scrolled up to read: a narration landing seconds later used
+    # to pull them back down. Sending a message always shows the bottom.
     can with [messages, narr_tick] entry {
         try {
             thread = document.querySelector(".cm-thread");
-            if thread { thread.scrollTop = thread.scrollHeight; }
+            just_sent = len(messages) > 0 and messages[len(messages) - 1]["role"] == "user";
+            if thread and (just_sent or thread.dataset.away != "1") { thread.scrollTop = thread.scrollHeight; }
         } except Exception as _ex {}
     }
 
@@ -140,11 +143,12 @@ def:pub ChatPane(
                             Deterministic eligibility engine · 2026 federal rules · 51 machine-drafted languages, 111 selectable · 1 LLM call per turn, off the critical path
                         </div>
                     </div>
-                    {is_loading and <div className="cm-badge badge-glow"><span className="cm-dot-live"/>Scoring 45 programs…</div>}
+                    {is_loading and <div className="cm-badge badge-glow"><span className="cm-dot-live"/>Scoring 46 programs…</div>}
                     {renderLangPicker()}
                     <button className="cm-ghost-btn" onClick={lambda _e: MouseEvent { resetCase(); }} title="Start a new case">New case</button>
                 </div>
-                <div className="cm-thread" role="log" aria-live="polite" aria-relevant="additions" aria-label="Conversation" aria-busy={is_loading} tabIndex={0}>
+                <div className="cm-thread" role="log" aria-live="polite" aria-relevant="additions" aria-label="Conversation" aria-busy={is_loading} tabIndex={0}
+                    onScroll={lambda e: Any { e.target.dataset.away = ("1" if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight) > 120 else ""); }}>
                     {[renderMessage(messages[i], i, (i == len(messages) - 1) and (not is_loading)) for i in range(len(messages))]}
                     {is_loading and <div className="cm-row">
                         <div className="cm-avatar">CM</div>

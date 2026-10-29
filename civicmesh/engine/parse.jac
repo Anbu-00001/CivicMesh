@@ -101,7 +101,7 @@ glob CATEGORY_LEXICON: dict = {
         ("visitation", 2.5), ("see my (?:kids|children|son|daughter|grandkids)", 2.0), ("child support", 2.5), ("divorce", 2.5), ("custodia", 2.5),
         ("arrest(?:ed)?", 2.5), ("jail", 2.0), ("charged with", 2.0), ("criminal record", 2.5),
         ("seal(?:ed|ing)? (?:my |his |her |the )?(?:criminal )?record", 2.5), ("record seal\\w*", 2.5),
-        ("wages?", 2.0), ("unpaid (?:wages|pay|overtime)", 2.5), ("didn'?t pay me", 2.5), ("wage theft", 2.5), ("(?:hasn'?t|haven'?t|has not|have not|won'?t|stopped|refuses? to) (?:been )?pa(?:id|y) (?:me|us)", 2.5), ("overtime", 1.5),
+        ("schooling", 2.5), ("(?:enroll|register|sign)\\w*(?: \\w+){0,2} (?:in|for|at|up for) (?:a |the )?school", 2.5), ("(?:go|get|going|back|get (?:him|her|them)) (?:in)?to school", 2.0), ("get (?:an |a )?education", 2.0), ("(?:won'?t|will not) let (?:him|her|them|me|my \\w+) (?:enroll|attend|go to school)", 2.5), ("wages?", 2.0), ("unpaid (?:wages|pay|overtime)", 2.5), ("didn'?t pay me", 2.5), ("wage theft", 2.5), ("(?:hasn'?t|haven'?t|has not|have not|won'?t|stopped|refuses? to) (?:been )?pa(?:id|y) (?:me|us)", 2.5), ("overtime", 1.5),
         ("(?:security )?deposit back", 2.0), ("security deposit", 2.0), ("discriminat\\w*", 2.0),
         ("arrestad[oa]", 2.5), ("c[aá]rcel", 2.0), ("antecedentes", 2.0), ("salario no pagado", 2.5),
         ("illegal(?:ly)?", 1.5), ("my rights", 2.0), ("sue", 1.5), ("custody", 2.0),
@@ -185,7 +185,7 @@ glob FLAG_LEXICON: dict = {
     # "on the street" / "en la calle" only with a verb of living there: a car
     # parked on the street is not homelessness.
     "homeless": ["homeless", "on the streets", "(?:living|live|lived|sleeping|sleep|slept|staying|stay|ended up|end up|been|out) on the street",
-                 "sleeping in (?:my|our|the|a) car", "nowhere to (?:go|stay|sleep|live)", "no place to (?:stay|sleep|live)", "(?:need|find|get) (?:a )?shelter tonight",
+                 "sleeping in (?:my|our|the|a) car", "nowhere to (?:go|stay|sleep|live)", "no place to (?:go|stay|sleep|live)", "(?:with|has|have|had|got) no place(?! like)", "(?:need|find|get) (?:a )?shelter tonight",
                  "sin hogar", "sin techo", "no tenemos d[oó]nde (?:vivir|dormir|quedarnos)",
                  "(?:vivo|vivimos|viv[ií]a|dormimos|duermo|dorm[ií]|estoy|estamos|quedamos|qued[eé]|terminamos|dejaron|echaron|sacaron|tiraron)(?: \\w+){0,2} en la calle"],
     "pregnant": ["pregnant", "expecting a baby", "embarazada", "gr[aá]vida"],
@@ -369,14 +369,25 @@ glob ES_MARKERS: list = [
     "necesito", "necesitamos", "ayuda", "hemos", "por", "del", "soy", "somos",
     "hijos", "familia", "días", "dias", "casa", "trabajo",
     "quiero", "puedo", "morir", "vivir", "nadie", "pero",
-    "muy", "renta", "dinero", "ayudame", "ayúdame"
+    "muy", "renta", "dinero", "ayudame", "ayúdame",
+    "necesita", "necesitan", "hija", "hijo", "escuela", "gracias", "ahora", "nuestro", "nuestra"
 ];
+
+# Spanish markers that are also short words elsewhere (romanized Chinese,
+# Tagalog, Italian, English "no"): never enough alone.
+glob ES_WEAK: list = ["y", "de", "la", "el", "en", "no", "mi", "yo", "un", "una", "que", "con", "los", "las", "por", "del", "para"];
 
 glob UNEARNED_CUES: str = r"\b(?:social security|ssi|ssdi|pension|disability (?:check|benefits?|payments?)|retirement (?:check|benefits?|income)|unemployment (?:benefits?|insurance|checks?)|child support|alimony|seguro social|pensi[oó]n|jubilaci[oó]n)\b";
 glob EARNED_CUES: str = r"\b(?:earn|earns|earning|earnings|salary|wages?|paycheck|job|jobs|work|works|working|hourly|an hour|per hour|self.employed|sueldo|salario|trabajo)\b";
 # A message this long with one passing keyword and nothing else the engine can
 # use is a story, not a request (see parse_intake).
 glob LONG_MESSAGE: int = 500;
+# Topic words that say what something is about, not that it is needed: in a
+# rambling story ("food over the streets", "selling bad medicine") they routed
+# a confident answer (live Space, 2026-10-29). They count only in a frame.
+glob BARE_TOPIC: list = ["food", "foods", "meal", "meals", "medicine", "medicines", "medication", "medications", "eat", "grocery", "groceries", "cook", "cooking"];
+glob NEED_FRAME_LEFT: str = "\\b(?:no|out of|without|enough|need|needs|needed|afford|get|find|buy|pay for|any|some|help with|help|for|lack of|run out of|ran out of|nothing to|can'?t|cannot|couldn'?t|don'?t have|didn'?t have)(?:\\s+\\w+){0,2}\\s*$";
+glob NEED_FRAME_RIGHT: str = "^\\s*(?:stamps|bank|pantry|pantries|assistance|aid|help|benefits?|insecurity|for (?:my|our|the) (?:kids|children|family|son|daughter|baby))\\b";
 # A sentence that asks: a question mark or a request word.
 glob REQUEST_RE: str = "\\?|¿|\\b(?:i need|we need|need help|help me|help us|can i|can we|can (?:he|she|they)|could i|how (?:do|can|should) i|what (?:can|should|do) i|should i|is (?:it|this|that) legal|am i allowed|do i have to|please|necesito|necesitamos|ay[uú]d(?:a|eme|enos)|puedo|podemos|c[oó]mo (?:puedo|hago)|qu[eé] (?:puedo|debo|hago))\\b";
 # The speaker is under 18 without saying an age.
@@ -461,6 +472,13 @@ def detect_language(text: str) -> tuple {
     es_u = len([w for w in wset if w in ES_MARKERS]) + (2 if accent_es else 0);
     if other and other_hits >= 2 and other_hits > max(en_u, es_u) {
         return (other, round(min(0.95, 0.5 + 0.08 * other_hits), 2));
+    }
+    # Short function words alone ("mi", "la", "no") are no evidence:
+    # "Ching ching mi hwa" was read as Spanish at full confidence and switched
+    # a Chinese conversation's replies to Spanish.
+    es_words = [w for w in words if w in ES_MARKERS];
+    if en == 0 and not accent_es and es_words and all([w in ES_WEAK for w in es_words]) {
+        return ("", 0.0);
     }
     total = en + es;
     # One stray marker ("mi") in a long sentence is not evidence of English
@@ -871,7 +889,7 @@ def parse_citizenship(low: str, evidence: list, text: str) -> str {
         (r"\b(?:cofa|compact of free association|from (?:micronesia|the marshall islands|marshall islands|palau)|(?:micronesian|marshallese|palauan) citizen)\b", "cofa"),
         (r"\b(?:green card|permanent resident|lpr|residente permanente|tarjeta verde|residencia permanente)\b", "eligible_immigrant"),
         (r"\b(?:refugee|asylee|granted asylum|parolee|humanitarian parole|refugiad[oa]|asilad[oa]|asilo aprobado)\b", "humanitarian"),
-        (r"\b(?:undocumented|no papers|without papers|no documents|illegal immigrant|not a (?:us |u\.s\. )?citizen|out of status|indocumentad[oa]s?|sin papeles|sin documentos|no tengo papeles)\b|\b(?:don'?t|do not|doesn'?t|does not) have (?:any )?(?:papers|documents|legal status|immigration status)\b", "non_citizen"),
+        (r"\b(?:undocumented|no papers|without papers|no documents|illegal immigrant|not a (?:us |u\.s\. )?citizen|out of status|(?:wi ?thout|no|don'?t have|do not have|doesn'?t have|does not have)(?: any)? (?:u\.?s\.? )?citizenship|indocumentad[oa]s?|sin papeles|sin documentos|no tengo papeles)\b|\b(?:don'?t|do not|doesn'?t|does not) have (?:any )?(?:papers|documents|legal status|immigration status)\b", "non_citizen"),
         (r"\b(?:seeking asylum|asylum seeker|(?:applied|applying|filed) for asylum|asylum (?:case|application|claim|interview|hearing)|immigration court|solicitando asilo|pidiendo asilo|caso de asilo|corte de inmigraci[oó]n)\b", "non_citizen"),
         (r"\b(?:daca|dreamer|visa holder|on a visa|work visa|tps)\b", "non_citizen"),
         # A temporary visa, stated by the speaker (external check: real posts
@@ -1202,7 +1220,18 @@ def parse_intake(text: str) -> dict {
     for e in evidence {
         if e["field"] == "category" and _in_request(low, int(e["start"]), int(e["end"])) { asked = True; }
     }
-    if top_cat and len(raw) >= LONG_MESSAGE and cat_spans <= 1 and personal_facts == 0 and not flags and not asked {
+    framed = asked;
+    for e in evidence {
+        if e["field"] != "category" or framed { continue; }
+        word = low[int(e["start"]):int(e["end"])].strip();
+        if word not in BARE_TOPIC or re.search(NEED_FRAME_LEFT, low[max(0, int(e["start"]) - 40):int(e["start"])]) or re.search(NEED_FRAME_RIGHT, low[int(e["end"]):int(e["end"]) + 40]) {
+            framed = True;
+        }
+    }
+    story = len(raw) >= LONG_MESSAGE and cat_spans <= 1;
+    story_demoted = False;
+    if top_cat and (story or (len(raw) >= 150 and not framed)) and personal_facts == 0 and not flags and not asked {
+        story_demoted = True;
         top_cat = "";
         cat_conf = 0.0;
         secondary = [];
@@ -1234,6 +1263,7 @@ def parse_intake(text: str) -> dict {
         "household_size": household,
         "household_stated": household_stated,
         "age": age,
+        "story_demoted": story_demoted,
         "age_other": age > 0 and bool(re.search(AGE_OTHER_RE, low)) and not re.search(AGE_SELF_RE, low),
         "state": loc["state"],
         "city": loc["city"],

@@ -692,6 +692,23 @@
         "how": "Phone 1-866-487-9243 (1-866-4-US-WAGE) on the agency's complaints page; complaints are confidential",
         "source": "https://www.dol.gov/agencies/whd/contact/complaints"
       }
+    },
+    "nche-rule": {
+      "program": "National Center for Homeless Education Helpline (school enrollment rights)",
+      "contact_checked": "2026-10-29",
+      "contact_result": "unconfirmed",
+      "url_status": null,
+      "phone_on_page": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-10-29",
+        "how": "\"contact the NCHE helpline at 800-308-2145 or homeless@serve.org\", in NCHE's own brief on nche.ed.gov (April 2023)",
+        "source": "https://nche.ed.gov/wp-content/uploads/2023/04/SSW.pdf"
+      }
     }
   }
 }
