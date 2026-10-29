@@ -25,7 +25,8 @@ import time;
 import concurrent.futures;
 import litellm;
 import from engine.i18n { language_info, ascii_digits, RIVA_CODES }
-import from llm.stubs { SDK_RETRIES_PINNED }
+import from llm.stubs { SDK_RETRIES_PINNED, POLYGLOT_LEAD_TIMEOUT_S }
+import from cmguard.budget { fallback_chain }
 
 # Riva translates one segment per request (a multi-paragraph input came back
 # as its first paragraph only), so paragraphs go out in parallel.
@@ -69,6 +70,11 @@ def _call(model: str, messages: list, max_tokens: int = 900, timeout: float = 15
 """Riva, one segment: system message carries the direction ("en-zh-tw")."""
 def _riva_segment(seg: str, riva: str) -> str {
     return _call(RIVA_MODEL, [{"role": "system", "content": "en-" + riva}, {"role": "user", "content": seg}], 600, TRANSLATE_TIMEOUT_S);
+}
+
+"""A model with another behind it waits at most POLYGLOT_LEAD_TIMEOUT_S (see llm/stubs.jac)."""
+def lead_timeout(model: str, chain: list, seconds: float) -> float {
+    return min(seconds, POLYGLOT_LEAD_TIMEOUT_S) if (model in chain and chain.index(model) < len(chain) - 1) else seconds;
 }
 
 """True when `out` carries no 3+ digit number that `src` doesn't."""
@@ -116,10 +122,13 @@ def translate_text(text: str, code: str) -> dict {
     }
     if not out["ok"] {
         prompt = llm_prompt(src, name, str(code));
-        for model in [POLYGLOT_TRANSLATE_MODEL, FALLBACK_TRANSLATE_MODEL] {
+        chain = [POLYGLOT_TRANSLATE_MODEL, FALLBACK_TRANSLATE_MODEL];
+        for model in chain {
             if (time.perf_counter() - t0) > TRANSLATE_BUDGET_S { break; }
             try {
-                txt = _call(model, [{"role": "user", "content": prompt}], 1400, TEXT_TIMEOUT_S);
+                with fallback_chain(chain) as _c {
+                    txt = _call(model, [{"role": "user", "content": prompt}], 1400, lead_timeout(model, chain, TEXT_TIMEOUT_S));
+                }
                 if txt and numbers_ok(src, txt) {
                     out["ok"] = True;
                     out["text"] = txt;
@@ -162,10 +171,13 @@ def translate_strings(strings: list, code: str) -> dict {
         + "Output only the numbered lines.\n\n" + numbered
     );
     got: dict = {};
-    for model in [POLYGLOT_TRANSLATE_MODEL, FALLBACK_TRANSLATE_MODEL] {
+    chain = [POLYGLOT_TRANSLATE_MODEL, FALLBACK_TRANSLATE_MODEL];
+    for model in chain {
         try {
             if (time.perf_counter() - t0) > TRANSLATE_BUDGET_S { break; }
-            txt = _call(model, [{"role": "user", "content": prompt}], 700, STRINGS_TIMEOUT_S);
+            with fallback_chain(chain) as _c {
+                txt = _call(model, [{"role": "user", "content": prompt}], 700, lead_timeout(model, chain, STRINGS_TIMEOUT_S));
+            }
             for line in txt.splitlines() {
                 m = re.match(r"^\s*(\d+)[\.\)、:]\s*(.+?)\s*$", line);
                 if m {

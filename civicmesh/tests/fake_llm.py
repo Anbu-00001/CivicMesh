@@ -6,13 +6,15 @@ Answers POST /v1/chat/completions like a model would (structured output for
 narration, the source text back for translation), and records every request:
 GET /__stats returns {"requests", "max_concurrent", "auth_headers_seen", "by_model"};
 a model whose name contains "retired" answers 410 Gone, as NVIDIA's API did
-for a retired model;
+for a retired model; one whose name contains "slow" answers only after
+FAKE_SLOW_S seconds (default 30), as Gemma did on NVIDIA's free tier;
 POST /__reset clears it. The container is pointed here with
 NVIDIA_NIM_API_BASE / OPENAI_API_BASE, so the tests can count exactly how
 many model calls the app made and prove the budget bounds them.
 """
 
 import json
+import os
 import sys
 import threading
 import time
@@ -81,6 +83,12 @@ class Handler(BaseHTTPRequestHandler):
                 STATE["by_model"][model] = STATE["by_model"].get(model, 0) + 1
             if "retired" in model:
                 self._json(410, {"type": "about:blank", "title": "Gone", "status": 410, "detail": f"Model {model} has been retired."})
+            elif "slow" in model:
+                time.sleep(float(os.environ.get("FAKE_SLOW_S", "30")))
+                try:
+                    self._json(200, reply_for(body))
+                except OSError:
+                    pass  # the caller timed out and hung up
             else:
                 self._json(200, reply_for(body))
         finally:

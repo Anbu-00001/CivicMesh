@@ -57,7 +57,7 @@ glob SDK_RETRIES_PINNED: bool = pin_sdk_retries();
 # refuses, the call fails before any network request; narration and
 # translation already treat that as "no optional text", and the deterministic
 # answer is unaffected.
-import from cmguard.budget { install as install_model_budget, BUDGET as MODEL_BUDGET }
+import from cmguard.budget { install as install_model_budget, BUDGET as MODEL_BUDGET, fallback_chain }
 glob MODEL_BUDGET_INSTALLED: bool = install_model_budget();
 
 # Tried in order (litellm Router fallback). NVIDIA retired
@@ -143,7 +143,22 @@ def polyglot_model_names -> list {
     return [str(m.model_name) for m in build_polyglot_models()];
 }
 
-glob polyglot_pool = without_sdk_retries(ModelPool(models=build_polyglot_models(), strategy="fallback", num_retries=0, timeout=NARRATE_TIMEOUT_S));
+# Gemma, the polyglot lead, timed out at 25 s on every call on 2026-10-29, and
+# each wait came before the fallback that answered. A lead with a model behind
+# it gets 10 s; a slow lead is then skipped for a while (cmguard/budget.py).
+# CIVICMESH_POLYGLOT_LEAD_TIMEOUT_S overrides it.
+glob POLYGLOT_LEAD_TIMEOUT_S: float = float(os.environ.get("CIVICMESH_POLYGLOT_LEAD_TIMEOUT_S", "10") or "10");
+
+"""Give the pool's first model its own, shorter timeout (litellm reads it per deployment)."""
+def with_lead_timeout(pool: Any, seconds: float) -> Any {
+    try {
+        deps = list(pool._router.model_list);
+        if len(deps) > 1 { deps[0]["litellm_params"]["timeout"] = seconds; }
+    } except Exception as _ex {}
+    return pool;
+}
+
+glob polyglot_pool = with_lead_timeout(without_sdk_retries(ModelPool(models=build_polyglot_models(), strategy="fallback", num_retries=0, timeout=NARRATE_TIMEOUT_S)), POLYGLOT_LEAD_TIMEOUT_S);
 
 # ---------- types kept for walker interfaces ----------
 

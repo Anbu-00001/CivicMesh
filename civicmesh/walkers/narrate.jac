@@ -21,6 +21,7 @@ import from llm.stubs { narrate_turn, narrate_turn_polyglot, pool_model_names, p
 import from cmguard.tokens { verify as verify_token, content_hash }
 import from cmguard.limits { TokenBuckets }
 import from cmguard { telemetry }
+import from cmguard.budget { fallback_chain }
 import from engine.i18n { ascii_digits, language_info }
 import from engine.stats { record_narration }
 import from engine.privacy { is_private_turn }
@@ -152,11 +153,13 @@ walker NarrateWalker {
         lang_arg = code if code == "auto" else (str(info["name"]) + " (" + code + ")");
         try {
             fn = narrate_turn_polyglot if polyglot else narrate_turn;
-            n = fn(
-                language=lang_arg,
-                facts=str(self.facts)[:2000],
-                chips=[str(c) for c in self.chips]
-            );
+            with fallback_chain(models) as _chain {
+                n = fn(
+                    language=lang_arg,
+                    facts=str(self.facts)[:2000],
+                    chips=[str(c) for c in self.chips]
+                );
+            }
             msg = str(n.message).strip();
             chips = [str(c) for c in list(n.chips)];
             if msg and not invents_numbers(msg, str(self.facts), "") {
