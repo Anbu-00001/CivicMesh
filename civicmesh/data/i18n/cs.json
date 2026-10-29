@@ -98,5 +98,11 @@
   "esc.child_abuse": "pomoc 24/7 pro týrané děti a pro dospělé, kteří se o dítě bojí",
   "esc.trafficking": "důvěrná pomoc 24/7 pro každého, kdo je nucen pracovat nebo k sexu; SMS na 233733",
   "esc.sexual_assault": "důvěrná podpora 24/7 po sexuálním napadení",
-  "esc.interp": "Tlumočník je zdarma: když to někdo zvedne, řekněte anglicky „{language}“."
+  "esc.interp": "Tlumočník je zdarma: když to někdo zvedne, řekněte anglicky „{language}“.",
+  "ui.safety_danger": "V nebezpečí právě teď:",
+  "ui.safety_crisis": "Sebevražda nebo krize: volejte nebo pište SMS na",
+  "ui.safety_home": "Doma nejste v bezpečí:",
+  "ui.safety_text": "nebo pošlete START na 88788",
+  "ui.details": "Podrobnosti",
+  "ui.hide_details": "Skrýt podrobnosti"
 }

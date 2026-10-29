@@ -28,6 +28,7 @@ import from engine.score { rank_resources }
 import from engine.plan { build_plan }
 import from engine.paths { plan_routes }
 import from engine.compose { merge_profiles }
+import from engine.prior { sanitize_prior }
 
 glob FLOORS: dict = {"field_accuracy": 0.9, "top3_hit_rate": 0.85, "exclusion_violations": 0};
 # A whole turn (parse, rank 44 programs, plan, routes) is ~2 ms here; 15 ms of
@@ -198,7 +199,8 @@ with entry {
     for conv in convs {
         prior: dict = {};
         for (ti, t) in enumerate(conv["turns"]) {
-            merged = merge_profiles(prior, parse_intake(t["text"]), t["text"], str(t.get("answering", "")));
+            # The server sanitizes the client-held prior before merging.
+            merged = merge_profiles(sanitize_prior(prior), parse_intake(t["text"]), t["text"], str(t.get("answering", "")));
             for (k, v) in t.get("expect", {}).items() {
                 if k == "flag" {
                     got = merged.get("flags", []);

@@ -98,5 +98,11 @@
   "esc.child_abuse": "msaada wa 24/7 kwa watoto wanaoumizwa na kwa watu wazima wanaomhofia mtoto",
   "esc.trafficking": "msaada wa siri wa 24/7 kwa yeyote anayelazimishwa kufanya kazi au ngono; tuma ujumbe kwa 233733",
   "esc.sexual_assault": "msaada wa siri wa 24/7 baada ya shambulio la kingono",
-  "esc.interp": "Mkalimani ni bure: mtu akijibu, sema kwa Kiingereza \"{language}\"."
+  "esc.interp": "Mkalimani ni bure: mtu akijibu, sema kwa Kiingereza \"{language}\".",
+  "ui.safety_danger": "Uko hatarini sasa:",
+  "ui.safety_crisis": "Kujiua au dharura: piga simu au tuma ujumbe kwa",
+  "ui.safety_home": "Huko salama nyumbani:",
+  "ui.safety_text": "au tuma START kwa 88788",
+  "ui.details": "Maelezo",
+  "ui.hide_details": "Ficha maelezo"
 }

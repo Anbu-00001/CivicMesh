@@ -53,6 +53,8 @@ jobs:
         run: python3 -m unittest tests.test_cmguard -v
       - name: Privacy guard — scrubbing, over-scrubbing, crisis turns
         run: jac run tests/check_privacy.jac
+      - name: Client-held profile — ranges, enums, flags grounded in the person's words
+        run: jac run tests/check_prior.jac
       - name: Policy dates — SNAP FY2027, net test, P.L. 119-21 rules, against published figures
         run: jac run tests/check_policy.jac
       - name: Catalog verification — every program checked within a year
@@ -150,7 +152,8 @@ jobs:
           cache-to: type=gha,mode=max
       - name: Start the app
         run: |
-          docker run -d --name cm -p 7860:7860 civicmesh:ci
+          # The browser test frames the app from a local page, as huggingface.co does.
+          docker run -d --name cm -p 7860:7860 -e CIVICMESH_FRAME_ANCESTORS="'self' https://huggingface.co http://127.0.0.1:*" civicmesh:ci
           for _ in $(seq 1 90); do curl -sf -o /dev/null http://localhost:7860/ && exit 0; sleep 2; done
           docker logs cm; exit 1
       - name: HTTP end-to-end (69 checks, no LLM key)

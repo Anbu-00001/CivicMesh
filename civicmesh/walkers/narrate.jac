@@ -20,7 +20,6 @@ import time;
 import from llm.stubs { narrate_turn, narrate_turn_polyglot, pool_model_names, polyglot_model_names }
 import from cmguard.tokens { verify as verify_token, content_hash }
 import from cmguard.limits { TokenBuckets }
-import from cmguard.redact { safe_error }
 import from cmguard { telemetry }
 import from engine.i18n { ascii_digits, language_info }
 import from engine.stats { record_narration }
@@ -42,7 +41,33 @@ def _digits_norm(t: str) -> str {
     return re.sub(r"(?<=\d)(?:\)\s?|[\-\.,])\(?(?=\d)", "", ascii_digits(str(t)));
 }
 
+# Spoken digits ("one eight hundred five five five…") slipped past a
+# digits-only check, and so did links (outside judge, 2026-10-28).
+glob DIGIT_WORDS: dict = {"zero": "0", "oh": "0", "one": "1", "two": "2", "three": "3", "four": "4", "five": "5",
+                          "six": "6", "seven": "7", "eight": "8", "nine": "9", "hundred": "00",
+                          "cero": "0", "uno": "1", "dos": "2", "tres": "3", "cuatro": "4", "cinco": "5",
+                          "seis": "6", "siete": "7", "ocho": "8", "nueve": "9"};
+glob DIGIT_RUN_RE: str = "\\b(?:zero|oh|one|two|three|four|five|six|seven|eight|nine|cero|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve)(?:[\\s,.\\-]+(?:zero|oh|one|two|three|four|five|six|seven|eight|nine|hundred|cero|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve)\\b){2,}";
+glob LINK_RE: str = "https?://[^\\s)>\\]]+|\\bwww\\.[^\\s)>\\]]+|\\b[\\w.+-]+@[\\w-]+(?:\\.[\\w-]+)+|\\b[\\w-]+(?:\\.[\\w-]+)*\\.(?:com|org|gov|net|io|co|info|us|ly|me|app)\\b";
+
+"""Spoken digit runs as digits: "one eight hundred five" → "18005"."""
+def _spoken_digits(t: str) -> str {
+    return re.sub(DIGIT_RUN_RE, lambda m: Any : "".join([DIGIT_WORDS.get(w, "") for w in re.findall(r"[a-z]+", m.group(0))]), str(t).lower());
+}
+
+"""Host of a link or the domain of an email, lower-case."""
+def _link_host(link: str) -> str {
+    h = re.sub(r"^https?://", "", link.lower());
+    h = h.split("@")[-1];
+    h = re.split(r"[/?#:]", h)[0];
+    return h[4:] if h.startswith("www.") else h.rstrip(".");
+}
+
 def invents_numbers(text: str, facts: str, user_message: str = "") -> bool {
+    for link in re.findall(LINK_RE, str(text)) {
+        if _link_host(link) not in str(facts).lower() { return True; }
+    }
+    text = _spoken_digits(text);
     norm = _digits_norm;
     allowed = set(re.findall(r"\d{3,}", norm(facts)));
     for d in re.findall(r"\d{3,}", norm(user_message)) {
@@ -144,8 +169,10 @@ walker NarrateWalker {
                 out["chips"] = chips;
             }
         } except Exception as ex {
-            # Redacted: provider errors must never carry a credential out.
-            out["error"] = safe_error(ex);
+            # Provider errors named the SDK and the model pool (outside judge,
+            # 2026-10-28): the visitor gets a generic line; the class name is
+            # enough to tell a timeout from an outage.
+            out["error"] = "narration unavailable (" + ("timeout" if "timeout" in type(ex).__name__.lower() else "provider error") + ")";
         }
         out["latency_ms"] = round((time.perf_counter() - t0) * 1000.0, 1);
         record_narration(bool(out["ok"]), float(out["latency_ms"]));

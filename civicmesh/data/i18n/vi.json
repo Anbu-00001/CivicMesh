@@ -98,5 +98,11 @@
   "esc.child_abuse": "trợ giúp 24/7 cho trẻ em bị ngược đãi và cho người lớn lo lắng về một đứa trẻ",
   "esc.trafficking": "trợ giúp bảo mật 24/7 cho bất kỳ ai bị ép làm việc hoặc quan hệ tình dục; nhắn tin đến 233733",
   "esc.sexual_assault": "hỗ trợ bảo mật 24/7 sau khi bị tấn công tình dục",
-  "esc.interp": "Thông dịch viên miễn phí: khi có người nghe máy, hãy nói \"{language}\"."
+  "esc.interp": "Thông dịch viên miễn phí: khi có người nghe máy, hãy nói \"{language}\".",
+  "ui.safety_danger": "Đang gặp nguy hiểm:",
+  "ui.safety_crisis": "Tự tử hoặc khủng hoảng: gọi hoặc nhắn tin",
+  "ui.safety_home": "Không an toàn ở nhà:",
+  "ui.safety_text": "hoặc nhắn START đến 88788",
+  "ui.details": "Chi tiết",
+  "ui.hide_details": "Ẩn chi tiết"
 }

@@ -98,5 +98,11 @@
   "esc.child_abuse": "ንዝጉድኡ ቆልዑን ብዛዕባ ሓደ ቆልዓ ንዝሻቐሉ ዓበይትን 24/7 ሓገዝ",
   "esc.trafficking": "ንዝኾነ ንስራሕ ወይ ንጾታዊ ርክብ ዝግደድ ሰብ 24/7 ምስጢራዊ ሓገዝ፤ ናብ 233733 መልእኽቲ",
   "esc.sexual_assault": "ድሕሪ ጾታዊ መጥቃዕቲ 24/7 ምስጢራዊ ደገፍ",
-  "esc.interp": "ተርጓሚ ብነጻ እዩ: ሰብ ምስ መለሰ ብእንግሊዝኛ \"{language}\" በሉ።"
+  "esc.interp": "ተርጓሚ ብነጻ እዩ: ሰብ ምስ መለሰ ብእንግሊዝኛ \"{language}\" በሉ።",
+  "ui.safety_danger": "ሕጂ ኣብ ሓደጋ እንተሊኹም:",
+  "ui.safety_crisis": "ርእስኻ ምቕታል ወይ ቅልውላው: ደውሉ ወይ መልእኽቲ ስደዱ",
+  "ui.safety_home": "ኣብ ገዛ ውሑስ እንተዘይኮንኩም:",
+  "ui.safety_text": "ወይ START ናብ 88788 ስደዱ",
+  "ui.details": "ዝርዝር",
+  "ui.hide_details": "ዝርዝር ሕባእ"
 }

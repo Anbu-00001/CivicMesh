@@ -30,6 +30,7 @@ import from engine.i18n { language_name, language_info, interpreter_card }
 import from engine.stats { record_turn }
 import from engine.privacy { redact, is_private_turn, need_summary, model_may_read_messages }
 import from engine.compose { merge_profiles, new_trace, span_begin, span_end, export_spans }
+import from engine.prior { sanitize_prior }
 import from walkers.eligibility { EligibilityWalker, quiet_summary }
 import from walkers.critique { CritiqueWalker }
 import from cmguard.tokens { issue as issue_token, content_hash }
@@ -79,7 +80,7 @@ walker IntakeWalker {
             parsed["language"] = pin;
             parsed["language_conf"] = 1.0;
         }
-        profile = merge_profiles(dict(self.prior) if self.prior else {}, parsed, text, str(self.answering));
+        profile = merge_profiles(sanitize_prior(self.prior), parsed, text, str(self.answering));
         span_end(tr, sp, {"civicmesh.category": profile["category"], "civicmesh.category_conf": profile["category_conf"], "civicmesh.language": profile["language"], "civicmesh.fields_known": profile["completeness"], "civicmesh.evidence_spans": len(parsed["evidence"])});
 
         llm_sync = False;

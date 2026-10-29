@@ -48,7 +48,7 @@ glob CATEGORY_LEXICON: dict = {
         ("alimentos?", 2.0), ("despensa", 2.0), ("cupones", 1.5),
         ("cook", 1.5), ("cooking", 1.5), ("cocinar", 1.5),
         ("(?:baby )?formula", 2.0), ("diapers?", 1.5), ("nothing to eat", 2.5),
-        ("(?:fridge|refrigerator|pantry) is empty", 2.5), ("empty (?:fridge|refrigerator)", 2.5),
+        ("(?:fridge|refrigerator|pantry) is (?:basically |almost |always |mostly )?empty", 2.5), ("not (?:been )?eating(?: properly| enough| well)?", 2.0), ("(?:skipping|skips|skipped) meals", 2.5), ("empty (?:fridge|refrigerator)", 2.5),
         ("grocery store", 2.0), ("get to the store", 2.0), ("pa[ñn]ales", 1.5), ("leche de f[oó]rmula", 2.0),
         ("(?:free|reduced|school) (?:or reduced )?(?:price )?(?:lunch|lunches|breakfast|meals)", 2.5), ("meals on wheels", 2.5), ("help with meals", 2.0)
     ],
@@ -101,7 +101,7 @@ glob CATEGORY_LEXICON: dict = {
         ("visitation", 2.5), ("see my (?:kids|children|son|daughter|grandkids)", 2.0), ("child support", 2.5), ("divorce", 2.5), ("custodia", 2.5),
         ("arrest(?:ed)?", 2.5), ("jail", 2.0), ("charged with", 2.0), ("criminal record", 2.5),
         ("seal(?:ed|ing)? (?:my |his |her |the )?(?:criminal )?record", 2.5), ("record seal\\w*", 2.5),
-        ("wages?", 2.0), ("unpaid (?:wages|pay|overtime)", 2.5), ("didn'?t pay me", 2.5), ("wage theft", 2.5),
+        ("wages?", 2.0), ("unpaid (?:wages|pay|overtime)", 2.5), ("didn'?t pay me", 2.5), ("wage theft", 2.5), ("(?:hasn'?t|haven'?t|has not|have not|won'?t|stopped|refuses? to) (?:been )?pa(?:id|y) (?:me|us)", 2.5), ("overtime", 1.5),
         ("(?:security )?deposit back", 2.0), ("security deposit", 2.0), ("discriminat\\w*", 2.0),
         ("arrestad[oa]", 2.5), ("c[aá]rcel", 2.0), ("antecedentes", 2.0), ("salario no pagado", 2.5),
         ("illegal(?:ly)?", 1.5), ("my rights", 2.0), ("sue", 1.5), ("custody", 2.0),
@@ -189,7 +189,7 @@ glob FLAG_LEXICON: dict = {
                  "sin hogar", "sin techo", "no tenemos d[oó]nde (?:vivir|dormir|quedarnos)",
                  "(?:vivo|vivimos|viv[ií]a|dormimos|duermo|dorm[ií]|estoy|estamos|quedamos|qued[eé]|terminamos|dejaron|echaron|sacaron|tiraron)(?: \\w+){0,2} en la calle"],
     "pregnant": ["pregnant", "expecting a baby", "embarazada", "gr[aá]vida"],
-    "children": ["kids?", "children", "child", "sons?", "daughters?", "baby", "toddler", "infant", "teens?", "teenagers?", "hij[oa]s?", "ni[nñ][oa]s?", "beb[eé]"],
+    "children": ["kids?", "children", "child", "sons?", "daughters?", "grand(?:sons?|daughters?|kids?|child(?:ren)?)", "niet[oa]s?", "baby", "toddler", "infant", "teens?", "teenagers?", "hij[oa]s?", "ni[nñ][oa]s?", "beb[eé]"],
     "family": ["my family", "our family", "mi familia", "nuestra familia", "familia"]
 };
 
@@ -205,7 +205,9 @@ glob FACT_NEG_LEFT: str = "(?:\\b(?:no|not|never|without|none of|isn'?t|aren'?t|
 glob FLAG_SENSE_LEFT: dict = {
     "senior": "(?:high school|college|university)\\s+$",
     "dv": "(?:substance|drug|drugs|alcohol|opioid|opiate|elder care)\\s+$|(?:my|his|her|the)\\s+(?:back|head|leg|legs|knee|knees|tooth|teeth|foot|feet|stomach|chest|arm|arms|hand|hands|hip|neck|shoulder|eye|eyes|ear|body)\\s+$",
-    "children": "(?:adult|grown|grown-up)\\s+$"
+    "children": "(?:adult|grown|grown-up)\\s+$",
+    # "My ex-husband was in the army and he beat me": the abuser's service.
+    "veteran": "\\b(?:ex(?:-|\\s)?(?:husband|wife|partner|boyfriend|girlfriend)|abuser)\\s+$"
 };
 glob FLAG_SENSE_RIGHT: dict = {
     "senior": "^\\s+(?:at|in)\\s+(?:the\\s+|a\\s+|my\\s+)?(?:\\w+\\s+)?(?:college|high school|school|university)|^\\s+(?:year|center|centre|class|discount)|^\\s+from\\s+(?:the\\s+)?(?:u\\.?s\\.?\\s+)?(?:army|navy|marines?|marine corps|air force|coast guard|national guard|military|police|fire department)|^\\s+(?:at|at age|at the age of)\\s+[1-5]\\d\\b",
@@ -365,7 +367,9 @@ glob ES_MARKERS: list = [
     "y", "de", "la", "el", "en", "no", "mi", "yo", "para", "con", "que",
     "los", "las", "una", "un", "estoy", "estamos", "tengo", "tenemos",
     "necesito", "necesitamos", "ayuda", "hemos", "por", "del", "soy", "somos",
-    "hijos", "familia", "días", "dias", "casa", "trabajo"
+    "hijos", "familia", "días", "dias", "casa", "trabajo",
+    "quiero", "puedo", "morir", "vivir", "nadie", "pero",
+    "muy", "renta", "dinero", "ayudame", "ayúdame"
 ];
 
 glob UNEARNED_CUES: str = r"\b(?:social security|ssi|ssdi|pension|disability (?:check|benefits?|payments?)|retirement (?:check|benefits?|income)|unemployment (?:benefits?|insurance|checks?)|child support|alimony|seguro social|pensi[oó]n|jubilaci[oó]n)\b";
@@ -438,6 +442,8 @@ def detect_language(text: str) -> tuple {
         if w in EN_MARKERS { en += 1; }
         if w in ES_MARKERS { es += 1; }
     }
+    # "me" is a word in both: "me quiero matar" is Spanish.
+    if es > 0 and "me" in words { en -= words.count("me"); }
     # Accents are Spanish evidence only without letters Spanish never uses
     # (Portuguese ã õ ç ê ô, French è à ù î û ë ï œ).
     # An accented word that is a Portuguese marker ("família", "está") is not
@@ -686,8 +692,14 @@ Stated: an explicit count ("family of 4", "we're 3", "somos 5") or living
 alone. Otherwise inferred from children and a partner (1 + kids + partner).
 """
 def parse_household(low: str, evidence: list, text: str, flags: list) -> tuple {
+    # A correction wins: "sorry we are 4 not 5", "actually it's 3, not 4".
+    mc = re.search(r"\b(?:we(?:'re| are)|it'?s|there(?:'re| are)|actually|i mean|make that|somos)\s+(\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|dos|tres|cuatro|cinco|seis)\s*,?\s*(?:not|no)\s+(?:\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|dos|tres|cuatro|cinco|seis)\b(?!\s*(?:weeks?|months?|days?|years?|hours?|dollars?|bucks|k\b|%|semanas|meses|d[ií]as|a[nñ]os))", low);
+    if mc and 0 < _num(mc.group(1)) < 20 {
+        _ev(evidence, "household_size", _num(mc.group(1)), mc.start(), mc.end(), text);
+        return (_num(mc.group(1)), True);
+    }
     # "Somos una familia de 4": the count, not the article ("una" read as 1).
-    m = re.search(r"\b(?:family|household) of (\d+|\w+)\b|\bfamilia de (\d+|\w+)\b", low) or re.search(r"\bsomos (?!un\b|una\b|uno\b)(\d+|\w+)\b|\bwe(?:'re| are) (\d+|\w+)(?: (?:people|persons|of us)| in (?:the|my|our) (?:family|household|house|home))\b|\bwe(?:'re| are) (\d+|\w+)(?=\s*(?:[,.;!?]|$))|\bhum (\d+) log\b|\bthere (?:are|is) (\d+|\w+) (?:people|persons|of us)\b|\b(\d+|\w+) (?:people|persons) (?:live|living|in (?:my|our|the) (?:house|home|household|apartment|family))\b", low);
+    m = re.search(r"\b(?:family|household) of (\d+|\w+)\b|\bfamilia de (\d+|\w+)\b", low) or re.search(r"\bsomos (?!un\b|una\b|uno\b)(\d+|\w+)\b|\bwe(?:'re| are) (\d+|\w+)(?: (?:people|persons|of us)| in (?:the|my|our) (?:family|household|house|home))\b|\bwe(?:'re| are) (\d+|\w+)(?=\s*(?:[,.;!?]|$))|\bwe(?:'re| are) (\d{1,2}|two|three|four|five|six|seven|eight|nine|ten) (?=in\b)|\bhum (\d+) log\b|\bthere (?:are|is) (\d+|\w+) (?:people|persons|of us)\b|\b(\d+|\w+) (?:people|persons) (?:live|living|in (?:my|our|the) (?:house|home|household|apartment|family))\b", low);
     if m {
         tok = [g for g in m.groups() if g][0];
         n = _num(tok);
@@ -706,7 +718,21 @@ def parse_household(low: str, evidence: list, text: str, flags: list) -> tuple {
             kids = 0;
         }
     }
+    ma = re.search(r"\b(\d|one|two|three|four|five|six|dos|tres|cuatro)\s+(?:adults?|grown-?ups|adultos)\b", low);
+    if ma and 0 < _num(ma.group(1)) < 10 {
+        _ev(evidence, "household_size", _num(ma.group(1)) + kids, ma.start(), ma.end(), text);
+        return (_num(ma.group(1)) + kids, True);
+    }
+    mm = re.search(r"\b(?:it'?s |now )?(?:just |only )?(?:me|myself) and (?:the |my |our )?(\d|one|two|three|four|five|six|seven|eight)\s+(?:little\s+|young\s+)?(?:kids|children|sons|daughters|grandkids|grandchildren)\b|\b(?:solo |s[oó]lo )?(?:yo|mis) y (?:mis )?(\d|dos|tres|cuatro|cinco|seis)\s+(?:hij[oa]s|ni[nñ][oa]s)\b", low);
+    if mm and 0 < _num(mm.group(1) or mm.group(2)) < 15 {
+        n_mk = _num(mm.group(1) or mm.group(2)) + 1;
+        _ev(evidence, "household_size", n_mk, mm.start(), mm.end(), text);
+        return (n_mk, True);
+    }
     partner = 1 if re.search(r"\b(?:my|our) (?:husband|wife|partner|spouse|boyfriend|girlfriend)\b|\bmi (?:esposo|esposa|pareja|marido|mujer)\b|\bmarried\b|\bcasad[oa]\b", low) else 0;
+    if partner and re.search(r"\b(?:husband|wife|partner|spouse|boyfriend|girlfriend|esposo|esposa|pareja|marido)\b[^.?!]{0,30}\b(?:got |was |has been |is being )?(?:deported|left|died|passed away|in (?:jail|prison|detention)|locked up|walked out|deportad[oa]|se fue|muri[oó])\b", low) {
+        partner = 0;
+    }
     # Someone fleeing an abusive partner is not in that partner's household.
     if partner and ("dv" in flags or re.search(r"\b(?:hits|beats|hurts|abus\w*|threaten\w*)\b|\bme golpea\b|\bmaltrat\w*", low)) {
         partner = 0;
@@ -737,7 +763,9 @@ def parse_age(low: str, evidence: list, text: str) -> int {
         # A caregiver writing for someone else: the age of the person the help
         # is for ("my mom is 80", "mi padre tiene 75 años").
         r"\bmy\s+(?:elderly\s+)?(?:mom|mother|dad|father|grandma|grandmother|grandpa|grandfather|husband|wife|aunt|uncle|parents?)\s*(?:is|,)\s*(\d{2,3})\b(?!\s*(?:dollars|%|k\b|/))",
-        r"\bmi\s+(?:mam[aá]|madre|pap[aá]|padre|abuel[oa]|espos[oa])\s+tiene\s+(\d{2,3})\b"
+        r"\bmi\s+(?:mam[aá]|madre|pap[aá]|padre|abuel[oa]|espos[oa])\s+tiene\s+(\d{2,3})\b",
+        # "I am writing for my grandmother. She is 84 and lives alone."
+        r"\b(?:writing|asking|calling|messaging|here)\s+(?:for|on behalf of|about)\s+my\s+(?:elderly\s+)?(?:mom|mother|dad|father|grandma|grandmother|grandpa|grandfather|aunt|uncle|parents?)\b[^.?!]*[.?!]?\s*(?:she|he)(?:'s|\s+is)\s+(\d{2,3})\b(?!\s*(?:dollars|%|k\b|/|minutes|miles))"
     ] {
         m = re.search(pat, low);
         if m {
@@ -766,6 +794,11 @@ def parse_age(low: str, evidence: list, text: str) -> int {
     }
     return 0;
 }
+
+# "My mom is 70": the age of someone else (the caregiver rule in parse_age
+# keeps it when no other age is known; a conversation keeps the speaker's).
+glob AGE_OTHER_RE: str = "\\b(?:writing|asking|calling|messaging|here)\\s+(?:for|on behalf of|about)\\s+my\\s+\\w+|\\bmy\\s+(?:elderly\\s+)?(?:mom|mother|dad|father|grandma|grandmother|grandpa|grandfather|husband|wife|aunt|uncle|parents?)\\s*(?:is|,)\\s*\\d{2,3}\\b|\\bmi\\s+(?:mam[aá]|madre|pap[aá]|padre|abuel[oa]|espos[oa])\\s+tiene\\s+\\d{2,3}\\b";
+glob AGE_SELF_RE: str = "\\b(?:i'?m|i am|aged?|age of)\\s+\\d{2,3}\\b|\\btengo\\s+\\d{2,3}\\s+a[nñ]os\\b";
 
 """State / city / zip. City implies state."""
 def parse_location(text: str, low: str, evidence: list) -> dict {
@@ -884,8 +917,32 @@ def clip_message(text: str) -> str {
     return t[:half] + " … " + t[len(t) - half:];
 }
 
+# The clip keeps the first and last 2,000 characters, so the middle of a long
+# API message was never read (outside judge, 2026-10-28): a disclosure there
+# hid the hotline. That middle is scanned for danger only, up to this much.
+glob MIDDLE_SCAN_CHARS: int = 8000;
+glob DANGER_FLAGS: list = ["self_harm", "self_harm_concern", "dv", "dv_concern", "child_abuse", "sexual_assault", "trafficking", "emergency"];
+
+"""Danger flags in the part of a long message that clip_message drops."""
+def middle_danger(text: str) -> list {
+    t = str(text);
+    if len(t) <= MAX_MESSAGE_CHARS {
+        return [];
+    }
+    half = MAX_MESSAGE_CHARS // 2;
+    mid = t[half:len(t) - half][:MIDDLE_SCAN_CHARS];
+    found: list = [];
+    for i in range(0, len(mid), MAX_MESSAGE_CHARS) {
+        for f in list(parse_intake(mid[i:i + MAX_MESSAGE_CHARS]).get("flags", [])) {
+            if f in DANGER_FLAGS and f not in found { found.append(f); }
+        }
+    }
+    return found;
+}
+
 """Parse one user message into a structured, evidence-backed profile."""
 def parse_intake(text: str) -> dict {
+    mid_danger = middle_danger(str(text or ""));
     raw = clip_message(str(text or ""));
     low = raw.lower();
     evidence: list = [];
@@ -946,6 +1003,9 @@ def parse_intake(text: str) -> dict {
             flags.append(f);
             _ev(evidence, "flag", f, cs, ce, raw);
         }
+    }
+    for f in mid_danger {
+        if f not in flags and f.replace("_concern", "") not in flags { flags.append(f); }
     }
     # Indirect cues: added only when the direct flag isn't already there.
     for (cflag, cpats) in CONCERN_LEXICON.items() {
@@ -1056,6 +1116,9 @@ def parse_intake(text: str) -> dict {
     }
     loc = parse_location(raw, low, evidence);
     citizenship = parse_citizenship(low, evidence, raw);
+    if "veteran" not in flags and re.search(r"\bveteran|\bvet\b", low) and re.search(r"\bmy (?:husband|wife|spouse)(?:'s| is| was)? (?:a |an )?(?:veteran|vet)\b|\bbut my (?:husband|wife|spouse) (?:is|was)\b", low) {
+        flags.append("veteran");
+    }
     if re.search(CITIZEN_CHILDREN_RE, low) and "citizen_children" not in flags { flags.append("citizen_children"); }
     if citizenship == "eligible_immigrant" and re.search(LPR_YEARS_RE, low) { flags.append("lpr_recent"); }
 
@@ -1155,6 +1218,7 @@ def parse_intake(text: str) -> dict {
         "household_size": household,
         "household_stated": household_stated,
         "age": age,
+        "age_other": age > 0 and bool(re.search(AGE_OTHER_RE, low)) and not re.search(AGE_SELF_RE, low),
         "state": loc["state"],
         "city": loc["city"],
         "zip": loc["zip"],

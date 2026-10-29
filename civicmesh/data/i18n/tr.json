@@ -98,5 +98,11 @@
   "esc.child_abuse": "zarar gören çocuklar ve bir çocuk için endişelenen yetişkinler için 24/7 yardım",
   "esc.trafficking": "çalışmaya ya da cinsel ilişkiye zorlanan herkes için 24/7 gizli yardım; 233733'e mesaj",
   "esc.sexual_assault": "cinsel saldırıdan sonra 24/7 gizli destek",
-  "esc.interp": "Tercüman ücretsizdir: biri açınca İngilizce \"{language}\" deyin."
+  "esc.interp": "Tercüman ücretsizdir: biri açınca İngilizce \"{language}\" deyin.",
+  "ui.safety_danger": "Şu an tehlikedeyseniz:",
+  "ui.safety_crisis": "İntihar veya kriz: arayın ya da mesaj atın:",
+  "ui.safety_home": "Evde güvende değilseniz:",
+  "ui.safety_text": "veya 88788'e START yazın",
+  "ui.details": "Ayrıntılar",
+  "ui.hide_details": "Ayrıntıları gizle"
 }

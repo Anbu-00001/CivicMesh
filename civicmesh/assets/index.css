@@ -927,12 +927,15 @@ html, body { overflow-x: hidden; }
 .cm-interp-tip { font-size: 12px; }
 .cm-bubble-translated { border-color: rgba(0,224,138,0.35) !important; }
 @media (max-width: 600px) { .cm-lang-select { max-width: 140px; } }
+/* At phone width the engine blurb wrapped to a dozen lines and squeezed the
+   chat (outside judge, 2026-10-28): the title and controls share one row. */
+@media (max-width: 600px) { .cm-chat-head { flex-wrap: wrap; padding: 10px 12px; } .cm-chat-sub { display: none; } }
 .cm-interp .cm-crit-src { font-family: inherit; font-size: 11px; line-height: 1.5; }
 
 /* Crisis numbers under the composer, always shown: detection misses about a
    third of real abuse posts (tests/eval_external.jac), so a miss must never
    mean no number on screen. */
-.cm-safety-line { margin: 0 14px 6px; font-size: 11px; line-height: 1.5; color: rgba(255,255,255,0.5); }
+.cm-safety-line { margin: 0 14px 6px; font-size: 14px; line-height: 1.5; color: rgba(255,255,255,0.72); }
 .cm-safety-line a { color: rgba(255,255,255,0.78); text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 2px; }
 .cm-safety-line a:hover { color: #fff; }
 

@@ -113,6 +113,12 @@ class GatewayConfig:
         self.max_keys = env_int("CIVICMESH_LIMITER_MAX_KEYS", 50000)
         self.max_connections = env_int("CIVICMESH_MAX_CONNECTIONS", 256)
         self.telemetry_interval_s = env_float("CIVICMESH_SECURITY_LOG_S", 60.0)
+        # Cross-origin callers allowed to read API answers. Empty = same origin
+        # only (the page and the API share one origin, so nothing else needs it).
+        self.allowed_origins = frozenset(o.strip().rstrip("/") for o in env_str("CIVICMESH_ALLOWED_ORIGINS", "").split(",") if o.strip())
+        # Who may frame the page. The Hugging Face Space page frames the app
+        # from huggingface.co; anyone else framing it (and its quick exit) is refused.
+        self.frame_ancestors = env_str("CIVICMESH_FRAME_ANCESTORS", "'self' https://huggingface.co")
 
 
 class BudgetConfig:

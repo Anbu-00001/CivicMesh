@@ -98,5 +98,11 @@
   "esc.child_abuse": "tulong 24/7 para sa mga batang sinasaktan at sa mga nasa hustong gulang na nag-aalala para sa isang bata",
   "esc.trafficking": "kumpidensyal na tulong 24/7 para sa sinumang pinipilit magtrabaho o makipagtalik; mag-text sa 233733",
   "esc.sexual_assault": "kumpidensyal na suporta 24/7 pagkatapos ng sekswal na pang-aabuso",
-  "esc.interp": "Libre ang interpreter: sabihin ang \"{language}\" kapag may sumagot."
+  "esc.interp": "Libre ang interpreter: sabihin ang \"{language}\" kapag may sumagot.",
+  "ui.safety_danger": "Nasa panganib ngayon:",
+  "ui.safety_crisis": "Pagpapakamatay o krisis: tumawag o mag-text sa",
+  "ui.safety_home": "Hindi ligtas sa bahay:",
+  "ui.safety_text": "o i-text ang START sa 88788",
+  "ui.details": "Mga detalye",
+  "ui.hide_details": "Itago ang mga detalye"
 }

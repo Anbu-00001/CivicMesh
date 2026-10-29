@@ -98,5 +98,11 @@
   "esc.child_abuse": "hulp 24/7 voor kinderen die mishandeld worden en voor volwassenen die zich zorgen maken om een kind",
   "esc.trafficking": "vertrouwelijke hulp 24/7 voor iedereen die gedwongen wordt te werken of seks te hebben; sms naar 233733",
   "esc.sexual_assault": "vertrouwelijke steun 24/7 na seksueel geweld",
-  "esc.interp": "Tolken zijn gratis: zeg \"{language}\" als er wordt opgenomen."
+  "esc.interp": "Tolken zijn gratis: zeg \"{language}\" als er wordt opgenomen.",
+  "ui.safety_danger": "Nu in gevaar:",
+  "ui.safety_crisis": "Zelfmoord of crisis: bel of sms",
+  "ui.safety_home": "Niet veilig thuis:",
+  "ui.safety_text": "of sms START naar 88788",
+  "ui.details": "Details",
+  "ui.hide_details": "Details verbergen"
 }

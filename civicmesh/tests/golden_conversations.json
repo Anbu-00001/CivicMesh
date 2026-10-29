@@ -115,6 +115,70 @@
         {"text": "gracias", "answering": "household", "expect": {"language": "es", "small_talk": true}},
         {"text": "somos 4", "answering": "household", "expect": {"language": "es", "household_size": 4, "small_talk": false}}
       ]
+    },
+    {
+      "name": "A household count corrected",
+      "why": "a correction was ignored: the first count stuck",
+      "turns": [
+        {"text": "I need food, we are 5 in Ohio", "expect": {"household_size": 5}},
+        {"text": "sorry we are 4 not 5", "expect": {"household_size": 4, "category": "food"}}
+      ]
+    },
+    {
+      "name": "Homeless taken back",
+      "why": "flags only accumulated: a retraction left the person marked homeless",
+      "turns": [
+        {"text": "I'm homeless and need food", "expect": {"flag": "homeless"}},
+        {"text": "wait I mean I have a place to sleep, just need food", "expect": {"flag_absent": "homeless", "category": "food"}}
+      ]
+    },
+    {
+      "name": "Yes to a safe place tonight",
+      "why": "a yes to the negative shelter question kept homeless",
+      "turns": [
+        {"text": "we're homeless and need food", "expect": {"flag": "homeless"}},
+        {"text": "yes", "answering": "homeless", "expect": {"flag_absent": "homeless"}}
+      ]
+    },
+    {
+      "name": "A mother's age after the speaker's",
+      "why": "\"my mom is 70\" replaced the speaker's own age 22",
+      "turns": [
+        {"text": "I'm 22 and need help with rent", "expect": {"age": 22}},
+        {"text": "my mom is 70 and lives with me", "expect": {"age": 22, "flag": "senior"}}
+      ]
+    },
+    {
+      "name": "A second need with also",
+      "why": "the first need was dropped when a second was added",
+      "turns": [
+        {"text": "I need food", "expect": {"category": "food"}},
+        {"text": "also my landlord is evicting me", "expect": {"category": "housing", "secondary": ["food"]}}
+      ]
+    },
+    {
+      "name": "No kids after all",
+      "why": "a corrected child flag stayed",
+      "turns": [
+        {"text": "we have kids and need food", "expect": {"flag": "children"}},
+        {"text": "actually no kids, just me", "expect": {"flag_absent": "children"}}
+      ]
+    },
+    {
+      "name": "Not a veteran after all",
+      "why": "a corrected veteran flag stayed",
+      "turns": [
+        {"text": "I'm a veteran needing housing", "expect": {"flag": "veteran"}},
+        {"text": "sorry, I'm not a veteran", "expect": {"flag_absent": "veteran"}}
+      ]
+    },
+    {
+      "name": "A crisis is never taken back",
+      "why": "a crisis flag must survive a later \"I'm fine\"",
+      "turns": [
+        {"text": "I want to kill myself", "expect": {"flag": "self_harm"}},
+        {"text": "never mind, I'm not homeless, I have a place to stay", "expect": {"flag": "self_harm"}}
+      ]
     }
   ]
 }

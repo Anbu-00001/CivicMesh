@@ -98,5 +98,11 @@
   "esc.child_abuse": "pomoć 24/7 za djecu koju neko povređuje i za odrasle koji brinu za dijete",
   "esc.trafficking": "povjerljiva pomoć 24/7 za svakoga ko je prisiljen na rad ili seks; SMS na 233733",
   "esc.sexual_assault": "povjerljiva podrška 24/7 nakon seksualnog napada",
-  "esc.interp": "Prevoditelj je besplatan: kad se netko javi, recite na engleskom „{language}”."
+  "esc.interp": "Prevoditelj je besplatan: kad se netko javi, recite na engleskom „{language}”.",
+  "ui.safety_danger": "U opasnosti sada:",
+  "ui.safety_crisis": "Samoubistvo ili kriza: pozovite ili pošaljite poruku na",
+  "ui.safety_home": "Niste sigurni kod kuće:",
+  "ui.safety_text": "ili pošaljite START na 88788",
+  "ui.details": "Detalji",
+  "ui.hide_details": "Sakrij detalje"
 }

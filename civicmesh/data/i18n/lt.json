@@ -98,5 +98,11 @@
   "esc.child_abuse": "pagalba 24/7 skriaudžiamiems vaikams ir suaugusiesiems, kurie nerimauja dėl vaiko",
   "esc.trafficking": "konfidenciali pagalba 24/7 visiems, verčiamiems dirbti ar turėti lytinių santykių; SMS 233733",
   "esc.sexual_assault": "konfidenciali pagalba 24/7 po seksualinės prievartos",
-  "esc.interp": "Vertėjas nemokamas: kai atsilieps, pasakykite angliškai „{language}“."
+  "esc.interp": "Vertėjas nemokamas: kai atsilieps, pasakykite angliškai „{language}“.",
+  "ui.safety_danger": "Pavojuje dabar:",
+  "ui.safety_crisis": "Savižudybė ar krizė: skambinkite arba rašykite SMS",
+  "ui.safety_home": "Namuose nesaugu:",
+  "ui.safety_text": "arba siųskite START numeriu 88788",
+  "ui.details": "Išsamiau",
+  "ui.hide_details": "Slėpti išsamią informaciją"
 }

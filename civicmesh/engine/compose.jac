@@ -18,6 +18,17 @@ import from engine.facts_i18n { zh_number }
 import from engine.messages { msg, has_messages }
 
 glob MERGE_FIELDS: list = ["income_annual", "household_size", "age", "state", "city", "zip", "citizenship"];
+# A later message can take back a person fact said earlier ("wait, I mean I
+# have a place to sleep"); crisis flags are never taken back (outside judge,
+# 2026-10-28: flags only ever accumulated).
+glob RETRACT: dict = {
+    "homeless": "\\b(?:have|got|found|i'?ve got|we have|we'?ve got) (?:a )?(?:safe )?(?:place|somewhere) to (?:sleep|stay|live)\\b|\\b(?:not|no longer|isn'?t|aren'?t|i'?m not|we'?re not) homeless\\b|\\btengo (?:d[oó]nde|un lugar donde) (?:dormir|vivir|quedarme)\\b",
+    "veteran": "\\b(?:i'?m not|i am not|not) a veteran\\b|\\bnever served\\b|\\bno soy veteran[oa]\\b",
+    "disabled": "\\b(?:no|don'?t have a|do not have a|not) (?:disability|disabled)\\b|\\bno tengo (?:una )?discapacidad\\b",
+    "pregnant": "\\b(?:not|no longer|i'?m not) pregnant\\b|\\bno estoy embarazada\\b",
+    "children": "\\b(?:no |don'?t have (?:any )?|do not have (?:any )?)(?:kids|children)\\b|\\bno tengo hijos\\b"
+};
+glob ALSO_RE: str = "\\b(?:also|as well|another thing|on top of (?:that|this)|adem[aá]s|tambi[eé]n)\\b|\\btoo\\s*(?:[.!?]|$)";
 
 # Yes/no follow-up answers map to canonical evidence phrases so the same
 # situation matcher that reads free text can read the answer.
@@ -118,7 +129,27 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
     if out.get("answered_yes") and ANSWER_FLAGS.get(str(out["answered_yes"])) and ANSWER_FLAGS[str(out["answered_yes"])] not in flags {
         flags.append(ANSWER_FLAGS[str(out["answered_yes"])]);
     }
+    low_t = str(text).lower();
+    fresh = list(cur.get("flags", []));
+    for (rf, rpat) in RETRACT.items() {
+        if rf in flags and rf not in fresh and re.search(rpat, low_t) { flags.remove(rf); }
+    }
+    # "Do you have a safe place to sleep tonight?" → "yes": not homeless.
+    if answering == "homeless" and "homeless" in flags and "homeless" not in fresh and (re.search(YES_RE, low_t) or yes_no(text) == "yes") and not re.search(NO_RE, low_t) {
+        flags.remove("homeless");
+    }
     out["flags"] = flags;
+    # "My mom is 70" after "I'm 22": the speaker is still 22; she is a
+    # household member, which the senior flag already records.
+    if cur.get("age_other") and int(prior.get("age", 0) or 0) > 0 and not prior.get("age_other") {
+        out["age"] = prior.get("age");
+        out["age_other"] = False;
+    }
+    # "Also my landlord is evicting me": the earlier need stays, as secondary.
+    if cur.get("category") and prior.get("category") and cur.get("category") != prior.get("category") and re.search(ALSO_RE, low_t) {
+        sec = [str(prior["category"])] + [c for c in list(cur.get("secondary", [])) if c != prior["category"]];
+        out["secondary"] = sec;
+    }
     # "How many people live in your household?" → "3", "three", "there are 3 people".
     if answering == "household" and int(out.get("household_size", 0) or 0) <= 0 {
         mc = re.search("\\b(\\d{1,2}|" + "|".join(COUNT_WORDS.keys()) + ")\\b", str(text).lower());
@@ -215,7 +246,8 @@ def compose_catalog(lang: str, profile: dict, ranking: dict, plan: dict, routes:
     if steps {
         lines.append(msg(lang, "r.start", {"agency": steps[0]["agency_name"], "action": steps[0]["action_description"]}));
     }
-    if routes {
+    # A one-day route isn't a longer-term route ("in about 1 days").
+    if routes and int(routes[0]["total_days"]) >= 2 {
         r = routes[0];
         lines.append(msg(lang, "r.route", {"start": r["start"], "end": r["end"], "days": r["total_days"]}));
     }
@@ -271,7 +303,7 @@ def compose_reply(lang: str, profile: dict, ranking: dict, plan: dict, routes: l
         s0 = steps[0];
         lines.append(("**Empiece aquí:** " if es else "**Start here:** ") + s0["agency_name"] + " — " + s0["action_description"] + ".");
     }
-    if routes {
+    if routes and int(routes[0]["total_days"]) >= 2 {
         r = routes[0];
         if es {
             lines.append("**Ruta a largo plazo:** " + r["start"] + " → " + r["end"] + " en ~" + str(r["total_days"]) + " días.");

@@ -98,5 +98,11 @@
   "esc.child_abuse": "palīdzība 24/7 bērniem, kuriem nodara pāri, un pieaugušajiem, kuri uztraucas par bērnu",
   "esc.trafficking": "konfidenciāla palīdzība 24/7 ikvienam, kuru spiež strādāt vai stāties dzimumattiecībās; SMS uz 233733",
   "esc.sexual_assault": "konfidenciāls atbalsts 24/7 pēc seksuālas vardarbības",
-  "esc.interp": "Tulks ir bez maksas: kad atbild, pasakiet angliski „{language}”."
+  "esc.interp": "Tulks ir bez maksas: kad atbild, pasakiet angliski „{language}”.",
+  "ui.safety_danger": "Briesmās tagad:",
+  "ui.safety_crisis": "Pašnāvība vai krīze: zvaniet vai sūtiet īsziņu uz",
+  "ui.safety_home": "Mājās nav droši:",
+  "ui.safety_text": "vai sūtiet START uz 88788",
+  "ui.details": "Sīkāk",
+  "ui.hide_details": "Slēpt sīkāku informāciju"
 }

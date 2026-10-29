@@ -98,5 +98,11 @@
   "esc.child_abuse": "ajutor 24/7 pentru copiii care sunt răniți și pentru adulții îngrijorați pentru un copil",
   "esc.trafficking": "ajutor confidențial 24/7 pentru oricine este forțat să muncească sau să facă sex; SMS la 233733",
   "esc.sexual_assault": "sprijin confidențial 24/7 după o agresiune sexuală",
-  "esc.interp": "Interpreții sunt gratuiți: când vă răspunde cineva, spuneți în engleză „{language}”."
+  "esc.interp": "Interpreții sunt gratuiți: când vă răspunde cineva, spuneți în engleză „{language}”.",
+  "ui.safety_danger": "În pericol acum:",
+  "ui.safety_crisis": "Suicid sau criză: sunați sau trimiteți SMS la",
+  "ui.safety_home": "Nu sunteți în siguranță acasă:",
+  "ui.safety_text": "sau trimiteți START la 88788",
+  "ui.details": "Detalii",
+  "ui.hide_details": "Ascunde detaliile"
 }

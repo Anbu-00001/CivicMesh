@@ -98,5 +98,11 @@
   "esc.child_abuse": "bantuan 24/7 untuk anak yang disakiti dan untuk orang dewasa yang khawatir tentang seorang anak",
   "esc.trafficking": "bantuan rahasia 24/7 untuk siapa pun yang dipaksa bekerja atau berhubungan seks; SMS ke 233733",
   "esc.sexual_assault": "dukungan rahasia 24/7 setelah kekerasan seksual",
-  "esc.interp": "Penerjemah gratis: saat ada yang menjawab, ucapkan dalam bahasa Inggris \"{language}\"."
+  "esc.interp": "Penerjemah gratis: saat ada yang menjawab, ucapkan dalam bahasa Inggris \"{language}\".",
+  "ui.safety_danger": "Dalam bahaya sekarang:",
+  "ui.safety_crisis": "Bunuh diri atau krisis: telepon atau kirim SMS ke",
+  "ui.safety_home": "Tidak aman di rumah:",
+  "ui.safety_text": "atau kirim START ke 88788",
+  "ui.details": "Rincian",
+  "ui.hide_details": "Sembunyikan rincian"
 }

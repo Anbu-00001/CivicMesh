@@ -78,7 +78,8 @@ glob TARGETS: dict = {
     "medication": ("medicine|medication|prescription|insulin|pharmacy|\\bmeds\\b|pills|medicina|receta", "", "help paying for medication", "ayuda para pagar medicinas"),
     "dental": ("dental|dentist|tooth|teeth|toothache|muela|diente|dentista", "", "dental care", "atención dental"),
     "vision": ("\\beyes?\\b|vision|glasses|cataract|ojos|vista|lentes", "", "eye care", "atención de la vista"),
-    "homebound": ("homebound|can'?t leave (?:the|my) house|bedridden|can'?t cook|can'?t shop|wheelchair|no puedo salir", "", "homebound seniors", "adultos mayores que no pueden salir de casa"),
+    "homebound": ("homebound|can'?t leave (?:the|my) house|bedridden|can'?t cook|can'?t shop|wheelchair|no puedo salir|dementia|alzheimer|memory loss|\\bfrail\\b|help with (?:meals|cooking)|meals delivered|home.delivered|not (?:been )?eating|demencia", "", "homebound seniors", "adultos mayores que no pueden salir de casa"),
+    "wage": ("wage theft|unpaid (?:wages|pay|overtime)|(?:hasn'?t|haven'?t|has not|have not|didn'?t|did not|won'?t|refuses? to|stopped) (?:been )?pa(?:id|y) (?:me|us)|not (?:been )?paid|owe[sd]? (?:me|us) (?:\\$|money|wages|pay)|overtime|minimum wage|final (?:pay ?check|pay)|no me (?:ha |han )?pagad|no me pag|salario no pagado", "", "workers owed wages", "trabajadores a quienes les deben salario"),
     "consumer": ("debt collector|credit card|\\bloan|\\bbank\\b|scam|fraud|payday|credit report|cobrador|estafa|pr[eé]stamo", "", "problems with a bank, lender or debt collector", "problemas con un banco, prestamista o cobrador"),
     "energy": ("electric|heating|\\bheat\\b|gas bill|utilit|power bill|power (?:is|was) (?:off|cut)|\\bluz\\b|calefacci|factura de gas", "", "heating or power bills", "facturas de luz o calefacción"),
     "tenant": ("evict|landlord|lease|repairs|\\bmold|\\brent\\b|tenant|desalo|casero|renta|inquilin", "eviction", "renters with landlord problems", "inquilinos con problemas con el casero")
@@ -94,6 +95,16 @@ glob HARD_INCOME_CAP: dict = {"medicaid-rule": 1.0, "chip-rule": 1.0, "lsc-rule"
 # conversation after the flag fixes). Other targets are topics, not facts.
 glob FLAG_TARGETS: dict = {"homeless": "homeless", "veteran": "veteran", "disability": "disabled", "dv": "dv", "children": "children", "minor": "minor",
                             "child_abuse": "child_abuse", "trafficking": "trafficking", "sexual_assault": "sexual_assault"};
+# Programs built for one topic (HIV care, dental, a criminal case, DV) are
+# dropped, not listed as "needs info", when the message never touches that
+# topic: a routine health question filled the list with Ryan White, SAMHSA
+# and NeedyMeds at 25% (outside judge, 2026-10-28). Person facts the engine
+# can ask about (homeless, veteran, children) still show as "needs info".
+glob TOPIC_TARGETS: list = ["hiv", "crisis", "mental_health", "substance", "medication", "dental", "vision",
+                            "criminal", "conviction", "immigration", "consumer", "dv", "wage", "tenant", "disability"];
+# A topic that also counts as evidence for another: 988 serves mental-health
+# distress, not only suicide.
+glob TOPIC_ALSO: dict = {"crisis": ["mental_health"]};
 # Lines for one danger: shown only when the message shows it, never as clutter.
 glob DANGER_TARGETS: list = ["child_abuse", "trafficking", "sexual_assault"];
 
@@ -409,8 +420,12 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
     }
 
     targets = [str(t) for t in list(rule.get("targets", []) or []) if str(t) in TARGETS];
+    off_topic = False;
     if targets {
-        hit: list = [t for t in targets if target_hit(t, low_msg, flags)];
+        hit: list = [t for t in targets if target_hit(t, low_msg, flags) or any([target_hit(a, low_msg, flags) for a in TOPIC_ALSO.get(t, [])])];
+        off_topic = (not hit) and all([t in TOPIC_TARGETS for t in targets]);
+        # A youth line for someone who is plainly an adult: a parent, or 18+.
+        if targets == ["minor"] and not hit and ("children" in flags or int(profile.get("age", 0) or 0) >= 18) { off_topic = True; }
         miss: list = [t for t in targets if t not in hit];
         es = lang == "es";
         if not miss {
@@ -496,6 +511,7 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         "address": str(resource.get("address", "")),
         "online_url": str(resource.get("online_url", "")),
         "description": str(resource.get("description", ""))[:180],
+        "off_topic": off_topic,
         "languages_supported": list(resource.get("languages_supported", []))
     };
 }
@@ -522,7 +538,9 @@ def rank_resources(items: list, profile: dict, message: str, limit: int = 6, lan
         name_low = str(res.get("agency_name", "")).lower();
         pinned = False;
         if ("self_harm" in flags or "self_harm_concern" in flags) and "988" in name_low { pinned = True; }
-        if "dv" in flags and "domestic violence" in name_low { pinned = True; }
+        # The hotline is the safety line; the legal-advocacy entry shares its
+        # number and read as a mislabelled safety line when pinned.
+        if "dv" in flags and "domestic violence hotline" in name_low { pinned = True; }
         if "dv_concern" in flags and "domestic violence hotline" in name_low { pinned = True; }
         danger = [str(t) for t in list(it["rule"].get("targets", []) or []) if str(t) in DANGER_TARGETS];
         if danger {
@@ -533,13 +551,17 @@ def rank_resources(items: list, profile: dict, message: str, limit: int = 6, lan
         s = score_resource(res, it["rule"], profile, message, lang);
         s["form"] = it.get("form", {});
         s["pinned"] = pinned;
+        if s["off_topic"] and not pinned { continue; }
         # The line for the specific danger comes before the general ones.
         s["rank_score"] = round(float(s["rank_score"]) * (w if w > 0 else 1.0) + ((12.0 if danger else 10.0) if pinned else 0.0), 4);
         scored.append(s);
     }
     scored.sort(key=lambda s: dict : -float(s["rank_score"]));
 
-    top = scored[:limit];
+    # A program a hard rule rules out (p ≈ 0) isn't a match: it stays a near
+    # miss with its "you'd qualify if…" line, not a card in the list. It
+    # used to fill the list once off-topic programs stopped padding it.
+    top = [s for s in scored if s["pinned"] or not (s["tier"] == "unlikely" and float(s["p_eligible"]) < 0.05)][:limit];
     tiers: dict = {"likely": 0, "possible": 0, "needs_info": 0, "unlikely": 0};
     for s in scored {
         tiers[s["tier"]] = tiers[s["tier"]] + 1;

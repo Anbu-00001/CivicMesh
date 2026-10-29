@@ -102,5 +102,11 @@
   "esc.child_abuse": "为受到伤害的儿童以及担心孩子的成年人提供24/7帮助",
   "esc.trafficking": "为任何被强迫工作或发生性行为的人提供保密的24/7帮助；发短信到233733",
   "esc.sexual_assault": "遭受性侵犯后的保密24/7支持",
-  "esc.interp": "口译服务免费：接通后请用英语说 \"{language}\"。"
+  "esc.interp": "口译服务免费：接通后请用英语说 \"{language}\"。",
+  "ui.safety_danger": "现在有危险:",
+  "ui.safety_crisis": "自杀或危机: 拨打或发短信到",
+  "ui.safety_home": "在家不安全:",
+  "ui.safety_text": "或发送START到88788",
+  "ui.details": "详情",
+  "ui.hide_details": "隐藏详情"
 }
