@@ -233,7 +233,7 @@ fw, _ = walker("ForgetWalker", {"user_id": pu}, pt)
 check("P8 Delete my data removes the person, needs, applications and insights",
       fw is not None and fw["ok"] and fw["removed"]["PersonNode"] == 1 and fw["removed"]["NeedNode"] >= 6, fw)
 gs2, _ = walker("GraphSnapshotWalker", {"user_id": pu}, pt)
-check("P9 after deletion the graph is empty", gs2 is not None and gs2.get("empty") is True and gs2["counts"]["ResourceNode"] == 45,
+check("P9 after deletion the graph is empty", gs2 is not None and gs2.get("empty") is True and gs2["counts"]["ResourceNode"] == 46,
       {k: gs2["counts"][k] for k in ["PersonNode", "NeedNode", "ResourceNode"]} if gs2 else "")
 dn, _ = turn(uid, tok, "I need food")
 check("P10 another visitor's case is untouched by the deletion", dn is not None and dn["profile"]["category"] == "food")

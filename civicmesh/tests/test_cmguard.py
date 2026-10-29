@@ -237,6 +237,13 @@ class Budget(unittest.TestCase):
         call(model="alive", messages=[])
         budget_mod._RETIRED.clear()
 
+    def test_failure_kind_has_no_message(self):
+        class RateLimitError(Exception):
+            status_code = 429
+        kind = budget_mod.failure_kind(RateLimitError("nvapi-TESTSECRET leaked in a message"))
+        self.assertEqual(kind, "RateLimitError:429")
+        self.assertEqual(budget_mod.failure_kind(TimeoutError("x")), "TimeoutError")
+
     def test_estimate(self):
         self.assertEqual(estimate_tokens({"messages": [{"content": "x" * 400}], "max_tokens": 100}), 200)
 

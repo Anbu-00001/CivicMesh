@@ -246,6 +246,7 @@ glob PROGRAMS: dict = {
     "dr-rule":               {"income": {"basis": "none"}, "status": ""},
     "cfpb-rule":             {"income": {"basis": "none"}, "status": ""},
     "whd-rule":              {"income": {"basis": "none"}, "status": ""},
+    "nche-rule":             {"income": {"basis": "none"}, "status": ""},
     "expungement-rule":      {"income": {"basis": "fpl", "pct": 200, "typical": True, "note": "varies by clinic"}, "status": ""},
     "aba-fla-rule":          {"income": {"basis": "fpl", "pct": 250, "typical": True, "note": "each state sets the limit"}, "status": ""},
     "law-clinic-rule":       {"income": {"basis": "fpl", "pct": 200, "typical": True, "note": "varies by clinic"}, "status": ""}

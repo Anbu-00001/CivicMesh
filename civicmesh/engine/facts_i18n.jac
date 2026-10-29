@@ -36,6 +36,7 @@ glob NUM_WORDS: dict = {
     "ta": {"ஒரு": 1, "ஒன்று": 1, "இரண்டு": 2, "மூன்று": 3, "நான்கு": 4, "ஐந்து": 5},
     "fr": {"un": 1, "une": 1, "deux": 2, "trois": 3, "quatre": 4, "cinq": 5, "six": 6, "sept": 7},
     "ht": {"youn": 1, "de": 2, "twa": 3, "kat": 4, "senk": 5, "sis": 6},
+    "yo": {"ọ̀kan": 1, "ọkan": 1, "okan": 1, "méjì": 2, "meji": 2, "mẹ́ta": 3, "mẹta": 3, "meta": 3, "mẹ́rin": 4, "mẹrin": 4, "merin": 4, "márùn-ún": 5, "marun": 5, "mẹ́fà": 6, "mẹfa": 6, "mefa": 6},
     "pt": {"um": 1, "uma": 1, "dois": 2, "duas": 2, "três": 3, "tres": 3, "quatro": 4, "cinco": 5, "seis": 6},
     "pl": {"jeden": 1, "jedna": 1, "dwa": 2, "dwie": 2, "dwoje": 2, "trzy": 3, "troje": 3, "cztery": 4, "czworo": 4, "pięć": 5, "pięcioro": 5}
 };
@@ -432,6 +433,26 @@ glob FACTS: dict = {
             [r"refijye|azil|parol imanitè|paròl imanitè", "humanitarian"],
             [r"kat vèt|green card|rezidan pèmanan", "eligible_immigrant"],
             [r"sitwayen ameriken|sitwayen|natiralize", "citizen"]
+        ]
+    },
+    # Yoruba is often typed without tone marks ("a je eniyan merin"), so each
+    # pattern takes both spellings.
+    "yo": {
+        "money": r"owó|owo|dọ́là|dola",
+        "month": r"lóṣù|losu|oṣù|osu",
+        "year": r"lọ́dún|lodun|ọdún|odun",
+        "income": r"mo ń gba|mo n gba|owó oṣù|owo osu",
+        "expense": r"owó ilé|owo ile|gbèsè|gbese",
+        "no_income": r"(?:mi ò|mi o|mo kò|mo ko) ní iṣẹ́|(?:mi ò|mi o|mo kò|mo ko) ni ise|kò sí iṣẹ́|ko si ise",
+        "household": [r"\b(?:àwa|awa|a)\s+(?:jẹ́|jẹ|je)\s+(?:ènìyàn|eniyan|èèyàn|eeyan)\s+(N)", r"(?:ẹbí|ebi|ìdílé|idile)\s+(?:mi\s+)?(?:jẹ́|jẹ|je|ní|ni)\s+(?:ènìyàn|eniyan|èèyàn|eeyan)\s+(N)"],
+        "kids": [r"\b(?:ọmọ|omo)(?:\s+mi)?\s+(N)"],
+        "partner": r"ọkọ mi|oko mi|ìyàwó mi|iyawo mi",
+        "alone": r"mo dá gbé|mo da gbe|èmi nìkan ni|emi nikan ni|mo ń gbé nìkan|mo n gbe nikan",
+        "age": [r"(?:mo jẹ́|mo je|mo jẹ)\s+(?:ọmọ|omo)\s+(?:ọdún|odun)\s+(\d{2,3})"],
+        "cit": [
+            [r"(?:kò|ko|mi ò|mi o)\s+ní\s+(?:ìwé|iwe)|(?:kò|ko|mi ò|mi o)\s+ni\s+(?:ìwé|iwe)", "non_citizen"],
+            [r"green card|káàdì àwọ̀ ewé", "eligible_immigrant"],
+            [r"ọmọ ìlú amẹ́ríkà|omo ilu amerika", "citizen"]
         ]
     },
     "pt": {

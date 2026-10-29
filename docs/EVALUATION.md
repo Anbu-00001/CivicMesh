@@ -39,7 +39,7 @@ flowchart LR
 
 ```
 cd civicmesh && jac run tests/eval_engine.jac
-  620 cases + 22 conversations (52 turns) · field accuracy 100% (1362/1362) · 73/73 languages · top-3 100% · exclusion errors 0
+  631 cases + 27 conversations (66 turns) · field accuracy 100% (1410/1410) · 73/73 languages · top-3 100% · exclusion errors 0
   metamorphic 228/228 neutral additions moved no verdict · latency / turn p50 ~1.2 ms · p95 ~2.4 ms
 
 cd civicmesh && jac run tests/check_messages.jac
@@ -87,7 +87,7 @@ To avoid tuning to the test, each task's posts are split by index. Misses were r
 | Task (engine output checked) | Held-out recall, first run | Held-out recall now (95% CI) | False positives (held-out, now) |
 |---|---|---|---|
 | Domestic violence (the dv flag or the concern layer, which pin the hotline) | 38.6% (17/44) | **68.2%** (30/44; 53–80%) | 2.3% (1/43) |
-| Housing (routed to housing) | 77.0% | 81.2% (910/1,120; 79–83%) | 12.1% |
+| Housing (routed to housing) | 77.0% | 81.3% (911/1,120; 79–84%) | 12.0% |
 | Health (routed to healthcare) | 78.9% | 77.2% (44/57; 65–86%) | 10.7% |
 | Immigration (an immigration status read) | 67.6% (23/34) | **79.4%** (27/34; 63–90%) | 3.0% |
 

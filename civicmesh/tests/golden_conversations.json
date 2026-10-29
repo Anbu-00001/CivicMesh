@@ -179,6 +179,26 @@
         {"text": "I want to kill myself", "expect": {"flag": "self_harm"}},
         {"text": "never mind, I'm not homeless, I have a place to stay", "expect": {"flag": "self_harm"}}
       ]
-    }
+    },
+    {
+      "name": "Gibberish in a Chinese conversation",
+      "why": "a meaningless message switched a Chinese conversation's replies to Spanish and re-ran the answer; now the language stays and the person is asked what they need (live Space, 2026-10-29)",
+      "turns": [
+        {"text": "我们需要食物，两口人，没有收入", "expect": {"language": "zh", "category": "food"}},
+        {"text": "Ching ching mi hwa", "expect": {"language": "zh", "category": ""}}
+      ]
+    },
+    {
+      "name": "A rambling story after a food question",
+      "why": "a story with no request re-ran the earlier answer (live Space, 2026-10-29)",
+      "turns": [
+        {"text": "I need food, family of 2", "expect": {"category": "food"}},
+        {"text": "The house filed to the heaven, am in so much pain, it's all food over the streets, I go collecting these food to build a fortress of pizza's. Illinois and detroit have become one to go against ohio and take all their pancakes whichwill ensure famine in those areas and miami people can benefit over these by selling bad medicine and set to help the people who are in pain and bribe them too much for money", "expect": {"category": ""}},
+        {"text": "I need food for my family", "expect": {"category": "food", "household_size": 2}}
+      ]
+    },
+    {"name": "Yoruba household after a story", "why": "\"a je eniyan merin\" (we are four) stayed at 3, and the story's \"miami\" mixed with an earlier state into \"Miami, OH\" (live Space, 2026-10-29)", "turns": [{"text": "I need housing help in Columbus, Ohio, there are 3 of us", "expect": {"category": "housing", "household_size": 3, "state": "OH", "city": "Columbus"}}, {"text": "The house filed to the heaven, am in so much pain, it's all food over the streets, I go collecting these food to build a fortress of pizza's. Illinois and detroit have become one to go against ohio and take all their pancakes whichwill ensure famine in those areas and miami people can benefit over these by selling bad medicine and set to help the people who are in pain and bribe them too much for money", "expect": {"category": "", "city": "Columbus", "state": "OH"}}, {"text": "Mo nilo ounje fun ebi mi, a je eniyan merin", "expect": {"category": "food", "household_size": 4, "language": "yo", "city": "Columbus", "state": "OH"}}]},
+    {"name": "A new city replaces the whole place", "why": "city and state were merged one by one, so a new city kept the old state", "turns": [{"text": "I need food in Texas", "expect": {"category": "food", "state": "TX"}}, {"text": "actually I'm in Miami now", "expect": {"city": "Miami", "state": "FL"}}, {"text": "Florida", "expect": {"city": "Miami", "state": "FL"}}]},
+    {"name": "Not knowing where to start after a food answer", "why": "\"I don't know where to start or who to ask\" re-ran the earlier food answer (live Space, 2026-10-29)", "turns": [{"text": "I need food, family of 2", "expect": {"category": "food"}}, {"text": "My situation is really complicated and I honestly don't know where to start or who to ask", "expect": {"category": ""}}, {"text": "we have no food at home", "expect": {"category": "food", "household_size": 2}}]}
   ]
 }
