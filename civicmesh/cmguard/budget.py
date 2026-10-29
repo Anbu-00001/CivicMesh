@@ -18,12 +18,21 @@ fallback and parallel segment draws on the same budget:
     NVIDIA retired the narrator's first model with a 410, and every half-open
     trial hit it first, re-opened the breaker and refused the fallback, so
     narration and long-tail translation stayed down.
+  * slow leads: inside a fallback chain (`fallback_chain`), a timeout from a
+    model with another model behind it is not a verdict on the provider and
+    doesn't count toward the breaker. After two in a row that model is skipped
+    for CIVICMESH_LLM_SLOW_SKIP_S (5 min) while it still has a fallback, so the
+    next model answers at once. On 2026-10-29 Gemma timed out on every long-tail
+    translation, each one counted, and the breaker refused the gpt-oss calls
+    that would have answered.
 
 A refusal raises ModelBudgetExceeded before any network request. Callers
 (narration, translation, the optional routing fallback) already treat a model
 failure as "no optional text": the deterministic answer is unaffected.
 """
 
+import contextlib
+import contextvars
 import os
 import threading
 import time
@@ -140,7 +149,7 @@ class ModelBudget:
             self._trim(now)
             return dict(self.stats, calls_last_minute=len(self._minute), calls_last_hour=len(self._hour),
                         calls_last_day=len(self._day), tokens_last_day=sum(t for _, t in self._tokens),
-                        breaker_open=now < self._open_until, retired_models=sorted(retired_models()), limits={
+                        breaker_open=now < self._open_until, retired_models=sorted(retired_models()), slow_models=sorted(slow_models()), limits={
                             "per_minute": self.cfg.per_minute, "per_hour": self.cfg.per_hour,
                             "per_day": self.cfg.per_day, "tokens_per_day": self.cfg.tokens_per_day,
                             "concurrent": self.cfg.concurrent})
@@ -188,6 +197,42 @@ def _check_retired(model: str) -> None:
         raise hit[1].with_traceback(None)
 
 
+SLOW_SKIP_S = float(os.environ.get("CIVICMESH_LLM_SLOW_SKIP_S", "300"))
+SLOW_AFTER = 2
+_SLOW: dict = {}  # model -> [consecutive timeouts, skip until, the timeout]
+_CHAIN: contextvars.ContextVar = contextvars.ContextVar("cm_fallback_chain", default=())
+
+
+@contextlib.contextmanager
+def fallback_chain(models):
+    """Model calls made inside know which models stand behind each one."""
+    token = _CHAIN.set(tuple(str(m) for m in models))
+    try:
+        yield
+    finally:
+        _CHAIN.reset(token)
+
+
+def _has_fallback(model: str) -> bool:
+    chain = _CHAIN.get()
+    return model in chain and chain.index(model) < len(chain) - 1
+
+
+def _timed_out(exc) -> bool:
+    return "timeout" in type(exc).__name__.lower() or getattr(exc, "status_code", None) == 408
+
+
+def _check_slow(model: str) -> None:
+    hit = _SLOW.get(model)
+    if hit and hit[1] > time.time() and hit[2] is not None and _has_fallback(model):
+        raise hit[2].with_traceback(None)
+
+
+def slow_models() -> list:
+    now = time.time()
+    return [m for m, rec in list(_SLOW.items()) if rec[1] > now]
+
+
 def failure_kind(exc) -> str:
     """Class name and HTTP status of a provider error, never its message: on
     2026-10-29 the live breaker opened and the logs couldn't say whether the
@@ -200,11 +245,21 @@ def _settle(budget: ModelBudget, model: str, ok: bool, exc, tokens: int, est: in
     if not ok and exc is not None:
         telemetry.count("model_error:" + model.split("/")[-1] + ":" + failure_kind(exc))
     gone = (not ok) and exc is not None and _gone(exc)
+    slow_lead = (not ok) and exc is not None and _timed_out(exc) and _has_fallback(model)
+    if ok:
+        _SLOW.pop(model, None)
+    elif exc is not None and _timed_out(exc):
+        rec = _SLOW.setdefault(model, [0, 0.0, None])
+        rec[0] += 1
+        if slow_lead and rec[0] >= SLOW_AFTER:
+            if rec[1] <= time.time():
+                telemetry.count("model_slow:" + model.split("/")[-1])
+            rec[1], rec[2] = time.time() + SLOW_SKIP_S, exc
     if gone:
         if model not in retired_models():
             telemetry.count("model_retired:" + model)
         _RETIRED[model] = (time.time() + RETIRE_S, exc)
-    budget.release(ok, tokens, est, counts=not gone)
+    budget.release(ok, tokens, est, counts=not (gone or slow_lead))
 
 
 def guard(fn, budget: ModelBudget = BUDGET):
@@ -212,6 +267,7 @@ def guard(fn, budget: ModelBudget = BUDGET):
     def completion(*args, **kwargs):
         model = str(kwargs.get("model") or "")
         _check_retired(model)
+        _check_slow(model)
         est = estimate_tokens(kwargs)
         budget.acquire(est)
         ok, tokens, err = False, 0, None
@@ -232,6 +288,7 @@ def guard_async(fn, budget: ModelBudget = BUDGET):
     async def acompletion(*args, **kwargs):
         model = str(kwargs.get("model") or "")
         _check_retired(model)
+        _check_slow(model)
         est = estimate_tokens(kwargs)
         budget.acquire(est)
         ok, tokens, err = False, 0, None

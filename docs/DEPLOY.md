@@ -134,10 +134,12 @@ unaffected.
 | `CIVICMESH_LLM_MAX_REQUEST_TOKENS` | 8000 | Largest single request |
 | `CIVICMESH_LLM_MAX_CONCURRENT` | 4 | Model calls at once |
 | `CIVICMESH_NARRATE_TIMEOUT_S` | 25 | Seconds each model gets for a narration (the answer is already on screen, so this isn't on the critical path). Two models must fit in the gateway's 60 s limit for model calls |
+| `CIVICMESH_POLYGLOT_LEAD_TIMEOUT_S` | 10 | Seconds the long-tail lead (Gemma 4) gets for a narration or translation before its fallback is tried. On 2026-10-29 Gemma timed out at 25 s on every call, before the fallback that answered |
 | `CIVICMESH_LLM_WAIT_S` | 2 | Wait for a free slot before refusing |
 | `CIVICMESH_LLM_BREAKER_FAILURES` | 5 | Consecutive failures that open the circuit |
 | `CIVICMESH_LLM_BREAKER_COOLDOWN_S` / `_MAX_COOLDOWN_S` | 60 / 900 | Open time, doubling on each re-trip up to the maximum |
 | `CIVICMESH_LLM_RETIRE_S` | 21600 | How long a model the provider answers 404 or 410 for is skipped (it never counts toward the breaker). When a provider retires a model, change `CIVICMESH_LLM_MODELS` or the defaults in `llm/stubs.jac` |
+| `CIVICMESH_LLM_SLOW_SKIP_S` | 300 | How long a model that timed out twice in a row is skipped while another model stands behind it. Those timeouts never count toward the breaker; a model with nothing behind it is never skipped |
 | `CIVICMESH_LLM_DISABLED` | 0 | `1` turns every model call off (deterministic answers only) |
 
 ## Updating

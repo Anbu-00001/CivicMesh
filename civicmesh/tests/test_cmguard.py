@@ -187,7 +187,7 @@ class Budget(unittest.TestCase):
         self.assertEqual(len(done), 10)
 
     def provider(self):
-        """A fake litellm.completion: 'gone' answers 410, 'down' 503, anything else works."""
+        """A fake litellm.completion: 'gone' answers 410, 'down' 503, 'slow' times out, anything else works."""
         calls = []
 
         class ProviderError(Exception):
@@ -195,8 +195,13 @@ class Budget(unittest.TestCase):
                 super().__init__(f"Error code: {code}")
                 self.status_code = code
 
+        class Timeout(ProviderError):
+            pass
+
         def completion(model="", **_kw):
             calls.append(model)
+            if model == "slow":
+                raise Timeout(408)
             if model in ("gone", "down"):
                 raise ProviderError(410 if model == "gone" else 503)
             return {"usage": {"total_tokens": 10}}
@@ -236,6 +241,32 @@ class Budget(unittest.TestCase):
         self.assertFalse(b.snapshot()["breaker_open"])
         call(model="alive", messages=[])
         budget_mod._RETIRED.clear()
+
+    def test_a_slow_lead_never_trips_the_breaker_and_is_skipped(self):
+        # 2026-10-29: Gemma timed out on every long-tail translation, each
+        # timeout counted, and the breaker refused gpt-oss, which answered.
+        budget_mod._SLOW.clear()
+        b = ModelBudget(self.cfg(per_minute=100, breaker_failures=2))
+        fn, calls = self.provider()
+        call = guard(fn, b)
+        with budget_mod.fallback_chain(["slow", "alive"]):
+            for _ in range(5):
+                with self.assertRaises(Exception):
+                    call(model="slow", messages=[])
+                call(model="alive", messages=[])
+        self.assertEqual(calls.count("slow"), 2)  # two timeouts, then skipped without a request
+        self.assertEqual(b.snapshot()["failures"], 0)
+        self.assertFalse(b.snapshot()["breaker_open"])
+        self.assertEqual(b.snapshot()["slow_models"], ["slow"])
+        # The last model in a chain, or one called on its own, is never
+        # skipped, and its timeouts are a verdict.
+        with budget_mod.fallback_chain(["alive", "slow"]):
+            for _ in range(2):
+                with self.assertRaises(Exception):
+                    call(model="slow", messages=[])
+        self.assertEqual(calls.count("slow"), 4)
+        self.assertTrue(b.snapshot()["breaker_open"])
+        budget_mod._SLOW.clear()
 
     def test_failure_kind_has_no_message(self):
         class RateLimitError(Exception):
