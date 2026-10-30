@@ -340,6 +340,18 @@ def main(app: str) -> int:
         check("6b nothing about the earlier case is on screen", "Welcome back" not in shown and "Denver" not in shown)
         tab.close()
 
+        # 6d. A first message with no need in it: nothing was scored, so the
+        # crisis step can't say programs matched, and the case file isn't
+        # still waiting for a first message.
+        tab = new_tab()
+        open_chat(tab, app)
+        rows = tab.js("document.querySelectorAll('.cm-thread .cm-row').length") or 0
+        send(tab, "Something happened with my benefits letter and I don't understand it")
+        tab.until(f"document.querySelectorAll('.cm-thread .cm-row').length>={rows + 2} && !document.querySelector('.cm-typing')", 45)
+        side = tab.js("(document.querySelector('.cm-side')||{}).innerText||''") or ""
+        check("6d with no need named, the side panel says nothing was scored yet", "no need named yet to score" in side and "programs matched" not in side and "Waiting for your first message" not in side, side[:600])
+        tab.close()
+
         # 4. Inside a sandboxed cross-site frame, like the huggingface.co page.
         srv, parent = parent_server(app)
         tab = new_tab()
