@@ -34,6 +34,9 @@ def:pub ChatPane(
         profile_ctx: Any = {},
         pending_question: str = "",
         last_trace: Any = {},
+        # The last turn's model decision ({sync_used, reason, ...}): the
+        # pipeline says why a step didn't run.
+        last_llm: Any = {},
         open_key: str = "",
         waterfall_open: int = -1,
         narr_tick: float = 0.0,

@@ -326,6 +326,10 @@ def main(app: str) -> int:
         rows = tab.js("document.querySelectorAll('.cm-thread .cm-row').length") or 0
         send(tab, "I need food for my family in Denver, we are 3")
         tab.until(f"document.querySelectorAll('.cm-thread .cm-row').length>={rows + 2} && !document.querySelector('.cm-typing')", 45)
+        # A step that didn't run says why (live Space, 2026-10-30: two steps
+        # that never lit up looked broken).
+        side = tab.js("(document.querySelector('.cm-side')||{}).innerText||''") or ""
+        check("6c the pipeline says why the model and crisis steps were skipped", "Not needed: the parser understood" in side and "Not needed: no crisis signal" in side, side[-400:])
         tab.call("Page.reload")
         tab.until("!!document.querySelector('button')")
         time.sleep(3.0)  # a person reads the landing page; sign-in finishes meanwhile
