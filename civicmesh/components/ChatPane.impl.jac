@@ -739,7 +739,7 @@ impl ChatPane.renderProfilePanel -> JsxElement {
     return
         <div className="cm-panel cm-side-card">
             <div className="cm-side-title">Case file</div>
-            {(not has_case) and <div className="cm-muted" style={{"fontSize": "12px"}}>Waiting for your first message…</div>}
+            {(not has_case) and <div className="cm-muted" style={{"fontSize": "12px"}}>{("Nothing noted yet: tell me what you need help with." if len([m for m in messages if m["role"] == "user"]) > 0 else "Waiting for your first message…")}</div>}
             {has_case and <div>
                 <div className="cm-meter-row"><span>Facts confirmed</span><span>{str(comp) + "%"}</span></div>
                 <div className="cm-meter"><div style={{"width": str(comp) + "%", "background": "#FFE500"}}/></div>
@@ -770,7 +770,7 @@ impl ChatPane.renderPipeline -> JsxElement {
     llm_reason = str(last_llm["reason"]) if (last_llm and last_llm["reason"]) else "";
     skipped: dict = {
         "chat understand_message": ("Skipped: " + llm_reason) if llm_reason else "Not needed: the parser understood this message, so no model read it",
-        "EscalationWalker crisis_route": "Not needed: no crisis signal, and programs matched"
+        "EscalationWalker crisis_route": ("Not needed: no crisis signal, and programs matched" if len([s for s in spans if s["name"] == "EligibilityWalker score"]) > 0 else "Not needed: no crisis signal, and no need named yet to score")
     };
     return
         <div className="cm-panel cm-side-card" style={{"flex": "1"}}>
