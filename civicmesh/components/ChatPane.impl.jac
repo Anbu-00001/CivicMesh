@@ -149,6 +149,7 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "", display:
     q = data["question"];
     pending_question = str(q["key"]) if (q and q["key"]) else "";
     last_trace = data["trace"];
+    last_llm = data["llm"] if data["llm"] else {};
     on_walker_event(spansToEvents(list(data["trace"]["spans"])));
     is_loading = False;
 
@@ -765,6 +766,12 @@ impl ChatPane.renderPipeline -> JsxElement {
         ["CritiqueWalker", "reflexion.critique", "Self-critique written to the graph"]
     ];
     spans: list = list(last_trace["spans"]) if (last_trace and last_trace["spans"]) else [];
+    # A step that didn't run says why, so "skipped" doesn't read as "broken".
+    llm_reason = str(last_llm["reason"]) if (last_llm and last_llm["reason"]) else "";
+    skipped: dict = {
+        "chat understand_message": ("Skipped: " + llm_reason) if llm_reason else "Not needed: the parser understood this message, so no model read it",
+        "EscalationWalker crisis_route": "Not needed: no crisis signal, and programs matched"
+    };
     return
         <div className="cm-panel cm-side-card" style={{"flex": "1"}}>
             <div className="cm-side-title">Agent pipeline · last turn</div>
@@ -773,9 +780,9 @@ impl ChatPane.renderPipeline -> JsxElement {
                     <span className={("cm-agent-dot cm-agent-ran" if len([s for s in spans if s["name"] == agents[i][1]]) > 0 else "cm-agent-dot")}/>
                     <div style={{"flex": "1", "minWidth": "0"}}>
                         <div className="cm-agent-name">{agents[i][0]}</div>
-                        <div className="cm-agent-role">{agents[i][2]}</div>
+                        <div className="cm-agent-role">{(skipped[agents[i][1]] if (spans and agents[i][1] in skipped and len([s for s in spans if s["name"] == agents[i][1]]) == 0) else agents[i][2])}</div>
                     </div>
-                    <span className="cm-agent-ms">{(fmtMs([s for s in spans if s["name"] == agents[i][1]][0]["duration_ms"]) if len([s for s in spans if s["name"] == agents[i][1]]) > 0 else "—")}</span>
+                    <span className="cm-agent-ms">{(fmtMs([s for s in spans if s["name"] == agents[i][1]][0]["duration_ms"]) if len([s for s in spans if s["name"] == agents[i][1]]) > 0 else ("skipped" if (spans and agents[i][1] in skipped) else "—"))}</span>
                 </div>
                 for i in range(len(agents))
             ]}
