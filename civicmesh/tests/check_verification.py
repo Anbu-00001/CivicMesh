@@ -17,6 +17,7 @@ import sys
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MAX_AGE_DAYS = 365
+CONTACT_MAX_AGE_DAYS = 183
 
 
 def main():
@@ -34,7 +35,7 @@ def main():
         dates = [rec.get("contact_checked")] + [(rec.get("contact_manual") or {}).get("checked")]
         newest = max(datetime.date.fromisoformat(d) for d in dates if d)
         age = (today - newest).days
-        if age > MAX_AGE_DAYS:
+        if age > CONTACT_MAX_AGE_DAYS:
             fails.append(f"{rid}: contact last checked {newest} ({age} days ago)")
         if rec.get("contact_result") == "confirmed" or rec.get("contact_manual"):
             confirmed += 1

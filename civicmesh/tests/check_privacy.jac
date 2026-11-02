@@ -18,6 +18,11 @@ import from engine.privacy { redact, redaction_kinds, is_private_turn }
 import from engine.parse { parse_intake }
 
 glob SCRUB: list = [
+    ["Maria and her three kids need food", "[name]", "Maria"],
+    ["we're the Nguyen family from Houston", "[name]", "Nguyen"],
+    ["we live on Maple, near the church", "[address]", "Maple"],
+    ["text me at seven one three five five five zero one nine nine", "[phone]", "seven one three"],
+    ["la escuela de mi hijo es la Benito Juárez", "[school]", "Benito"],
     ["My SSN is 123-45-6789", "[ssn]", "123-45-6789"],
     ["my A-number is A123456789", "[a-number]", "123456789"],
     ["A-123-456-789 is on my card", "[a-number]", "456"],
@@ -60,14 +65,19 @@ glob SCRUB: list = [
 # introduction, a street without a number, a spelled-out phone number. This is
 # why nothing depends on the scrubber by default (engine/privacy.jac rules 1–3).
 glob KNOWN_MISSES: list = [
-    ["Maria and her three kids need food", "Maria"],
-    ["we're the Nguyen family from Houston", "Nguyen"],
-    ["we live on Maple, near the church", "Maple"],
-    ["text me at seven one three five five five zero one nine nine", "seven one three"],
-    ["la escuela de mi hijo es la Benito Juárez", "Benito"]
+    ["Rosa needs food for her kids", "Rosa"],
+    ["please call Jamal about the lease", "Jamal"],
+    ["we go to Lincoln for the kids", "Lincoln"],
+    ["the church on Maple gives out food", "Maple"],
+    ["my number is seven one three, five five five, and then zero one nine nine", "seven one three"]
 ];
 
 glob KEEP: list = [
+    "I live on Social Security and need food",
+    "we live on food stamps",
+    "my family of four needs housing",
+    "the Section 8 family unification voucher",
+    "I have one two three kids",
     "I am 67 and need a dr",
     "we have 2 kids no way to pay rent",
     "we earn about $1,200 a month, household of 5",

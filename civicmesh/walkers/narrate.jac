@@ -22,6 +22,7 @@ import from cmguard.tokens { verify as verify_token, content_hash }
 import from cmguard.limits { TokenBuckets }
 import from cmguard { telemetry }
 import from cmguard.budget { fallback_chain }
+import from engine.narration_guard { invents_claims }
 import from engine.i18n { ascii_digits, language_info }
 import from engine.stats { record_narration }
 import from engine.privacy { is_private_turn }
@@ -162,11 +163,11 @@ walker NarrateWalker {
             }
             msg = str(n.message).strip();
             chips = [str(c) for c in list(n.chips)];
-            if msg and not invents_numbers(msg, str(self.facts), "") {
+            if msg and not invents_numbers(msg, str(self.facts), "") and not invents_claims(msg, str(self.facts)) {
                 out["ok"] = True;
                 out["message"] = msg;
             } else {
-                out["error"] = "guardrail: narration introduced facts not in the engine output" if msg else "empty narration";
+                out["error"] = "guardrail: narration introduced facts or promises not in the engine output" if msg else "empty narration";
             }
             if len(chips) == len(self.chips) {
                 out["chips"] = chips;
