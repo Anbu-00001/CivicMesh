@@ -1471,6 +1471,43 @@
         "submission_method": "phone",
         "estimated_minutes": 15
       }
+    },
+    {
+      "agency_name": "Poison Control (Poison Help line)",
+      "category": "healthcare",
+      "capacity": "open",
+      "languages_supported": [
+        "en",
+        "es"
+      ],
+      "contact_phone": "1-800-222-1222",
+      "contact_email": "",
+      "address": "Available by phone, 24/7",
+      "online_url": "https://www.poison.org/",
+      "description": "Free, confidential expert help 24/7 if someone swallowed too much medicine or something harmful. Call 911 first if the person has collapsed, had a seizure, has trouble breathing or can't be woken. Keep the bottle nearby; don't make yourself vomit unless they tell you to.",
+      "eligibility": {
+        "rule_id": "poison-rule",
+        "income_limit_annual": 0,
+        "residency_requirement": "none",
+        "min_family_size": 0,
+        "citizenship_required": false,
+        "age_min": 0,
+        "age_max": 0,
+        "exceptions": "",
+        "criteria_summary": "Anyone, for any poisoning or overdose, intentional or not. No eligibility check.",
+        "targets": [
+          "poison"
+        ]
+      },
+      "form": {
+        "form_id": "poison-call",
+        "form_name": "Call (verbal)",
+        "url": "https://www.poison.org/",
+        "required_documents": [],
+        "deadline_type": "rolling",
+        "submission_method": "phone",
+        "estimated_minutes": 0
+      }
     }
   ]
 }

@@ -195,9 +195,11 @@ obj UnderstoodNeed {
         age: int = 0,
         state: str = "",
         citizenship: str = "",
-        english_summary: str = "";
+        english_summary: str = "",
+        crisis_risk: bool = False;
 }
 
+sem UnderstoodNeed.crisis_risk is "True if the writer may be thinking about suicide, self-harm, or dying, however indirectly: hopelessness, being a burden, saying goodbye, getting a means, or a recent attempt. When unsure, True.";
 sem UnderstoodNeed.category is "Primary need. Exactly one of: 'housing', 'food', 'healthcare', 'legal'. Empty string only if the message asks for none of these.";
 sem UnderstoodNeed.language is "ISO 639-1 code of the language the message is written in (e.g. 'en', 'es', 'vi', 'zh', 'ar').";
 sem UnderstoodNeed.urgency is "One of 'immediate' (tonight / danger / no food), 'within_days', 'within_weeks'.";

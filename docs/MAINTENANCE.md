@@ -13,7 +13,7 @@ prove nothing changed.
 |---|---:|---|---|
 | `engine/` | 5,001 | Parsing, scoring, the policy tables, planning, routes, message catalogs, privacy scrubbing. Pure functions over dicts; the only imports are the standard library | **No.** `jac jac2py` turns it into plain Python that runs without Jac installed. CI does this on every push and runs all 352 cases on the result |
 | `data/` | JSON | 40 programs, transitions, 51 message catalogs | No |
-| `tests/golden*.json` | JSON | 439 cases and 14 multi-turn conversations: the behaviour spec | No. A rewrite in any language can be checked against them |
+| `tests/golden*.json` | JSON | 679 cases and 27 multi-turn conversations: the behaviour spec | No. A rewrite in any language can be checked against them |
 | `walkers/` + `graph/` | 2,577 | Graph I/O: store the case, run the pipeline, snapshot, delete | Yes. This is Jac's object-spatial model (nodes, edges, walkers) on jac-scale's SQLite store. `jac eject` outputs Python, but it still imports the jaclang runtime |
 | `llm/` | 404 | Two model calls via byllm (routing fallback, narration) plus translation | Partly. byllm sits on litellm; the calls are small and replaceable with plain litellm |
 | `components/`, `frontend.*` | 4,930 | The web client (jac-client, compiled to React) | Yes, but `jac eject` outputs a standard React + Vite project |

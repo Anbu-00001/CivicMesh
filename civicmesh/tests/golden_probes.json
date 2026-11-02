@@ -875,6 +875,20 @@
    "category": "food"
   },
   "_why": "a fire department visit is not a house fire"
- }
- ]
+ },
+    {"text": "he hit me up about a job", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"},
+    {"text": "she hit me with a late fee and I need legal help", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"},
+    {"text": "my mom pushed me to apply for food stamps", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"},
+    {"text": "I have nothing left after paying rent, I need food", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"},
+    {"text": "I took all my meds this morning but need help paying for them", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"},
+    {"text": "I swallowed my pills and still feel sick, I need a doctor", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"},
+    {"text": "the only way out of this lease is to pay a fee", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"},
+    {"text": "I'm hopeless with paperwork, can you help me apply for SNAP", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"},
+    {"text": "I bought a rope for my climbing trip and I need a job", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"},
+    {"text": "our landlord might end it on the first, we need housing", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"},
+    {"text": "what's the point of having Section 8 if nobody takes it", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"},
+    {"text": "I'm done with everything on the form, what next", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"},
+    {"text": "I've taken a lot of medications for years and need help paying", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"},
+    {"text": "my husband says I'm killing it at work, but we need food", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"}
+  ]
 }

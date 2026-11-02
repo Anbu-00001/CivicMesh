@@ -19,3 +19,4 @@ packages/
 tests/eval_report.json
 tests/.external/
 tests/external_report.json
+tests/crisis_external_report.json
