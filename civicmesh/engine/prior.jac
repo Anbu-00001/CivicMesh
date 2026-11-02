@@ -14,7 +14,7 @@ import re;
 import from engine.parse { parse_intake, STATES }
 import from engine.compose { ANSWER_EVIDENCE, ANSWER_FLAGS, COUNT_WORDS }
 
-glob CATEGORIES: list = ["housing", "food", "healthcare", "legal"];
+glob CATEGORIES: list = ["housing", "food", "healthcare", "legal", "money"];
 glob CITIZENSHIP: list = ["citizen", "citizen_or_lpr", "eligible_immigrant", "humanitarian", "non_citizen", "cuban_haitian_entrant", "cofa"];
 glob URGENCY: list = ["immediate", "within_days", "within_weeks"];
 glob ANSWER_KEYS: list = ["need", "income", "household", "age", "location", "citizenship", "homeless", "dv", "veteran", "disability", "children", "young_child", "eviction", "minor"];

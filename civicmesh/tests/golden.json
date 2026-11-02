@@ -502,6 +502,203 @@
     "SNAP (Supplemental Nutrition Assistance Program)"
    ],
    "_policy": "Alaska poverty table: 130% for 4 = $53,625 (vs $42,900 in the 48 states)"
+  },
+  {
+   "text": "I lost my job last week, what can I do",
+   "expect": {
+    "category": "money"
+   },
+   "top3_any": [
+    "Unemployment Insurance"
+   ],
+   "top3_none": [
+    "TANF (Temporary Assistance for Needy Families)",
+    "Child Care Assistance (CCDF subsidy)"
+   ],
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "I just got laid off from my warehouse job in Ohio",
+   "expect": {
+    "category": "money"
+   },
+   "top3_any": [
+    "Unemployment Insurance"
+   ],
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "How do I apply for unemployment?",
+   "expect": {
+    "category": "money"
+   },
+   "top3_any": [
+    "Unemployment Insurance"
+   ],
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "I can't afford daycare for my toddler and I work full time",
+   "expect": {
+    "category": "money"
+   },
+   "top3_any": [
+    "Child Care Assistance (CCDF subsidy)"
+   ],
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "Necesito ayuda para pagar la guardería de mi hijo",
+   "expect": {
+    "category": "money"
+   },
+   "top3_any": [
+    "Child Care Assistance (CCDF subsidy)"
+   ],
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "I need cash assistance, single mom with 2 kids, no income, Texas",
+   "expect": {
+    "category": "money"
+   },
+   "top3_any": [
+    "TANF (Temporary Assistance for Needy Families)"
+   ],
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "Perdí mi trabajo, ¿cómo pido el desempleo?",
+   "expect": {
+    "category": "money"
+   },
+   "top3_any": [
+    "Unemployment Insurance"
+   ],
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "I can't work anymore because of my back, I need disability benefits",
+   "expect": {
+    "category": "money"
+   },
+   "top3_any": [
+    "SSDI (Social Security Disability Insurance)",
+    "SSI (Supplemental Security Income)"
+   ],
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "I'm disabled and have no income, can I get SSI?",
+   "expect": {
+    "category": "money"
+   },
+   "top3_any": [
+    "SSI (Supplemental Security Income)"
+   ],
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "What tax credits can I get?",
+   "expect": {
+    "category": "money"
+   },
+   "top3_any": [
+    "Earned Income Tax Credit (EITC)",
+    "VITA Free Tax Help (IRS Volunteer Income Tax Assistance)"
+   ],
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "I make $28,000 a year with 2 kids, can I get the earned income tax credit?",
+   "expect": {
+    "category": "money"
+   },
+   "top3_any": [
+    "Earned Income Tax Credit (EITC)"
+   ],
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "I need help filing my taxes for free",
+   "expect": {
+    "category": "money"
+   },
+   "top3_any": [
+    "VITA Free Tax Help (IRS Volunteer Income Tax Assistance)"
+   ],
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "I'm undocumented, I got laid off, can I get unemployment?",
+   "expect": {
+    "category": "money"
+   },
+   "top3_none": [
+    "Unemployment Insurance"
+   ],
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "I need health insurance, I make $45,000 and my job doesn't offer it",
+   "expect": {
+    "category": "healthcare"
+   },
+   "top3_any": [
+    "Health Insurance Marketplace savings (premium tax credit)"
+   ],
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "I make $90,000, household of 1, can I get a marketplace subsidy",
+   "expect": {
+    "category": "healthcare"
+   },
+   "top3_none": [
+    "Health Insurance Marketplace savings (premium tax credit)"
+   ],
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "I lost my job and can't pay rent, getting evicted",
+   "expect": {
+    "category": "housing"
+   },
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "lost my job and we have no food",
+   "expect": {
+    "category": "food"
+   },
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "my husband watches the kids, I just need a doctor",
+   "expect": {
+    "category": "healthcare"
+   },
+   "top3_none": [
+    "Child Care Assistance (CCDF subsidy)",
+    "TANF (Temporary Assistance for Needy Families)"
+   ],
+   "_policy": "money category, 2026-11"
+  },
+  {
+   "text": "I need a lawyer for my divorce",
+   "expect": {
+    "category": "legal"
+   },
+   "top3_none": [
+    "Unemployment Insurance",
+    "Child Care Assistance (CCDF subsidy)",
+    "TANF (Temporary Assistance for Needy Families)",
+    "Earned Income Tax Credit (EITC)",
+    "VITA Free Tax Help (IRS Volunteer Income Tax Assistance)",
+    "SSI (Supplemental Security Income)",
+    "SSDI (Social Security Disability Insurance)"
+   ],
+   "_policy": "money category, 2026-11"
   }
  ]
 }

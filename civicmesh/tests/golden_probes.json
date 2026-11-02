@@ -889,6 +889,13 @@
     {"text": "what's the point of having Section 8 if nobody takes it", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"},
     {"text": "I'm done with everything on the form, what next", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"},
     {"text": "I've taken a lot of medications for years and need help paying", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"},
-    {"text": "my husband says I'm killing it at work, but we need food", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"}
+    {"text": "my husband says I'm killing it at work, but we need food", "expect": {"flags_absent": ["self_harm", "self_harm_concern", "emergency", "dv"]}, "_why": "benign wording near a new crisis pattern, 2026-11"},
+    {"text": "I worked at a daycare for ten years and now I need food stamps", "expect": {"category": "food"}, "_why": "near the money category, 2026-11"},
+    {"text": "my mom gets SSI and she needs a doctor", "expect": {"category": "healthcare"}, "_why": "near the money category, 2026-11"},
+    {"text": "I'm on SSDI and my landlord wants to evict me", "expect": {"category": "housing"}, "_why": "near the money category, 2026-11"},
+    {"text": "I owe back taxes and the landlord is evicting me", "expect": {"category": "housing"}, "_why": "near the money category, 2026-11"},
+    {"text": "I work in child care and need a lawyer for my custody case", "expect": {"category": "legal"}, "_why": "near the money category, 2026-11"},
+    {"text": "I am a babysitter and I have no food for tonight", "expect": {"category": "food"}, "_why": "near the money category, 2026-11"},
+    {"text": "I need a premium tax credit for my health plan", "expect": {"category": "healthcare"}, "_why": "near the money category, 2026-11"}
   ]
 }

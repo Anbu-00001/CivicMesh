@@ -36,7 +36,7 @@ import from walkers.critique { CritiqueWalker }
 import from cmguard.tokens { issue as issue_token, content_hash }
 import from cmguard { telemetry }
 
-glob CATEGORIES: list = ["housing", "food", "healthcare", "legal"];
+glob CATEGORIES: list = ["housing", "food", "healthcare", "legal", "money"];
 # The routing LLM call runs on a worker thread with a wall-clock deadline:
 # litellm's own timeout is per HTTP read and the provider SDK can retry, so
 # only a deadline the walker owns bounds what the user waits.
