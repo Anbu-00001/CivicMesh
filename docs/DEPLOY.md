@@ -49,6 +49,12 @@ Once Render shows **Live**, open `https://civicmesh.onrender.com/cl/app` (substi
 
 If you get a generic "Page Not Found" right after deploy, the container is mid-boot. Wait 30 s and reload.
 
+## What the image does
+
+The container runs as uid 1000, not root, and bun comes from a pinned release checked against its SHA-256. `HEALTHCHECK` calls `/healthz` every 30 seconds. If a platform mounts a volume over `civicmesh/.jac`, it must be writable by uid 1000.
+
+Rate limits and tokens live in one process, so run one instance. Two instances would each count separately, and a token issued by one would fail on the other.
+
 ## Memory and rate-limit notes
 
 - **512 MB is tight** but fits because model inference is remote (NIM API) and the eligibility engine is pure Python-level math.

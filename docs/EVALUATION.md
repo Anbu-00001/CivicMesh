@@ -21,7 +21,7 @@ flowchart LR
     GATE -->|yes| FAIL[exit 1]:::bad
     GATE -->|no| PASS[pass]:::ok
     CM[check_messages.jac<br/>50 catalogs: keys · placeholders · numbers · round trip]:::t --> GATE
-    PV[check_privacy.jac<br/>66 checks: scrub · over-scrub · same facts · crisis]:::t --> GATE
+    PV[check_privacy.jac<br/>76 checks: scrub · over-scrub · same facts · crisis]:::t --> GATE
     WT[jac test · walkers in-process<br/>schema · 3 personas · stored-data privacy]:::t --> GATE
     E2E[tests/e2e_http.py against the Docker image<br/>69 checks · 15 languages · crisis · privacy · a live conversation · relay]:::t --> PASS
     BR[tests/browser_e2e.py · headless Chrome<br/>quick exit: own tab · Shift ×3 · private · HF frame<br/>first message during sign-in · return visit]:::t --> PASS
@@ -46,7 +46,10 @@ cd civicmesh && jac run tests/check_messages.jac
   50 languages + English source, 105 keys each · PASS
 
 cd civicmesh && jac run tests/check_privacy.jac
-  66 checks (34 scrub, 21 keep, 5 same-facts, 6 crisis) · PASS · known misses printed: 0/5 caught
+  76 checks (39 scrub, 26 keep, 5 same-facts, 6 crisis) · PASS · known misses printed: 0/5 caught
+
+cd civicmesh && jac run tests/check_narration_guard.jac
+  17 checks: invented program names, promises, conditions left alone · PASS
 
 cd civicmesh && jac run tests/check_policy.jac
   100 checks: SNAP FY2026 → FY2027 on 2026-10-01, state gross limits, net test, state minimums, unearned income, P.L. 119-21 dates and notes · PASS

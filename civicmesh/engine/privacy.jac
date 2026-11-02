@@ -26,7 +26,8 @@ import re;
 glob REDACTIONS: list = [
     # Order matters: numbers before names, the "[number]" catch-all after the
     # specific numeric forms. Names need an introduction ("I'm …", "Soy …",
-    # "my daughter …", "my landlord …", 我叫…): a bare name is not caught.
+    # "my daughter …", "my landlord …", 我叫…), or a shape ("Maria and her kids",
+    # "the Nguyen family"): a bare name in a sentence is still not caught.
     ["[email]", r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+"],
     ["[ssn]", r"(?<!\d)\d{3}[- ]\d{2}[- ]\d{4}(?!\d)"],
     ["[a-number]", r"(?<![\w])[aA][- #]?(?:\d{3}[- ]?\d{3}[- ]?\d{3}|\d{8,9})(?!\d)"],
@@ -40,6 +41,15 @@ glob REDACTIONS: list = [
     ["[address]", r"(?i)(?<![\d$])\d{1,6}\s+(?:calle|avenida|av\.|carrera|camino)\s+(?!(?:desde|hace|con|de|del|la|el|los|las|por|para|y|en|mis|mi|sin|hasta|porque|que|a|al|unos?|unas?|dos|tres)\b)[\wÀ-ÿ]+(?:\s+(?!(?:desde|hace|con|de|del|la|el|los|las|por|para|y|en|mis|mi|sin|hasta|porque|que|a|al|unos?|unas?|dos|tres)\b)[\wÀ-ÿ]+)?|\b(?:calle|avenida|av\.|carrera|camino)\s+(?!(?:desde|hace|con|de|del|la|el|los|las|por|para|y|en|mis|mi|sin|hasta|porque|que|a|al|unos?|unas?|dos|tres)\b)[\wÀ-ÿ]+(?:\s+(?!(?:desde|hace|con|de|del|la|el|los|las|por|para|y|en|mis|mi|sin|hasta|porque|que|a|al|unos?|unas?|dos|tres)\b)[\wÀ-ÿ]+)?\s*(?:#|no\.?|núm\.?)?\s*\d{1,6}\b"],
     ["[address]", r"(?<![\d$])\b\d{1,6}\s+(?:[NSEW]\.?|North|South|East|West)\s+[A-ZÀ-ÖØ-ÞĐƠƯẠ-Ỹ](?:[^\W\d_]|['’-])+(?:\s+[A-ZÀ-ÖØ-ÞĐƠƯẠ-Ỹ](?:[^\W\d_]|['’-])+)?(?:\s+(?:St|Street|Ave|Avenue|Rd|Road|Blvd|Dr|Drive|Ln|Lane|Way|Ct|Pl)\b\.?)?"],
     ["[school]", r"[A-ZÀ-ÖØ-ÞĐƠƯẠ-Ỹ](?:[^\W\d_]|['’-])+(?:\s+[A-ZÀ-ÖØ-ÞĐƠƯẠ-Ỹ](?:[^\W\d_]|['’-])+){0,3}\s+(?:Elementary|Middle|High|Primary|Junior High|Charter|Academy)(?:\s+School)?\b"],
+    # A number spoken out, a family name, a street with no number, a school
+    # named in passing: the forms check_privacy.jac listed as misses.
+    ["[phone]", r"(?i)\b(?:(?:zero|oh|one|two|three|four|five|six|seven|eight|nine|cero|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve)[\s,.-]+){6,}(?:zero|oh|one|two|three|four|five|six|seven|eight|nine|cero|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve)\b"],
+    ["\\1[name]", r"((?:^|[.!?]\s+))[A-ZÀ-ÖØ-ÞĐƠƯẠ-Ỹ](?:[^\W\d_]|['’-])+(?=\s+and\s+(?:her|his|their)\b)"],
+    ["\\1[name]", r"(\b(?:[Tt]he|[Ll]a|[Ll]os)\s+)[A-ZÀ-ÖØ-ÞĐƠƯẠ-Ỹ](?:[^\W\d_]|['’-])+(?=\s+(?:family|familia)\b)"],
+    ["\\1[name]", r"(\b[Ff]amilia\s+)(?!(?:de|del|y|en|con|que|es)\b)[A-ZÀ-ÖØ-ÞĐƠƯẠ-Ỹ](?:[^\W\d_]|['’-])+"],
+    ["\\1[address]", r"(\b(?:live|lives|living|lived|stay|stays|staying)\s+(?:on|off)\s+)(?!(?:Social|Section|Medicaid|Medicare|SSI|SSDI|Disability|Welfare|SNAP|WIC|Food|Benefits|Unemployment|Veterans?|Campus|Base)\b)[A-ZÀ-ÖØ-ÞĐƠƯẠ-Ỹ](?:[^\W\d_]|['’-])+"],
+    ["\\1[address]", r"(\b[Cc]alle\s+)(?!(?:de|del|y|en|con|que|es|desde)\b)[A-ZÀ-ÖØ-ÞĐƠƯẠ-Ỹ](?:[^\W\d_]|['’-])+"],
+    ["\\1[school]", r"(\b(?:[Ee]scuela|[Ss]chool)\b[^.!?\n]{0,30}?\b(?:es|is)\s+(?:la\s+|el\s+|at\s+)?)[A-ZÀ-ÖØ-ÞĐƠƯẠ-Ỹ](?:[^\W\d_]|['’-])+(?:\s+[A-ZÀ-ÖØ-ÞĐƠƯẠ-Ỹ](?:[^\W\d_]|['’-])+){0,3}"],
     ["[number]", r"(?<![\d$])\d{7,}(?!\d)"],
     ["\\1[name]", r"((?:\b[Mm]y name is|\b[Mm]y name'?s|\b[Mm]i nombre es|\b[Mm]e llamo|\b[Jj]e m'appelle|\b[Mm]eu nome é|\b[Mm]ein Name ist|\b[Cc]all me|\bI go by)\s+)[A-ZÀ-ÖØ-ÞĐƠƯẠ-Ỹ](?:[^\W\d_]|['’-])+(?:\s+[A-ZÀ-ÖØ-ÞĐƠƯẠ-Ỹ](?:[^\W\d_]|['’-])+){0,2}"],
     ["\\1[name]", r"((?:\bI'?m|\bI am|\b[Tt]his is)\s+)(?!(?:Not|Sorry|Pregnant|Disabled|Homeless|Here|From|In|On|At|A|An|The|So|Very|Really|Just|Still|Now|Currently|Living|Looking|Trying|Going|Unemployed|Retired|Single|Married|Divorced|Separated|Widowed|Scared|Afraid|Worried|Desperate|Sick|Out|Hungry|Undocumented|Mexican|American|Chinese|Indian|Muslim|Christian|Catholic|Hispanic|Latino|Latina|Black|White|Asian|Haitian|Cuban|Salvadoran|Guatemalan|Honduran|Venezuelan|Filipino|Vietnamese|Korean|Afghan|Ukrainian|Russian|Arab|African|Native|Jewish)\b)[A-ZÀ-ÖØ-ÞĐƠƯẠ-Ỹ](?:[^\W\d_]|['’-])+(?:\s+[A-ZÀ-ÖØ-ÞĐƠƯẠ-Ỹ](?:[^\W\d_]|['’-])+){0,2}"],

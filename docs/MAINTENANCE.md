@@ -83,14 +83,18 @@ Jac-specific part is plumbing.
 Benefit rules change every fiscal year, and phone numbers and links drift.
 Two jobs keep the catalog honest, and CI enforces the first:
 
-- **Contacts, at least yearly.** From `civicmesh/`, run
-  `python3 tools/check_contacts.py`. It fetches each program's page, records
+- **Contacts, weekly by machine and twice a year by hand.**
+  `.github/workflows/freshness.yml` runs the check below with `--strict` every
+  Monday and opens an issue when a page returns 404 or 410, or when a page that
+  answers no longer shows its number. A shielded page is not a failure. From
+  `civicmesh/`, run `python3 tools/check_contacts.py`. It fetches each program's page, records
   the HTTP status and whether the listed phone number is on it, and dates the
   record in `data/verification.json`. "Unconfirmed" means a person has to
   look: about half of the government pages refuse scripted requests. When you
   check one by hand, record what you saw under `contact_manual`
   (`checked`, `how`, `source`). `tests/check_verification.py` fails CI when a
-  program has no record or its newest check is over a year old. The first run
+  program has no record, its newest contact check is over six months old, or
+  its rules check is over a year old. The first run
   (2026-10-27) found three numbers that belonged to someone else and two dead
   links, so don't skip the hand checks.
 - **Rules, every October and after any new law.** USDA publishes SNAP's

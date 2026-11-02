@@ -1,0 +1,37 @@
+name: Catalog freshness
+
+# Every link and phone number against the program's own page, weekly, so the
+# catalog doesn't go stale all at once. A bot shield only reads "unconfirmed";
+# a 404, or a number gone from a page that answers, fails this and opens an issue.
+on:
+  schedule:
+    - cron: "17 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  contacts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: civicmesh
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Records are recent enough
+        run: python3 tests/check_verification.py
+      - name: Links and phone numbers still match
+        run: python3 tools/check_contacts.py --dry-run --strict | tee contacts.txt
+      - name: Open an issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          { echo "The weekly catalog check failed. A person should look before anyone is sent to a dead number."; echo; echo '```'; grep CHANGED contacts.txt || true; echo '```'; echo; echo "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"; } > body.md
+          gh issue create --title "Catalog check failed $(date -u +%F)" --body-file body.md

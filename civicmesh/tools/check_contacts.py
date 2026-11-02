@@ -2,6 +2,10 @@
 
     python3 tools/check_contacts.py            # from civicmesh/; writes data/verification.json
     python3 tools/check_contacts.py --dry-run  # print only
+    python3 tools/check_contacts.py --dry-run --strict  # exit 1 on a real change (weekly in CI)
+
+--strict fails on what a bot shield can't explain: a page that answers 404 or
+410, or a page that answers 200 and no longer shows a number it used to show.
 
 For each program in data/resources.json this fetches `online_url` (and the
 form URL when there is one) and records the HTTP status and whether the
@@ -13,7 +17,8 @@ recorded by hand in the same file ("rules"), with their source.
 Many government sites refuse scripted requests (403 from a bot shield) or
 render the number with JavaScript. Those come out as "unconfirmed", which
 means a person has to look, not that the contact is wrong.
-tests/check_verification.py fails CI when any record is older than a year.
+tests/check_verification.py fails CI when a contact check is over six months
+old or a rule check over a year.
 """
 
 import datetime
@@ -32,7 +37,7 @@ ABOUT = ("What was checked for each program, and when. contact_*: written by too
          "(the program page answers 200 and shows the listed phone; 'unconfirmed' = a bot shield, a page that "
          "renders the number with JavaScript, or a real problem: a person must look). rules: written by hand "
          "when a program's eligibility rules were compared with an independent source; null = never checked. "
-         "tests/check_verification.py fails when a record is over a year old.")
+         "tests/check_verification.py fails when a contact check is over six months old or a rule check over a year.")
 UA = "Mozilla/5.0 (X11; Linux x86_64) CivicMesh-contact-check/1.0 (+https://github.com/Anbu-00001/CivicMesh)"
 
 
@@ -71,6 +76,7 @@ def main():
     progs = json.load(open(CATALOG, encoding="utf-8"))["resources"]
     old = json.load(open(OUT, encoding="utf-8")) if os.path.exists(OUT) else {"programs": {}}
     out = {"_about": ABOUT, "programs": {}}
+    changed = []
     for p in progs:
         rid = p["eligibility"]["rule_id"]
         status, text = fetch(p.get("online_url", ""))
@@ -83,6 +89,10 @@ def main():
         own_phone = digits(p.get("contact_phone", "")) not in ["", "211"]
         ok = status == 200 and (found or not own_phone)
         rec = dict(old["programs"].get(rid, {}))
+        if status in (404, 410):
+            changed.append(f"{rid}: {p.get('online_url')} answers {status}")
+        if own_phone and status == 200 and not found and rec.get("phone_on_page") is True:
+            changed.append(f"{rid}: {p.get('contact_phone')} is no longer on {p.get('online_url')}")
         rec.update({
             "program": p["agency_name"],
             "contact_checked": today,
@@ -100,6 +110,10 @@ def main():
             json.dump(out, f, indent=2, ensure_ascii=False)
             f.write("\n")
         print("wrote", os.path.relpath(OUT, HERE))
+    for c in changed:
+        print("CHANGED", c)
+    if "--strict" in sys.argv and changed:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

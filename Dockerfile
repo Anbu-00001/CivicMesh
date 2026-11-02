@@ -23,8 +23,20 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Bun is required for the Jac client toolchain (vite-on-bun under the hood).
-RUN curl -fsSL https://bun.sh/install | bash \
-    && /opt/bun/bin/bun --version
+# A pinned release and its published checksum, not a script piped to bash.
+RUN set -e; \
+    case "$(dpkg --print-architecture)" in \
+      amd64) name=bun-linux-x64; sum=bf8ccbfb2b0b80159e0f9a6d15c55317add8077534dbc6130a3edb52fccb395c ;; \
+      arm64) name=bun-linux-aarch64; sum=baa6bb36f51d6e58561e02bbea825038a9df454f673d6d776e8bbf86f8c7850e ;; \
+      *) echo "no pinned bun for this architecture" >&2; exit 1 ;; \
+    esac; \
+    curl -fsSLo /tmp/bun.zip "https://github.com/oven-sh/bun/releases/download/bun-v1.4.4/$name.zip"; \
+    echo "$sum  /tmp/bun.zip" | sha256sum -c -; \
+    mkdir -p /opt/bun/bin; \
+    unzip -q -j /tmp/bun.zip "$name/bun" -d /opt/bun/bin; \
+    rm /tmp/bun.zip; \
+    ln -s bun /opt/bun/bin/bunx; \
+    /opt/bun/bin/bun --version
 
 WORKDIR /app
 
@@ -49,7 +61,16 @@ RUN jac build app.jac --client web
 # and repopulates the graph on first request after each redeploy.
 RUN mkdir -p /app/civicmesh/.jac/data
 
+# Not root. Hugging Face Spaces runs containers as uid 1000 anyway, and the app
+# writes only its graph under .jac/ and its runtime config.
+RUN useradd --create-home --uid 1000 app && chown -R app:app /app /opt/bun
+USER 1000
+ENV HOME=/home/app
+
 EXPOSE 7860
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
+    CMD python -c "import os,urllib.request as u; u.urlopen('http://127.0.0.1:' + os.environ.get('PORT', '7860') + '/healthz', timeout=4)"
 
 # Production startup: --no-dev disables HMR/Vite dev server so the React
 # client is served from the pre-built bundle and the REST + WebSocket API
