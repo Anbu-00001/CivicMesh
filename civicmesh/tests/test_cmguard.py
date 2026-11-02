@@ -5,6 +5,8 @@
 The container-level attack simulations are in tests/security_e2e.py.
 """
 
+import logging
+import logging.config
 import os
 import sys
 import threading
@@ -19,6 +21,7 @@ from cmguard.budget import ModelBudget, ModelBudgetExceeded, estimate_tokens, gu
 from cmguard.clientip import client_ip  # noqa: E402
 from cmguard.config import BudgetConfig, parse_rate  # noqa: E402
 from cmguard.gateway import classify, content_security_policy, cors_filter, json_shape_problem  # noqa: E402
+from cmguard.jacbind import bind_upstream, silence_access_log  # noqa: E402
 from cmguard.limits import ExpiringSet, InflightCounter, TokenBuckets  # noqa: E402
 from cmguard.redact import redact, safe_error  # noqa: E402
 
@@ -353,6 +356,63 @@ class Gateway(unittest.TestCase):
         self.assertTrue(json_shape_problem(deep, 12, 5000, 20000))
         self.assertTrue(json_shape_problem({"a": "x" * 30000}, 12, 5000, 20000))
         self.assertTrue(json_shape_problem({"a": list(range(10000))}, 12, 5000, 20000))
+
+
+class TestAccessLog(unittest.TestCase):
+    """jac-scale configures uvicorn.access at INFO after we start, so the filter must outlast that."""
+
+    def setUp(self):
+        self.logger = logging.getLogger("uvicorn.access")
+        self.saved = (self.logger.level, self.logger.propagate, self.logger.handlers[:], self.logger.filters[:])
+        self.lines = []
+        test = self
+
+        class Capture(logging.Handler):
+            def emit(self, record):
+                test.lines.append(record.getMessage())
+
+        self.capture = Capture
+
+    def tearDown(self):
+        self.logger.level, self.logger.propagate = self.saved[0], self.saved[1]
+        self.logger.handlers[:] = self.saved[2]
+        self.logger.filters[:] = self.saved[3]
+
+    def configure_like_jac_scale(self):
+        logging.config.dictConfig({
+            "version": 1,
+            "disable_existing_loggers": False,
+            "handlers": {"access": {"()": self.capture}},
+            "loggers": {"uvicorn.access": {"handlers": ["access"], "level": "INFO", "propagate": False}},
+        })
+
+    def request_line(self):
+        self.logger.info('%s - "%s %s HTTP/%s" %d', "127.0.0.1:1", "GET", "/", "1.1", 200)
+
+    def test_requests_log_without_the_filter(self):
+        self.logger.filters[:] = []
+        self.configure_like_jac_scale()
+        self.request_line()
+        self.assertEqual(len(self.lines), 1)
+
+    def test_filter_outlasts_the_logging_setup(self):
+        self.logger.filters[:] = []
+        silence_access_log()
+        silence_access_log()
+        self.assertEqual(len(self.logger.filters), 1)
+        self.configure_like_jac_scale()
+        self.request_line()
+        self.assertEqual(self.lines, [])
+
+    def test_only_behind_the_gateway(self):
+        self.logger.filters[:] = []
+        saved = os.environ.pop("CIVICMESH_UPSTREAM_BIND", None)
+        try:
+            self.assertEqual(bind_upstream(), "")
+            self.assertEqual(self.logger.filters, [])
+        finally:
+            if saved is not None:
+                os.environ["CIVICMESH_UPSTREAM_BIND"] = saved
 
 
 if __name__ == "__main__":

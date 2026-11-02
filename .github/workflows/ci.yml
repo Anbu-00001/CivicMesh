@@ -177,6 +177,11 @@ jobs:
           if docker logs cm 2>&1 | grep -nE "case_text|123-45-6789|kill myself|老公|scared to go home|\{'version'"; then
             echo "user text reached the server logs" >&2; exit 1
           fi
+      - name: Server logs hold no request lines (the access log is off)
+        run: |
+          if docker logs cm 2>&1 | grep -nE ' HTTP/[0-9.]+"'; then
+            echo "the access log is on" >&2; exit 1
+          fi
       - name: Security — attack simulations (second container, fake model provider, tight limits)
         run: |
           python3 civicmesh/tests/fake_llm.py 8799 0.3 &
