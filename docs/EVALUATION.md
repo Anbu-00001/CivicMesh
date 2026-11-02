@@ -39,7 +39,7 @@ flowchart LR
 
 ```
 cd civicmesh && jac run tests/eval_engine.jac
-  631 cases + 27 conversations (66 turns) · field accuracy 100% (1410/1410) · 73/73 languages · top-3 100% · exclusion errors 0
+  679 cases + 27 conversations (66 turns) · field accuracy 100% (1458/1458) · 73/73 languages · top-3 100% · exclusion errors 0
   metamorphic 228/228 neutral additions moved no verdict · latency / turn p50 ~1.2 ms · p95 ~2.4 ms
 
 cd civicmesh && jac run tests/check_messages.jac
@@ -87,9 +87,24 @@ To avoid tuning to the test, each task's posts are split by index. Misses were r
 | Task (engine output checked) | Held-out recall, first run | Held-out recall now (95% CI) | False positives (held-out, now) |
 |---|---|---|---|
 | Domestic violence (the dv flag or the concern layer, which pin the hotline) | 38.6% (17/44) | **68.2%** (30/44; 53–80%) | 2.3% (1/43) |
-| Housing (routed to housing) | 77.0% | 81.3% (911/1,120; 79–84%) | 12.0% |
+| Housing (routed to housing) | 77.0% | 81.4% (912/1,120; 79–84%) | 12.0% |
 | Health (routed to healthcare) | 78.9% | 77.2% (44/57; 65–86%) | 10.7% |
 | Immigration (an immigration status read) | 67.6% (23/34) | **79.4%** (27/34; 63–90%) | 3.0% |
+
+### Suicide risk, on wording nobody here wrote
+
+`tests/eval_crisis_external.jac` runs the same protocol on the [Reddit C-SSRS Suicide Dataset](https://zenodo.org/records/2667859) (Gaur et al., WWW 2019, CC BY 4.0): 500 users graded by four psychiatrists on the Columbia scale. It counts Ideation, Behavior and Attempt users whose words raise `self_harm` or `self_harm_concern`, either of which pins 988. False alarms come from the r/legaladvice posts above, and many of those flagged really do mention suicide, so that rate is an upper bound. It runs in CI as a measurement, not a gate.
+
+| Held-out half (146 at-risk users) | Before, 2026-11-02 | Now (95% CI) |
+|---|---|---|
+| The user's posts joined, clipped to the 4,000-character chat box | 63.0% | **74.0%** (66–80%) |
+| The same with the direct words removed ("suicide", "kill myself", …) | 16.4% | **31.5%** (25–39%) |
+| The first post alone | 22.6% | 26.7% (20–34%) |
+| Legal posts flagged (2,300) | 1.00% | 1.13% |
+
+**One in four at-risk users here is still missed, and most single posts are.** A word list won't fix that: many of the dev-half misses have no first-person signal in the text at all, because the label grades the user, not one post. The first-post figure understates a chat message for the same reason. These aren't people typing to this app either, so treat the numbers as a direction, not a clinical sensitivity. This is why every "what do you need?" reply now carries 911 and 988, flagged or not.
+
+New patterns came from the 988 Lifeline's warning signs, the Columbia screener's questions and behavior examples, and the dev half only. The dataset's anonymizer garbled some words ("feel like" became "feel hyperactive behavior"); the eval undoes those it knows.
 
 The domestic-violence number is the important one. A self-written suite at 100% had hidden that most real descriptions of abuse ("he kicked me in the stomach", "a restraining order", "my attacker", "terrified for her life") never raised the flag. The latest round added, as patterns, the [Danger Assessment](https://www.dangerassessment.org/)'s strongest predictors of partner homicide (strangulation, threats to kill, weapons, forced sex, escalating violence) and the [Hotline](https://www.thehotline.org/identify-abuse/domestic-abuse-warning-signs/)'s warning signs, each with a benign probe. That moved the dev half from 74% to 81% and the held-out half by one post (63.6% → 65.9%), well inside the interval: word patterns are near their ceiling on long narratives, and it still misses about a third. So the design no longer depends on detection to show a number. **911, 988 and the Domestic Violence Hotline (call 1-800-799-7233 or text START to 88788) are shown under the chat box on every screen**, and detection only decides whether the hotline is also pinned to the top of the plan. These are long Reddit narratives, which are harder than the short requests the router is built for, and some labels are noisy (6 of the 11 dev-half misses are about a speeding ticket, unpaid wages, a psychiatric hold or sleeplessness). This suite is a measurement, not a gate: CI prints it on every run. Regression cases from real intake conversations with a legal-aid or 211 partner would be the next step up.
 

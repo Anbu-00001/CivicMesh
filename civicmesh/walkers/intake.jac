@@ -125,6 +125,12 @@ walker IntakeWalker {
                 if not profile.get("state") and len(str(u.state)) == 2 { profile["state"] = str(u.state).upper(); }
                 if not profile.get("citizenship") and str(u.citizenship) in ["citizen", "eligible_immigrant", "humanitarian", "non_citizen"] { profile["citizenship"] = str(u.citizenship); }
                 if str(u.urgency) == "immediate" { profile["urgency"] = "immediate"; }
+                # Escalate-only: the model can add the hotline, never remove a
+                # flag. From here the turn is private like any other crisis.
+                if u.crisis_risk is True and "self_harm_concern" not in list(profile.get("flags", [])) {
+                    profile["flags"] = list(profile.get("flags", [])) + ["self_harm_concern"];
+                    private_turn = True;
+                }
                 profile["llm_summary"] = str(u.english_summary);
                 span_end(tr, sp, {"civicmesh.category": profile["category"]});
             } except concurrent.futures.TimeoutError as _deadline {

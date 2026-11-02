@@ -709,6 +709,23 @@
         "how": "\"contact the NCHE helpline at 800-308-2145 or homeless@serve.org\", in NCHE's own brief on nche.ed.gov (April 2023)",
         "source": "https://nche.ed.gov/wp-content/uploads/2023/04/SSW.pdf"
       }
+    },
+    "poison-rule": {
+      "program": "Poison Control (Poison Help line)",
+      "contact_checked": "2026-11-02",
+      "contact_result": "unconfirmed",
+      "url_status": null,
+      "phone_on_page": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-11-02",
+        "how": "1-800-222-1222 on poison.org (National Capital Poison Center), which says both options are free and expert",
+        "source": "https://www.poison.org/"
+      }
     }
   }
 }

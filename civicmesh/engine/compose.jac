@@ -68,6 +68,7 @@ button sends no prior.
 def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") -> dict {
     out = dict(cur);
     out["answered"] = [];
+    text = re.sub("[’‘ʼ′＇`´]", "'", str(text));
     out["case_text"] = str(text)[-1500:];
     if not prior {
         return out;
@@ -243,6 +244,30 @@ def reply_language(lang: str) -> str {
     return "en";
 }
 
+"""The message says nothing but the danger, so it gets nothing but the way out.
+"There's no reason to keep going" got "5 programs could work once I know a bit
+more", and "I don't want to live" a route to Medicaid in about 45 days (outside
+review, 2026-11). The 988 Lifeline's steps: be direct, and no lecture."""
+def crisis_alone(profile: dict, pinned: list) -> bool {
+    return bool(pinned) and bool(profile.get("crisis_only") or profile.get("defaulted_category"));
+}
+
+def crisis_lines(lang: str, profile: dict, pinned: list) -> list {
+    flags = list(profile.get("flags", []));
+    self_harm = "self_harm" in flags or "self_harm_concern" in flags;
+    lines: list = [];
+    if "emergency" in flags { lines.append(msg(lang, "r.emergency")); }
+    lines.append(msg(lang, "r.safety", {"name": pinned[0]["resource_name"], "phone": pinned[0]["contact_phone"]}));
+    if self_harm {
+        # Written by hand in the two languages a person here can check; the
+        # catalogs are machine-drafted, and this isn't a line to guess at.
+        if lang == "en" { lines.append("I'm glad you told me. You don't have to go through this alone."); }
+        if lang == "es" { lines.append("Me alegra que me lo haya contado. No tiene que pasar por esto a solas."); }
+        lines.append(msg(lang, "r.crisis_net"));
+    }
+    return lines;
+}
+
 """Reply from the message catalog: the same sentences as EN/ES, in `lang`."""
 def compose_catalog(lang: str, profile: dict, ranking: dict, plan: dict, routes: list, question: str) -> str {
     ranked = list(ranking.get("ranked", []));
@@ -252,6 +277,9 @@ def compose_catalog(lang: str, profile: dict, ranking: dict, plan: dict, routes:
     pinned = [s for s in ranked if s.get("pinned", False)];
     if profile.get("defaulted_category") and not pinned {
         return msg(lang, "r.unsure") + "\n\n" + msg(lang, "r.crisis_net");
+    }
+    if crisis_alone(profile, pinned) {
+        return "\n\n".join(crisis_lines(lang, profile, pinned));
     }
     lines: list = [];
     if "emergency" in list(profile.get("flags", [])) { lines.append(msg(lang, "r.emergency")); }
@@ -301,6 +329,9 @@ def compose_reply(lang: str, profile: dict, ranking: dict, plan: dict, routes: l
         # A missed crisis still sees 911 and 988 (outside judge, 2026-10-28).
         lines.append(msg(lang, "r.crisis_net"));
         return "\n\n".join(lines);
+    }
+    if crisis_alone(profile, pinned) {
+        return "\n\n".join(crisis_lines(lang, profile, pinned));
     }
     if "emergency" in list(profile.get("flags", [])) { lines.append(msg(lang, "r.emergency")); }
     if pinned {

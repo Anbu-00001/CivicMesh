@@ -123,16 +123,22 @@ jobs:
       - uses: actions/cache@v6
         with:
           path: civicmesh/tests/.external
-          key: learned-hands-v1
+          key: external-data-v2
       - run: pip install -r ../requirements.txt
       - name: LegalBench learned_hands — dv flag, housing, health, immigration status
         run: |
           jac run tests/eval_external.jac | tee external.txt
           { echo '```'; cat external.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Reddit C-SSRS — self-harm wording no one here wrote, false alarms on legal posts
+        run: |
+          jac run tests/eval_crisis_external.jac | tee crisis_external.txt
+          { echo '```'; cat crisis_external.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v7
         with:
           name: external-report
-          path: civicmesh/tests/external_report.json
+          path: |
+            civicmesh/tests/external_report.json
+            civicmesh/tests/crisis_external_report.json
           if-no-files-found: ignore
 
   e2e:

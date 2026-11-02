@@ -72,6 +72,7 @@ glob TARGETS: dict = {
     "sexual_assault": ("", "", "survivors of sexual assault", "sobrevivientes de agresión sexual"),
     "eviction_risk": ("evict|behind on rent|past due|shut ?off|disconnect|landlord|desalo|atrasad[oa] con la renta|corte de luz", "eviction", "people facing eviction or a utility shutoff", "personas ante desalojo o corte de servicios"),
     "immigration": ("immigra|deport|asylum|visa|green card|citizenship|undocumented|inmigra|asilo|papeles|indocumentad", "", "people with immigration questions", "personas con dudas de inmigración"),
+    "poison": ("pills|tablets|meds\\b|medication|medicine|overdos|tylenol|advil|benadryl|painkiller|bleach|detergent|laundry pod|antifreeze|poison|drain cleaner|button batter|cleaning (?:product|suppl)", "", "anyone who swallowed too much medicine or something harmful", "cualquier persona que tomó demasiada medicina o algo dañino"),
     "crisis": ("suicid|kill myself|end my life|want to die|self[- ]harm|crisis|panic attack|quitarme la vida|no quiero vivir|matarme", "", "people in a mental-health crisis", "personas en crisis de salud mental"),
     "mental_health": ("mental health|depress|anxiety|therapy|therapist|counsel|ptsd|trauma|suicid|salud mental|depresi|ansiedad|terapia", "", "mental-health care needs", "atención de salud mental"),
     "substance": ("drug|alcohol|addict|substance|opioid|overdose|rehab|sober|drogas|adicci", "", "people dealing with substance use", "personas con problemas de consumo de sustancias"),
@@ -101,7 +102,7 @@ glob FLAG_TARGETS: dict = {"homeless": "homeless", "veteran": "veteran", "disabi
 # topic: a routine health question filled the list with Ryan White, SAMHSA
 # and NeedyMeds at 25% (outside judge, 2026-10-28). Person facts the engine
 # can ask about (homeless, veteran, children) still show as "needs info".
-glob TOPIC_TARGETS: list = ["hiv", "crisis", "mental_health", "substance", "medication", "dental", "vision",
+glob TOPIC_TARGETS: list = ["hiv", "crisis", "poison", "mental_health", "substance", "medication", "dental", "vision",
                             "criminal", "conviction", "immigration", "consumer", "dv", "wage", "tenant", "disability", "school"];
 # A topic that also counts as evidence for another: 988 serves mental-health
 # distress, not only suicide.
@@ -539,6 +540,9 @@ def rank_resources(items: list, profile: dict, message: str, limit: int = 6, lan
         name_low = str(res.get("agency_name", "")).lower();
         pinned = False;
         if ("self_harm" in flags or "self_harm_concern" in flags) and "988" in name_low { pinned = True; }
+        # An overdose or a swallowed chemical: 911 leads, and this line tells
+        # the person what to do while help comes.
+        if "emergency" in flags and "poison control" in name_low and re.search(str(TARGETS["poison"][0]), str(message).lower()) { pinned = True; }
         # The hotline is the safety line; the legal-advocacy entry shares its
         # number and read as a mislabelled safety line when pinned.
         if "dv" in flags and "domestic violence hotline" in name_low { pinned = True; }

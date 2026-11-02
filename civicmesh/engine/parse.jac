@@ -157,7 +157,7 @@ glob FLAG_LEXICON: dict = {
            "(?:my|her|his|our) (?:husband|wife|boyfriend|girlfriend|bf|gf|partner|spouse|fianc[eé]e?|ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|brother|sister|father|dad|stepdad|stepfather|mother|mom|stepmom|son|daughter|uncle|cousin|roommate|in-laws?) (?:(?:just|has|had|then|also|repeatedly|physically|sexually|once|again|finally) ){0,2}(?:assaulted|strangled|raped|stabbed|beat up|threatened to kill)",
            "(?:put|had|wrapped|pressed) (?:his|her|their|both) hands? (?:around|on|over) (?:my|her|his) (?:neck|throat)",
            "threatened to (?:kill|shoot|stab) (?:me|her|us|him|the kids|my kids|our kids|the children|my children|our children)",
-           "(?:said|says|told me|keeps saying) (?:he|she)(?:'d| would| will|'ll| is going to| was going to) kill (?:me|us|her)",
+           "(?:said|says|told me|keeps saying) (?:he|she)(?:'d| would| will|'ll| is going to| was going to) kill (?:me|us|her)", "(?:think|afraid|scared|terrified|fear|sure)\\b[^.!?]{0,20}\\b(?:he|she)(?:'s| is| will|'ll)? (?:going to |gonna )?kill me",
            "(?:he|she|husband|wife|boyfriend|girlfriend|bf|gf|partner|spouse|fianc[eé]e?|ex|ex-husband|ex-wife|ex-boyfriend|ex-girlfriend|brother|sister|father|dad|stepdad|stepfather|mother|mom|stepmom|son|daughter|uncle|cousin|roommate|in-laws?)\\b[^.!?]{0,30}\\b(?:pulled|held|pointed|waved) (?:a )?(?:gun|knife|weapon) (?:on|at) (?:me|her|us)",
            "threatened (?:me|her|us) with (?:a )?(?:gun|knife|weapon|bat)",
            "(?:forced|forces|pressured|pressures|made|makes) (?:me|her) (?:to )?(?:have sex|into (?:having )?sex|do sexual)",
@@ -173,8 +173,20 @@ glob FLAG_LEXICON: dict = {
                   "(?:want|wanna|going|gonna|plan(?:ning)?|ready|trying|tried|about|thinking (?:of|about)|thought about|decided)(?: to)? (?:just )?(?:end|ending) (?:it|it all|things|everything|my life|my suffering|my pain|this life)(?! (?:with|between|on|for)\\b)",
                   "(?:don'?t|dont|do not) (?:want|wanna)(?: to)? (?:exist|be alive|live|be here|wake up)", "(?:going to|gonna|want to|wanna|plan to|planning to|trying to|tried to|about to) (?:overdose|od on)",
                   "(?:took|swallowed|taken|take|swallow) (?:a |the |my )?(?:whole |entire )?(?:bottle|handful|pack|box) of (?:pills|tablets|meds|medication|sleeping pills|painkillers)",
-                  "(?:took|swallowed) all (?:my|the|of my|of the) (?:pills|meds|medication|tablets)", "(?:cutting|burning|harming|hurting) myself", "(?:been|started|keep) cutting(?: again| myself)?",
+                  "(?:took|swallowed) all (?:my|the|of my|of the) (?:pills|meds|medication|tablets)(?! (?:today|this morning|on time|as prescribed|every)\\b)", "(?:cutting|burning|harming|hurting) myself", "(?:been|started|keep) cutting(?: again| myself)?",
                   "(?:hang|hanged|hanging) myself", "(?:gun|rope|pills|knife|blade)\\b[^.!?]{0,20}\\b(?:on|for|to kill) myself", "standing on (?:the|a) (?:bridge|ledge|rooftop|roof edge)",
+                  # The Columbia scale's behaviors and wish-to-be-dead item (C-SSRS screener,
+                  # questions 1 and 6), and thinking about a method. Reddit C-SSRS dev half
+                  # and an outside probe, 2026-11: the direct words missed these.
+                  "(?:think(?:ing)?|thought|thoughts?|dream(?:ing)?|fantasi[sz]ing|obsess(?:ing|ed)) (?:about|of) (?:just )?(?:jump(?:ing)? (?:off|from|in front)|hang(?:ing)? myself|shoot(?:ing)? myself|overdos(?:e|ing)|cutting myself|slit(?:ting)? my|kill(?:ing)? myself|ending (?:it|my life|things|everything)|dying|not waking up)",
+                  "(?:might|may|could|should|i'?ll|i will) (?:just |finally |really )?end (?:it|things|everything)(?: all)?(?! (?:with|between|on|for)\\b)", "(?:end|ending) it (?:all )?(?:tonight|today|tomorrow|soon|now|this week)",
+                  "(?:took|swallowed|ate|downed) (?:a bunch|a lot|a ton|so many|all|lots|handfuls?|a fistful|most)(?: of)?(?: my| the)? (?:\\w+ )?(?:pills|tablets|meds|medications?|painkillers|tylenol|advil|benadryl)(?! (?:today|this morning|on time|as prescribed|every|for|over|in the past|since|when|while|like|back)\\b)",
+                  "(?:pills|rope|noose|gun|blade|razor)\\b[^.!?]{0,25}\\b(?:in front of me|next to me|beside me|in my hand)", "(?:tied|made|bought|have|got) a noose",
+                  "slit(?:ting)? my (?:wrists?|throat)", "cut(?:ting)? my (?:wrists?|arms?|thighs?)", "(?:urges?) to (?:cut|hurt myself|die|kill|end it)",
+                  "kill(?:ing|ed)? my ?self", "neck(?:ing)? myself", "(?:crave|craving) death", "(?:makes? me |i )want to cut\\b", "(?:why|when) i cut\\b(?! \\w)", "(?:life|it) will end (?:on my terms|by my (?:own )?hands?)", "off(?:ing)? myself", "end myself", "self[- ]delet\\w*", "sewer ?slide", "(?:lethal|fatal) dose", "how (?:many|much) (?:\\w+ ){0,3}(?:to|would) (?:kill|die|overdose|od)\\b",
+                  "painless (?:way|death|method)", "(?:best|easiest|quickest|fastest) way to (?:die|end it|kill)", "ways to (?:die|kill myself)",
+                  "(?:wish i|i should|should)(?:'ve| have)? (?:had )?died", "(?:hope|wish|pray)(?: that)? i (?:would |could |did |do )?(?:not|never|don'?t|won'?t|wouldn'?t|didn'?t) wake up", "want to (?:not|never) wake up",
+                  "(?:pensando|pienso) en (?:quitarme la vida|matarme|tirarme|ahorcarme|suicidarme)", "me tom[eé] (?:muchas|todas (?:mis|las)|un mont[oó]n de) pastillas", "cortarme las venas",
                   "jump (?:off|from) (?:a|the|this) (?:bridge|building|roof|ledge|cliff|overpass)", "jump in front of (?:a|the) (?:train|bus|car|truck|subway)",
                   "drive (?:my car |the car )?(?:off|into) (?:the road|a cliff|a bridge|a wall|a tree|oncoming)", "(?:go to sleep|sleep|fall asleep) and never wake up",
                   "(?:goodbye|farewell|suicide) (?:letters?|notes?)", "(?:life|living)(?: really)? (?:isn'?t|is not|ain'?t) worth (?:living|it)", "not worth living",
@@ -214,6 +226,7 @@ glob FLAG_SENSE_RIGHT: dict = {
     "children": "^\\s+(?:are|is)\\s+(?:all\\s+)?(?:grown|adults?|over 18)|^\\s+(?:have\\s+|has\\s+)?(?:all\\s+)?moved out|^\\s+(?:don'?t|doesn'?t|do not|does not) live with (?:me|us)|^\\s*care\\s+(?:provider|worker|teacher|job|center|centre|business)|^\\s+support\\b",
     "self_harm": "^\\s+(?:at|on)\\s+(?:work|the job|my job)|^\\s+(?:lifting|falling|playing|cleaning|cooking|working|moving)|^\\s+(?:when|while) (?:i|lifting|falling|working|playing)|^\\s+in\\s+(?:a|an|the)\\s+(?:accident|fall|crash|car)"
 };
+glob DV_IDIOM: str = "\\bhit (?:me|us|him|her|them) up\\b(?! against)|\\bhit (?:me|us) with (?:a|an|the|this|that|another) (?:\\w+ ){0,2}(?:bill|fee|fine|charge|lawsuit|notice|question|deal|rent|price|increase)\\b|\\bpush(?:es|ed)? (?:me|us|him|her) to (?:sign|apply|file|go to|do|take|get|move|pay|quit|finish|see)\\b|\\bgrab(?:s|bed)? (?:me|us) (?:a|an|some|lunch|dinner|coffee|food)\\b";
 # Intent words that keep a self-harm match even when an injury guard fires.
 glob SELF_HARM_INTENT: str = "(?:want|wanted|wanna|going|gonna|trying|tried|tempted|urge|thinking about|thought about|feel like|on purpose|deliberately)";
 
@@ -230,6 +243,10 @@ def fact_negated(low: str, start: int, end: int) -> bool {
 def flag_other_sense(flag: str, low: str, start: int, end: int) -> bool {
     left = low[max(0, start - 28):start];
     right = low[end:end + 40];
+    # "He hit me up about a job", "she hit me with a late fee", "my mom pushed
+    # me to apply": idioms, not violence (outside probe, 2026-11). "Hit me up
+    # against the wall" stays violence.
+    if flag == "dv" and re.search(DV_IDIOM, low[start:end + 40]) { return True; }
     lp = FLAG_SENSE_LEFT.get(flag, "");
     rp = FLAG_SENSE_RIGHT.get(flag, "");
     if lp and re.search(lp, left) { return True; }
@@ -254,7 +271,27 @@ def flag_other_sense(flag: str, low: str, start: int, end: int) -> bool {
 glob CONCERN_LEXICON: dict = {
     "self_harm_concern": [
         "(?:better off|be better) without me", "(?:i'?m|i am|feel like) (?:just )?a burden", "burden (?:to|on) (?:everyone|my family|my kids|others|you all)",
-        "no (?:reason|point) (?:to|in) (?:living|live|going on|being here|trying)", "(?:can'?t|cannot) (?:take|do|handle) (?:it|this|any of this) any ?more",
+        "no (?:reason|point) (?:to|in) (?:living|live|going on|being here|trying)", "(?:no|isn'?t any|isn'?t a) (?:reason|point) (?:to|in|of) (?:keep|keeping|continu\\w+)(?: going| on| trying| living)?",
+        # The 988 Lifeline's warning signs and the Columbia scale's preparatory
+        # acts, in the words of the Reddit C-SSRS dev half (never the held-out one).
+        "(?:don'?t|do not|dunno) (?:even )?know why i'?m (?:still|even) (?:here|alive)", "why (?:am i|are we) (?:still|even) (?:here|alive)", "why (?:should|would) i (?:keep|go on|bother|stay|live)",
+        "nothing (?:left )?to live for", "(?:i have|i'?ve got|got) nothing left(?=\\s*(?:$|[.!?,;]))", "nothing left (?:for me|to live|in my life)",
+        "(?:won'?t|will not) be (?:a problem|a burden|around|here|bothering \\w+)(?: \\w+)? (?:much )?(?:longer|anymore|any more|for long)",
+        "(?:what'?s|whats|what is) the point(?: (?:of|in) (?:anything|living|life|going on|trying|it all|being here|even trying))?(?: any ?more)?(?=\\s*(?:$|[.!?,;]))",
+        "(?:i'?m|i am) (?:so |just |really )?done with (?:life|living|everything|it all|this life|this world)(?=\\s*(?:$|[.!?,;]))", "giv(?:e|en|ing) up on (?:life|living|everything|myself)",
+        "(?:can'?t|cannot) keep (?:going|living|doing this|fighting)(?: any ?more| like this)?(?=\\s*(?:$|[.!?,;]))", "(?:i|i just|i really) hate myself", "(?:i|i just|i really) (?:hate|despise) my life",
+        "my life is (?:over|worthless|pointless|meaningless|hell|not worth)", "life is (?:meaningless|pointless)",
+        "(?:i'?m|i am|i feel|feeling|feel) (?:so |completely |totally |just |really )?(?:hopeless|worthless|empty inside)(?! (?:with|at)\\b)", "lost all hope", "no hope left", "have no hope",
+        "(?:can'?t|cannot) (?:take|stand|bear|handle) (?:the|this) pain", "make (?:the|this) pain stop", "pain (?:is|has become|became) (?:too much|unbearable)",
+        "no ?one would (?:care|miss me|notice)", "no ?one (?:cares|will miss me)", "if i (?:died|disappeared|was gone|were gone|wasn'?t here)\\b[^.!?]{0,30}\\b(?:nobody|no one|wouldn'?t)",
+        "\\bi(?:'ve| just| finally| already)* (?:bought|got|purchased) (?:a |some |myself a )?(?:rope|firearm|gun)\\b(?! (?:for|to go)\\b)", "(?:saving|stockpil\\w+|hoarding|collect(?:ed|ing)) (?:up )?(?:my |some |the )?(?:\\w+ )?(?:pills|meds|medications?)",
+        "gave away (?:all )?my (?:things|stuff|belongings|valuables|pets?|dog|cat)", "walking (?:to|towards) the (?:bridge|tracks)", "(?:tallest|highest) (?:bridge|bridges|building|buildings|roof|cliff)", "bridges? taller",
+        "my (?:last|final) (?:goodbye|words)", "(?:saying|said) goodbye (?:to everyone|to everybody|forever|to my (?:kids|family|friends))", "goodbye forever", "this is goodbye",
+        "(?:sleep|fall asleep) (?:forever|and not wake)", "not want(?:ing)? to wake up", "only way out(?! of (?:the|this|my|a|our)\\b)", "(?:shouldn'?t|should not) (?:be here|be alive|exist)", "(?:don'?t|do not) deserve to (?:live|be here|be alive)",
+        "(?:thoughts|thinking) (?:of|about) (?:death|dying)", "dark thoughts",
+        "walk away from life", "no (?:real )?(?:attachment to|meaning in|purpose in) (?:my )?life", "(?:don'?t|do not) (?:really )?care (?:\\w+ )?(?:whether|if) i (?:wake up|live|die)", "(?:don'?t|do not) fear death",
+        "my life is garbage", "there is no point(?=\\s*(?:$|[.!?,;:)]))", "giving myself (?:\\d+|a|one|two|three) (?:day|week|month|year)s?(?: to| then| and then)\\b",
+        "no tiene sentido (?:seguir|vivir|la vida)", "ya no tiene sentido", "no sirvo para nada", "no valgo nada", "para qu[eé] seguir", "nadie me extra[nñ]ar[ií]a", "compr[eé] una cuerda", "(?:can'?t|cannot) (?:take|do|handle) (?:it|this|any of this) any ?more",
         "(?:feel|feeling|i'?m|i am) (?:so )?trapped(?! in (?:a|my|the|this) (?:lease|contract|job|loan|apartment|car|elevator|building))", "unbearable pain", "(?:wish|want) (?:it|everything|this) (?:would|to|could) (?:just )?(?:end|stop)",
         "wish i (?:was|were|could be) (?:dead|gone)", "wish i could (?:disappear|just disappear|not wake up)", "(?:don'?t|do not) see a way out",
         "no way out(?! of (?:the|this|my|a) (?:lease|contract|loan|deal|parking))", "tired of (?:living|being alive|life)", "giving away (?:all )?my (?:things|stuff|belongings)",
@@ -400,7 +437,7 @@ glob PARENT_FIGURE: str = "(?:dad|father|stepdad|stepfather|mom|mother|stepmom|s
 glob CHILD_ABUSE_RE: str = "\\b(?:child abuse|abus(?:e|es|ed|ing) (?:my|our|the|a|his|her) (?:child|kid|son|daughter|baby|kids|children)|(?:hits|beats|hurts|touches|molests|burns|starves|chokes) (?:my|our|the|his|her) (?:child|kid|son|daughter|baby|kids|children)|(?:hits?|beats?|hurts?) me and (?:the|my|our) (?:kids|children|baby)|maltrato infantil|abuso infantil)\\b|\\b" + PARENT_FIGURE + "\\b[^.!?]{0,20}\\b(?:touch(?:es|ed)?|molest\\w*|fondl\\w*|hits?|beats?|hurts?|punch\\w*|kick\\w*|burns?|chok\\w*|slap\\w*|rapes?|raped) me\\b(?! out\\b)|\\bme (?:toca|toc[oó]|pega|golpea)\\b[^.!?]{0,20}\\bmi (?:padrastro|pap[aá]|t[ií]o)";
 glob SEXUAL_ASSAULT_RE: str = "\\b(?:rap(?:e|es|ed|ing) (?:me|her|my)|raped|sexually (?:assault|abus)\\w*|sexual assault|molest\\w*|(?:forces|forced|pressures|pressured|made|makes) (?:me|her) (?:to )?(?:have sex|into (?:having )?sex|do sexual))\\b|\\bme viol[oó]\\b|\\babus[oó] (?:sexualmente )?de m[ií]\\b";
 glob TRAFFICKING_RE: str = "\\b(?:human trafficking|traffick(?:ed|ing|er)|trata de personas)\\b|\\b(?:employer|boss|manager|recruiter|agency|agent|smuggler|coyote|owner|patr[oó]n|jefe)\\b[^.!?]{0,40}\\b(?:took|takes|keeps?|kept|holds?|held|has|confiscated|quit[oó]|tiene) (?:away )?(?:my|our|mi|mis) (?:passports?|papers|documents|ids?|visas?|pasaporte|papeles|documentos)|\\b(?:won'?t|will not|doesn'?t|don'?t) (?:let|allow) (?:me|us) (?:to )?(?:leave|quit|go home)\\b[^.!?]{0,40}\\b(?:work|job|boss|employer|farm|factory|restaurant)|\\b(?:work|working|worked|make me work|makes me work) \\d{1,2} hours?\\b[^.!?]{0,30}\\b(?:no pay|not paid|without pay|unpaid|for free|for nothing|no money)|\\b(?:forced|forces|made|makes) (?:me|us|her) (?:to )?(?:have sex with (?:men|customers|clients|strangers)|sell sex|prostitut\\w*)";
-glob EMERGENCY_RE: str = "\\b(?:(?:not|isn'?t|stopped|can'?t|cannot|is not|barely) breathing|(?:won'?t|will not|can'?t|cannot|doesn'?t|does not) wake(?: up| him| her| them)?(?!(?: up| him| her| them)? (?:for|in time|on time|early|in the morning|at night|before|till|until)\\b)|unconscious|unresponsive|(?:is|he'?s|she'?s|they'?re|i'?m) overdosing|overdosed|having a (?:heart attack|stroke|seizure)|crushing chest pain|chest pains? (?:right now|and can'?t breathe)|(?:bleeding (?:a lot|heavily|badly|everywhere)|(?:won'?t|will not) stop bleeding)|fever (?:of |is |at )?10[4-9]|10[4-9] (?:degree|f\\b)|(?:turning|turned|lips are) blue|(?:took|swallowed) (?:a |the )?(?:whole |entire )?(?:bottle|handful|pack) of|no respira|no despierta|est[aá] inconsciente|sobredosis)";
+glob EMERGENCY_RE: str = "\\b(?:(?:not|isn'?t|stopped|can'?t|cannot|is not|barely) breathing|(?:won'?t|will not|can'?t|cannot|doesn'?t|does not) wake(?: up| him| her| them)?(?!(?: up| him| her| them)? (?:for|in time|on time|early|in the morning|at night|before|till|until)\\b)|unconscious|unresponsive|(?:is|he'?s|she'?s|they'?re|i'?m) overdosing|overdosed|having a (?:heart attack|stroke|seizure)|crushing chest pain|chest pains? (?:right now|and can'?t breathe)|(?:bleeding (?:a lot|heavily|badly|everywhere)|(?:won'?t|will not) stop bleeding)|fever (?:of |is |at )?10[4-9]|10[4-9] (?:degree|f\\b)|(?:turning|turned|lips are) blue|(?:took|swallowed) (?:a |the )?(?:whole |entire )?(?:bottle|handful|pack) of|(?:took|swallowed|ate|downed) (?:a bunch|a lot|a ton|too many|way too many|so many|all|lots|handfuls?|a fistful|most)(?: of)?(?: my| the)? (?:\\w+ )?(?:pills|tablets|meds|medications?|painkillers|tylenol|advil|benadryl)(?! (?:today|this morning|on time|as prescribed|every|for|over|in the past|since|when|while|like|back)\\b)|(?:swallowed|drank|ate|got into) (?:some |the |a (?:bottle|cup) of |my |a )?(?:bleach|detergent|laundry pods?|antifreeze|poison|rat poison|drain cleaner|button batter(?:y|ies)|cleaning (?:products?|supplies))|got into (?:the |my |some )?(?:pills|medicine|medications?|meds)|no respira|no despierta|est[aá] inconsciente|sobredosis)";
 
 glob PAST_INCOME_CUES: str = "\\b(?:used to (?:make|earn|get)|was (?:making|earning|paid|getting)|were (?:making|earning)|earned|made|paid me|paid us|it paid|that paid|old job|last job|previous job|before|ganaba|ganábamos|me pagaban)\\b[^,.;!?]*$";
 glob INCOME_CUES: str ="(?:earn|earning|make|making|income|salary|paid|wage|wages|pension|social security|ssi|ssdi|disability|benefits?|gano|ganamos|ingresos?|sueldo|salario|pensi[oó]n|seguro social)";
@@ -923,11 +960,26 @@ glob LPR_YEARS_RE: str = "\\b(?:got|received|have had|had|'ve had|holding|hold) 
 
 glob MAX_MESSAGE_CHARS: int = 4000;
 
+"""Curly and modifier apostrophes as a plain one, same length: phones type "don’t",
+and every pattern expected "don't". "I don’t want to live" raised no flag and
+"I’m 72" no age (found 2026-11)."""
+def straighten(t: str) -> str {
+    return re.sub("[’‘ʼ′＇`´]", "'", t);
+}
+
+"""Leetspeak and spaced-out letters undone, for the danger scan only: "k1ll
+myself", "s u i c i d e". Numbers and ordinary words stay as they are."""
+def deobfuscate(low: str) -> str {
+    t = re.sub("\\b(?:[a-z][ .\\-_*]){2,}[a-z]\\b", lambda m: Any : re.sub("[ .\\-_*]", "", m.group(0)), low);
+    leet = {"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t", "$": "s", "@": "a", "!": "i"};
+    return re.sub("(?<=[a-z])[013457$@!]+(?=[a-z])|(?<![\\w$@!])[$@](?=[a-z])", lambda m: Any : "".join([leet.get(c, c) for c in m.group(0)]), t);
+}
+
 """Bound what one message can cost. Longer text keeps its first and last
 2,000 characters: the ask is usually at one end of a pasted letter, and a
 crisis sentence can be at either."""
 def clip_message(text: str) -> str {
-    t = str(text);
+    t = straighten(str(text));
     if len(t) <= MAX_MESSAGE_CHARS {
         return t;
     }
@@ -948,9 +1000,13 @@ def middle_danger(text: str) -> list {
         return [];
     }
     half = MAX_MESSAGE_CHARS // 2;
-    low = t[half:len(t) - half][:MIDDLE_SCAN_CHARS].lower();
     # Danger patterns only: the full parse (households, ages) cost a second
     # on a slow CI runner for 40,000 characters of "my mom, ".
+    return danger_scan(straighten(t[half:len(t) - half][:MIDDLE_SCAN_CHARS]).lower());
+}
+
+"""Which danger flags a lowercased text raises, by pattern alone."""
+def danger_scan(low: str) -> list {
     found: list = [];
     for flag in ["self_harm", "dv"] {
         for pat in FLAG_LEXICON[flag] {
@@ -979,6 +1035,14 @@ def parse_intake(text: str) -> dict {
     mid_danger = middle_danger(str(text or ""));
     raw = clip_message(str(text or ""));
     low = raw.lower();
+    # Spelled to get past a filter, or to say it without saying it. Danger
+    # patterns only, and only ever adds a flag.
+    plain = deobfuscate(low);
+    if plain != low {
+        for f in danger_scan(plain) {
+            if f not in mid_danger { mid_danger.append(f); }
+        }
+    }
     evidence: list = [];
 
     (lang, lang_conf) = detect_language(raw);
@@ -1055,9 +1119,13 @@ def parse_intake(text: str) -> dict {
         }
     }
     # Crisis flags override the category router: they always need a human line.
+    # The danger is all this message says: the reply is the safety lines, not a
+    # program count and a route to Medicaid (engine/compose.jac).
+    crisis_only = False;
     if "self_harm" in flags and not top_cat {
         top_cat = "healthcare";
         cat_conf = 0.9;
+        crisis_only = True;
     }
     if "dv" in flags and not top_cat {
         top_cat = "housing";
@@ -1146,6 +1214,7 @@ def parse_intake(text: str) -> dict {
         if not top_cat {
             top_cat = "healthcare" if ("emergency" in flags or "sexual_assault" in flags) else "legal";
             cat_conf = 0.8;
+            crisis_only = True;
         }
     }
     loc = parse_location(raw, low, evidence);
@@ -1264,6 +1333,7 @@ def parse_intake(text: str) -> dict {
         "household_stated": household_stated,
         "age": age,
         "story_demoted": story_demoted,
+        "crisis_only": crisis_only,
         "age_other": age > 0 and bool(re.search(AGE_OTHER_RE, low)) and not re.search(AGE_SELF_RE, low),
         "state": loc["state"],
         "city": loc["city"],

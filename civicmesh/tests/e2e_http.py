@@ -233,7 +233,7 @@ fw, _ = walker("ForgetWalker", {"user_id": pu}, pt)
 check("P8 Delete my data removes the person, needs, applications and insights",
       fw is not None and fw["ok"] and fw["removed"]["PersonNode"] == 1 and fw["removed"]["NeedNode"] >= 6, fw)
 gs2, _ = walker("GraphSnapshotWalker", {"user_id": pu}, pt)
-check("P9 after deletion the graph is empty", gs2 is not None and gs2.get("empty") is True and gs2["counts"]["ResourceNode"] == 46,
+check("P9 after deletion the graph is empty", gs2 is not None and gs2.get("empty") is True and gs2["counts"]["ResourceNode"] == 47,
       {k: gs2["counts"][k] for k in ["PersonNode", "NeedNode", "ResourceNode"]} if gs2 else "")
 dn, _ = turn(uid, tok, "I need food")
 check("P10 another visitor's case is untouched by the deletion", dn is not None and dn["profile"]["category"] == "food")
@@ -266,6 +266,14 @@ check("R2 the engine's own signed facts pass the signature check", nw1 is not No
 dcn, _ = turn(rv, rt, "Honestly everyone would be better off without me")
 check("R3 an indirect self-harm cue pins 988 first and keeps the turn private",
       dcn is not None and dcn["privacy"]["private_turn"] and "self_harm_concern" in dcn["profile"]["flags"] and "988" in dcn["reply"].split("\n")[0], dcn["reply"][:90] if dcn else "")
+check("R3b a message that says only the danger gets the safety lines, not a program count or a route",
+      dcn is not None and "programs" not in dcn["reply"] and "route" not in dcn["reply"].lower() and "988" in dcn["reply"], dcn["reply"][:160] if dcn else "")
+dcu, _ = turn(rv, rt, "I don\u2019t want to live")
+check("R3c a phone's curly apostrophe still reads as self-harm, privately, with the crisis box", dcu is not None and "self_harm" in dcu["profile"]["flags"] and dcu["privacy"]["private_turn"] and bool(dcu["escalation"]) and "988" in dcu["reply"].split("\n")[0], dcu["reply"][:90] if dcu else "")
+dod, _ = turn(rv, rt, "I took a bunch of my sleeping pills")
+check("R3d an overdose gets 911 first, Poison Control and 988", dod is not None and "911" in dod["reply"].split("\n")[0] and "1-800-222-1222" in dod["reply"] and "988" in dod["reply"] and dod["matches"][0]["resource_name"].startswith("Poison Control"), dod["reply"][:200] if dod else "")
+duq, _ = turn(rv, rt, "Something happened with my benefits letter and I don't understand it")
+check("R3e an unrouted message still shows 911 and 988 in the reply", duq is not None and "911" in duq["reply"] and "988" in duq["reply"] and not duq["matches"], duq["reply"][:200] if duq else "")
 dcv, _ = turn(rv, rt, "My husband controls all my money and checks my phone")
 check("R4 an indirect abuse cue pins the Domestic Violence Hotline", dcv is not None and "dv_concern" in dcv["profile"]["flags"] and "799-7233" in dcv["reply"], dcv["reply"][:90] if dcv else "")
 rv2, rt2 = login()
