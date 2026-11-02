@@ -84,11 +84,17 @@ glob TARGETS: dict = {
     "wage": ("wage theft|unpaid (?:wages|pay|overtime)|(?:hasn'?t|haven'?t|has not|have not|didn'?t|did not|won'?t|refuses? to|stopped) (?:been )?pa(?:id|y) (?:me|us)|not (?:been )?paid|owe[sd]? (?:me|us) (?:\\$|money|wages|pay)|overtime|minimum wage|final (?:pay ?check|pay)|no me (?:ha |han )?pagad|no me pag|salario no pagado", "", "workers owed wages", "trabajadores a quienes les deben salario"),
     "consumer": ("debt collector|credit card|\\bloan|\\bbank\\b|scam|fraud|payday|credit report|cobrador|estafa|pr[eé]stamo", "", "problems with a bank, lender or debt collector", "problemas con un banco, prestamista o cobrador"),
     "energy": ("electric|heating|\\bheat\\b|gas bill|utilit|power bill|power (?:is|was) (?:off|cut)|\\bluz\\b|calefacci|factura de gas", "", "heating or power bills", "facturas de luz o calefacción"),
+    "job_loss": ("unemploy|laid off|lay ?off|lost (?:my|our|his|her|their) jobs?|out of work|\\bno job\\b|\\bfired\\b|furlough|hours (?:were|got) cut|desemple|sin trabajo|sin empleo|perd[ií] (?:mi|el) (?:trabajo|empleo)|despedid", "", "people who lost a job", "personas que perdieron su trabajo"),
+    "child_care": ("child ?care|day ?care|babysit|nanny|preschool|guarder[ií]a|cuidado (?:de ni|infantil)", "", "families who need child care", "familias que necesitan cuidado infantil"),
+    "taxes": ("\\btax(?:es)?\\b|\\beitc\\b|earned income|\\birs\\b|impuestos", "", "people filing taxes", "personas que declaran impuestos"),
+    "insurance": ("(?<!no )(?<!no health )(?<!without )(?<!without health )(?<!have )(?<!have health )insurance|\\bcoverage\\b|obamacare|marketplace|affordable care|\\baca\\b|premiums?\\b|health plan|seguro m[eé]dico|seguro de salud|cobertura", "", "people looking for health insurance", "personas que buscan seguro médico"),
+    "tanf_fit": ("\\btanf\\b|welfare|cash (?:assistance|aid|help|benefits?)|ayuda en efectivo|asistencia (?:en efectivo|monetaria)", "children", "families with a child or a pregnancy", "familias con hijos o embarazo"),
+    "ssi_fit": ("\\bssi\\b", "disability", "people 65 or older, blind or disabled", "personas de 65 años o más, ciegas o con discapacidad"),
     "tenant": ("evict|landlord|lease|repairs|\\bmold|\\brent\\b|tenant|desalo|casero|renta|inquilin", "eviction", "renters with landlord problems", "inquilinos con problemas con el casero")
 };
 glob TARGET_GATE: float = 0.35;
 # Programs whose income limit is a gate once income is known: limit × factor.
-glob HARD_INCOME_CAP: dict = {"medicaid-rule": 1.0, "chip-rule": 1.0, "lsc-rule": 1.6};
+glob HARD_INCOME_CAP: dict = {"medicaid-rule": 1.0, "chip-rule": 1.0, "lsc-rule": 1.6, "aca-rule": 1.0};
 
 # Person facts have one source of truth: the parser's flags, which apply fact
 # negation ("we're not homeless", "I don't have a disability") and other-sense
@@ -103,7 +109,8 @@ glob FLAG_TARGETS: dict = {"homeless": "homeless", "veteran": "veteran", "disabi
 # and NeedyMeds at 25% (outside judge, 2026-10-28). Person facts the engine
 # can ask about (homeless, veteran, children) still show as "needs info".
 glob TOPIC_TARGETS: list = ["hiv", "crisis", "poison", "mental_health", "substance", "medication", "dental", "vision",
-                            "criminal", "conviction", "immigration", "consumer", "dv", "wage", "tenant", "disability", "school"];
+                            "criminal", "conviction", "immigration", "consumer", "dv", "wage", "tenant", "disability", "school",
+                            "job_loss", "child_care", "taxes", "insurance", "ssi_fit", "tanf_fit"];
 # A topic that also counts as evidence for another: 988 serves mental-health
 # distress, not only suicide.
 glob TOPIC_ALSO: dict = {"crisis": ["mental_health"]};
@@ -114,6 +121,10 @@ glob DANGER_TARGETS: list = ["child_abuse", "trafficking", "sexual_assault"];
 def target_hit(t: str, low_msg: str, flags: list) -> bool {
     f = FLAG_TARGETS.get(t, "");
     if f { return f in flags; }
+    # SSI serves age or disability, so either fact is evidence.
+    if t == "ssi_fit" and ("disabled" in flags or "senior" in flags) { return True; }
+    # A family short of money, but not one only asking about child care.
+    if t == "tanf_fit" and ("children" in flags or "pregnant" in flags) and not re.search(TARGETS["child_care"][0], low_msg) { return True; }
     for m in re.finditer(TARGETS[t][0], low_msg) {
         # "I'm not pregnant", "no baby yet": a negated fact is not evidence.
         if t == "young_child" and fact_negated(low_msg, m.start(), m.end()) { continue; }
@@ -261,6 +272,10 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         cr["source"] = "KFF state Medicaid expansion status (2026)";
         crits.append(cr);
         cfs.append({"key": "coverage_gap", "effort": 6.0, "text": cf_text("coverage_gap", lang)});
+    } elif lim and lim.get("varies") {
+        # A limit exists but the engine can't state it: no "No income limit",
+        # and no question, since the answer wouldn't change anything here.
+        crits.append(_crit("income", "Income", "unknown", UNKNOWN_INCOME, W_INCOME, False, str(lim.get("note", ""))));
     } elif (not lim) or lim.get("none") {
         note = str(lim.get("note", "")) if lim else "";
         crits.append(_crit("income", "Income", "met", 1.0, W_INCOME, False, "No income limit" + (" — " + note if note else "")));
@@ -337,7 +352,7 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         st = str(sr["status"]);
         cr = _crit("citizenship", "Status", st, 1.0 if st == "met" else (0.0 if st == "unmet" else UNKNOWN_STATUS), 0.0, True, str(sr["detail"]));
         if sr.get("change_note") { cr["note"] = str(sr["change_note"]); }
-        cr["source"] = "P.L. 119-21 (2025) immigrant-eligibility rules";
+        cr["source"] = str(sr.get("source", "P.L. 119-21 (2025) immigrant-eligibility rules"));
         crits.append(cr);
         if st == "unmet" {
             cfs.append({"key": "citizenship", "effort": 2.0, "text": str(sr["detail"]) if lang != "es" else cf_text("citizenship_waiver", lang)});
@@ -426,6 +441,11 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
     if targets {
         hit: list = [t for t in targets if target_hit(t, low_msg, flags) or any([target_hit(a, low_msg, flags) for a in TOPIC_ALSO.get(t, [])])];
         off_topic = (not hit) and all([t in TOPIC_TARGETS for t in targets]);
+        # These topics are read in English and Spanish only. In another
+        # language the category came from its own words, so show the programs
+        # as a question rather than hide them all.
+        unread = str(resource.get("category", "")) == "money" and str(profile.get("language", "") or "en") not in ["en", "es"];
+        if unread { off_topic = False; }
         # A youth line for someone who is plainly an adult: a parent, or 18+.
         if targets == ["minor"] and not hit and ("children" in flags or int(profile.get("age", 0) or 0) >= 18) { off_topic = True; }
         miss: list = [t for t in targets if t not in hit];
@@ -438,7 +458,9 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         } else {
             t0 = miss[0];
             targeted_unconfirmed = True;
-            gate_extra = TARGET_GATE;
+            gate_extra = 1.0 if unread else TARGET_GATE;
+            # A tax question can't be told from a job loss here; the urgent help goes first.
+            if unread and "taxes" in targets { specificity = 0.7; }
             crits.append(_crit("situation", "Situation", "unknown", 0.3, W_SITUATION, False, "Built for " + TARGETS[t0][2]));
             if TARGETS[t0][1] { asks.append(TARGETS[t0][1]); }
             cfs.append({"key": "situation", "effort": 3.0, "text": cf_text("situation", lang, TARGETS[t0][3] if es else TARGETS[t0][2])});

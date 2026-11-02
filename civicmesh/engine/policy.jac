@@ -248,6 +248,14 @@ glob PROGRAMS: dict = {
     "whd-rule":              {"income": {"basis": "none"}, "status": ""},
     "nche-rule":             {"income": {"basis": "none"}, "status": ""},
     "poison-rule":           {"income": {"basis": "none"}, "status": ""},
+    "tanf-rule":             {"income": {"basis": "none", "varies": True, "note": "Each state sets its own limit and amount"}, "status": "tanf"},
+    "ssi-rule":              {"income": {"basis": "none", "varies": True, "note": "The 2026 payment is up to $994 a month for one person or $1,491 for a couple, and some income isn't counted; savings must be under $2,000 or $3,000"}, "status": "ssi"},
+    "ssdi-rule":             {"income": {"basis": "none", "varies": True, "note": "It depends on your work history, and earning over $1,690 a month in 2026 ($2,830 if blind) usually rules it out"}, "status": ""},
+    "ccdf-rule":             {"income": {"basis": "none", "varies": True, "note": "Each state sets its limit, up to 85% of state median income, and many have waiting lists"}, "status": "childcare"},
+    "ui-rule":               {"income": {"basis": "none", "varies": True, "note": "It depends on your past wages and your state's rules"}, "status": "ui"},
+    "eitc-rule":             {"income": {"basis": "eitc"}, "status": "ssn"},
+    "vita-rule":             {"income": {"basis": "none", "note": "generally for people making about $70,244 or less; sites can set their own limit"}, "status": ""},
+    "aca-rule":              {"income": {"basis": "fpl", "pct": 400, "note": "savings run from 100% to 400% of poverty; below 100% most people need Medicaid, and above 400% you can still buy a plan at full price"}, "status": "aca"},
     "expungement-rule":      {"income": {"basis": "fpl", "pct": 200, "typical": True, "note": "varies by clinic"}, "status": ""},
     "aba-fla-rule":          {"income": {"basis": "fpl", "pct": 250, "typical": True, "note": "each state sets the limit"}, "status": ""},
     "law-clinic-rule":       {"income": {"basis": "fpl", "pct": 200, "typical": True, "note": "varies by clinic"}, "status": ""}
@@ -323,7 +331,17 @@ def income_limit(rule_id: str, profile: dict, flat_fallback: int = 0) -> dict {
         return {"none": True, "note": str(STATE_NAMES.get(state, state)) + " gives every public-school student free breakfast and lunch, at any income"};
     }
     if basis == "none" {
-        return {"none": True, "note": str(inc.get("note", ""))};
+        return {"none": True, "note": str(inc.get("note", "")), "varies": bool(inc.get("varies", False))};
+    }
+    if basis == "eitc" {
+        kids = "children" in list(profile.get("flags", []));
+        return {
+            "limit": 62974 if kids else 19540,
+            "label": "the 2026 limit for a single filer with " + ("three or more children" if kids else "no children"),
+            "per_person": 0, "assumed_household": False, "typical": True, "blocked": "",
+            "source": "IRS Rev. Proc. 2025-32",
+            "note": ("$51,593 with one child and $58,629 with two; " if kids else "") + "about $7,270 higher for a married couple filing jointly, and you need income from work"
+        };
     }
     hh = int(profile.get("household_size", 0) or 0);
     assumed = hh <= 0;
@@ -404,6 +422,83 @@ def income_limit(rule_id: str, profile: dict, flat_fallback: int = 0) -> dict {
     };
 }
 
+# Coverage from January 1, 2027 is what HealthCare.gov sells from November 1,
+# 2026, so the new status list applies from then (P.L. 119-21 §71301).
+glob ACA_2027_ENROLL_DATE: str = "2026-11-01";
+
+"""Status tests for the cash, child care, tax and Marketplace programs. These
+are not the SNAP and Medicaid rules, so they don't share that code's wording."""
+def benefit_status(kind: str, st: str, flags: list, today: str, kids: bool) -> dict {
+    lpr = st in ["citizen_or_lpr", "eligible_immigrant"];
+    citizen_kids = "citizen_children" in flags;
+    out = {"status": "unknown", "detail": "", "change_note": ""};
+    if kind == "childcare" {
+        if st == "non_citizen" and not citizen_kids {
+            out["detail"] = "Only the child's status counts, not yours: a child born here can qualify";
+        } else {
+            out = {"status": "met", "detail": "Only the child's status counts, not the parent's", "change_note": ""};
+        }
+        out["source"] = "ACF, CCDF subsidy eligibility guidance";
+    } elif kind == "tanf" {
+        if lpr or st == "humanitarian" or st == "cuban_haitian_entrant" {
+            out = {"status": "met", "detail": "Eligible immigrants can apply; some adults wait 5 years, and refugees and asylees don't", "change_note": ""};
+        } elif st == "cofa" {
+            out["detail"] = "Your state's TANF office decides for COFA citizens";
+        } elif kids or citizen_kids {
+            out["detail"] = "Parents without an eligible status can't get it for themselves, but a U.S.-citizen child can often get a child-only grant";
+        } else {
+            out = {"status": "unmet", "detail": "TANF needs citizenship or an eligible immigration status", "change_note": ""};
+        }
+        out["source"] = "PRWORA §§402-403";
+    } elif kind == "ssi" {
+        if lpr {
+            out["detail"] = "Green-card holders usually need 40 work quarters (a spouse's or parent's can count) and a 5-year wait; Social Security decides";
+        } elif st in ["humanitarian", "cuban_haitian_entrant"] {
+            out["detail"] = "Refugees, asylees and some others can usually get SSI for 7 years from the date of their status; Social Security decides";
+        } elif st == "cofa" {
+            out["detail"] = "Social Security decides for COFA citizens";
+        } elif kids or citizen_kids {
+            out["detail"] = "SSI needs citizenship or an eligible status, but a U.S.-citizen child with a disability can still get it";
+        } else {
+            out = {"status": "unmet", "detail": "SSI needs citizenship or an eligible immigration status", "change_note": ""};
+        }
+        out["source"] = "SSA POMS SI 00502.100, SI 00502.106";
+    } elif kind == "ssn" {
+        if lpr {
+            out = {"status": "met", "detail": "Green-card holders qualify with a Social Security number valid for work", "change_note": ""};
+        } elif st == "non_citizen" {
+            out = {"status": "unmet", "detail": "The EITC needs a Social Security number valid for work; an ITIN doesn't count, though you can still file with one", "change_note": ""};
+        } else {
+            out["detail"] = "You need a Social Security number valid for work; one issued only for benefits doesn't count";
+        }
+        out["source"] = "IRS, Who qualifies for the EITC";
+    } elif kind == "ui" {
+        if lpr {
+            out = {"status": "met", "detail": "Green-card holders can file if they meet the state's wage rules", "change_note": ""};
+        } elif st == "non_citizen" {
+            out = {"status": "unmet", "detail": "Federal law requires work authorization for the job you lost and while claiming; a few states have separate funds, and legal aid can tell you", "change_note": ""};
+        } else {
+            out["detail"] = "You need work authorization for the job you lost and while claiming";
+        }
+        out["source"] = "26 U.S.C. 3304(a)(14)";
+    } elif kind == "aca" {
+        kid_note = "; U.S.-citizen children can still enroll" if kids or citizen_kids else "";
+        if lpr or st in ["cuban_haitian_entrant", "cofa"] {
+            out = {"status": "met", "detail": "Green-card holders, Cuban and Haitian entrants and COFA migrants qualify for savings", "change_note": ""};
+        } elif st == "humanitarian" {
+            if today < ACA_2027_ENROLL_DATE {
+                out = {"status": "met", "detail": "Lawfully present immigrants qualify for savings in 2026", "change_note": "From January 1, 2027 savings go only to green-card holders, Cuban and Haitian entrants and COFA migrants"};
+            } else {
+                out = {"status": "unmet", "detail": "For coverage from January 1, 2027, savings go only to green-card holders, Cuban and Haitian entrants and COFA migrants; you may still buy a plan at full price" + kid_note, "change_note": ""};
+            }
+        } else {
+            out = {"status": "unmet", "detail": "Marketplace plans need lawful presence, and DACA recipients aren't eligible" + kid_note, "change_note": ""};
+        }
+        out["source"] = "HealthCare.gov; P.L. 119-21 §71301";
+    }
+    return out;
+}
+
 """Immigrant-status test for a program, effective-dated.
 
 status: citizen | eligible_immigrant (green card / LPR) | humanitarian
@@ -426,6 +521,9 @@ def status_rule(rule_id: str, profile: dict) -> dict {
     }
     if st == "citizen" {
         return {"status": "met", "detail": "U.S. citizen", "change_note": ""};
+    }
+    if kind in ["childcare", "tanf", "ssi", "ssn", "ui", "aca"] {
+        return benefit_status(kind, st, flags, today, kids);
     }
     # Children's programs follow the child's status: citizen children of a
     # parent with TPS or no papers can enroll.

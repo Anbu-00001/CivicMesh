@@ -61,7 +61,7 @@ def:pub ChatPane(
             "role": "bot",
             "kind": "text",
             "id": "welcome",
-            "text": "Hi, I'm CivicMesh. Tell me what's going on, in your own words and in your own language, and I'll find the housing, food, healthcare or legal programs you can use and show exactly why. In 51 languages the whole answer — programs, next steps and my follow-up questions — comes back in yours right away; in 60 more I add a translation a few seconds later, and for languages machines can't translate yet I give you an interpreter card. Pick yours at the top if I get it wrong.",
+            "text": "Hi, I'm CivicMesh. Tell me what's going on, in your own words and in your own language, and I'll find the housing, food, health care, legal, cash or child care programs you can use and show exactly why. In 51 languages the whole answer — programs, next steps and my follow-up questions — comes back in yours right away; in 60 more I add a translation a few seconds later, and for languages machines can't translate yet I give you an interpreter card. Pick yours at the top if I get it wrong.",
             "suggestions": [
                 "I'm 72, on $1200/month Social Security, my landlord is trying to evict me illegally.",
                 "Mi familia y yo no hemos comido en 2 días. Estamos en Texas.",
@@ -146,7 +146,7 @@ def:pub ChatPane(
                             Deterministic eligibility engine · 2026 federal rules · 51 machine-drafted languages, 111 selectable · 1 LLM call per turn, off the critical path
                         </div>
                     </div>
-                    {is_loading and <div className="cm-badge badge-glow"><span className="cm-dot-live"/>Scoring 47 programs…</div>}
+                    {is_loading and <div className="cm-badge badge-glow"><span className="cm-dot-live"/>Scoring 55 programs…</div>}
                     {renderLangPicker()}
                     <button className="cm-ghost-btn" onClick={lambda _e: MouseEvent { resetCase(); }} title="Start a new case">New case</button>
                 </div>

@@ -141,7 +141,7 @@ impl ImpactReport.renderTopNeedCard(cat_lookup: Any) -> JsxElement {
     # the user back to the Chat tab so the card never sits empty.
     top_cat = "";
     top_n = 0;
-    cat_order: list = ["housing", "food", "healthcare", "legal"];
+    cat_order: list = ["housing", "food", "healthcare", "legal", "money"];
     for k in cat_order {
         if k in cat_lookup {
             v = int(cat_lookup[k]);

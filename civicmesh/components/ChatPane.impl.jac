@@ -422,7 +422,7 @@ impl ChatPane.renderQuickReplies(q: Any, lang: str, labels: list, q_text: str, a
 
 impl ChatPane.renderMatchCard(m: Any, idx: int, j: int, ui: Any) -> JsxElement {
     ts = tierStyle(str(m["tier"]), ui);
-    cat_key = {"food": "opt.food", "housing": "opt.housing", "healthcare": "opt.health", "legal": "opt.legal"}[str(m["category"])];
+    cat_key = {"food": "opt.food", "housing": "opt.housing", "healthcare": "opt.health", "legal": "opt.legal", "money": "opt.money"}[str(m["category"])];
     card_key = str(idx) + ":" + str(j);
     is_open = open_key == card_key;
     pct = Math.round(Number(m["p_eligible"]) * 100);

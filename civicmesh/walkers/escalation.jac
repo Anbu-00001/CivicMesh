@@ -22,6 +22,7 @@ glob LEADS: dict = {
     # LSC publishes no public intake line (1-800-815-9614 could not be traced
     # to it; outside judge, 2026-10-28): 2-1-1 refers to local legal aid.
     "legal": ("2-1-1", "211", "free civil legal aid near you", "asistencia legal civil gratuita cerca de usted"),
+    "money": ("2-1-1", "211", "cash aid, child care help and your state's unemployment office", "ayuda en efectivo, ayuda con el cuidado infantil y la oficina de desempleo de su estado"),
     # Checked on each line's own site, 2026-10-28.
     "emergency": ("911", "911", "emergency medical help and police, right now", "ayuda médica de emergencia y policía, ahora mismo"),
     "child_abuse": ("Childhelp National Child Abuse Hotline", "1-800-422-4453", "24/7 help for children being hurt and for adults worried about a child", "ayuda 24/7 para niños que sufren maltrato y para adultos preocupados por un niño"),

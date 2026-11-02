@@ -79,6 +79,7 @@ glob CATEGORY_LEXICON: dict = {
         ("perd(?:imos|[ií])\\s+(?:mi|nuestra|la)\\s+(?:casa|vivienda|apartamento)", 2.5), ("incendio\\s+(?:en|de)\\s+(?:mi|nuestra|la)\\s+(?:casa|vivienda)", 2.5), ("damnificad[oa]s?", 2.0)
     ],
     "healthcare": [
+        ("obamacare", 2.5), ("affordable care act", 2.5), ("premium tax credit", 3.0), ("marketplace (?:plan|insurance|subsid\\w*|coverage|savings)", 2.5), ("aca (?:plan|subsid\\w*|coverage)", 2.5),
         ("doctor", 2.0), ("medicaid", 2.5), ("medicine", 2.0), ("medication", 2.0),
         ("prenatal(?: care)?", 2.5), ("(?:ob-?gyn|obstetrician|midwife)", 2.0), ("control prenatal", 2.5),
         ("prescriptions?", 2.0), ("hospital", 2.0), ("clinic", 2.0), ("dental", 2.0),
@@ -110,6 +111,16 @@ glob CATEGORY_LEXICON: dict = {
         ("debt collectors?", 2.5), ("collection agenc(?:y|ies)", 2.5), ("collectors?", 1.5), ("loan", 1.0), ("scam\\w*", 2.0),
         ("fraud", 2.0), ("credit report", 2.0), ("cobrador", 2.0), ("estafa", 2.0),
         ("inmigraci[oó]n", 2.0), ("asilo", 2.0), ("derechos", 1.5)
+    ],
+    # Cash, income support, child care and tax credits. A job loss is weak on
+    # its own: "lost my job and can't pay rent" asks about the rent first.
+    "money": [
+        ("child ?care(?! (?:provider|worker|teacher|job|center job))", 2.5), ("day ?care(?! (?:provider|worker|teacher|job|center job))", 2.5), ("babysit\\w*", 2.0), ("guarder[ií]as?", 2.5), ("cuidado (?:de ni[nñ]os|infantil)", 2.5),
+        ("tanf", 3.0), ("welfare", 2.5), ("cash (?:assistance|aid|help|benefits?)", 3.0), ("ayuda en efectivo", 3.0), ("asistencia (?:en efectivo|monetaria)", 3.0),
+        ("unemployment(?: \\w+)?", 2.5), ("desempleo", 2.5), ("laid off", 1.5), ("unemployed", 1.5), ("lost (?:my|our|his|her|their) jobs?", 1.5), ("out of work", 1.5), ("sin (?:trabajo|empleo)", 1.5), ("perd[ií] (?:mi|el) (?:trabajo|empleo)", 1.5),
+        ("ssi", 1.5), ("ssdi", 1.5), ("disability benefits?", 3.0), ("disability (?:checks?|income|payments?)", 1.5), ("social security disability", 3.0), ("beneficios? por discapacidad", 3.0),
+        ("eitc", 3.0), ("earned income(?: tax)? credit", 3.0), ("(?<!premium )(?:child )?tax credits?", 3.0), ("tax refund", 2.5), ("tax return", 2.5), ("(?:file|filing|do|doing) (?:my |our )?taxes", 2.5), ("impuestos", 2.0),
+        ("help with money", 2.5), ("need money", 2.0), ("need cash", 2.0), ("ayuda con dinero", 2.5), ("necesito dinero", 2.0)
     ]
 };
 
@@ -124,7 +135,8 @@ glob HARDSHIP_CONCEPTS: dict = {
     "food": "feed|feeding|groceries|put food on the table|buy food|baby formula|alimentar|comprar comida",
     "housing": "pay(?:ing)? (?:for )?(?:the |my |our )?rent|make rent|keep (?:a roof over|the lights on|(?:our|my|the) (?:home|house|apartment))|pay(?:ing)? (?:the |my |our )?(?:electric|electricity|power|gas|water|light|utility|heating) bills?|heat (?:the|our|my) (?:house|home|apartment)|pagar (?:la )?renta|pagar (?:el )?alquiler|pagar (?:la )?luz",
     "healthcare": "see a (?:doctor|dentist)|(?:get|pay for|afford) (?:my |his |her |the |our )?(?:medicine|medication|meds|insulin|prescriptions?|inhaler|treatment|therapy)|ver a un m[eé]dico|comprar (?:las |mis )?medicinas",
-    "legal": "(?:get|afford|pay for|find) (?:a |an )?(?:lawyer|attorney)|pagar (?:un )?abogado"
+    "legal": "(?:get|afford|pay for|find) (?:a |an )?(?:lawyer|attorney)|pagar (?:un )?abogado",
+    "money": "(?:pay(?:ing)? for |afford )?(?:child ?care|day ?care|a babysitter)"
 };
 glob HARDSHIP_WEIGHT: float = 2.5;
 
@@ -531,7 +543,7 @@ def detect_language(text: str) -> tuple {
 
 """Score each need category from weighted keyword evidence."""
 def score_categories(low: str, evidence: list, text: str) -> dict {
-    scores: dict = {"food": 0.0, "housing": 0.0, "healthcare": 0.0, "legal": 0.0};
+    scores: dict = {"food": 0.0, "housing": 0.0, "healthcare": 0.0, "legal": 0.0, "money": 0.0};
     for (cat, lex) in CATEGORY_LEXICON.items() {
         for (pat, w) in lex {
             for m in re.finditer("\\b" + pat + "\\b", low) {
@@ -1066,6 +1078,9 @@ def parse_intake(text: str) -> dict {
     top_score = float(ranked[0][1]);
     second_score = float(ranked[1][1]);
     secondary: list = [c for (c, s) in ranked[1:] if s >= 1.5 and s >= top_score * 0.4];
+    # Whatever else is wrong, someone who just lost a job should hear about
+    # unemployment: the rent is the question, the claim is often the answer.
+    if ranked and ranked[0][0] != "money" and "money" not in secondary and float(scores.get("money", 0.0)) >= 1.5 { secondary.append("money"); }
     # Confidence: absolute evidence mass, penalised when two categories tie.
     cat_conf = 0.0;
     if top_score > 0 {

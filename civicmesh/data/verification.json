@@ -726,6 +726,142 @@
         "how": "1-800-222-1222 on poison.org (National Capital Poison Center), which says both options are free and expert",
         "source": "https://www.poison.org/"
       }
+    },
+    "tanf-rule": {
+      "program": "TANF (Temporary Assistance for Needy Families)",
+      "contact_checked": "2026-11-02",
+      "contact_result": "unconfirmed",
+      "url_status": null,
+      "phone_on_page": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-11-02",
+        "how": "USA.gov describes TANF as state-run and sends people to a local office; it lists no national TANF line, so 2-1-1 is used",
+        "source": "https://www.usa.gov/welfare-benefits"
+      }
+    },
+    "ssi-rule": {
+      "program": "SSI (Supplemental Security Income)",
+      "contact_checked": "2026-11-02",
+      "contact_result": "unconfirmed",
+      "url_status": null,
+      "phone_on_page": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-11-02",
+        "how": "1-800-772-1213 on SSA's How to Reach Social Security page; figures from SSA's 2026 COLA fact sheet. SSA's site refuses scripted requests",
+        "source": "https://www.ssa.gov/redbook/eng/howtoreachus.htm"
+      }
+    },
+    "ssdi-rule": {
+      "program": "SSDI (Social Security Disability Insurance)",
+      "contact_checked": "2026-11-02",
+      "contact_result": "unconfirmed",
+      "url_status": null,
+      "phone_on_page": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-11-02",
+        "how": "1-800-772-1213 on SSA's How to Reach Social Security page; $1,690 and $2,830 from SSA's 2026 Red Book",
+        "source": "https://www.ssa.gov/redbook/newfor2026.htm"
+      }
+    },
+    "ccdf-rule": {
+      "program": "Child Care Assistance (CCDF subsidy)",
+      "contact_checked": "2026-11-02",
+      "contact_result": "unconfirmed",
+      "url_status": null,
+      "phone_on_page": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-11-02",
+        "how": "childcare.gov says each state sets the rules and lists no phone; 1-800-424-2246 is Child Care Aware of America, per Military OneSource. The 85% ceiling is from ACF's CCDF subsidy eligibility guidance",
+        "source": "https://militaryonesource.mil/benefits/child-care-aware-of-america"
+      }
+    },
+    "ui-rule": {
+      "program": "Unemployment Insurance",
+      "contact_checked": "2026-11-02",
+      "contact_result": "unconfirmed",
+      "url_status": null,
+      "phone_on_page": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-11-02",
+        "how": "1-877-US-2JOBS and the wording on who qualifies are on the Labor Department's page; work authorization is 26 U.S.C. 3304(a)(14)",
+        "source": "https://www.dol.gov/general/topic/unemployment-insurance"
+      }
+    },
+    "eitc-rule": {
+      "program": "Earned Income Tax Credit (EITC)",
+      "contact_checked": "2026-11-02",
+      "contact_result": "unconfirmed",
+      "url_status": null,
+      "phone_on_page": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-11-02",
+        "how": "Rules from the IRS who-qualifies page; 2026 amounts from Rev. Proc. 2025-32; 800-906-9887 is the IRS free-help locator line",
+        "source": "https://www.irs.gov/pub/irs-drop/rp-25-32.pdf"
+      }
+    },
+    "vita-rule": {
+      "program": "VITA Free Tax Help (IRS Volunteer Income Tax Assistance)",
+      "contact_checked": "2026-11-02",
+      "contact_result": "unconfirmed",
+      "url_status": null,
+      "phone_on_page": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-11-02",
+        "how": "800-906-9887 and the $70,244 guideline on the IRS page; the IRS sets no program-wide limit",
+        "source": "https://www.irs.gov/individuals/free-tax-return-preparation-for-qualifying-taxpayers"
+      }
+    },
+    "aca-rule": {
+      "program": "Health Insurance Marketplace savings (premium tax credit)",
+      "contact_checked": "2026-11-02",
+      "contact_result": "unconfirmed",
+      "url_status": null,
+      "phone_on_page": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-11-02",
+        "how": "1-800-318-2596, the 100% to 400% range and the 2027 status list on HealthCare.gov",
+        "source": "https://www.healthcare.gov/immigrants/lawfully-present-immigrants/"
+      }
     }
   }
 }

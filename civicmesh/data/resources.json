@@ -1508,6 +1508,333 @@
         "submission_method": "phone",
         "estimated_minutes": 0
       }
+    },
+    {
+      "agency_name": "TANF (Temporary Assistance for Needy Families)",
+      "category": "money",
+      "capacity": "open",
+      "languages_supported": [
+        "en",
+        "es"
+      ],
+      "contact_phone": "2-1-1",
+      "contact_email": "",
+      "address": "Your state or tribal TANF office",
+      "online_url": "https://www.usa.gov/welfare-benefits",
+      "description": "Monthly cash help for families with children or a pregnancy who have very little income. Each state runs its own program and sets its own limits, amounts and work rules, so the same family can qualify in one state and not in another. Federal money generally stops after 60 months for a family with an adult.",
+      "eligibility": {
+        "rule_id": "tanf-rule",
+        "income_limit_annual": 0,
+        "residency_requirement": "state",
+        "min_family_size": 0,
+        "citizenship_required": true,
+        "age_min": 0,
+        "age_max": 0,
+        "exceptions": "A U.S.-citizen child can often get a child-only grant even when a parent can't. Green-card holders may face a 5-year wait.",
+        "criteria_summary": "Families with a child or a pregnancy and very low income. Each state sets the limit; the federal time limit is 60 months.",
+        "targets": [
+          "tanf_fit"
+        ]
+      },
+      "form": {
+        "form_id": "tanf-app",
+        "form_name": "State TANF application",
+        "url": "https://www.usa.gov/welfare-benefits",
+        "required_documents": [
+          "Proof of identity",
+          "Children's birth certificates",
+          "Proof of income"
+        ],
+        "deadline_type": "rolling",
+        "submission_method": "in_person",
+        "estimated_minutes": 60
+      }
+    },
+    {
+      "agency_name": "SSI (Supplemental Security Income)",
+      "category": "money",
+      "capacity": "open",
+      "languages_supported": [
+        "en",
+        "es"
+      ],
+      "contact_phone": "1-800-772-1213",
+      "contact_email": "",
+      "address": "Social Security offices nationwide; appointments are usually required",
+      "online_url": "https://www.ssa.gov/ssi/",
+      "description": "Monthly payment from Social Security for people 65 or older, blind, or disabled, including children, who have little income and few savings. Up to $994 a month for one person or $1,491 for a couple in 2026, and some states add to it. Savings must be under $2,000, or $3,000 for a couple; your home and one car don't count.",
+      "eligibility": {
+        "rule_id": "ssi-rule",
+        "income_limit_annual": 0,
+        "residency_requirement": "none",
+        "min_family_size": 0,
+        "citizenship_required": true,
+        "age_min": 0,
+        "age_max": 0,
+        "exceptions": "Green-card holders usually need 40 work quarters and a 5-year wait. Refugees and asylees can usually get it for 7 years from the date the status was granted.",
+        "criteria_summary": "65 or older, blind or disabled, with limited income and savings under $2,000 ($3,000 for a couple).",
+        "targets": [
+          "ssi_fit"
+        ]
+      },
+      "form": {
+        "form_id": "ssi-app",
+        "form_name": "SSI application (SSA-8000)",
+        "url": "https://www.ssa.gov/ssi/",
+        "required_documents": [
+          "Social Security number",
+          "Birth certificate or proof of age",
+          "Proof of income and savings",
+          "Medical records, if disabled"
+        ],
+        "deadline_type": "rolling",
+        "submission_method": "phone",
+        "estimated_minutes": 60
+      }
+    },
+    {
+      "agency_name": "SSDI (Social Security Disability Insurance)",
+      "category": "money",
+      "capacity": "open",
+      "languages_supported": [
+        "en",
+        "es"
+      ],
+      "contact_phone": "1-800-772-1213",
+      "contact_email": "",
+      "address": "Social Security offices nationwide; apply online or by phone",
+      "online_url": "https://www.ssa.gov/disability/",
+      "description": "Monthly payment for people who worked and paid Social Security taxes and can't work because of a medical condition expected to last at least a year. Savings don't count, but earning over $1,690 a month in 2026 ($2,830 if blind) usually means you can't qualify. Payments usually start after a 5-month wait.",
+      "eligibility": {
+        "rule_id": "ssdi-rule",
+        "income_limit_annual": 0,
+        "residency_requirement": "none",
+        "min_family_size": 0,
+        "citizenship_required": false,
+        "age_min": 0,
+        "age_max": 0,
+        "exceptions": "Needs enough recent work history. If you haven't worked enough, ask about SSI instead.",
+        "criteria_summary": "A disability that stops you working for a year or more, and enough past work paying Social Security taxes.",
+        "targets": [
+          "disability"
+        ]
+      },
+      "form": {
+        "form_id": "ssdi-app",
+        "form_name": "Disability benefits application",
+        "url": "https://www.ssa.gov/disability/",
+        "required_documents": [
+          "Social Security number",
+          "Work history",
+          "Medical records and doctors' names"
+        ],
+        "deadline_type": "rolling",
+        "submission_method": "online",
+        "estimated_minutes": 60
+      }
+    },
+    {
+      "agency_name": "Child Care Assistance (CCDF subsidy)",
+      "category": "money",
+      "capacity": "open",
+      "languages_supported": [
+        "en",
+        "es"
+      ],
+      "contact_phone": "1-800-424-2246",
+      "contact_email": "",
+      "address": "Your state child care subsidy office",
+      "online_url": "https://childcare.gov/consumer-education/get-help-paying-for-child-care",
+      "description": "Helps low-income families pay for child care while they work or go to school, with the state paying most of the bill. Each state sets its own rules, and many have waiting lists. Child Care Aware's line can point you to your state's office and to care near you.",
+      "eligibility": {
+        "rule_id": "ccdf-rule",
+        "income_limit_annual": 0,
+        "residency_requirement": "state",
+        "min_family_size": 0,
+        "citizenship_required": false,
+        "age_min": 0,
+        "age_max": 0,
+        "exceptions": "Only the child's immigration status counts, not the parent's.",
+        "criteria_summary": "Children under 13 whose parents work or go to school. Each state sets the income limit, up to 85% of state median income.",
+        "targets": [
+          "child_care"
+        ]
+      },
+      "form": {
+        "form_id": "ccdf-app",
+        "form_name": "State child care subsidy application",
+        "url": "https://childcare.gov/consumer-education/get-help-paying-for-child-care",
+        "required_documents": [
+          "Proof of income",
+          "Proof of work or school",
+          "Child's birth certificate"
+        ],
+        "deadline_type": "rolling",
+        "submission_method": "online",
+        "estimated_minutes": 45
+      }
+    },
+    {
+      "agency_name": "Unemployment Insurance",
+      "category": "money",
+      "capacity": "open",
+      "languages_supported": [
+        "en",
+        "es"
+      ],
+      "contact_phone": "1-877-872-5627",
+      "contact_email": "",
+      "address": "Your state's unemployment office; file in the state where you worked",
+      "online_url": "https://www.dol.gov/general/topic/unemployment-insurance",
+      "description": "Weekly payments for people who lost a job through no fault of their own and worked enough in the past year or so. Each state sets the amount and rules. File as soon as you lose the job: the first payment usually comes two to three weeks after you file. Filing is free, so never pay anyone to do it.",
+      "eligibility": {
+        "rule_id": "ui-rule",
+        "income_limit_annual": 0,
+        "residency_requirement": "state",
+        "min_family_size": 0,
+        "citizenship_required": true,
+        "age_min": 0,
+        "age_max": 0,
+        "exceptions": "You need work authorization for the job you lost and while claiming. Quitting or being fired for misconduct can disqualify you, but you can still file and let the state decide.",
+        "criteria_summary": "Lost a job through no fault of your own, earned enough during the base period, and meet your state's rules.",
+        "targets": [
+          "job_loss"
+        ]
+      },
+      "form": {
+        "form_id": "ui-claim",
+        "form_name": "State unemployment claim",
+        "url": "https://www.dol.gov/general/topic/unemployment-insurance",
+        "required_documents": [
+          "Social Security number",
+          "Employers' names and dates for the past 18 months",
+          "Work authorization, if not a citizen"
+        ],
+        "deadline_type": "rolling",
+        "submission_method": "online",
+        "estimated_minutes": 30
+      }
+    },
+    {
+      "agency_name": "Earned Income Tax Credit (EITC)",
+      "category": "money",
+      "capacity": "open",
+      "languages_supported": [
+        "en",
+        "es"
+      ],
+      "contact_phone": "1-800-906-9887",
+      "contact_email": "",
+      "address": "Claimed on your federal tax return",
+      "online_url": "https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/who-qualifies-for-the-earned-income-tax-credit-eitc",
+      "description": "Money back at tax time for people who work and earn low or moderate income, even if you owe no tax. For 2026, up to $664 with no children and up to $8,231 with three or more. You have to file a return to get it, and free help is available.",
+      "eligibility": {
+        "rule_id": "eitc-rule",
+        "income_limit_annual": 0,
+        "residency_requirement": "none",
+        "min_family_size": 0,
+        "citizenship_required": true,
+        "age_min": 0,
+        "age_max": 0,
+        "exceptions": "You, your spouse and the child must have a Social Security number valid for work; an ITIN doesn't count. With no children you must be 25 to 64.",
+        "criteria_summary": "Income from work under the limit for your family, under $12,200 of investment income, and a valid Social Security number.",
+        "targets": [
+          "taxes"
+        ]
+      },
+      "form": {
+        "form_id": "eitc-file",
+        "form_name": "Form 1040 with Schedule EIC",
+        "url": "https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/who-qualifies-for-the-earned-income-tax-credit-eitc",
+        "required_documents": [
+          "Social Security numbers",
+          "W-2s and other income forms"
+        ],
+        "deadline_type": "annual",
+        "submission_method": "online",
+        "estimated_minutes": 60
+      }
+    },
+    {
+      "agency_name": "VITA Free Tax Help (IRS Volunteer Income Tax Assistance)",
+      "category": "money",
+      "capacity": "open",
+      "languages_supported": [
+        "en",
+        "es"
+      ],
+      "contact_phone": "1-800-906-9887",
+      "contact_email": "",
+      "address": "Community sites nationwide, mostly during tax season",
+      "online_url": "https://www.irs.gov/individuals/free-tax-return-preparation-for-qualifying-taxpayers",
+      "description": "Free tax preparation by IRS-certified volunteers, so you get credits like the EITC and Child Tax Credit without paying a preparer. For people who generally make about $70,244 or less, people with disabilities and people with limited English. Call or use the IRS locator to find a site.",
+      "eligibility": {
+        "rule_id": "vita-rule",
+        "income_limit_annual": 0,
+        "residency_requirement": "none",
+        "min_family_size": 0,
+        "citizenship_required": false,
+        "age_min": 0,
+        "age_max": 0,
+        "exceptions": "Sites can set their own income limits. People 60 or older can also use Tax Counseling for the Elderly.",
+        "criteria_summary": "People who generally make about $70,244 or less, people with disabilities and people with limited English.",
+        "targets": [
+          "taxes"
+        ]
+      },
+      "form": {
+        "form_id": "vita-visit",
+        "form_name": "Bring your tax papers to a site",
+        "url": "https://www.irs.gov/individuals/free-tax-return-preparation-for-qualifying-taxpayers",
+        "required_documents": [
+          "Photo ID",
+          "Social Security or ITIN numbers",
+          "W-2s, 1099s and other income forms"
+        ],
+        "deadline_type": "annual",
+        "submission_method": "in_person",
+        "estimated_minutes": 60
+      }
+    },
+    {
+      "agency_name": "Health Insurance Marketplace savings (premium tax credit)",
+      "category": "healthcare",
+      "capacity": "open",
+      "languages_supported": [
+        "en",
+        "es"
+      ],
+      "contact_phone": "1-800-318-2596",
+      "contact_email": "",
+      "address": "HealthCare.gov or your state's marketplace",
+      "online_url": "https://www.healthcare.gov/lower-costs/",
+      "description": "A tax credit that lowers the monthly cost of a health plan bought through the Marketplace, for people without Medicaid or job-based coverage. In 2026 the extra pandemic-era help ended, so savings stop at 400% of the poverty line. Enroll by December 15 for coverage starting January 1; losing other coverage or moving can open another chance to enroll.",
+      "eligibility": {
+        "rule_id": "aca-rule",
+        "income_limit_annual": 0,
+        "residency_requirement": "state",
+        "min_family_size": 0,
+        "citizenship_required": true,
+        "age_min": 0,
+        "age_max": 0,
+        "exceptions": "From January 1, 2027, only green-card holders, Cuban and Haitian entrants and COFA migrants get savings; other lawfully present immigrants can buy a plan at full price. DACA recipients and people without lawful presence can't use the Marketplace.",
+        "criteria_summary": "Income from 100% to 400% of the poverty line, no Medicaid or affordable job coverage, and an eligible immigration status.",
+        "targets": [
+          "insurance"
+        ]
+      },
+      "form": {
+        "form_id": "aca-app",
+        "form_name": "Marketplace application",
+        "url": "https://www.healthcare.gov/lower-costs/",
+        "required_documents": [
+          "Income estimate for the coverage year",
+          "Social Security numbers or immigration documents"
+        ],
+        "deadline_type": "annual",
+        "submission_method": "online",
+        "estimated_minutes": 45
+      }
     }
   ]
 }

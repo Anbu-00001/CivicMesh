@@ -104,7 +104,8 @@ def:pub ImpactReport -> JsxElement {
         {"key": "housing",    "label": "Housing",    "color": "#FFE500"},
         {"key": "food",       "label": "Food",       "color": "#4488FF"},
         {"key": "healthcare", "label": "Healthcare", "color": "#00FF88"},
-        {"key": "legal",      "label": "Legal",      "color": "#FF88AA"}
+        {"key": "legal",      "label": "Legal",      "color": "#FF88AA"},
+        {"key": "money",      "label": "Money",      "color": "#FFAA33"}
     ];
 
     # Compute max category count once for proportional bar widths.

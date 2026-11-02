@@ -179,7 +179,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     "margin": "0 auto 38px",
                     "fontWeight": "400"
                 }}>
-                    A rules engine on a graph that routes people in crisis — single mothers, immigrant families, elderly tenants — to the housing, food, healthcare and legal aid they qualify for, and shows exactly why. Seven Jac walkers run it; AI only translates and summarizes after the answer is on screen. Answers in 51 languages from machine-drafted text (not yet checked by native speakers), machine translation for 34 more, and an interpreter card for 26 that machines can't translate yet.
+                    A rules engine on a graph that routes people in crisis — single mothers, immigrant families, elderly tenants — to the housing, food, healthcare, legal aid, cash and child care help they qualify for, and shows exactly why. Seven Jac walkers run it; AI only translates and summarizes after the answer is on screen. Answers in 51 languages from machine-drafted text (not yet checked by native speakers), machine translation for 34 more, and an interpreter card for 26 that machines can't translate yet.
                 </p>
 
                 <div style={{"display": "flex", "justifyContent": "center", "alignItems": "center", "gap": "16px", "marginBottom": "56px", "flexWrap": "wrap"}}>

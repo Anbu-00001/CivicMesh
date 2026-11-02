@@ -209,6 +209,36 @@ with entry {
     check(bool(income_limit("nslp-rule", prof(3, 9000, "CA", ["children"], 35)).get("none")), "California: school meals free at any income");
     check(int(income_limit("nslp-rule", prof(3, 9000, "TX", ["children"], 35)).get("limit", 0)) > 0, "Texas: school meals keep the income test");
 
+    # ---- 6. Cash, child care, tax and Marketplace programs ----
+    # Rev. Proc. 2025-32; HealthCare.gov; SSA POMS SI 00502; ACF CCDF guidance.
+    on("2026-11-02");
+    check(int(income_limit("eitc-rule", prof(1, 1000, "TX", [], 30))["limit"]) == 19540, "EITC 2026: no children, single filer $19,540");
+    check(int(income_limit("eitc-rule", prof(3, 1000, "TX", ["children"], 30))["limit"]) == 62974, "EITC 2026: three or more children, single filer $62,974");
+    check(bool(income_limit("eitc-rule", prof(3, 1000, "TX", ["children"], 30))["typical"]), "EITC limit never rules anyone out: the count of children isn't known");
+    check(abs(int(income_limit("aca-rule", prof(1, 1000, "TX", [], 40))["limit"]) - int(round(fpl_annual(1, "TX") * 4.0))) <= 1, "Marketplace savings stop at 400% of poverty");
+    for rid in ["tanf-rule", "ssi-rule", "ssdi-rule", "ccdf-rule", "ui-rule"] {
+        check(bool(income_limit(rid, prof(1, 1000, "TX", [], 40)).get("varies")), rid + " doesn't claim to have no income limit");
+    }
+    refugee2 = dict(prof(1, 1000, "TX", [], 40), citizenship="humanitarian");
+    nostatus = dict(prof(1, 1000, "TX", [], 40), citizenship="non_citizen");
+    nostatus_kids = dict(prof(3, 1000, "TX", ["children", "citizen_children"], 40), citizenship="non_citizen");
+    green = dict(prof(1, 1000, "TX", [], 40), citizenship="eligible_immigrant");
+    check(status_rule("aca-rule", refugee2)["status"] == "unmet", "refugee: no Marketplace savings for coverage from Jan 1 2027");
+    check(status_rule("aca-rule", green)["status"] == "met", "green card keeps Marketplace savings");
+    on("2026-10-31");
+    check(status_rule("aca-rule", refugee2)["status"] == "met" and "January 1, 2027" in status_rule("aca-rule", refugee2)["change_note"], "refugee before enrollment for 2027: savings, with the change named");
+    on("2026-11-02");
+    check(status_rule("ccdf-rule", nostatus_kids)["status"] == "met", "child care follows the child's status");
+    check(status_rule("ccdf-rule", nostatus)["status"] == "unknown", "child care is never a flat no for a parent's status");
+    check(status_rule("tanf-rule", nostatus)["status"] == "unmet", "TANF needs an eligible status");
+    check(status_rule("tanf-rule", nostatus_kids)["status"] == "unknown", "TANF: a citizen child can get a child-only grant");
+    check(status_rule("ssi-rule", green)["status"] == "unknown", "SSI: a green card alone isn't a yes");
+    check(status_rule("ssi-rule", refugee2)["status"] == "unknown", "SSI: refugees have a 7-year window");
+    check(status_rule("eitc-rule", nostatus)["status"] == "unmet", "EITC: an ITIN doesn't count");
+    check(status_rule("ui-rule", nostatus)["status"] == "unmet", "unemployment needs work authorization");
+    check(status_rule("ui-rule", green)["status"] == "met", "green card can file for unemployment");
+    os.environ.pop("CIVICMESH_POLICY_DATE", None);
+
     print("CivicMesh policy-date checks — " + str(total[0]) + " checks");
     for f in fails { print("  FAIL " + f); }
     print("  " + ("PASS" if not fails else "FAIL (" + str(len(fails)) + ")"));
