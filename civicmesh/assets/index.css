@@ -971,3 +971,15 @@ html, body { overflow-x: hidden; }
 
 /* Text for screen readers only (typing status, icon-only controls). */
 .cm-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+/* Blind audit, 2026-11: the page margin, the keyboard path to the box, and a
+   Quick exit a thumb can reach from anywhere on a phone. */
+html, body { margin: 0; }
+.cm-skip { position: absolute; left: 8px; top: -60px; z-index: 1100; padding: 10px 14px; border-radius: 8px; background: #FFE500; color: #111; font-weight: 650; }
+.cm-skip:focus { top: 8px; }
+.cm-safety-line bdi { unicode-bidi: isolate; white-space: nowrap; }
+@media (max-width: 760px) {
+  .cm-quick-exit { position: fixed; top: 8px; right: 8px; z-index: 1000; min-height: 44px; padding: 8px 14px; font-size: 14px; background: #5c1f24; color: #fff; }
+  .cm-appbar { padding-right: 124px !important; }
+}
+@media (max-width: 420px) { .cm-chat-head > :first-child { flex: 1 1 100% !important; } }

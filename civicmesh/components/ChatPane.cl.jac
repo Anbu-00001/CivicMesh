@@ -61,7 +61,7 @@ def:pub ChatPane(
             "role": "bot",
             "kind": "text",
             "id": "welcome",
-            "text": "Hi, I'm CivicMesh. Tell me what's going on, in your own words and in your own language, and I'll find the housing, food, health care, legal, cash or child care programs you can use and show exactly why. In 51 languages the whole answer — programs, next steps and my follow-up questions — comes back in yours right away; in 60 more I add a translation a few seconds later, and for languages machines can't translate yet I give you an interpreter card. Pick yours at the top if I get it wrong.",
+            "text": "Hi, I'm CivicMesh. Tell me what's going on, in your own words and in your own language, and I'll find the housing, food, health care, legal, cash or child care programs you can use and show exactly why. In 51 languages the whole answer — programs, next steps and my follow-up questions — comes back in yours right away; in 60 more a translation can follow a few seconds later when a translation model is connected, and for languages machines can't translate yet I give you an interpreter card. Pick yours at the top if I get it wrong.",
             "suggestions": [
                 "I'm 72, on $1200/month Social Security, my landlord is trying to evict me illegally.",
                 "Mi familia y yo no hemos comido en 2 días. Estamos en Texas.",
@@ -160,6 +160,7 @@ def:pub ChatPane(
                 </div>
                 <div className="cm-composer">
                     <input
+                        id="cm-message"
                         aria-label="Your message"
                         value={input_val}
                         onChange={lambda e: ChangeEvent { input_val = e.target.value; }}
@@ -182,9 +183,9 @@ def:pub ChatPane(
                     </button>
                 </div>
                 <p className="cm-safety-line" dir="auto">
-                    {L(fui, "ui.safety_danger", "In danger now:") + " "}<a href="tel:911">911</a>
-                    {" · " + L(fui, "ui.safety_crisis", "Suicide or crisis: call or text") + " "}<a href="tel:988">988</a>
-                    {" · " + L(fui, "ui.safety_home", "Not safe at home:") + " "}<a href="tel:18007997233">1-800-799-7233</a>{" " + L(fui, "ui.safety_text", "or text START to 88788")}
+                    {L(fui, "ui.safety_danger", "In danger now:") + " "}<a href="tel:911"><bdi dir="ltr">911</bdi></a>
+                    {" · " + L(fui, "ui.safety_crisis", "Suicide or crisis: call or text") + " "}<a href="tel:988"><bdi dir="ltr">988</bdi></a>
+                    {" · " + L(fui, "ui.safety_home", "Not safe at home:") + " "}<a href="tel:18007997233"><bdi dir="ltr">1-800-799-7233</bdi></a>{" " + L(fui, "ui.safety_text", "or text START to 88788")}
                 </p>
                 {renderPrivacy()}
             </div>

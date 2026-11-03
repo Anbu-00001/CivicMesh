@@ -23,7 +23,7 @@ Sources (checked 2026-09-29):
   * HHS/ASPE 2026 poverty guidelines, Federal Register 2026-01-15:
     48 states + DC $15,960 + $5,680/person; AK $19,950 + $7,100; HI $18,360 + $6,530.
   * HUD FY2026 Section 8 income limits (effective 2026-05-01): U.S. median
-    family income $107,900; size adjustments 70/80/90/100/108/116/124/132%.
+    family income $106,800; size adjustments 70/80/90/100/108/116/124/132%.
   * KFF, Status of State Medicaid Expansion Decisions: 41 states incl. DC
     expanded; not expanded: AL FL GA KS MS SC TN TX WI WY (WI covers adults
     to 100% FPL without expansion).
@@ -54,7 +54,7 @@ glob FPL: dict = {
 };
 glob FPL_SOURCE: str = "HHS 2026 poverty guidelines";
 
-glob HUD_MFI: int = 107900;
+glob HUD_MFI: int = 106800;
 glob HUD_SIZE_ADJ: list = [0.70, 0.80, 0.90, 1.00, 1.08, 1.16, 1.24, 1.32];
 # HUD's published limits for the metro area / county of each city the parser
 # recognises (data/hud_income_limits.json, built by tools/build_hud_limits.py
@@ -94,7 +94,7 @@ def local_ami(city: str, pct: float, household: int) -> dict {
     }
     return {"limit": lim, "area": str(area["name"]).replace(" HUD Metro FMR Area", "").replace(" MSA", "")};
 }
-glob HUD_SOURCE: str = "HUD FY2026 income limits (U.S. median family income $107,900)";
+glob HUD_SOURCE: str = "HUD FY2026 income limits (U.S. median family income $106,800)";
 
 glob MEDICAID_NOT_EXPANDED: list = ["AL", "FL", "GA", "KS", "MS", "SC", "TN", "TX", "WI", "WY"];
 # Parents and caretakers in the states that did not expand, % of poverty for a

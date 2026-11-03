@@ -228,7 +228,7 @@ glob FACT_NEG_LEFT: str = "(?:\\b(?:no|not|never|without|none of|isn'?t|aren'?t|
 # a body part, an injury at work).
 glob FLAG_SENSE_LEFT: dict = {
     "senior": "(?:high school|college|university)\\s+$",
-    "dv": "(?:substance|drug|drugs|alcohol|opioid|opiate|elder care)\\s+$|(?:my|his|her|the)\\s+(?:back|head|leg|legs|knee|knees|tooth|teeth|foot|feet|stomach|chest|arm|arms|hand|hands|hip|neck|shoulder|eye|eyes|ear|body)\\s+$",
+    "dv": "(?:substance|drug|drugs|alcohol|opioid|opiate|elder care)\\s+$|(?:my|the|this)\\s+(?:job|work|workplace|employer|company)\\s+(?:is|was|has been)\\s+(?:so\\s+|really\\s+|very\\s+|pretty\\s+)?$|(?:my|his|her|the)\\s+(?:back|head|leg|legs|knee|knees|tooth|teeth|foot|feet|stomach|chest|arm|arms|hand|hands|hip|neck|shoulder|eye|eyes|ear|body)\\s+$",
     "children": "(?:adult|grown|grown-up)\\s+$",
     # "My ex-husband was in the army and he beat me": the abuser's service.
     "veteran": "\\b(?:ex(?:-|\\s)?(?:husband|wife|partner|boyfriend|girlfriend)|abuser)\\s+$"
@@ -238,7 +238,12 @@ glob FLAG_SENSE_RIGHT: dict = {
     "children": "^\\s+(?:are|is)\\s+(?:all\\s+)?(?:grown|adults?|over 18)|^\\s+(?:have\\s+|has\\s+)?(?:all\\s+)?moved out|^\\s+(?:don'?t|doesn'?t|do not|does not) live with (?:me|us)|^\\s*care\\s+(?:provider|worker|teacher|job|center|centre|business)|^\\s+support\\b",
     "self_harm": "^\\s+(?:at|on)\\s+(?:work|the job|my job)|^\\s+(?:lifting|falling|playing|cleaning|cooking|working|moving)|^\\s+(?:when|while) (?:i|lifting|falling|working|playing)|^\\s+in\\s+(?:a|an|the)\\s+(?:accident|fall|crash|car)"
 };
-glob DV_IDIOM: str = "\\bhit (?:me|us|him|her|them) up\\b(?! against)|\\bhit (?:me|us) with (?:a|an|the|this|that|another) (?:\\w+ ){0,2}(?:bill|fee|fine|charge|lawsuit|notice|question|deal|rent|price|increase)\\b|\\bpush(?:es|ed)? (?:me|us|him|her) to (?:sign|apply|file|go to|do|take|get|move|pay|quit|finish|see)\\b|\\bgrab(?:s|bed)? (?:me|us) (?:a|an|some|lunch|dinner|coffee|food)\\b";
+glob DV_IDIOM: str = "\\bbeat (?:me|us) to (?:it|the (?:appointment|punch|office|job|spot|line|store|last))\\b|\\bhit (?:me|us|him|her|them) up\\b(?! against)|\\bhit (?:me|us) with (?:a|an|the|this|that|another) (?:\\w+ ){0,2}(?:bill|fee|fine|charge|lawsuit|notice|question|deal|rent|price|increase)\\b|\\bpush(?:es|ed)? (?:me|us|him|her) to (?:sign|apply|file|go to|do|take|get|move|pay|quit|finish|see)\\b|\\bgrab(?:s|bed)? (?:me|us) (?:a|an|some|lunch|dinner|coffee|food)\\b";
+# "I don't want to live in this neighborhood" is about housing. Only a named
+# place or a housing word counts: "in this world" and "like this" stay crisis.
+glob LIVE_PLACE: str = "^\\s+(?:in|at|near|by|around|with)\\s+(?:(?:this|that|the|my|a|an|these|those)\\s+)?(?:\\w+\\s+)?(?:neighbou?rhood|apartment|house|building|city|town|area|state|county|place|shelter|motel|hotel|parents?|mom|mum|dad|mother|father|roommates?|landlord|in-?laws?)\\b|^\\s+here\\b.{0,60}\\b(?:rent|apartment|neighbou?rhood|landlord|lease|move|moving|housing|mold|roaches)\\b|^\\s+(?:en|con)\\s+(?:este|esta|ese|esa|mi|mis|el|la)\\s+(?:barrio|apartamento|casa|edificio|ciudad|pueblo|zona|colonia|padres|mam[aá]|pap[aá]|compa[nñ]er\\w+)\\b";
+# "I work at a suicide hotline" is a job. "I need a suicide hotline" is not.
+glob SUICIDE_JOB: str = "\\b(?:work|works|worked|working|volunteer|volunteers|volunteered|volunteering|employed)\\s+(?:at|for|on|with)\\s+(?:a|an|the)?\\s*$";
 # Intent words that keep a self-harm match even when an injury guard fires.
 glob SELF_HARM_INTENT: str = "(?:want|wanted|wanna|going|gonna|trying|tried|tempted|urge|thinking about|thought about|feel like|on purpose|deliberately)";
 
@@ -259,6 +264,8 @@ def flag_other_sense(flag: str, low: str, start: int, end: int) -> bool {
     # me to apply": idioms, not violence (outside probe, 2026-11). "Hit me up
     # against the wall" stays violence.
     if flag == "dv" and re.search(DV_IDIOM, low[start:end + 40]) { return True; }
+    if flag == "self_harm" and re.search("(?:\\blive|\\bvivir)$", low[start:end]) and re.search(LIVE_PLACE, low[end:end + 80]) { return True; }
+    if flag == "self_harm" and low[start:end].startswith("suicid") and re.search(SUICIDE_JOB, left) and re.search("^\\s+(?:hotline|helpline|prevention|line|crisis|center|centre)", right) { return True; }
     lp = FLAG_SENSE_LEFT.get(flag, "");
     rp = FLAG_SENSE_RIGHT.get(flag, "");
     if lp and re.search(lp, left) { return True; }

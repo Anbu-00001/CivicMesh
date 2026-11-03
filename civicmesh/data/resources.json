@@ -72,7 +72,7 @@
       "contact_phone": "2-1-1",
       "contact_email": "",
       "address": "Local Continuum of Care providers",
-      "online_url": "https://www.hudexchange.info/programs/coc/rapid-re-housing/",
+      "online_url": "https://www.hudexchange.info/programs/coc/",
       "description": "Short-term (3-24 month) rental assistance plus housing search help and case management for people moving out of homelessness into permanent housing. Pays security deposit, first months of rent, and utility startup costs.",
       "eligibility": {
         "rule_id": "rrh-rule",
@@ -777,7 +777,7 @@
       "contact_email": "",
       "address": "Available by phone, text, and chat",
       "online_url": "https://988lifeline.org/",
-      "description": "Free, confidential 24/7 phone, text, and chat support for anyone in suicidal crisis or emotional distress. Counselors can dispatch mobile crisis teams and connect callers to local mental health resources.",
+      "description": "Free, confidential 24/7 phone, text, and chat support for anyone in suicidal crisis or emotional distress. Counselors can dispatch mobile crisis teams and connect callers to local mental health resources. In Spanish: press 2, or text AYUDA to 988. Veterans: press 1, or text 838255. In other languages: call and ask for an interpreter.",
       "eligibility": {
         "rule_id": "988-rule",
         "income_limit_annual": 0,
@@ -904,7 +904,7 @@
       "contact_phone": "2-1-1",
       "contact_email": "",
       "address": "Local free dental clinics and dental school clinics",
-      "online_url": "https://www.toothwisdom.org/",
+      "online_url": "https://www.nidcr.nih.gov/health-info/finding-dental-care",
       "description": "Network of free and reduced-cost dental clinics, dental school student clinics, and Donated Dental Services for adults who cannot afford care. Coverage varies; emergency extractions are often available even when routine cleanings are not.",
       "eligibility": {
         "rule_id": "dental-clinic-rule",

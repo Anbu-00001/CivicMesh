@@ -5,10 +5,12 @@
 The container-level attack simulations are in tests/security_e2e.py.
 """
 
+import json
 import logging
 import logging.config
 import os
 import sys
+import tempfile
 import threading
 import time
 import unittest
@@ -20,8 +22,9 @@ from cmguard import budget as budget_mod  # noqa: E402
 from cmguard.budget import ModelBudget, ModelBudgetExceeded, estimate_tokens, guard  # noqa: E402
 from cmguard.clientip import client_ip  # noqa: E402
 from cmguard.config import BudgetConfig, parse_rate  # noqa: E402
-from cmguard.gateway import classify, content_security_policy, cors_filter, json_shape_problem  # noqa: E402
+from cmguard.gateway import classify, content_security_policy, cors_filter, json_shape_problem, scrub_surrogates  # noqa: E402
 from cmguard.jacbind import bind_upstream, silence_access_log  # noqa: E402
+from cmguard.preflight import data_problems  # noqa: E402
 from cmguard.limits import ExpiringSet, InflightCounter, TokenBuckets  # noqa: E402
 from cmguard.redact import redact, safe_error  # noqa: E402
 
@@ -356,6 +359,36 @@ class Gateway(unittest.TestCase):
         self.assertTrue(json_shape_problem(deep, 12, 5000, 20000))
         self.assertTrue(json_shape_problem({"a": "x" * 30000}, 12, 5000, 20000))
         self.assertTrue(json_shape_problem({"a": list(range(10000))}, 12, 5000, 20000))
+
+
+class TestAuditDents(unittest.TestCase):
+    def test_paths_are_judged_after_normalising(self):
+        for path in ("/./graph/data", "/x/../graph/data", "/./jobs", "/./api-key/list", "/./user/me", "/./redoc",
+                     "/./sso/google/login", "/./admin/llm/telemetry/summary", "//graph/data", "/a\\b",
+                     "/.jac/client/configs/package.json"):
+            self.assertEqual(classify("GET", path)[0], "blocked", path)
+        for path in ("/", "/assets/index.css", "/docs", "/some/page/"):
+            self.assertNotEqual(classify("GET", path)[0], "blocked", path)
+
+    def test_half_an_emoji_can_be_encoded(self):
+        fixed = scrub_surrogates({"message": "help \ud83d", "n": 1, "l": ["\ud83d\ude00 ok"]})
+        json.dumps(fixed, ensure_ascii=False).encode("utf-8")
+        self.assertTrue(fixed["message"].startswith("help "))
+        self.assertEqual(fixed["n"], 1)
+
+    def test_broken_data_is_named_at_boot(self):
+        with tempfile.TemporaryDirectory() as root:
+            self.assertEqual(len(data_problems(root)), 2)
+            os.makedirs(os.path.join(root, "data", "i18n"))
+            with open(os.path.join(root, "data", "resources.json"), "w") as f:
+                json.dump({"resources": [{"agency_name": "x"}]}, f)
+            with open(os.path.join(root, "data", "i18n", "en.json"), "w") as f:
+                json.dump({"a": "b"}, f)
+            self.assertEqual(data_problems(root), [])
+            with open(os.path.join(root, "data", "i18n", "es.json"), "w") as f:
+                f.write("{broken")
+            self.assertEqual(len(data_problems(root)), 1)
+        self.assertEqual(data_problems(os.path.join(os.path.dirname(__file__), "..")), [])
 
 
 class TestAccessLog(unittest.TestCase):

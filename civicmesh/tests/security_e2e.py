@@ -312,6 +312,14 @@ def main():
         check("S15 telemetry recorded rate limits and budget refusals",
               any("rate_" in ln for ln in lines) and any("model_budget_denied" in ln for ln in lines), lines[-2:])
 
+    # ---- S17: odd input from the 2026-11 audit ----
+    u, t, _ = visitor("10.66.0.2")
+    s, rr, _ = turn(u, t, "I need food \ud83d in Ohio", "10.66.0.2")
+    check("S17 half an emoji in a message still gets an answer", s == 200 and bool(rr), f"HTTP {s}")
+    for path in ("/./graph/data", "/x/../graph/data", "/./user/me", "/.jac/client/configs/package.json"):
+        s = req("GET", path, ip="10.66.0.3")[0]
+        check(f"S17 {path} is not served", s == 404, f"HTTP {s}")
+
     # ---- S16: a new visitor is still served normally at the end ----
     u, t, _ = visitor("10.66.0.1")
     s, rr, _ = turn(u, t, "Mi familia y yo no hemos comido en 2 días. Estamos en Texas.", "10.66.0.1")

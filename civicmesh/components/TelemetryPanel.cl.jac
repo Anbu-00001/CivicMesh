@@ -232,7 +232,7 @@ def:pub TelemetryPanel(walker_events: list, user_id: str = "") -> JsxElement {
                         gpt-oss-20b · Gemma 4
                     </div>
                     <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.62)", "marginTop": "3px"}}>
-                        Active model
+                        Model pool, when a key is set
                     </div>
                 </div>
             </div>
@@ -274,7 +274,7 @@ def:pub TelemetryPanel(walker_events: list, user_id: str = "") -> JsxElement {
                 <div style={{"fontSize": "11px", "color": "rgba(255,255,255,0.62)", "marginBottom": "14px", "textTransform": "uppercase", "letterSpacing": "0.06em"}}>
                     Walker call tree — parent → child invocation
                 </div>
-                <div style={{"display": "flex", "alignItems": "center", "overflowX": "auto", "gap": "0"}}>
+                <div role="region" aria-label="Walker call tree" tabIndex={0} style={{"display": "flex", "alignItems": "center", "overflowX": "auto", "gap": "0"}}>
                     {[renderChainNode(walker_order[i], bool(triggered[walker_order[i]]), int(counts[walker_order[i]])) for i in range(len(walker_order))]}
                 </div>
                 <div style={{"marginTop": "14px", "paddingTop": "12px", "borderTop": "0.5px solid rgba(255,255,255,0.06)"}}>

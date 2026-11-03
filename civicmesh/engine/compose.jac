@@ -341,7 +341,7 @@ def compose_reply(lang: str, profile: dict, ranking: dict, plan: dict, routes: l
     if likely {
         n = len(likely);
         if es {
-            lines.append("Encontré **" + str(n) + " programa" + ("s" if n != 1 else "") + "** para los que probablemente califica" + ((" y " + str(len(maybe)) + " más que podrían funcionar.") if maybe else "."));
+            lines.append("Encontré **" + str(n) + " programa" + ("s" if n != 1 else "") + "** " + ("para los que" if n != 1 else "para el que") + " probablemente califica" + ((" y " + str(len(maybe)) + " más que podrían funcionar.") if maybe else "."));
         } else {
             lines.append("I found **" + str(n) + " program" + ("s" if n != 1 else "") + "** you likely qualify for" + ((" and " + str(len(maybe)) + " more that could work.") if maybe else "."));
         }

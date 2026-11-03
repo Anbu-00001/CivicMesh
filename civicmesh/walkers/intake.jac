@@ -18,6 +18,7 @@ waterfall. The client then calls NarrateWalker (the one LLM call) in the
 background to localize and warm up the wording.
 """
 
+import re;
 import datetime;
 import contextvars;
 import concurrent.futures;
@@ -75,6 +76,9 @@ walker IntakeWalker {
         # A picked (or pinned-by-chip) language is the case language: an
         # English chip tapped in a Chinese conversation must not switch the
         # reply to English.
+        if not re.fullmatch("auto|[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*", str(self.preferred_language or "").strip()) {
+            self.preferred_language = "";
+        }
         pin = str(self.preferred_language or "").strip();
         if pin and pin != "auto" {
             parsed["language"] = pin;

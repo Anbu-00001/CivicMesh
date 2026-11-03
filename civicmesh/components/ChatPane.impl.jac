@@ -47,7 +47,9 @@ impl ChatPane.tierStyle(tier: str, ui: Any) -> dict {
 impl ChatPane.resetCase -> None {
     profile_ctx = {};
     pending_question = "";
-    messages = messages + [{
+    # Nothing of the old case stays on screen: the words promise that, and the
+    # phone may be handed to someone else next.
+    messages = [{
         "role": "bot", "kind": "text", "id": "reset-" + str(Math.random()),
         "text": "New case started — nothing from the previous conversation is carried over. What's going on?",
         "suggestions": []
@@ -131,7 +133,7 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "", display:
     n = len(reps) if reps else 0;
     data: Any = reps[n - 1] if n > 0 else None;
     if res["spawn_error"] or (not data) or (not data["trace"]) {
-        new_messages = new_messages + [{"role": "bot", "kind": "error", "id": "e" + str(Math.random()), "text": "I couldn't reach the server just now (" + (str(res["spawn_error"]) if res["spawn_error"] else "empty answer") + "). Your message wasn't lost.", "retry": user_text, "retry_answering": ans, "retry_display": shown, "retry_pin": pin}];
+        new_messages = new_messages + [{"role": "bot", "kind": "error", "id": "e" + str(Math.random()), "text": "I couldn't reach the server just now. Your message wasn't lost, so you can try again. " + L(footerUi(), "ui.safety_danger", "In danger now:") + " 911 · " + L(footerUi(), "ui.safety_crisis", "Suicide or crisis: call or text") + " 988", "retry": user_text, "retry_answering": ans, "retry_display": shown, "retry_pin": pin}];
         messages = new_messages;
         is_loading = False;
         return;
@@ -283,7 +285,7 @@ impl ChatPane.renderLocal(loc: Any) -> JsxElement {
                         <div className="cm-muted cm-local-meta">{str(offices[i]["address"])}</div>
                     </div>
                     <div className="cm-local-actions">
-                        {offices[i]["phone"] and <a className="cm-call" href={"tel:" + str(offices[i]["phone"])}>{str(offices[i]["phone"])}</a>}
+                        {offices[i]["phone"] and <a className="cm-call" href={"tel:" + str(offices[i]["phone"])}><bdi dir="ltr">{str(offices[i]["phone"])}</bdi></a>}
                         {offices[i]["email"] and <a className="cm-link" href={"mailto:" + str(offices[i]["email"])}>Email</a>}
                         {offices[i]["url"] and <a className="cm-link" href={(str(offices[i]["url"]) if str(offices[i]["url"]).startsWith("http") else "https://" + str(offices[i]["url"]))} target="_blank" rel="noreferrer">Website</a>}
                     </div>
@@ -495,7 +497,7 @@ impl ChatPane.renderPlan(plan: Any, ui: Any) -> JsxElement {
         <div className="cm-block">
             <div className="cm-block-title">
                 <span>{L(ui, "ui.plan", "Your plan")}</span>
-                <span className="cm-muted">{"ordered by value ÷ effort (Smith's rule) · ~" + str(plan["total_minutes"]) + " min of paperwork"}</span>
+                <span className="cm-muted">{"most useful and quickest first · ~" + str(plan["total_minutes"]) + " min of paperwork"}</span>
             </div>
             {[
                 <div key={"st-" + str(i)} className="cm-step">

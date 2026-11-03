@@ -1209,6 +1209,8 @@ def _hits_w(code: str, words: list, low: str) -> list {
     return _hits(code, words, low);
 }
 
+glob ZH_NOT_HITTING: list = ["电话", "電話", "给我", "給我"];
+
 """Route a message with the language's own lexicon.
 
 Returns {scores, flags, urgent, spans: [{field, value, start, end}]}; empty
@@ -1236,6 +1238,8 @@ def route_i18n(code: str, low: str) -> dict {
         # Crisis and violence flags are never negated away, as in parse.jac:
         # a false alarm shows a hotline, a miss hides one.
         h = [x for x in _hits(code, list(lex.get(key, [])), low) if key in ["self_harm", "dv", "self_harm_concern", "dv_concern"] or not negated(low, x[0], x[1])];
+        # "我老公打电话给我": he phoned. 打 alone means hit, so the next characters decide.
+        h = [x for x in h if not (key == "dv" and low[x[1]:x[1] + 2] in ZH_NOT_HITTING)];
         if h {
             out["flags"].append(flag);
             out["spans"].append({"field": "flag", "value": flag, "start": h[0][0], "end": h[0][1]});
@@ -1283,8 +1287,11 @@ def _crisis_patterns() -> dict {
 def crisis_any_language(low: str) -> list {
     out: list = [];
     for (key, rx) in _crisis_patterns().items() {
-        m = rx.search(low);
-        if m { out.append((key, m.start(), m.end())); }
+        for m in rx.finditer(low) {
+            if key == "dv" and low[m.end():m.end() + 2] in ZH_NOT_HITTING { continue; }
+            out.append((key, m.start(), m.end()));
+            break;
+        }
     }
     return out;
 }

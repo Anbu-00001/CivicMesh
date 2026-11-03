@@ -82,5 +82,12 @@ The fourth review (again a chat model, not an audit) credited the deliberate cho
 - `tests/browser_e2e.py` checks all three in headless Chrome on every push, including a stand-in for the Space page with Hugging Face's exact iframe sandbox and a sign-in held back for 3 seconds.
 - **Still not handled:** typos ("foood"), romanized Chinese and Arabic (pinyin, Arabizi), and Spanish or Portuguese number words ("mil quinientos"). With the model fallback off by default, these get a follow-up question rather than a guess.
 
+## Smaller findings from the 2026-11 blind audit
 
----
+A blind audit scored the project 4.5/10 as a public tool for people in crisis. Its critical and high findings are still open; these are the contained medium and low ones.
+
+- **Gateway.** Paths are judged after normalising, so `/./graph/data` is a 404. A 5xx from the server behind it no longer carries a traceback. Half an emoji in a message gets an answer instead of an HTTP 500. A language pin has to look like a language tag.
+- **Model text.** The summary guard also voids words that send someone away from help, links read aloud and benefits the engine never named, and caps the length. Translations pass the number, link and program checks too.
+- **False alarms.** "I don't want to live in this neighborhood", "I work at a suicide hotline", "he beat me to the appointment", "my job is abusive" and 我老公打电话给我 raise no crisis flag. Each has a control that still does ("I don't want to live here anymore" with no housing word stays a crisis).
+- **Screen.** Numbers read left to right in right-to-left footers. New case clears the thread. A server failure shows 911 and 988 instead of internals. On a phone, Quick exit stays in reach at 44 px. A skip link leads to the message box. Telemetry passes axe at phone width. The header no longer claims a model when none may be connected.
+- **Data.** HUD's FY2026 U.S. median family income is $106,800. Two links were replaced: one dead, one redirected to a marketing site. Spanish crisis lines say to press 2 or text AYUDA, and the 988 card covers Spanish, veterans and interpreters. A broken catalog is named in the log at boot.
