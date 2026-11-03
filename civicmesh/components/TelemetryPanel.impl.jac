@@ -24,7 +24,7 @@ impl TelemetryPanel.renderWalkerRow(name: str) -> JsxElement {
                     style={{
                         "fontSize": "12px",
                         "fontWeight": "500",
-                        "color": (color if is_active else "rgba(255,255,255,0.25)")
+                        "color": (color if is_active else "rgba(255,255,255,0.62)")
                     }}
                 >
                     {name}
@@ -59,7 +59,7 @@ impl TelemetryPanel.renderWalkerRow(name: str) -> JsxElement {
                     "fontSize": "13px",
                     "fontWeight": "600",
                     "textAlign": "right",
-                    "color": (color if is_active else "rgba(255,255,255,0.25)")
+                    "color": (color if is_active else "rgba(255,255,255,0.62)")
                 }}
             >
                 {(str(count) + (" event" if count == 1 else " events"))}
@@ -234,7 +234,7 @@ impl TelemetryPanel.renderEvent(ev: Any, idx: int) -> JsxElement {
             <span style={{"color": "#FFE500", "minWidth": "150px"}}>{ev_walker}</span>
             <span style={{"color": "rgba(255,255,255,0.62)"}}>→</span>
             <span style={{"minWidth": "140px"}}>{ev_node}</span>
-            <span style={{"color": status_color, "fontWeight": "500"}}>{ev_status}</span>
+            <span style={{"color": status_color, "fontWeight": "500", "background": "#111111", "padding": "0 4px", "borderRadius": "4px"}}>{ev_status}</span>
         </div>;
 }
 

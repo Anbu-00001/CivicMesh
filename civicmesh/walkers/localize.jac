@@ -9,6 +9,8 @@ llm/translate.jac.
 import concurrent.futures;
 import from llm.translate { translate_text, translate_strings }
 import from engine.i18n { language_info }
+import from engine.narration_guard { invents_claims }
+import from walkers.narrate { invents_numbers }
 import from cmguard.tokens { verify as verify_token, content_hash }
 import from cmguard.limits { TokenBuckets }
 import from cmguard.redact { redact }
@@ -57,6 +59,11 @@ walker LocalizeWalker {
         f_str = LOC_POOL.submit(translate_strings, [str(x)[:300] for x in list(self.strings)[:16]], str(self.language)) if self.strings else None;
         res = f_text.result() if f_text else {"ok": False, "text": "", "model": "", "error": "no text"};
         sres = f_str.result() if f_str else {"strings": [], "translated": 0, "model": ""};
+        # A translation may not add a number, a link or a program either. The
+        # visitor keeps the English answer when it does (blind audit, 2026-11).
+        if res["ok"] and (invents_numbers(str(res["text"]), str(self.text), "") or invents_claims(str(res["text"]), str(self.text))) {
+            res = {"ok": False, "text": "", "model": str(res["model"]), "latency_ms": res.get("latency_ms", 0.0), "error": "guardrail: translation changed the answer's facts"};
+        }
         out = {
             "strings": list(sres["strings"]), "strings_translated": int(sres["translated"]), "strings_model": str(sres["model"]),
             "ok": bool(res["ok"]), "text": str(res["text"]), "model": str(res["model"]),

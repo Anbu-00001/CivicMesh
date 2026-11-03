@@ -10,8 +10,8 @@ impl ClientApp.visitorCreds -> list {
     uid = store.getItem(VISITOR_KEY);
     pw = store.getItem(VISITOR_SECRET_KEY);
     if (not uid) or (not pw) {
-        uid = "visitor_" + Math.random().toString(36).substring(2, 10);
-        pw = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+        uid = "visitor_" + crypto.randomUUID().replaceAll("-", "").substring(0, 16) if crypto.randomUUID else "visitor_" + Math.random().toString(36).substring(2, 10);
+        pw = crypto.randomUUID() + crypto.randomUUID() if crypto.randomUUID else Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
         store.setItem(VISITOR_KEY, uid);
         store.setItem(VISITOR_SECRET_KEY, pw);
         # A token from the old shared demo account must not be reused.

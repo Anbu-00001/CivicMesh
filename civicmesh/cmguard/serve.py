@@ -56,6 +56,10 @@ def wait_until_ready(url: str, child, timeout_s: float) -> None:
 def main() -> None:
     port = int(os.environ.get("PORT", "7860") or 7860)
     upstream_port = int(os.environ.get("CIVICMESH_UPSTREAM_PORT", "8000") or 8000)
+    from cmguard.preflight import data_problems
+
+    for problem in data_problems():
+        print("civicmesh_data_problem: " + problem, file=sys.stderr, flush=True)
     ensure_secret("CIVICMESH_JWT_SECRET")
     ensure_secret("CIVICMESH_SIGNING_KEY")
     os.environ["SYSTEM_USER_PASSWORD"] = os.environ.get("SYSTEM_USER_PASSWORD", "").strip() or secrets.token_urlsafe(24)

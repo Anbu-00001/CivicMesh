@@ -140,6 +140,11 @@ def:pub ClientApp -> JsxElement {
             <div className="aurora-blob aurora-blob-1"/>
             <div className="aurora-blob aurora-blob-2"/>
             <div className="aurora-blob aurora-blob-3"/>
+            {active_tab == "chat" and <a className="cm-skip" href="#cm-message" onClick={lambda e: MouseEvent {
+                e.preventDefault();
+                box = document.querySelector(".cm-input");
+                if box { box.focus(); }
+            }}>Skip to the message box</a>}
             <header
                 className="cm-appbar"
                 style={{
@@ -234,7 +239,7 @@ def:pub ClientApp -> JsxElement {
                         }}
                     />
                     <span style={{"fontSize": "12px", "color": "rgba(255,255,255,0.62)"}}>
-                        {("engine ready · LLM narrator" if is_authed else "connecting...")}
+                        {("engine ready" if is_authed else "connecting...")}
                     </span>
                 </div>
             </header>

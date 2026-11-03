@@ -896,6 +896,24 @@
     {"text": "I owe back taxes and the landlord is evicting me", "expect": {"category": "housing"}, "_why": "near the money category, 2026-11"},
     {"text": "I work in child care and need a lawyer for my custody case", "expect": {"category": "legal"}, "_why": "near the money category, 2026-11"},
     {"text": "I am a babysitter and I have no food for tonight", "expect": {"category": "food"}, "_why": "near the money category, 2026-11"},
-    {"text": "I need a premium tax credit for my health plan", "expect": {"category": "healthcare"}, "_why": "near the money category, 2026-11"}
+    {"text": "I need a premium tax credit for my health plan", "expect": {"category": "healthcare"}, "_why": "near the money category, 2026-11"},
+    {"text": "I don't want to live in this neighborhood anymore, what housing is there", "expect": {"flag_absent": "self_harm"}, "_why": "false alarm in the blind audit, 2026-11", "suite": "probes"},
+    {"text": "I don't want to live with my parents anymore, I need my own apartment", "expect": {"flag_absent": "self_harm"}, "_why": "false alarm in the blind audit, 2026-11", "suite": "probes"},
+    {"text": "I don't want to live here anymore, the rent's too high", "expect": {"flag_absent": "self_harm"}, "_why": "false alarm in the blind audit, 2026-11", "suite": "probes"},
+    {"text": "no quiero vivir en este barrio, ¿hay vivienda?", "expect": {"flag_absent": "self_harm"}, "_why": "false alarm in the blind audit, 2026-11", "suite": "probes"},
+    {"text": "I work at a suicide hotline and lost my hours", "expect": {"flag_absent": "self_harm"}, "_why": "false alarm in the blind audit, 2026-11", "suite": "probes"},
+    {"text": "he beat me to the appointment and got the last spot", "expect": {"flag_absent": "dv"}, "_why": "false alarm in the blind audit, 2026-11", "suite": "probes"},
+    {"text": "my job is abusive with hours, no breaks, can I sue", "expect": {"flag_absent": "dv"}, "_why": "false alarm in the blind audit, 2026-11", "suite": "probes"},
+    {"text": "我老公打电话给我说房租涨了", "expect": {"flag_absent": "dv"}, "_why": "false alarm in the blind audit, 2026-11", "suite": "probes"},
+    {"text": "I don't want to live anymore", "expect": {"flag": "self_harm"}, "_why": "control for that false alarm, blind audit 2026-11", "suite": "probes"},
+    {"text": "I don't want to live in this world anymore", "expect": {"flag": "self_harm"}, "_why": "control for that false alarm, blind audit 2026-11", "suite": "probes"},
+    {"text": "I don't want to live like this", "expect": {"flag": "self_harm"}, "_why": "control for that false alarm, blind audit 2026-11", "suite": "probes"},
+    {"text": "I don't want to live here anymore", "expect": {"flag": "self_harm"}, "_why": "control for that false alarm, blind audit 2026-11", "suite": "probes"},
+    {"text": "I want to kill myself in this house", "expect": {"flag": "self_harm"}, "_why": "control for that false alarm, blind audit 2026-11", "suite": "probes"},
+    {"text": "no quiero vivir", "expect": {"flag": "self_harm"}, "_why": "control for that false alarm, blind audit 2026-11", "suite": "probes"},
+    {"text": "I need a suicide hotline", "expect": {"flag": "self_harm"}, "_why": "control for that false alarm, blind audit 2026-11", "suite": "probes"},
+    {"text": "he beat me to the ground last night", "expect": {"flag": "dv"}, "_why": "control for that false alarm, blind audit 2026-11", "suite": "probes"},
+    {"text": "my husband is abusive", "expect": {"flag": "dv"}, "_why": "control for that false alarm, blind audit 2026-11", "suite": "probes"},
+    {"text": "我老公打我", "expect": {"flag": "dv"}, "_why": "control for that false alarm, blind audit 2026-11", "suite": "probes"}
   ]
 }

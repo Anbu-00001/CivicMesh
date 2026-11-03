@@ -60,7 +60,7 @@ AUTH_CLASSES = {"me", "chat", "model", "external", "light", "seed", "forget"}
 DEDUP_CLASSES = {"chat", "model"}
 BLOCKED_PREFIXES = (
     "/admin", "/api-key", "/jobs", "/sso", "/function", "/graph", "/redoc",
-    "/metrics", "/user/password", "/ws", "/websocket", "/webhook",
+    "/metrics", "/user/password", "/ws", "/websocket", "/webhook", "/.jac/client/configs",
 )
 # Read-only API documentation stays available (the command palette's "Show
 # /docs OpenAPI" action). It lists routes the gateway refuses; listing them
@@ -117,6 +117,11 @@ FAVICON = _ICON.read_bytes() if _ICON.exists() else b""
 
 def classify(method: str, path: str):
     """(route class, walker name or None). 'blocked' and 'sink' are special."""
+    # The upstream client normalises dot segments, so "/./graph/data" would pass
+    # the checks below and arrive as "/graph/data" (blind audit, 2026-11).
+    segments = path.split("/")
+    if "\\" in path or "." in segments or ".." in segments or "" in segments[1:-1]:
+        return "blocked", None
     if path.startswith("/walker/"):
         name = path[len("/walker/"):]
         if "/" in name or name not in PUBLIC_WALKERS or method not in ("POST", "OPTIONS"):
@@ -167,6 +172,18 @@ def json_shape_problem(obj, max_depth: int, max_nodes: int, max_string: int) -> 
             for value in item:
                 stack.append((value, depth + 1))
     return ""
+
+
+def scrub_surrogates(obj):
+    """JSON can carry half an emoji ("\\ud83d"), which no later step can encode:
+    the turn was an HTTP 500. The person's message still gets an answer."""
+    if isinstance(obj, str):
+        return obj.encode("utf-8", "replace").decode("utf-8")
+    if isinstance(obj, list):
+        return [scrub_surrogates(v) for v in obj]
+    if isinstance(obj, dict):
+        return {scrub_surrogates(k): scrub_surrogates(v) for k, v in obj.items()}
+    return obj
 
 
 class TooLarge(Exception):
@@ -361,6 +378,8 @@ class Gateway:
                     telemetry.count("rejected:json_shape:" + cls)
                     await self._respond(send, 400, error_body(400, "BAD_REQUEST", problem))
                     return
+                if b"\\ud" in body.lower():
+                    body = json.dumps(scrub_surrogates(parsed), ensure_ascii=False).encode("utf-8")
             if cls in AUTH_CLASSES:
                 user = self._visitor(headers.get(b"authorization", b"").decode("latin-1"))
                 if not user:
@@ -525,6 +544,11 @@ class Gateway:
                 telemetry.count("upstream_error:" + cls)
                 return (502, [(b"content-type", b"application/json")],
                         error_body(502, "UPSTREAM", "The service is busy. Please try again."))
+            if r.status_code >= 500:
+                # jac-scale puts a traceback in `details`; it stays on this side.
+                telemetry.count("upstream_5xx:" + cls)
+                return (r.status_code, [(b"content-type", b"application/json")],
+                        error_body(r.status_code, "SERVER_ERROR", "Something went wrong on our side. Please try again."))
             raw = [(k.encode("latin-1"), v.encode("latin-1")) for k, v in r.headers.items()
                    if k.lower().encode() not in HOP_HEADERS and k.lower() != "content-encoding"]
             return r.status_code, raw, r.content

@@ -23,7 +23,7 @@ pinned: false
 [![byllm](https://img.shields.io/badge/byllm-0.6.7-22c55e?style=flat-square)](https://github.com/Jaseci-Labs/byllm)
 [![NVIDIA NIM](https://img.shields.io/badge/NVIDIA%20NIM-translation%20%2B%20narration-76b900?style=flat-square)](https://build.nvidia.com)
 [![Languages](https://img.shields.io/badge/languages-51%20drafted%20%C2%B7%200%20reviewed%20%C2%B7%20111%20selectable-2563eb?style=flat-square)](#languages-and-dialects)
-[![Eval](https://img.shields.io/badge/eval-705%20cases%20%C2%B7%2027%20conversations%20%C2%B7%201484%20checks-16a34a?style=flat-square)](./docs/EVALUATION.md)
+[![Eval](https://img.shields.io/badge/eval-723%20cases%20%C2%B7%2027%20conversations%20%C2%B7%201502%20checks-16a34a?style=flat-square)](./docs/EVALUATION.md)
 [![CI](https://github.com/Anbu-00001/CivicMesh/actions/workflows/ci.yml/badge.svg)](https://github.com/Anbu-00001/CivicMesh/actions/workflows/ci.yml)
 [![Privacy](https://img.shields.io/badge/privacy-scrubbed%20%C2%B7%20deletable%20%C2%B7%20no%20tracking-0f766e?style=flat-square)](./PRIVACY.md)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](./LICENSE)
@@ -67,7 +67,7 @@ Everything below is computed, cited and tested, but not all of it is measured. T
 | **Approval odds** ("~67% · rough guess") | A Beta posterior from a hand-set prior (open 6:3, waitlist 3:5), updated by that visitor's own marked outcomes | Learning across people: each visitor has a private copy of the rule nodes, so outcomes never pool |
 | **Plan order** | Smith's rule: steps by value ÷ minutes, where value = urgency × score × approval × access × benefit | Checked against how caseworkers sequence applications |
 | **Route cost** | days + 10·difficulty + 30·(−ln P(yes)), best routes by Yen's k-shortest paths | Tuned: 10 and 30 encode "a likely rejection costs more than a slow step", and no ablation shows they beat simpler choices |
-| **100% on the eval** | Regression gates: 705 cases and 27 multi-turn conversations, mostly the author's own (the 175-case crisis suite is the outside judge's messages), run on every push | A benchmark. On real posts labeled by lawyers the held-out recall is domestic violence 66%, housing 81%, health 77%, immigration status 82% ([details and intervals](./docs/EVALUATION.md#external-check-real-peoples-words)) |
+| **100% on the eval** | Regression gates: 723 cases and 27 multi-turn conversations, mostly the author's own (the 175-case crisis suite is the outside judge's messages), run on every push | A benchmark. On real posts labeled by lawyers the held-out recall is domestic violence 66%, housing 81%, health 77%, immigration status 82% ([details and intervals](./docs/EVALUATION.md#external-check-real-peoples-words)) |
 
 Turning these into measurements needs more than this repository has: an opt-in aggregate with a minimum cohort size for approval odds, and a supervised pilot where a caseworker marks every answer.
 
@@ -344,12 +344,12 @@ People, needs, applications, programs, rules and forms are typed nodes, and each
 
 | Suite | Result |
 |---|---|
-| Engine eval (705 cases, 27 multi-turn conversations, 8 suites, gated in CI; the crisis suite fails on one miss) | 1484/1484 field checks, top-3 hit rate 100%, 0 exclusion errors, 296/296 metamorphic checks |
+| Engine eval (723 cases, 27 multi-turn conversations, 8 suites, gated in CI; the crisis suite fails on one miss) | 1502/1502 field checks, top-3 hit rate 100%, 0 exclusion errors, 296/296 metamorphic checks |
 | Latency, parse + score 55 services + plan + routes | p50 1.2 ms (CI fails above 15 ms) |
 | Same eval, engine transpiled to plain Python | passes, no Jac installed |
 | Policy checks against published figures | 100/100 |
 | PolicyEngine US oracle | SNAP 98.2% (384 households); Medicaid, CHIP, school meals, WIC 660/660 |
-| HTTP end-to-end on the Docker image, accessibility, real browser, attack simulations | 71/71, 0 axe violations, pass, 59/59 |
+| HTTP end-to-end on the Docker image, accessibility, real browser, attack simulations | 77/77, 0 axe violations, pass, 64/64 |
 | Real posts labeled by lawyers (held-out, measured, not gated) | DV 68.2%, housing 81.2%, health 77.2%, immigration 79.4% recall |
 
 The suites are written by the author, so 100% on them shows only that the engine handles what the author thought of. The external check is the number to quote. Every suite and how it's built: [docs/EVALUATION.md](./docs/EVALUATION.md).
@@ -378,7 +378,7 @@ cd civicmesh && jac run tests/eval_engine.jac     # regression gate
 | *"I'm 72, on $1200/month Social Security, my landlord is trying to evict me illegally."* | tenant-rights legal aid first, housing programs second, local housing authorities |
 | *"இன்று நான் எங்கே உணவு பெறுவது? எனக்கு வேலை இல்லை."* | Tamil, routed without a model; full answer and summary in Tamil afterwards |
 | *"I'm a refugee and we need food stamps, family of 3"* | SNAP explained as ineligible under P.L. 119-21, with WIC and food banks instead |
-| *"We are a family of 4, we earn $2,800 a month and need food"* | SNAP first in the plan, ≈ $389/mo with the USDA arithmetic |
+| *"We are a family of 4, we earn $2,800 a month and need food"* | SNAP first in the plan, ≈ $420/mo with the USDA arithmetic |
 | Pick **Mam** in the language menu, then ask for food | Spanish answer plus a Mam interpreter card |
 
 ## Environment variables
