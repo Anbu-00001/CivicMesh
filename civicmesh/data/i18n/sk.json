@@ -111,5 +111,11 @@
   "ui.details": "Podrobnosti",
   "ui.hide_details": "Skryť podrobnosti",
   "ui.more_lines": "Ďalšie núdzové situácie",
-  "ui.show_programs": "Zobraziť programy a ďalšie kroky"
+  "ui.show_programs": "Zobraziť programy a ďalšie kroky",
+  "opt.prefer_not": "Radšej to nepoviem",
+  "ui.near_title": "Nie je na tomto zozname, a prečo",
+  "ui.near_ask": "Stále môžete požiadať. Odmietnuť môže len úrad programu.",
+  "ui.charge_title": "Dávky a vaše imigračné konanie",
+  "ui.charge_body": "Od 18. septembra 2026 môžu úradníci pri žiadosti o zelenú kartu prihliadať na dávky podľa príjmu, ktoré využívate sami. Dávky členov rodiny sa spravidla nepočítajú a utečenci a azylanti sú vyňatí. Skôr ako sa rozhodnete, porozprávajte sa s akreditovaným imigračným zástupcom.",
+  "ui.charge_link": "Nájsť bezplatnú právnu pomoc v imigračných veciach"
 }

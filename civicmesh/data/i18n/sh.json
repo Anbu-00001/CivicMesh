@@ -111,5 +111,11 @@
   "ui.details": "Detalji",
   "ui.hide_details": "Sakrij detalje",
   "ui.more_lines": "Druge hitne situacije",
-  "ui.show_programs": "Prikaži programe i sljedeće korake"
+  "ui.show_programs": "Prikaži programe i sljedeće korake",
+  "opt.prefer_not": "Radije ne bih rekao",
+  "ui.near_title": "Nije na ovom popisu, i zašto",
+  "ui.near_ask": "Ipak možete podnijeti zahtjev. Samo ured programa može odbiti.",
+  "ui.charge_title": "Naknade i vaš imigracijski slučaj",
+  "ui.charge_body": "Od 18. septembra 2026. službenici mogu uzeti u obzir naknade prema prihodu koje sami koristite kada podnosite zahtjev za zelenu kartu. Naknade članova porodice se uglavnom ne računaju, a izbjeglice i osobe s azilom su izuzete. Prije odluke razgovarajte s akreditovanim imigracijskim predstavnikom.",
+  "ui.charge_link": "Pronađite besplatnu pravnu pomoć za imigraciju"
 }

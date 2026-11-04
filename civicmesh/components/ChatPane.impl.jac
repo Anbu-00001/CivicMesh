@@ -644,6 +644,19 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
     plan: Any = d["plan"] if d["plan"] else {};
     routes: list = list(d["routes"]) if d["routes"] else [];
     esc: Any = d["escalation"] if d["escalation"] else {};
+    # Blind audit, 2026-11: near misses were computed and never shown, so every "no" was silent.
+    card_names: list = [m["resource_name"] for m in shown_matches[:4]];
+    near_all: list = list(d["near_misses"]) if d["near_misses"] else [];
+    near_show: list = [] if held_back else [n for n in near_all if not card_names.includes(n["resource_name"])];
+    pflags: list = list(d["profile"]["flags"]) if (d["profile"] and d["profile"]["flags"]) else [];
+    pstatus: str = str(d["profile"]["citizenship"]) if (d["profile"] and d["profile"]["citizenship"]) else "";
+    charge_asked: bool = pflags.includes("public_charge_q");
+    charge_show: bool = (not held_back) and (charge_asked or ["eligible_immigrant", "humanitarian", "non_citizen", "cuban_haitian_entrant", "cofa"].includes(pstatus));
+    charge_block: Any = <details className="cm-block cm-charge" open={charge_asked} dir="auto">
+        <summary className="cm-block-title">{L(ui, "ui.charge_title", "Benefits and your immigration case")}</summary>
+        <p>{L(ui, "ui.charge_body", "Since September 18, 2026, officers can weigh means-tested benefits you use yourself when you apply for a green card. Benefits your family members use generally aren't counted, and refugees and asylees are exempt. Talk to an accredited immigration representative before you decide.")}</p>
+        <a href="https://www.immigrationadvocates.org/nonprofit/legaldirectory/" target="_blank" rel="noopener noreferrer">{L(ui, "ui.charge_link", "Find free immigration legal help")}</a>
+    </details>;
     q: Any = d["question"] if d["question"] else {};
     # A machine-drafted catalog (no native review yet): say so in the user's
     # language, keep the English original one tap away, and show the English
@@ -721,9 +734,16 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                     {prof["carried_category"] and <span className="cm-fact cm-fact-dim">carried from earlier</span>}
                 </div>}
                 {(d["privacy"] and d["privacy"]["private_turn"] and is_last) and <div className="cm-private-note">{("Sesión privada activada: cuando cierre esta pestaña, este navegador no guardará nada de esta conversación. «Quick exit» (arriba a la derecha, o pulse Mayús tres veces) sale al instante." if lang == "es" else "Private session is on: once you close this tab, this browser keeps nothing about this conversation. Quick exit (top right, or press Shift three times) leaves instantly.")}</div>}
+                {(charge_show and charge_asked) and charge_block}
                 {len(shown_matches) > 0 and <div className="cm-cards">
                     {[renderMatchCard(shown_matches[j], idx, j, ui) for j in range(len(shown_matches) if len(shown_matches) < 4 else 4)]}
                 </div>}
+                {len(near_show) > 0 and <div className="cm-block cm-near" dir="auto">
+                    <div className="cm-block-title"><span>{L(ui, "ui.near_title", "Not on this list, and why")}</span></div>
+                    {[<p key={"nm" + str(i)}><strong>{near_show[i]["resource_name"]}</strong>{": " + str(near_show[i]["counterfactual"])}</p> for i in range(len(near_show))]}
+                    <p className="cm-muted">{L(ui, "ui.near_ask", "You can still apply. Only the program's office can say no.")}</p>
+                </div>}
+                {(charge_show and not charge_asked) and charge_block}
                 {(held_back and n_held > 0) and <button className="cm-why cm-show-programs" onClick={lambda _e: MouseEvent { open_programs = open_programs + [str(msg["id"])]; }}>{L(ui, "ui.show_programs", "Show programs and next steps") + " (" + str(n_held) + ")"}</button>}
                 {((not held_back) and plan["steps"] and len(plan["steps"]) > 0) and renderPlan(plan, ui)}
                 {(not held_back) and renderLocal(locals[msg["id"]])}

@@ -111,5 +111,11 @@
   "ui.details": "詳情",
   "ui.hide_details": "隱藏詳情",
   "ui.more_lines": "其他緊急情況",
-  "ui.show_programs": "顯示計劃同下一步"
+  "ui.show_programs": "顯示計劃同下一步",
+  "opt.prefer_not": "我唔想講",
+  "ui.near_title": "唔喺呢個清單度，同埋點解",
+  "ui.near_ask": "你仍然可以申請。只有計劃嘅辦事處可以拒絕。",
+  "ui.charge_title": "福利同你嘅移民個案",
+  "ui.charge_body": "由 2026 年九月 18 日起，你申請綠卡時，官員可以考慮你自己使用嘅按收入計算福利。家人使用嘅福利通常唔計，難民同獲庇護者獲豁免。決定之前，請同認可嘅移民代表傾下。",
+  "ui.charge_link": "搵免費移民法律幫助"
 }

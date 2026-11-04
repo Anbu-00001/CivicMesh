@@ -111,5 +111,11 @@
   "ui.details": "Details",
   "ui.hide_details": "Details ausblenden",
   "ui.more_lines": "Andere Notfälle",
-  "ui.show_programs": "Programme und nächste Schritte anzeigen"
+  "ui.show_programs": "Programme und nächste Schritte anzeigen",
+  "opt.prefer_not": "Das möchte ich nicht sagen",
+  "ui.near_title": "Nicht auf dieser Liste, und warum",
+  "ui.near_ask": "Sie können sich trotzdem bewerben. Nur das Programmamt kann ablehnen.",
+  "ui.charge_title": "Leistungen und Ihr Einwanderungsverfahren",
+  "ui.charge_body": "Seit dem 18. September 2026 können Beamte einkommensabhängige Leistungen, die Sie selbst beziehen, berücksichtigen, wenn Sie eine Green Card beantragen. Leistungen von Familienangehörigen zählen in der Regel nicht, und Flüchtlinge und Asylberechtigte sind ausgenommen. Sprechen Sie mit einem akkreditierten Einwanderungsvertreter, bevor Sie entscheiden.",
+  "ui.charge_link": "Kostenlose Rechtshilfe zur Einwanderung finden"
 }

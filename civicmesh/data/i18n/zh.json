@@ -115,5 +115,11 @@
   "ui.details": "详情",
   "ui.hide_details": "隐藏详情",
   "ui.more_lines": "其他紧急情况",
-  "ui.show_programs": "显示项目和下一步"
+  "ui.show_programs": "显示项目和下一步",
+  "opt.prefer_not": "我不想说",
+  "ui.near_title": "不在此列表中，以及原因",
+  "ui.near_ask": "您仍然可以申请。只有项目办公室才能拒绝。",
+  "ui.charge_title": "福利与您的移民案件",
+  "ui.charge_body": "自 2026 年九月 18 日起，您申请绿卡时，官员可以考虑您本人使用的按收入发放的福利。家人使用的福利通常不计，难民和获庇护者可豁免。做决定前，请咨询经认可的移民代表。",
+  "ui.charge_link": "查找免费移民法律帮助"
 }

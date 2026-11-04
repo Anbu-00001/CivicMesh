@@ -617,7 +617,24 @@ def parse_income(low: str) -> tuple {
         }
         return (0, m0);
     }
+    both = _two_incomes(low);
+    if both[1] { return both; }
     return _stated_income(low, False);
+}
+
+# "I earn $2000 a month and my wife earns $2500 a month"; "one pays $800 a month and
+# the other pays $1000" (blind audit, 2026-11: only one amount was read).
+glob AMOUNT_PART: str = "\\$?\\s?(\\d[\\d,]{2,8})(?:\\s*(?:dollars?|bucks))?(?:\\s*(?:a|an|per|each|every|/)\\s*(hour|hr|week|wk|month|mo|year|yr))?";
+glob TWO_INCOMES_RE: str = "\\b(?:earn|earns|make|makes|get paid|gets paid|bring home|brings home|pays|pay|paid)\\s+(?:about |around |like )?" + AMOUNT_PART + "[^.!?;]{0,12}?(?:,|\\band\\b|\\bwhile\\b|\\bbut\\b|\\bplus\\b)\\s*(?:then\\s+)?(?:my|our|the|her|his)\\s+(?:\\w+\\s+)?(?:wife|husband|spouse|partner|boyfriend|girlfriend|fianc\\w+|other|other one|second(?: job)?)\\s+(?:one\\s+)?(?:job\\s+)?(?:earns|makes|gets paid|brings home|pays|gets)\\s+(?:about |around |like )?" + AMOUNT_PART;
+
+def _two_incomes(low: str) -> tuple {
+    m = re.search(TWO_INCOMES_RE, low);
+    if not m { return (-1, None); }
+    first_period = m.group(2) or "";
+    second_period = m.group(4) or first_period;
+    first_period = first_period or second_period;
+    total = _annualize(float(m.group(1).replace(",", "")), first_period, low) + _annualize(float(m.group(3).replace(",", "")), second_period, low);
+    return (total, m);
 }
 
 """The best-cued amount in the message: (income_annual, match) or (-1, None).
@@ -648,6 +665,8 @@ def _stated_income(low: str, cued_only: bool) -> tuple {
         after = re.split(r"[,.;!?]|\band\b|\bbut\b|\by\b|\bpero\b", tail)[0];
         if re.search(EXPENSE_CUES, clause) or re.search(EXPENSE_CUES, after) { cue -= 3.0; }
         if period { cue += 1.0; }
+        # Gross income is what programs count ("take home $1400 ... before taxes $1800").
+        if re.search(r"before tax|pre-?tax|gross", head[-30:] + " " + tail[:18]) { cue += 3.0; }
         if cue < 0 or (cued_only and cue < 1.0) { continue; }
         if cue > best_score {
             best_score = cue;
@@ -948,7 +967,7 @@ def parse_citizenship(low: str, evidence: list, text: str) -> str {
         (r"\b(?:cuban(?:/| or | and |-)haitian entrants?|cuban entrants?|haitian entrants?)\b|\b(?:from cuba|from haiti|cuban|haitian|cubano|haitiano)\b[^.!?]{0,60}\b(?:parole[ed]?|parol[ae]d[oa]|i-94)\b|\b(?:parole[ed]?|i-94)\b[^.!?]{0,60}\b(?:from cuba|from haiti|cuban|haitian)\b", "cuban_haitian_entrant"),
         (r"\b(?:cofa|compact of free association|from (?:micronesia|the marshall islands|marshall islands|palau)|(?:micronesian|marshallese|palauan) citizen)\b", "cofa"),
         (r"\b(?:green card|permanent resident|lpr|residente permanente|tarjeta verde|residencia permanente)\b", "eligible_immigrant"),
-        (r"\b(?:refugee|asylee|granted asylum|parolee|humanitarian parole|refugiad[oa]|asilad[oa]|asilo aprobado)\b", "humanitarian"),
+        (r"\b(?:refugee|asylee|granted asylum|parolee|humanitarian parole|refugiad[oa]|asilad[oa]|asilo aprobado|approved vawa|vawa (?:petition|self-petition))\b|\b(?:we(?:'re| are| were)|my family (?:is|are)|our family is)\s+(?:\w+\s+){0,2}(?:refugees|asylees|parolees)\b", "humanitarian"),
         (r"\b(?:undocumented|no papers|without papers|no documents|illegal immigrant|not a (?:us |u\.s\. )?citizen|out of status|(?:wi ?thout|no|don'?t have|do not have|doesn'?t have|does not have)(?: any)? (?:u\.?s\.? )?citizenship|indocumentad[oa]s?|sin papeles|sin documentos|no tengo papeles)\b|\b(?:don'?t|do not|doesn'?t|does not) have (?:any )?(?:papers|documents|legal status|immigration status)\b", "non_citizen"),
         (r"\b(?:seeking asylum|asylum seeker|(?:applied|applying|filed) for asylum|asylum (?:case|application|claim|interview|hearing)|immigration court|solicitando asilo|pidiendo asilo|caso de asilo|corte de inmigraci[oó]n)\b", "non_citizen"),
         (r"\b(?:daca|dreamer|visa holder|on a visa|work visa|tps)\b", "non_citizen"),
@@ -964,6 +983,9 @@ def parse_citizenship(low: str, evidence: list, text: str) -> str {
             left = low[max(0, m.start() - 40):m.start()];
             if status in ["eligible_immigrant", "citizen", "humanitarian"] and re.search(STATUS_OTHER_LEFT, left) { continue; }
             if status == "eligible_immigrant" and re.search(STATUS_NEG_LEFT, left) { status = "non_citizen"; }
+            # "I'm applying for a green card", "my green card application is pending":
+            # no status said yet, so nothing is assumed.
+            if status == "eligible_immigrant" and (re.search(r"\b(?:apply|applying|applied|applies|waiting|wait|hope|hoping|trying|want|filed|filing|get(?:ting)?)\b[^.!?]{0,20}$", left) or re.match(r"\s*(?:application|applications|petition|interview|case|renewal process)\b", low[m.end():m.end() + 16])) { continue; }
             if status == "citizen" and re.search("\\bsenior\\s+$", left) { continue; }
             # "A Guatemalan citizen": a foreign national, not a U.S. citizen.
             if status == "citizen" and m.group(0) in ["citizen", "ciudadano", "ciudadana"] and re.search(NATIONALITY_LEFT, left) { status = "non_citizen"; }
@@ -978,6 +1000,18 @@ def parse_citizenship(low: str, evidence: list, text: str) -> str {
 glob CITIZEN_CHILDREN_RE: str = "\\b(?:my|our|the|his|her) (?:\\w+ )?(?:son|sons|daughter|daughters|kids?|children|child|baby|boys|girls)\\b[^.!?]{0,30}\\b(?:are|is|was|were) (?:all |both )?(?:u\\.?s\\.? |american )?(?:citizens?|born here|born in (?:the )?(?:us|u\\.s\\.|usa|united states|america)|american)\\b|\\bmis hij[oa]s (?:son|nacieron) (?:ciudadan[oa]s|aqu[ií])";
 # A green card held under five years: most adults wait for SNAP and Medicaid.
 glob LPR_YEARS_RE: str = "\\b(?:got|received|have had|had|'ve had|holding|hold) (?:my |our |a |the )?green cards? (?:for |about |only |just )*(?:([1-4]|one|two|three|four|a couple of|a few) (?:years?|yrs?)|(?:\\d{1,2}|a few|several|six) months|last year|this year|recently)\\b(?! ago)|\\bgreen cards? (?:since|in) (?:last year|this year|202[2-9])\\b|\\b(?:got|received) (?:my |our |a |the )?green cards? (?:([1-4]|one|two|three|four|a couple of|a few) (?:years?|yrs?)|(?:\\d{1,2}|a few|several|six) months|last year|this year|recently)(?: ago)?\\b";
+
+# Facts that decide a program rule (engine/policy.jac, program_gates).
+glob FACT_FLAGS: list = [
+    ("child_status", "\\b(?:my|our) (?:\\w+ )?(?:son|daughter|kid|child|baby|boy|girl|kids|children|sons|daughters)\\b[^.!?]{0,20}\\b(?:is|are)\\s+(?:also\\s+|both\\s+)?(?:undocumented|a refugee|refugees|an asylee|asylees|out of status|not (?:a )?citizens?)\\b"),
+    ("college_student", "\\b(?:full[- ]?time|part[- ]?time|college|university) (?:college |university )?student\\b|\\b(?:i'?m|i am) (?:in college|at college|at university)\\b"),
+    ("with_parents", "\\b(?:live|living|stay|staying) with my (?:parents?|mom|dad|mother|father)\\b"),
+    ("itin", "\\bitin\\b"),
+    ("no_children", "\\b(?:no|without|don'?t have(?: any)?|do not have(?: any)?) (?:kids|children|child|dependents)\\b|\\bchildless\\b"),
+    ("sex_offender", "\\b(?:i'?m|i am|i was|i have to register as|i must register as)\\b[^.!?]{0,25}\\bsex offender\\b"),
+    ("hud_meth_bar", "\\bconvicted\\b[^.!?]{0,30}\\b(?:making|cooking|manufactur\\w+|producing)\\s+(?:meth|methamphetamine)\\b[^.!?]{0,30}\\b(?:public housing|section 8|assisted housing|housing project)\\b"),
+    ("public_charge_q", "\\bpublic charge\\b|\\b(?:hurt|affect|harm|ruin|jeopardi[sz]e|count against|be used against|mess up)\\b[^.!?]{0,30}\\b(?:immigration|green card|citizenship|my case|visa|naturali[sz]ation)\\b|\\b(?:safe|ok|okay|risky)\\b[^.!?]{0,20}\\b(?:to )?(?:get|use|apply|take|sign up)\\b[^.!?]{0,40}\\b(?:green card|immigration|my case)\\b|\\bgreen card\\b[^.!?]{0,50}\\bsafe\\b[^.!?]{0,30}\\b(?:get|use|apply|take)\\b|\\b(?:carga p[uú]blica|afectar? mi (?:caso|residencia|estatus|green card))\\b")
+];
 
 # ---------- entry point ----------
 
@@ -1251,6 +1285,9 @@ def parse_intake(text: str) -> dict {
     }
     if re.search(CITIZEN_CHILDREN_RE, low) and "citizen_children" not in flags { flags.append("citizen_children"); }
     if citizenship == "eligible_immigrant" and re.search(LPR_YEARS_RE, low) { flags.append("lpr_recent"); }
+    for (fact, fact_rx) in FACT_FLAGS {
+        if re.search(fact_rx, low) and fact not in flags { flags.append(fact); }
+    }
 
     # Other languages: the same five facts from per-language tables
     # (engine/facts_i18n.jac), filling whatever the EN/ES patterns missed.

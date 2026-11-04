@@ -111,5 +111,11 @@
   "ui.details": "Détails",
   "ui.hide_details": "Masquer les détails",
   "ui.more_lines": "Autres urgences",
-  "ui.show_programs": "Afficher les programmes et les prochaines étapes"
+  "ui.show_programs": "Afficher les programmes et les prochaines étapes",
+  "opt.prefer_not": "Je préfère ne pas le dire",
+  "ui.near_title": "Pas sur cette liste, et pourquoi",
+  "ui.near_ask": "Vous pouvez quand même faire la demande. Seul le bureau du programme peut refuser.",
+  "ui.charge_title": "Les aides et votre dossier d'immigration",
+  "ui.charge_body": "Depuis le 18 septembre 2026, les agents peuvent tenir compte des aides sous condition de ressources que vous utilisez vous-même lorsque vous demandez une carte verte. Celles de vos proches ne comptent généralement pas, et les réfugiés et personnes ayant obtenu l'asile sont exemptés. Parlez à un représentant en immigration accrédité avant de décider.",
+  "ui.charge_link": "Trouver une aide juridique gratuite en immigration"
 }

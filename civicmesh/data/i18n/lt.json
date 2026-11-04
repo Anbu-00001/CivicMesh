@@ -111,5 +111,11 @@
   "ui.details": "Išsamiau",
   "ui.hide_details": "Slėpti išsamią informaciją",
   "ui.more_lines": "Kitos skubios situacijos",
-  "ui.show_programs": "Rodyti programas ir kitus veiksmus"
+  "ui.show_programs": "Rodyti programas ir kitus veiksmus",
+  "opt.prefer_not": "Verčiau nesakysiu",
+  "ui.near_title": "Nėra šiame sąraše, ir kodėl",
+  "ui.near_ask": "Vis tiek galite kreiptis. Atsisakyti gali tik programos įstaiga.",
+  "ui.charge_title": "Išmokos ir jūsų imigracijos byla",
+  "ui.charge_body": "Nuo 2026 m. rugsėjo 18 d. pareigūnai gali atsižvelgti į nuo pajamų priklausančias išmokas, kuriomis naudojatės patys, kai prašote žaliosios kortelės. Šeimos narių išmokos paprastai neskaičiuojamos, o pabėgėliams ir prieglobstį gavusiems ši taisyklė netaikoma. Prieš nuspręsdami pasikalbėkite su akredituotu imigracijos atstovu.",
+  "ui.charge_link": "Rasti nemokamą teisinę pagalbą imigracijos klausimais"
 }

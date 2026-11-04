@@ -116,5 +116,11 @@
   "ui.details": "Details",
   "ui.hide_details": "Hide details",
   "ui.more_lines": "Other emergencies",
-  "ui.show_programs": "Show programs and next steps"
+  "ui.show_programs": "Show programs and next steps",
+  "opt.prefer_not": "I'd rather not say",
+  "ui.near_title": "Not on this list, and why",
+  "ui.near_ask": "You can still apply. Only the program's office can say no.",
+  "ui.charge_title": "Benefits and your immigration case",
+  "ui.charge_body": "Since September 18, 2026, officers can weigh means-tested benefits you use yourself when you apply for a green card. Benefits your family members use generally aren't counted, and refugees and asylees are exempt. Talk to an accredited immigration representative before you decide.",
+  "ui.charge_link": "Find free immigration legal help"
 }

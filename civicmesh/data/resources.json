@@ -402,7 +402,7 @@
         "citizenship_required": false,
         "age_min": 0,
         "age_max": 0,
-        "exceptions": "Income test waived if already enrolled in Medicaid, SNAP, or TANF. Open to all immigration statuses; use of WIC does not affect public charge determinations.",
+        "exceptions": "Income test waived if already enrolled in Medicaid, SNAP, or TANF. Open to all immigration statuses. Under the public charge rule in effect since September 18, 2026, WIC you use yourself can be one factor if you apply for a green card; a family member's WIC generally is not. An accredited immigration representative can advise you.",
         "criteria_summary": "Pregnant, postpartum (up to 6 months), breastfeeding (up to 1 year), or have a child under 5; income at or below 185 percent FPL; nutritional risk assessment.",
         "targets": ["young_child"]
       },

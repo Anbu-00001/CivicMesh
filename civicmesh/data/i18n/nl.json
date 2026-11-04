@@ -111,5 +111,11 @@
   "ui.details": "Details",
   "ui.hide_details": "Details verbergen",
   "ui.more_lines": "Andere noodgevallen",
-  "ui.show_programs": "Programma's en volgende stappen tonen"
+  "ui.show_programs": "Programma's en volgende stappen tonen",
+  "opt.prefer_not": "Dat zeg ik liever niet",
+  "ui.near_title": "Niet op deze lijst, en waarom",
+  "ui.near_ask": "U kunt nog steeds aanvragen. Alleen het programmabureau kan nee zeggen.",
+  "ui.charge_title": "Uitkeringen en uw immigratiezaak",
+  "ui.charge_body": "Sinds 18 september 2026 mogen ambtenaren inkomensafhankelijke uitkeringen die u zelf gebruikt meewegen wanneer u een green card aanvraagt. Wat uw gezinsleden gebruiken telt meestal niet mee, en vluchtelingen en asielgerechtigden zijn vrijgesteld. Spreek met een geaccrediteerde immigratievertegenwoordiger voordat u beslist.",
+  "ui.charge_link": "Gratis juridische hulp bij immigratie vinden"
 }

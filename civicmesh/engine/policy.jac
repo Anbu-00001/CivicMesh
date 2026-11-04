@@ -207,7 +207,7 @@ glob PROGRAMS: dict = {
     "section8-hcv-rule":     {"income": {"basis": "ami", "pct": 50, "note": "75% of new vouchers go to households under 30% of area median"}, "status": "hud"},
     "esg-shelter-rule":      {"income": {"basis": "none"}, "status": ""},
     "rrh-rule":              {"income": {"basis": "ami", "pct": 30, "note": "ESG-funded rapid re-housing re-checks income against 30% of area median"}, "status": ""},
-    "liheap-rule":           {"income": {"basis": "fpl", "pct": 150, "note": "states may use 60% of state median income instead, if higher"}, "status": ""},
+    "liheap-rule":           {"income": {"basis": "fpl", "pct": 150, "note": "states may use 60% of state median income instead, if higher"}, "status": "liheap"},
     "public-housing-rule":   {"income": {"basis": "ami", "pct": 80}, "status": "hud"},
     "ndv-shelter-rule":      {"income": {"basis": "none"}, "status": ""},
     "coc-psh-rule":          {"income": {"basis": "none"}, "status": ""},
@@ -379,6 +379,11 @@ def income_limit(rule_id: str, profile: dict, flat_fallback: int = 0) -> dict {
             pct = float(PREGNANCY_MEDICAID_PCT.get(state, 200));
             typical = state not in PREGNANCY_MEDICAID_PCT;
             note = (str(STATE_NAMES.get(state, state)) + " covers pregnant women up to " + str(int(pct)) + "% of poverty through Medicaid; some states go higher through CHIP") if state in PREGNANCY_MEDICAID_PCT else "pregnancy limits are set by each state, from 138% to over 300% of poverty; 200% is typical — tell me your state";
+        } elif basis == "medicaid" and int(profile.get("age", 0) or 0) >= 65 {
+            # Over-65s aren't in the expansion group. Ohio and Texas use the SSI
+            # level, about 74% of poverty, and others go to 100% (MACPAC Exhibit 37).
+            pct = 100.0;
+            note = "People 65 and over aren't in the Medicaid expansion. Limits run from about 74% to 100% of poverty depending on the state, with a savings limit too. Ask about a Medicare Savings Program, which reaches higher incomes";
         } elif basis == "medicaid" {
             flags = list(profile.get("flags", []));
             has_kids = "children" in flags or "pregnant" in flags or n >= 2 and "family" in flags;
@@ -499,6 +504,86 @@ def benefit_status(kind: str, st: str, flags: list, today: str, kids: bool) -> d
     return out;
 }
 
+# Coverage that doesn't follow the federal status list. Blind audit, 2026-11: these
+# were hidden. Only states with a source here say more than "your state decides".
+# CA: DHCS, the adult freeze "does not apply to children (0-18), pregnant".
+# OR: Oregon Health Authority, "people of all ages ... no matter their immigration status".
+# TX: Texas Works Handbook D-110, 1 TAC 370.401, CHIP Perinatal.
+# NY: MetroPlus, NYC Health + Hospitals; the state says proof can be asked "in some cases".
+glob STATE_COVERAGE: dict = {
+    "CA": {"name": "Medi-Cal", "children": "met", "pregnant": "met", "adults": "unmet", "source": "California DHCS", "adult_note": "California froze new Medi-Cal enrollment for most adults 19 and over without an eligible status"},
+    "OR": {"name": "the Oregon Health Plan", "children": "met", "pregnant": "met", "adults": "met", "source": "Oregon Health Authority", "adult_note": ""},
+    "NY": {"name": "Child Health Plus", "children": "unknown", "pregnant": "", "adults": "", "source": "NYC Health + Hospitals", "adult_note": ""},
+    "TX": {"name": "CHIP Perinatal", "children": "", "pregnant": "met", "adults": "", "source": "Texas Works Handbook D-110", "adult_note": "", "only": "chip-rule"}
+};
+glob CHIPRA_SOURCE: str = "CMS SHO #26-001 (CHIPRA 214 option); KFF";
+glob STATE_COVERS_NOTE: str = "Some states cover children and pregnant people with their own funds, or under the federal CHIPRA option, whatever the federal list says. Your state's Medicaid office decides, so it's worth applying";
+
+"""Coverage for a child or pregnant person whose status is outside the federal list."""
+def state_coverage(rule_id: str, profile: dict, flags: list) -> dict {
+    state = str(profile.get("state", "") or "");
+    age = int(profile.get("age", 0) or 0);
+    child = "child_status" in flags or (age > 0 and age < 19);
+    pregnant = "pregnant" in flags;
+    entry = STATE_COVERAGE.get(state, {});
+    if entry and entry.get("only", rule_id) == rule_id {
+        verdict = str(entry["pregnant"]) if pregnant else (str(entry["children"]) if child else str(entry["adults"]));
+        if verdict {
+            who = "pregnant people" if pregnant else ("children" if child else "adults");
+            detail = str(entry["adult_note"]) if verdict == "unmet" else (str(entry["name"]) + " covers " + who + " who meet the income rules, whatever their immigration status" + (", though you may be asked for proof in some cases" if verdict == "unknown" else ""));
+            if "children" in flags and not child and verdict == "unmet" {
+                return {"status": "unknown", "detail": detail + ". Your children can still enroll, whatever your status", "change_note": "", "source": str(entry["source"])};
+            }
+            return {"status": verdict, "detail": detail, "change_note": "", "source": str(entry["source"])};
+        }
+    }
+    if child or pregnant {
+        return {"status": "unknown", "detail": STATE_COVERS_NOTE, "change_note": "", "source": CHIPRA_SOURCE};
+    }
+    return {};
+}
+
+"""Rules beyond income and status, each from the audit's sources: a full stop is
+"unmet"; "unknown" means the office must decide, which caps the card at needs-info."""
+def program_gates(rule_id: str, profile: dict) -> list {
+    flags = list(profile.get("flags", []));
+    age = int(profile.get("age", 0) or 0);
+    has_kids = "children" in flags or "pregnant" in flags;
+    state = str(profile.get("state", "") or "");
+    out: list = [];
+    if rule_id == "snap-rule" {
+        if state == "PR" {
+            out.append({"status": "unmet", "detail": "Puerto Rico has its own program, the Nutrition Assistance Program (NAP), separate from SNAP. Apply through ADSEF", "source": "USDA FNS, Puerto Rico NAP"});
+        }
+        if "college_student" in flags {
+            out.append({"status": "unknown", "detail": "Most students at least half time can't get SNAP unless they work 20 hours a week, get work-study, or care for a young child", "source": "7 CFR 273.5"});
+        }
+        if "with_parents" in flags and age > 0 and age < 22 and not has_kids {
+            out.append({"status": "unknown", "detail": "Under 22 and living with a parent, you usually have to apply together with them", "source": "7 CFR 273.1"});
+        }
+    }
+    if rule_id == "eitc-rule" {
+        if "itin" in flags {
+            out.append({"status": "unmet", "detail": "The EITC needs a Social Security number valid for work; an ITIN doesn't count, though you can still file with one", "source": "IRS, Who qualifies for the EITC"});
+        }
+        if age > 0 and not has_kids and (age < 25 or age >= 65) {
+            out.append({"status": "unmet", "detail": "Without a qualifying child, the EITC is for ages 25 to 64", "source": "IRS, Who qualifies for the EITC"});
+        }
+    }
+    if rule_id == "tanf-rule" and "no_children" in flags and not has_kids {
+        out.append({"status": "unmet", "detail": "TANF requires a child in the home, or a pregnancy", "source": "45 CFR 260"});
+    }
+    if rule_id in ["section8-hcv-rule", "public-housing-rule"] {
+        if "hud_meth_bar" in flags {
+            out.append({"status": "unmet", "detail": "A conviction for making meth on assisted-housing property is a permanent federal bar. Legal aid can check how it applies to you", "source": "24 CFR 982.553, 960.204"});
+        }
+        if "sex_offender" in flags {
+            out.append({"status": "unknown", "detail": "Housing offices must turn down anyone on a state's lifetime sex-offender registry; a fixed-term registration may differ. Legal aid can check yours", "source": "24 CFR 982.553, 960.204"});
+        }
+    }
+    return out;
+}
+
 """Immigrant-status test for a program, effective-dated.
 
 status: citizen | eligible_immigrant (green card / LPR) | humanitarian
@@ -516,6 +601,13 @@ def status_rule(rule_id: str, profile: dict) -> dict {
     today = policy_today();
     flags = list(profile.get("flags", []));
     kids = "children" in flags or "pregnant" in flags;
+    if kind == "liheap" {
+        if st != "non_citizen" { return {}; }
+        if kids or "citizen_children" in flags {
+            return {"status": "unknown", "detail": "Federal heating help needs someone in the home with an eligible status; a U.S.-citizen child can count. The state office decides", "change_note": "", "source": "ACF LIHEAP IM 1998-25"};
+        }
+        return {"status": "unmet", "detail": "Federal heating help needs someone in the home who is a citizen or has an eligible status", "change_note": "", "source": "ACF LIHEAP IM 1998-25"};
+    }
     if not st {
         return {"status": "unknown", "detail": "Citizens, green-card holders and some other statuses qualify", "change_note": ""};
     }
@@ -554,6 +646,14 @@ def status_rule(rule_id: str, profile: dict) -> dict {
         if st in ["eligible_immigrant", "humanitarian"] {
             return {"status": "met", "detail": "Green card, refugee and asylee status qualify for HUD programs", "change_note": ""};
         }
+        # Mixed-status families get prorated aid today. HUD's February 2026 change
+        # was still a proposal when this was written (NAHRO, NLIHC).
+        if "citizen_children" in flags {
+            return {"status": "met", "detail": "Your family can get prorated help: the amount is based on who has an eligible status, and your U.S.-citizen children count", "change_note": "HUD has proposed ending prorated help for mixed-status families; ask the housing office if that has changed", "source": "24 CFR 5.520; HUD proposed rule, February 2026"};
+        }
+        if kids {
+            return {"status": "unknown", "detail": "A family with a child who is a citizen or has an eligible status can get prorated help; you don't need a status yourself", "change_note": "", "source": "24 CFR 5.520"};
+        }
         return {"status": "unmet", "detail": "Needs an eligible immigration status; mixed-status families get prorated help", "change_note": ""};
     }
     if kind == "lsc" {
@@ -566,6 +666,12 @@ def status_rule(rule_id: str, profile: dict) -> dict {
     if kind == "snap" {
         if st == "eligible_immigrant" {
             return {"status": "met", "detail": "Green-card holders qualify" + wait_note, "change_note": ""};
+        }
+        if "citizen_children" in flags and st in ["humanitarian", "non_citizen"] {
+            return {"status": "met", "detail": "Your U.S.-citizen children can get SNAP even if you can't. Apply for them, and you don't have to apply for yourself", "change_note": "", "source": "USDA FNS memo on P.L. 119-21 alien eligibility"};
+        }
+        if kids and st in ["humanitarian", "non_citizen"] {
+            return {"status": "unknown", "detail": "Children who are U.S. citizens can get SNAP even if you can't, and so can children with a green card. You can apply just for them", "change_note": "", "source": "USDA FNS memo on P.L. 119-21 alien eligibility"};
         }
         if st == "humanitarian" {
             return {"status": "unmet", "detail": "Since July 4, 2025 (P.L. 119-21 §10108) refugees, asylees and parolees are no longer eligible for SNAP; after getting a green card they are again, with no 5-year wait", "change_note": ""};
@@ -580,9 +686,22 @@ def status_rule(rule_id: str, profile: dict) -> dict {
             if today < OBBBA_MEDICAID_DATE {
                 return {"status": "met", "detail": "Refugees and asylees qualify until September 30, 2026", "change_note": "From October 1, 2026 (P.L. 119-21 §71109) federally funded Medicaid/CHIP ends for refugees, asylees and parolees who don't have a green card"};
             }
+            if "citizen_children" in flags {
+                return {"status": "met", "detail": "Your U.S.-citizen children can enroll even if you can't", "change_note": "", "source": "CMS, Medicaid eligibility"};
+            }
+            covered = state_coverage(str(rule_id), profile, flags);
+            if covered { return covered; }
             return {"status": "unmet", "detail": "Since October 1, 2026 (P.L. 119-21 §71109) refugees, asylees and parolees without a green card can't get federally funded Medicaid/CHIP; some states cover them with state funds", "change_note": ""};
         }
-        return {"status": "unmet", "detail": "Only emergency Medicaid is available without an eligible status" + ("; U.S.-citizen children can still enroll" if kids else ""), "change_note": ""};
+        if "citizen_children" in flags {
+            return {"status": "met", "detail": "Your U.S.-citizen children can enroll even if you can't. For you, emergency Medicaid is available", "change_note": "", "source": "CMS, Medicaid eligibility"};
+        }
+        covered = state_coverage(str(rule_id), profile, flags);
+        if covered { return covered; }
+        if kids {
+            return {"status": "unknown", "detail": "Children who are U.S. citizens can enroll whatever your status. For you, only emergency Medicaid is available in most states", "change_note": "", "source": "CMS, Medicaid eligibility"};
+        }
+        return {"status": "unmet", "detail": "Only emergency Medicaid is available without an eligible status, though a few states cover some adults with their own funds", "change_note": ""};
     }
     return {};
 }

@@ -111,5 +111,11 @@
   "ui.details": "Detalhes",
   "ui.hide_details": "Ocultar detalhes",
   "ui.more_lines": "Outras emergências",
-  "ui.show_programs": "Mostrar programas e próximos passos"
+  "ui.show_programs": "Mostrar programas e próximos passos",
+  "opt.prefer_not": "Prefiro não dizer",
+  "ui.near_title": "Não está nesta lista, e por quê",
+  "ui.near_ask": "Você ainda pode solicitar. Só o escritório do programa pode dizer não.",
+  "ui.charge_title": "Os benefícios e o seu caso de imigração",
+  "ui.charge_body": "Desde 18 de setembro de 2026, os agentes podem considerar os benefícios por renda que você mesmo usa quando pede o green card. Os que seus familiares usam geralmente não contam, e refugiados e asilados estão isentos. Fale com um representante de imigração credenciado antes de decidir.",
+  "ui.charge_link": "Encontrar ajuda jurídica gratuita de imigração"
 }

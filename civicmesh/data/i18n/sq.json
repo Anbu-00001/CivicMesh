@@ -111,5 +111,11 @@
   "ui.details": "Detaje",
   "ui.hide_details": "Fshih detajet",
   "ui.more_lines": "Urgjenca të tjera",
-  "ui.show_programs": "Shfaq programet dhe hapat e ardhshëm"
+  "ui.show_programs": "Shfaq programet dhe hapat e ardhshëm",
+  "opt.prefer_not": "Preferoj të mos e them",
+  "ui.near_title": "Nuk është në këtë listë, dhe pse",
+  "ui.near_ask": "Përsëri mund të aplikoni. Vetëm zyra e programit mund të thotë jo.",
+  "ui.charge_title": "Përfitimet dhe çështja juaj e imigracionit",
+  "ui.charge_body": "Që nga 18 shtatori 2026, zyrtarët mund të marrin parasysh përfitimet sipas të ardhurave që përdorni vetë kur aplikoni për kartën e gjelbër. Ato që përdorin anëtarët e familjes në përgjithësi nuk numërohen, dhe refugjatët e personat me azil janë të përjashtuar. Flisni me një përfaqësues të akredituar imigracioni para se të vendosni.",
+  "ui.charge_link": "Gjeni ndihmë ligjore falas për imigracionin"
 }

@@ -111,5 +111,11 @@
   "ui.details": "Részletek",
   "ui.hide_details": "Részletek elrejtése",
   "ui.more_lines": "Egyéb vészhelyzetek",
-  "ui.show_programs": "Programok és következő lépések mutatása"
+  "ui.show_programs": "Programok és következő lépések mutatása",
+  "opt.prefer_not": "Inkább nem mondom meg",
+  "ui.near_title": "Nincs a listán, és miért",
+  "ui.near_ask": "Ettől még jelentkezhet. Csak a program irodája mondhat nemet.",
+  "ui.charge_title": "Az ellátások és a bevándorlási ügye",
+  "ui.charge_body": "2026. szeptember 18. óta a tisztviselők figyelembe vehetik a jövedelemhez kötött ellátásokat, amelyeket Ön maga vesz igénybe, amikor zöldkártyát igényel. A családtagok ellátásai általában nem számítanak, a menekültek és menedékjogot kapottak pedig mentesek. Döntés előtt beszéljen akkreditált bevándorlási képviselővel.",
+  "ui.charge_link": "Ingyenes bevándorlási jogi segítség keresése"
 }

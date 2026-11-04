@@ -50,7 +50,7 @@ def action_text(name: str, method: str, phone: str, url: str, lang: str) -> str 
 """Build the ordered plan from ranked matches (engine.score output)."""
 def build_plan(ranked: list, urgency: str, lang: str, max_steps: int = 4) -> dict {
     uw = float(URGENCY_W.get(urgency, 1.0));
-    pool: list = [s for s in ranked if s["tier"] in ["likely", "possible"] or (s["tier"] == "needs_info" and float(s["p_eligible"]) >= 0.5) or s.get("pinned", False)];
+    pool: list = [s for s in ranked if s["tier"] in ["likely", "possible"] or (s["tier"] == "needs_info" and float(s["p_eligible"]) >= 0.5 and not s.get("office_decides", False)) or s.get("pinned", False)];
     jobs: list = [];
     for s in pool {
         form = s.get("form", {}) or {};

@@ -49,6 +49,8 @@ glob ANSWER_FLAGS: dict = {"homeless": "homeless", "veteran": "veteran", "disabi
 glob COUNT_WORDS: dict = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
                           "uno": 1, "una": 1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5, "seis": 6, "siete": 7, "ocho": 8, "nueve": 9, "diez": 10};
 glob YES_RE: str = "^\\s*(?:yes|yeah|yep|yup|sure|correct|right|i am|i do|i have|we do|we are|s[ií]|claro|as[ií] es|tengo|soy)\\b";
+# Declining to answer isn't a status (blind audit, 2026-11).
+glob REFUSAL_RE: str = "none of your business|no comment|no thanks?|no thank you|don'?t want to (?:say|answer|tell)|do not want to (?:say|answer|tell)|won'?t (?:say|answer|tell)|prefer not|rather not|not telling|not saying|no s[eé]\\b|no quiero (?:decir|contestar|responder)|prefiero no|don'?t know|not sure|^\\s*(?:skip|pass|private)\\b";
 glob NO_RE: str = "^\\s*(?:no|nope|nah|not really|i'?m not|i don'?t|we don'?t|none|ninguno|no tengo|no soy)\\b";
 # Words a bare income answer may carry besides the number: hedges, currency
 # and pay periods ("about $2,000 a month", "unos 1500 al mes", "大概两千块").
@@ -189,7 +191,7 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
     if answering == "citizenship" and not cur.get("citizenship") {
         yn_c = yes_no(text);
         if re.search(YES_RE, str(text).lower()) or yn_c == "yes" { out["citizenship"] = "citizen_or_lpr"; }
-        elif re.search(NO_RE, str(text).lower()) or yn_c == "no" { out["citizenship"] = "non_citizen"; }
+        elif (re.search(NO_RE, str(text).lower()) or yn_c == "no") and not re.search(REFUSAL_RE, str(text).lower()) { out["citizenship"] = "non_citizen"; }
     }
     # "About how much does your household earn per month?" → "2000", "两千五".
     if answering == "income" and int(out.get("income_annual", -1)) < 0 {

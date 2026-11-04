@@ -433,6 +433,20 @@ def main(app: str) -> int:
         reloads = [e for e in tab.events[mark:] if e.get("method") == "Page.frameNavigated" and not e["params"]["frame"].get("parentId")]
         check("6k an expired sign-in doesn't reload the page", not reloads, len(reloads))
         check("6l the message is answered and the thread is kept", answered and "I want to kill myself" in str(tab.js("document.querySelector('.cm-thread').innerText")))
+        # A wrong "no" has to be visible and challengeable (blind audit F13, F12). In a
+        # new case, because the danger turn above keeps programs held back in this one.
+        tab.js("[...document.querySelectorAll('.cm-ghost-btn')].find(b=>/New case/i.test(b.innerText)).click()")
+        tab.until("!document.querySelector('.cm-crisis-pin')", 5.0)
+        time.sleep(0.5)
+        rows = tab.js("document.querySelectorAll('.cm-thread .cm-row').length")
+        send(tab, "I'm a refugee and we need food stamps, family of 3")
+        tab.until(f"document.querySelectorAll('.cm-thread .cm-row').length>={rows + 2} && !document.querySelector('.cm-typing')")
+        near = str(tab.js("[...document.querySelectorAll('.cm-near')].pop()?.innerText || ''"))
+        check("6m a program left out is named, with the reason", "SNAP" in near and "119-21" in near and "still apply" in near, near[:120])
+        rows = tab.js("document.querySelectorAll('.cm-thread .cm-row').length")
+        send(tab, "will using food stamps hurt my immigration case")
+        tab.until(f"document.querySelectorAll('.cm-thread .cm-row').length>={rows + 2} && !document.querySelector('.cm-typing')")
+        check("6n a question about an immigration case gets the public charge answer, open", tab.js("(()=>{const c=[...document.querySelectorAll('.cm-charge')].pop();return !!c&&c.open&&/September 18, 2026/.test(c.innerText)})()"))
         tab.close()
     finally:
         proc.terminate()

@@ -5,7 +5,8 @@ tests/golden_i18n.json (language ID + routing in 70+ more languages) and
 tests/golden_adversarial.json (negation, idioms, cross-category traps,
 crisis, code-switching, romanized scripts, no-signal input) and
 tests/golden_crisis.json (crisis recall, strict),
-tests/golden_danger.json (a blind audit's misses and quiet controls, strict) and
+tests/golden_danger.json (a blind audit's misses and quiet controls, strict),
+tests/golden_eligibility.json (the same audit's wrong answers, strict) and
 tests/golden_facts_i18n.json (income, household, age, status and location
 stated in 20 other languages, with traps) through
 parse → rank → plan → routes, and tests/golden_conversations.json
@@ -67,7 +68,9 @@ with entry {
     for c in crisis_cases { c["suite"] = "crisis"; }
     danger_cases = json.load(open("tests/golden_danger.json", encoding="utf-8"))["cases"];
     for c in danger_cases { c["suite"] = "danger"; }
-    cases = cases + i18n_cases + adv_cases + hold_cases + fact_cases + probe_cases + crisis_cases + danger_cases;
+    elig_cases = json.load(open("tests/golden_eligibility.json", encoding="utf-8"))["cases"];
+    for c in elig_cases { c["suite"] = "eligibility"; }
+    cases = cases + i18n_cases + adv_cases + hold_cases + fact_cases + probe_cases + crisis_cases + danger_cases + elig_cases;
     suite_tot: dict = {};
     suite_ok: dict = {};
     langs_ok: dict = {};
@@ -114,6 +117,14 @@ with entry {
             } elif k == "secondary_nonempty" {
                 got = p.get("secondary", []);
                 ok = len(got) > 0;
+            } elif k == "tier_of" {
+                every = rank_resources(items, p, text, 60, p["language"] or "en")["ranked"];
+                got = {};
+                for (prog, allowed) in v.items() {
+                    hits = [str(x["tier"]) for x in every if prog.lower() in str(x["resource_name"]).lower()];
+                    got[prog] = hits[0] if hits else "hidden";
+                }
+                ok = all([got[prog] in allowed for (prog, allowed) in v.items()]);
             } elif k == "flags_none" {
                 got = [f for f in p.get("flags", []) if f in v];
                 ok = not got;
@@ -297,7 +308,7 @@ with entry {
         "failures": failures
     }, open(report_path, "w"), indent=2);
     # Crisis recall has no floor below 100%: one miss hides a hotline.
-    for strict in ["crisis", "danger"] {
+    for strict in ["crisis", "danger", "eligibility"] {
         if int(suite_ok.get(strict, 0)) < int(suite_tot.get(strict, 0)) {
             print(f"  FAIL: {strict} suite {int(suite_ok.get(strict, 0))}/{int(suite_tot.get(strict, 0))}; every check must pass");
             sys.exit(1);

@@ -29,7 +29,7 @@ data (EligibilityRuleNode fields + resource descriptions):
 
 import math;
 import re;
-import from engine.policy { income_limit, status_rule, snap_estimate, season_rule }
+import from engine.policy { income_limit, status_rule, program_gates, snap_estimate, season_rule }
 import from engine.messages { msg, has_messages }
 import from engine.parse { fact_negated }
 
@@ -94,7 +94,8 @@ glob TARGETS: dict = {
 };
 glob TARGET_GATE: float = 0.35;
 # Programs whose income limit is a gate once income is known: limit × factor.
-glob HARD_INCOME_CAP: dict = {"medicaid-rule": 1.0, "chip-rule": 1.0, "lsc-rule": 1.6, "aca-rule": 1.0};
+# The housing and heating caps sit high because the limit here can be a national estimate.
+glob HARD_INCOME_CAP: dict = {"medicaid-rule": 1.0, "chip-rule": 1.0, "lsc-rule": 1.6, "aca-rule": 1.0, "section8-hcv-rule": 2.0, "public-housing-rule": 2.0, "liheap-rule": 2.0, "hud-vash-rule": 2.0};
 
 # Person facts have one source of truth: the parser's flags, which apply fact
 # negation ("we're not homeless", "I don't have a disability") and other-sense
@@ -347,9 +348,21 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         cfs.append({"key": "season", "effort": 9.0, "text": str(se["detail"])});
     }
 
+    # The office has to decide: never "likely" (blind audit, 2026-11: a green card
+    # held 2 years read "SNAP, likely 85%" with the caveat hidden in "Why?").
+    office_decides = False;
+    for g in program_gates(rule_id, profile) {
+        gst = str(g["status"]);
+        gc = _crit("gate", "Program rule", gst, 0.0 if gst == "unmet" else UNKNOWN_STATUS, 0.0, True, str(g["detail"]));
+        gc["source"] = str(g["source"]);
+        crits.append(gc);
+        cfs.append({"key": "gate", "effort": 3.0 if gst == "unmet" else 0.5, "text": str(g["detail"])});
+        if gst == "unknown" { office_decides = True; }
+    }
     sr = status_rule(rule_id, profile);
     if sr {
         st = str(sr["status"]);
+        if st == "unknown" and profile.get("citizenship") { office_decides = True; }
         cr = _crit("citizenship", "Status", st, 1.0 if st == "met" else (0.0 if st == "unmet" else UNKNOWN_STATUS), 0.0, True, str(sr["detail"]));
         if sr.get("change_note") { cr["note"] = str(sr["change_note"]); }
         cr["source"] = str(sr.get("source", "P.L. 119-21 (2025) immigrant-eligibility rules"));
@@ -469,6 +482,15 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         crits.append(_crit("situation", "Situation", "met", 0.85, W_SITUATION, False, "General program — no special situation required"));
     }
 
+    # CHIP Perinatal: in Texas a pregnancy is what this program covers.
+    if rule_id == "chip-rule" and "pregnant" in flags and str(profile.get("state", "")) == "TX" {
+        for c in crits {
+            if c["key"] in ["age", "situation"] { c["status"] = "met"; c["score"] = 1.0; }
+        }
+        targeted_unconfirmed = False;
+        gate_extra = 1.0;
+    }
+
     # ---- combine: hard gates multiply, soft criteria average ----
     gate = gate_extra;
     soft_num = 0.0;
@@ -495,7 +517,7 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
     # Abstention: never call a program "likely" on thin evidence.
     if hard_fail or p_elig < 0.2 {
         tier = "unlikely";
-    } elif targeted_unconfirmed or (coverage < 0.6 and p_elig >= 0.3) {
+    } elif office_decides or targeted_unconfirmed or (coverage < 0.6 and p_elig >= 0.3) {
         tier = "needs_info";
     } elif p_elig >= 0.65 and soft_unmet == 0 {
         tier = "likely";
@@ -522,6 +544,7 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         "p_eligible": round(p_elig, 3),
         "coverage": round(coverage, 2),
         "tier": tier,
+        "office_decides": office_decides,
         "match_score": int(round(p_elig * 100)),
         "approval": post,
         "rank_score": round(rank, 4),
