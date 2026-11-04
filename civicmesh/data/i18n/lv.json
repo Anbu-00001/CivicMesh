@@ -111,5 +111,11 @@
   "ui.details": "Sīkāk",
   "ui.hide_details": "Slēpt sīkāku informāciju",
   "ui.more_lines": "Citas ārkārtas situācijas",
-  "ui.show_programs": "Rādīt programmas un nākamos soļus"
+  "ui.show_programs": "Rādīt programmas un nākamos soļus",
+  "opt.prefer_not": "Es labāk neteikšu",
+  "ui.near_title": "Nav šajā sarakstā, un kāpēc",
+  "ui.near_ask": "Jūs joprojām varat pieteikties. Atteikt var tikai programmas birojs.",
+  "ui.charge_title": "Pabalsti un jūsu imigrācijas lieta",
+  "ui.charge_body": "Kopš 2026. gada 18. septembra amatpersonas var ņemt vērā no ienākumiem atkarīgos pabalstus, ko izmantojat jūs pats, kad piesakāties zaļajai kartei. Ģimenes locekļu pabalsti parasti netiek skaitīti, un bēgļi un patvēruma saņēmēji ir atbrīvoti. Pirms izlemjat, konsultējieties ar akreditētu imigrācijas pārstāvi.",
+  "ui.charge_link": "Atrast bezmaksas juridisko palīdzību imigrācijas jautājumos"
 }

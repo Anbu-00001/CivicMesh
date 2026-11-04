@@ -113,7 +113,7 @@ def quick_options(key: str, lang: str) -> list {
     } elif key == "household" {
         rows = [["opt.just_me", "just me"], ["2", "household of 2"], ["3", "household of 3"], ["4", "household of 4"], ["5+", "household of 5"]];
     } elif key == "citizenship" {
-        rows = [["opt.citizen", "I'm a US citizen"], ["opt.green_card", "I have a green card"], ["opt.refugee", "I'm a refugee"], ["opt.no_status", "I'm undocumented"]];
+        rows = [["opt.citizen", "I'm a US citizen"], ["opt.green_card", "I have a green card"], ["opt.refugee", "I'm a refugee"], ["opt.no_status", "I'm undocumented"], ["opt.prefer_not", "I'd rather not say"]];
     }
     return [[(msg(lang, r[0]) if r[0].startswith("opt.") else r[0]), r[1]] for r in rows];
 }

@@ -111,5 +111,11 @@
   "ui.details": "Ntsiab lus",
   "ui.hide_details": "Muab ntsiab lus zais",
   "ui.more_lines": "Lwm yam xwm txheej ceev",
-  "ui.show_programs": "Qhia cov kev pab thiab cov kauj ruam tom ntej"
+  "ui.show_programs": "Qhia cov kev pab thiab cov kauj ruam tom ntej",
+  "opt.prefer_not": "Kuv tsis xav hais",
+  "ui.near_title": "Tsis nyob hauv daim ntawv no, thiab vim li cas",
+  "ui.near_ask": "Koj tseem thov tau. Tsuas yog lub chaw ua haujlwm ntawm qhov kev pab thiaj hais tias tsis tau.",
+  "ui.charge_title": "Cov kev pab thiab koj rooj plaub neeg tsiv teb tsaws",
+  "ui.charge_body": "Txij li 18 Cuaj Hlis 2026, cov nom tswv tuaj yeem xav txog cov kev pab raws nyiaj khwv tau uas koj siv rau koj tus kheej thaum koj thov green card. Cov uas koj tsev neeg siv feem ntau tsis suav, thiab cov neeg tawg rog thiab cov neeg tau kev tiv thaiv raug zam. Tham nrog ib tug neeg sawv cev txog kev tsiv teb tsaws uas tau txais kev lees paub ua ntej koj txiav txim siab.",
+  "ui.charge_link": "Nrhiav kev pab raws cai dawb txog kev tsiv teb tsaws"
 }

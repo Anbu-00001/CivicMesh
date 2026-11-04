@@ -115,5 +115,11 @@
   "ui.details": "Detalles",
   "ui.hide_details": "Ocultar detalles",
   "ui.more_lines": "Otras emergencias",
-  "ui.show_programs": "Mostrar programas y próximos pasos"
+  "ui.show_programs": "Mostrar programas y próximos pasos",
+  "opt.prefer_not": "Prefiero no decirlo",
+  "ui.near_title": "No está en esta lista, y por qué",
+  "ui.near_ask": "Aún puede solicitarlo. Solo la oficina del programa puede decir que no.",
+  "ui.charge_title": "Los beneficios y su caso de inmigración",
+  "ui.charge_body": "Desde el 18 de septiembre de 2026, los funcionarios pueden tener en cuenta los beneficios según ingresos que usted mismo use cuando solicite la residencia (green card). Los que usan sus familiares generalmente no cuentan, y los refugiados y asilados están exentos. Hable con un representante de inmigración acreditado antes de decidir.",
+  "ui.charge_link": "Buscar ayuda legal gratuita de inmigración"
 }

@@ -111,5 +111,11 @@
   "ui.details": "Chi tiết",
   "ui.hide_details": "Ẩn chi tiết",
   "ui.more_lines": "Các trường hợp khẩn cấp khác",
-  "ui.show_programs": "Hiện các chương trình và bước tiếp theo"
+  "ui.show_programs": "Hiện các chương trình và bước tiếp theo",
+  "opt.prefer_not": "Tôi không muốn nói",
+  "ui.near_title": "Không có trong danh sách này, và lý do",
+  "ui.near_ask": "Bạn vẫn có thể nộp đơn. Chỉ văn phòng chương trình mới có thể từ chối.",
+  "ui.charge_title": "Phúc lợi và hồ sơ di trú của bạn",
+  "ui.charge_body": "Từ ngày 18 tháng Chín năm 2026, khi bạn xin thẻ xanh, nhân viên có thể xem xét các phúc lợi theo thu nhập mà chính bạn sử dụng. Phúc lợi của người thân thường không được tính, và người tị nạn cùng người được cấp quy chế tị nạn được miễn. Hãy nói chuyện với một đại diện di trú được công nhận trước khi quyết định.",
+  "ui.charge_link": "Tìm trợ giúp pháp lý di trú miễn phí"
 }

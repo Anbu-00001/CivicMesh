@@ -111,5 +111,11 @@
   "ui.details": "Maelezo",
   "ui.hide_details": "Ficha maelezo",
   "ui.more_lines": "Dharura nyingine",
-  "ui.show_programs": "Onyesha programu na hatua zinazofuata"
+  "ui.show_programs": "Onyesha programu na hatua zinazofuata",
+  "opt.prefer_not": "Sipendi kusema",
+  "ui.near_title": "Haipo kwenye orodha hii, na kwa nini",
+  "ui.near_ask": "Bado unaweza kuomba. Ofisi ya programu pekee ndiyo inaweza kukataa.",
+  "ui.charge_title": "Misaada na kesi yako ya uhamiaji",
+  "ui.charge_body": "Tangu 18 Septemba 2026, maafisa wanaweza kuzingatia misaada inayotegemea kipato unayotumia wewe mwenyewe unapoomba green card. Ile wanayotumia wanafamilia kwa kawaida haihesabiwi, na wakimbizi na waliopewa hifadhi wamesamehewa. Zungumza na mwakilishi wa uhamiaji aliyeidhinishwa kabla ya kuamua.",
+  "ui.charge_link": "Tafuta msaada wa kisheria wa uhamiaji bila malipo"
 }

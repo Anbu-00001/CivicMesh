@@ -111,5 +111,11 @@
   "ui.details": "Szczegóły",
   "ui.hide_details": "Ukryj szczegóły",
   "ui.more_lines": "Inne nagłe sytuacje",
-  "ui.show_programs": "Pokaż programy i kolejne kroki"
+  "ui.show_programs": "Pokaż programy i kolejne kroki",
+  "opt.prefer_not": "Wolę nie mówić",
+  "ui.near_title": "Nie ma na tej liście, i dlaczego",
+  "ui.near_ask": "Nadal może Pan/Pani złożyć wniosek. Odmówić może tylko biuro programu.",
+  "ui.charge_title": "Świadczenia a sprawa imigracyjna",
+  "ui.charge_body": "Od 18 września 2026 r. urzędnicy mogą uwzględniać świadczenia zależne od dochodu, z których korzysta Pan/Pani osobiście, przy wniosku o zieloną kartę. Świadczenia członków rodziny zwykle się nie liczą, a uchodźcy i osoby z azylem są zwolnieni. Przed decyzją proszę porozmawiać z akredytowanym przedstawicielem imigracyjnym.",
+  "ui.charge_link": "Znajdź bezpłatną pomoc prawną w sprawach imigracji"
 }

@@ -1,0 +1,501 @@
+{
+ "_about": "Eligibility answers a blind audit (2026-11-02) found wrong, with the rules they should follow, plus cases that must stay as they are. Development set: the rules were written from these messages. A tier list means any of those is acceptable; hidden means not in the top results.",
+ "cases": [
+  {
+   "text": "I'm undocumented but my kids are US citizens. 2 kids, I make $1500 a month in Texas. Can my kids get food stamps?",
+   "expect": {
+    "tier_of": {
+     "SNAP": [
+      "likely",
+      "possible"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I have TPS. My 2 kids are US citizens, they were born here. We make $1800 a month in Ohio. Need food stamps for my kids.",
+   "expect": {
+    "tier_of": {
+     "SNAP": [
+      "likely",
+      "possible"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm undocumented but my kids are US citizens, 2 kids, $1500 a month in Ohio, we need housing help",
+   "expect": {
+    "tier_of": {
+     "Section 8": [
+      "likely",
+      "possible",
+      "needs_info"
+     ],
+     "Public Housing": [
+      "likely",
+      "possible",
+      "needs_info"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm undocumented and I have 2 kids, $1500 a month in Texas, need food stamps",
+   "expect": {
+    "tier_of": {
+     "SNAP": [
+      "needs_info"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm undocumented, I live alone in Ohio, $1000 a month, I need food stamps",
+   "expect": {
+    "tier_of": {
+     "SNAP": [
+      "unlikely",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm a refugee with 2 kids in California, family of 3, $2000 a month. My kids need health insurance.",
+   "expect": {
+    "tier_of": {
+     "Medicaid": [
+      "likely",
+      "possible",
+      "needs_info"
+     ],
+     "CHIP": [
+      "likely",
+      "possible",
+      "needs_info"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm a refugee and I'm pregnant. I make $1500 a month in Minnesota. I need health insurance.",
+   "expect": {
+    "tier_of": {
+     "Medicaid": [
+      "likely",
+      "possible",
+      "needs_info"
+     ]
+    }
+   }
+  },
+  {
+   "text": "We are refugees, family of 3 in Ohio, $1500 a month, we need food stamps",
+   "expect": {
+    "tier_of": {
+     "SNAP": [
+      "unlikely",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "My son is undocumented, he's 8, we live in California, $2000 a month, family of 3, he needs health insurance",
+   "expect": {
+    "tier_of": {
+     "Medicaid": [
+      "likely",
+      "possible"
+     ],
+     "CHIP": [
+      "likely",
+      "possible"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm undocumented and pregnant, in California, $1500 a month, I need health insurance",
+   "expect": {
+    "tier_of": {
+     "Medicaid": [
+      "likely",
+      "possible"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm undocumented, I'm 40, I live in Oregon, I make $1000 a month, I need Medicaid",
+   "expect": {
+    "tier_of": {
+     "Medicaid": [
+      "likely",
+      "possible"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm undocumented, I'm 40, I live in California, I make $1000 a month, I need Medicaid",
+   "expect": {
+    "tier_of": {
+     "Medicaid": [
+      "unlikely",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm undocumented and pregnant in Texas, $1500 a month, I need prenatal care",
+   "expect": {
+    "tier_of": {
+     "CHIP": [
+      "likely",
+      "possible"
+     ]
+    }
+   }
+  },
+  {
+   "text": "My son is undocumented, he's 8, we live in New York, $2000 a month, family of 3, he needs health insurance",
+   "expect": {
+    "tier_of": {
+     "CHIP": [
+      "needs_info"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I've had my green card for 2 years, I'm 35, I make $900 a month in Ohio. I need food stamps",
+   "expect": {
+    "tier_of": {
+     "SNAP": [
+      "needs_info"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I've had my green card for 1 year, I'm 40, $1000 a month, in Ohio. Can I get Medicaid?",
+   "expect": {
+    "tier_of": {
+     "Medicaid": [
+      "needs_info"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm undocumented, I live alone in Ohio, $1000 a month, can't pay my heating bill",
+   "expect": {
+    "tier_of": {
+     "LIHEAP": [
+      "unlikely",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm 66, single, I make $1500 a month in Ohio. I need Medicaid",
+   "expect": {
+    "tier_of": {
+     "Medicaid": [
+      "needs_info",
+      "unlikely",
+      "possible",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm 70, I get $1400 a month in Texas. I need Medicaid",
+   "expect": {
+    "tier_of": {
+     "Medicaid": [
+      "needs_info",
+      "unlikely",
+      "possible",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm a full time college student, 20, I work 10 hours a week and make $500 a month. Can I get food stamps?",
+   "expect": {
+    "tier_of": {
+     "SNAP": [
+      "needs_info"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm 20, I live with my parents and I have no income. Can I get food stamps by myself?",
+   "expect": {
+    "tier_of": {
+     "SNAP": [
+      "needs_info"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm 22, no kids, earned $10,000 last year. Can I get the EITC?",
+   "expect": {
+    "tier_of": {
+     "Earned Income": [
+      "unlikely",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm 70, no kids, earned $10,000 last year. Can I get the EITC?",
+   "expect": {
+    "tier_of": {
+     "Earned Income": [
+      "unlikely",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I file with an ITIN, 2 kids, earned $25,000. Can I get the EITC?",
+   "expect": {
+    "tier_of": {
+     "Earned Income": [
+      "unlikely",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm a registered sex offender, just got out, need public housing in Ohio. No income.",
+   "expect": {
+    "tier_of": {
+     "Section 8": [
+      "needs_info",
+      "unlikely",
+      "possible",
+      "hidden"
+     ],
+     "Public Housing": [
+      "needs_info",
+      "unlikely",
+      "possible",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I was convicted of making meth in public housing. Can I get Section 8? No income, in Ohio",
+   "expect": {
+    "tier_of": {
+     "Section 8": [
+      "unlikely",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I have an approved VAWA petition. $900 a month, Illinois. Food stamps?",
+   "expect": {
+    "tier_of": {
+     "SNAP": [
+      "unlikely",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I earn $2000 a month and my wife earns $2500 a month, we have 2 kids in Kansas. Food stamps?",
+   "expect": {
+    "tier_of": {
+     "SNAP": [
+      "unlikely",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I have two jobs, one pays $800 a month and the other pays $1000 a month, I'm single in Ohio. Food stamps?",
+   "expect": {
+    "tier_of": {
+     "SNAP": [
+      "needs_info",
+      "unlikely",
+      "possible",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I take home $1400 every month but before taxes it is $1800. Alone, in Ohio. Food stamps?",
+   "expect": {
+    "tier_of": {
+     "SNAP": [
+      "needs_info",
+      "unlikely",
+      "possible",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I live in Puerto Rico, family of 3, $800 a month. I need food stamps.",
+   "expect": {
+    "tier_of": {
+     "SNAP": [
+      "unlikely",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I make $15000 a month, single, in Ohio. Section 8?",
+   "expect": {
+    "tier_of": {
+     "Section 8": [
+      "unlikely",
+      "hidden"
+     ],
+     "Public Housing": [
+      "unlikely",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm 30 with no kids and need cash assistance",
+   "expect": {
+    "tier_of": {
+     "TANF": [
+      "unlikely",
+      "hidden"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm 35, a citizen, single, $900 a month in Ohio, need food stamps",
+   "expect": {
+    "tier_of": {
+     "SNAP": [
+      "likely"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm a single mom with 2 kids in Ohio, citizen, I make $1800 a month and need housing help",
+   "expect": {
+    "tier_of": {
+     "Section 8": [
+      "likely",
+      "possible"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I have a green card for 8 years, $900 a month, single in Ohio, need food stamps",
+   "expect": {
+    "tier_of": {
+     "SNAP": [
+      "likely"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm 45, 2 kids, a citizen, earned $25,000 last year. Can I get the EITC?",
+   "expect": {
+    "tier_of": {
+     "Earned Income": [
+      "likely",
+      "possible"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm 30, a citizen, $1000 a month, I live alone in Ohio, can't pay my heating bill",
+   "expect": {
+    "tier_of": {
+     "LIHEAP": [
+      "likely"
+     ]
+    }
+   }
+  },
+  {
+   "text": "I'm applying for a green card, is it safe to get Medicaid?",
+   "expect": {
+    "citizenship": "non_citizen",
+    "flag": "public_charge_q"
+   }
+  },
+  {
+   "text": "I have a green card application pending. Can I get food stamps for my kids? Will it hurt my case?",
+   "expect": {
+    "citizenship": "",
+    "flag": "public_charge_q"
+   }
+  },
+  {
+   "text": "will using food stamps hurt my immigration case",
+   "expect": {
+    "flag": "public_charge_q"
+   }
+  },
+  {
+   "text": "my green card expired and I need a new one",
+   "expect": {
+    "citizenship": "eligible_immigrant"
+   }
+  },
+  {
+   "text": "I earn $2000 a month and my wife earns $2500 a month",
+   "expect": {
+    "income_annual": 54000
+   }
+  },
+  {
+   "text": "one pays $800 a month and the other pays $1000 a month",
+   "expect": {
+    "income_annual": 21600
+   }
+  },
+  {
+   "text": "I take home $1400 every month but before taxes it is $1800",
+   "expect": {
+    "income_annual": 21600
+   }
+  },
+  {
+   "text": "I make $2000 a month and rent is $900 a month",
+   "expect": {
+    "income_annual": 24000
+   }
+  }
+ ]
+}

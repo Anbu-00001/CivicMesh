@@ -111,5 +111,11 @@
   "ui.details": "Dettagli",
   "ui.hide_details": "Nascondi dettagli",
   "ui.more_lines": "Altre emergenze",
-  "ui.show_programs": "Mostra programmi e prossimi passi"
+  "ui.show_programs": "Mostra programmi e prossimi passi",
+  "opt.prefer_not": "Preferisco non dirlo",
+  "ui.near_title": "Non in questa lista, e perché",
+  "ui.near_ask": "Può comunque fare domanda. Solo l'ufficio del programma può dire di no.",
+  "ui.charge_title": "I sussidi e la sua pratica di immigrazione",
+  "ui.charge_body": "Dal 18 settembre 2026 i funzionari possono considerare i sussidi legati al reddito che lei usa personalmente quando chiede la green card. Quelli usati dai familiari in genere non contano, e rifugiati e titolari di asilo sono esenti. Parli con un rappresentante per l'immigrazione accreditato prima di decidere.",
+  "ui.charge_link": "Trova assistenza legale gratuita sull'immigrazione"
 }

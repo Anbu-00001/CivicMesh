@@ -1003,3 +1003,8 @@ html, body { margin: 0; }
 .lp-safety-actions { display: flex; gap: 8px; align-items: center; }
 .lp-safety-start { min-height: 44px; padding: 8px 14px; border-radius: 8px; border: none; background: #FFE500; color: #111; font-weight: 700; font-size: 14px; cursor: pointer; }
 .lp-safety .cm-quick-exit { position: static; }
+
+/* Blind audit, 2026-11: say no out loud, and what using a benefit can mean. */
+.cm-near p, .cm-charge p { margin: 6px 0; font-size: 14px; line-height: 1.5; }
+.cm-charge a { display: inline-block; min-height: 28px; color: #FFE500; }
+.cm-charge summary { cursor: pointer; min-height: 28px; }

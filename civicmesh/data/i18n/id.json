@@ -111,5 +111,11 @@
   "ui.details": "Rincian",
   "ui.hide_details": "Sembunyikan rincian",
   "ui.more_lines": "Keadaan darurat lainnya",
-  "ui.show_programs": "Tampilkan program dan langkah berikutnya"
+  "ui.show_programs": "Tampilkan program dan langkah berikutnya",
+  "opt.prefer_not": "Saya lebih suka tidak mengatakan",
+  "ui.near_title": "Tidak ada dalam daftar ini, dan alasannya",
+  "ui.near_ask": "Anda tetap bisa mendaftar. Hanya kantor program yang bisa menolak.",
+  "ui.charge_title": "Bantuan dan kasus imigrasi Anda",
+  "ui.charge_body": "Sejak 18 September 2026, petugas dapat mempertimbangkan bantuan berbasis pendapatan yang Anda gunakan sendiri saat mengajukan green card. Bantuan yang digunakan anggota keluarga umumnya tidak dihitung, dan pengungsi serta penerima suaka dikecualikan. Bicaralah dengan perwakilan imigrasi terakreditasi sebelum memutuskan.",
+  "ui.charge_link": "Cari bantuan hukum imigrasi gratis"
 }

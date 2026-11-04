@@ -111,5 +111,11 @@
   "ui.details": "Detay",
   "ui.hide_details": "Kache detay yo",
   "ui.more_lines": "Lòt ijans",
-  "ui.show_programs": "Montre pwogram yo ak pwochen etap yo"
+  "ui.show_programs": "Montre pwogram yo ak pwochen etap yo",
+  "opt.prefer_not": "Mwen prefere pa di",
+  "ui.near_title": "Pa sou lis sa a, epi poukisa",
+  "ui.near_ask": "Ou ka toujou aplike. Se sèlman biwo pwogram nan ki ka di non.",
+  "ui.charge_title": "Benefis yo ak dosye imigrasyon ou",
+  "ui.charge_body": "Depi 18 septanm 2026, ofisye yo ka konsidere benefis ki baze sou revni ou menm ou itilize lè ou aplike pou yon kat vèt. Sa fanmi ou itilize jeneralman pa konte, epi refijye ak moun ki gen azil yo egzante. Pale ak yon reprezantan imigrasyon akredite anvan ou deside.",
+  "ui.charge_link": "Jwenn èd legal imigrasyon gratis"
 }

@@ -111,5 +111,11 @@
   "ui.details": "Faahfaahin",
   "ui.hide_details": "Qari faahfaahinta",
   "ui.more_lines": "Xaalado degdeg ah oo kale",
-  "ui.show_programs": "Muuji barnaamijyada iyo tallaabooyinka xiga"
+  "ui.show_programs": "Muuji barnaamijyada iyo tallaabooyinka xiga",
+  "opt.prefer_not": "Ma doonayo inaan sheego",
+  "ui.near_title": "Kuma jiro liiskan, iyo sababta",
+  "ui.near_ask": "Weli waad codsan kartaa. Xafiiska barnaamijka oo keliya ayaa diidi kara.",
+  "ui.charge_title": "Gargaarka iyo kiiskaaga socdaalka",
+  "ui.charge_body": "Laga bilaabo 18 Sebtembar 2026, saraakiishu way tixgelin karaan gargaarka dakhliga ku saleysan ee adigu aad isticmaasho marka aad codsato kaarka cagaaran. Waxa xubnaha qoyskaagu isticmaalaan guud ahaan lama tiriyo, qaxootiga iyo kuwa magangelyada helay waa laga dhaafay. Ka hor intaadan go'aan gaarin la hadal wakiil socdaal oo la aqoonsan yahay.",
+  "ui.charge_link": "Hel caawimaad sharci oo bilaash ah oo socdaal"
 }

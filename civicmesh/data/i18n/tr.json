@@ -111,5 +111,11 @@
   "ui.details": "Ayrıntılar",
   "ui.hide_details": "Ayrıntıları gizle",
   "ui.more_lines": "Diğer acil durumlar",
-  "ui.show_programs": "Programları ve sonraki adımları göster"
+  "ui.show_programs": "Programları ve sonraki adımları göster",
+  "opt.prefer_not": "Söylemek istemiyorum",
+  "ui.near_title": "Bu listede değil ve nedeni",
+  "ui.near_ask": "Yine de başvurabilirsiniz. Yalnızca programın ofisi hayır diyebilir.",
+  "ui.charge_title": "Yardımlar ve göçmenlik dosyanız",
+  "ui.charge_body": "18 Eylül 2026'dan beri, yeşil karta başvurduğunuzda görevliler kendinizin kullandığı gelire bağlı yardımları dikkate alabilir. Aile üyelerinizin kullandıkları genellikle sayılmaz; mülteciler ve sığınma hakkı alanlar muaftır. Karar vermeden önce akredite bir göçmenlik temsilcisiyle konuşun.",
+  "ui.charge_link": "Ücretsiz göçmenlik hukuki yardımı bulun"
 }
