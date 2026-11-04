@@ -1,0 +1,470 @@
+{
+ "_about": "Everyday requests that got no route in a blind audit (2026-11-02), and the app's own quick replies typed by hand. Development set: the words were added from these messages.",
+ "cases": [
+  {
+   "text": "health care",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "Health care",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "I need health care",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "healthcare",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "I need healthcare",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "medical",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "I need medical help",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "money",
+   "expect": {
+    "category": "money"
+   }
+  },
+  {
+   "text": "cash",
+   "expect": {
+    "category": "money"
+   }
+  },
+  {
+   "text": "I can't pay my bills",
+   "expect": {
+    "category": "money"
+   }
+  },
+  {
+   "text": "I'm pregnant",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "disability",
+   "expect": {
+    "category": "money"
+   }
+  },
+  {
+   "text": "Can I get Medi-Cal?",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "I need Medi-Cal",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "I need TennCare",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "Do I qualify for SoonerCare?",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "Can I get AHCCCS?",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "I need MassHealth",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "Can I get BadgerCare?",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "I need Apple Health in Washington",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "Is HUSKY free in Connecticut?",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "I need NJ FamilyCare",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "Can I get KanCare",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "How do I sign up for MaineCare",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "Can I get CalFresh?",
+   "expect": {
+    "category": "food"
+   }
+  },
+  {
+   "text": "How do I apply for EBT?",
+   "expect": {
+    "category": "food"
+   }
+  },
+  {
+   "text": "stamps",
+   "expect": {
+    "category": "food"
+   }
+  },
+  {
+   "text": "my Link card was cut off",
+   "expect": {
+    "category": "food"
+   }
+  },
+  {
+   "text": "how do I get FoodShare",
+   "expect": {
+    "category": "food"
+   }
+  },
+  {
+   "text": "I need Basic Food in Washington",
+   "expect": {
+    "category": "food"
+   }
+  },
+  {
+   "text": "I need disability money",
+   "expect": {
+    "category": "money"
+   }
+  },
+  {
+   "text": "can't afford my Medicare premiums",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "I got denied for disability",
+   "expect": {
+    "category": "money"
+   }
+  },
+  {
+   "text": "I can't work because of my back. I worked 20 years. I'm 55. What can I get?",
+   "expect": {
+    "category": "money"
+   }
+  },
+  {
+   "text": "My mom is 82, she has dementia and lives alone",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "I'm calling for my neighbor, she's 80 and blind and has no heat, Michigan",
+   "expect": {
+    "category": "housing"
+   }
+  },
+  {
+   "text": "ICE came to my job and took my husband. I don't know where he is",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "They are shutting off my water tomorrow, I have 3 kids",
+   "expect": {
+    "category": "housing"
+   }
+  },
+  {
+   "text": "I need a job",
+   "expect": {
+    "category": "money"
+   }
+  },
+  {
+   "text": "WIC",
+   "expect": {
+    "category": "food"
+   }
+  },
+  {
+   "text": "How can my undocumented kid enroll in school?",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "My kids are undocumented and the school says they need papers to enroll",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "The school won't enroll my son because he has no papers",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "My daughter was refused school enrollment because we have no papers",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "Mi hijo no tiene papeles y la escuela no lo quiere inscribir",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "Necesito ayuda con la migra",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "Se llevaron a mi esposo los de ICE",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "Mi patrón no me paga",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "No tengo papeles, ¿me pueden ayudar?",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "necesito trabajo",
+   "expect": {
+    "category": "money"
+   }
+  },
+  {
+   "text": "Me están desalojando de mi casa",
+   "expect": {
+    "category": "housing"
+   }
+  },
+  {
+   "text": "Me van a echar de mi casa",
+   "expect": {
+    "category": "housing"
+   }
+  },
+  {
+   "text": "Vivo en mi carro con mis hijos",
+   "expect": {
+    "category": "housing",
+    "flag": "homeless"
+   }
+  },
+  {
+   "text": "I need food",
+   "expect": {
+    "category": "food"
+   }
+  },
+  {
+   "text": "I need help with housing",
+   "expect": {
+    "category": "housing"
+   }
+  },
+  {
+   "text": "I need a doctor",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "I need a lawyer",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "I need help with money or child care",
+   "expect": {
+    "category": "money"
+   }
+  },
+  {
+   "text": "Food",
+   "expect": {
+    "category": "food"
+   }
+  },
+  {
+   "text": "Housing",
+   "expect": {
+    "category": "housing"
+   }
+  },
+  {
+   "text": "Legal help",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "Money & child care",
+   "expect": {
+    "category": "money"
+   }
+  },
+  {
+   "text": "Comida",
+   "expect": {
+    "category": "food"
+   }
+  },
+  {
+   "text": "Vivienda",
+   "expect": {
+    "category": "housing"
+   }
+  },
+  {
+   "text": "Atención médica",
+   "expect": {
+    "category": "healthcare"
+   }
+  },
+  {
+   "text": "Ayuda legal",
+   "expect": {
+    "category": "legal"
+   }
+  },
+  {
+   "text": "Dinero y cuidado de niños",
+   "expect": {
+    "category": "money"
+   }
+  },
+  {
+   "text": "I got an eviction notice, court date is Friday, Cook County. 2 kids $2100 a month",
+   "expect": {
+    "category": "housing",
+    "first_step_not": "SNAP"
+   }
+  },
+  {
+   "text": "need help with medicine",
+   "expect": {
+    "category": "healthcare",
+    "first_step_not": "Poison"
+   }
+  },
+  {
+   "text": "I'm undocumented and my landlord says he will call ICE if I don't leave. Illinois",
+   "expect": {
+    "category_in": [
+     "housing",
+     "legal"
+    ],
+    "flags_none": [
+     "dv",
+     "dv_concern"
+    ]
+   }
+  },
+  {
+   "text": "WIC, 1 kid, $1500 a month in Ohio",
+   "expect": {
+    "tier_of": {
+     "WIC": [
+      "likely",
+      "possible",
+      "needs_info"
+     ]
+    }
+   }
+  },
+  {
+   "text": "Can I get Medi-Cal? $1000 a month in California, single",
+   "expect": {
+    "tier_of": {
+     "Medicaid": [
+      "likely",
+      "possible"
+     ]
+    }
+   }
+  },
+  {
+   "text": "WIC",
+   "expect": {
+    "tier_of": {
+     "WIC": [
+      "likely",
+      "possible",
+      "needs_info"
+     ]
+    }
+   }
+  }
+ ]
+}

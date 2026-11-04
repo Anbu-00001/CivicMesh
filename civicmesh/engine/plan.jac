@@ -48,7 +48,7 @@ def action_text(name: str, method: str, phone: str, url: str, lang: str) -> str 
 }
 
 """Build the ordered plan from ranked matches (engine.score output)."""
-def build_plan(ranked: list, urgency: str, lang: str, max_steps: int = 4) -> dict {
+def build_plan(ranked: list, urgency: str, lang: str, max_steps: int = 4, need: str = "") -> dict {
     uw = float(URGENCY_W.get(urgency, 1.0));
     pool: list = [s for s in ranked if s["tier"] in ["likely", "possible"] or (s["tier"] == "needs_info" and float(s["p_eligible"]) >= 0.5 and not s.get("office_decides", False)) or s.get("pinned", False)];
     jobs: list = [];
@@ -60,8 +60,11 @@ def build_plan(ranked: list, urgency: str, lang: str, max_steps: int = 4) -> dic
         # A program with an estimable recurring benefit (SNAP) is worth more
         # than a one-off visit: weight by its monthly value.
         ben = float(dict(s.get("benefit", {}) or {}).get("monthly", 0));
-        value_f = 1.0 + min(8.0, ben / 100.0);
-        w = uw * float(s["p_eligible"]) * float(s["approval"]["mean"]) * access * value_f;
+        # The need the person named outranks a program's monthly value: a court
+        # date on Friday started at SNAP (blind audit, 2026-11).
+        other_need = bool(need) and str(s.get("category", "")) != need;
+        value_f = 1.0 if other_need else 1.0 + min(8.0, ben / 100.0);
+        w = uw * float(s["p_eligible"]) * float(s["approval"]["mean"]) * access * value_f * (0.4 if other_need else 1.0);
         ratio = w / max(5.0, minutes);
         if s.get("pinned", False) { ratio += 100.0; w += 100.0; }
         jobs.append((ratio, s, form, minutes, w));

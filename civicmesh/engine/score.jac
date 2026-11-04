@@ -32,6 +32,7 @@ import re;
 import from engine.policy { income_limit, status_rule, program_gates, snap_estimate, season_rule }
 import from engine.messages { msg, has_messages }
 import from engine.parse { fact_negated }
+import from engine.need_words { NAMED_PROGRAMS }
 
 glob INCOME_K: float = 12.0;
 glob W_INCOME: float = 0.45;
@@ -480,6 +481,12 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         }
     } else {
         crits.append(_crit("situation", "Situation", "met", 0.85, W_SITUATION, False, "General program — no special situation required"));
+    }
+
+    # "WIC" typed on its own showed other food cards with WIC hidden (blind audit, 2026-11).
+    if rule_id in NAMED_PROGRAMS and re.search(NAMED_PROGRAMS[rule_id], str(message).lower()) {
+        specificity = 2.0;
+        gate_extra = 1.0;
     }
 
     # CHIP Perinatal: in Texas a pregnancy is what this program covers.
