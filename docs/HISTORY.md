@@ -112,3 +112,11 @@ A blind audit scored the project 4.5/10 as a public tool for people in crisis. T
 - **Wrong yes.** A green card held under 5 years, a full-time student, an under-22 living with parents and a registered sex offender now read "needs info", because an office has to decide. Those programs can't be the first step. EITC age and ITIN, TANF with no child, a meth conviction in assisted housing, Puerto Rico's NAP, and undocumented adults alone for LIHEAP read "unlikely". Over-65s are measured against the older-adult limit. Two incomes in one sentence are added, and gross beats take-home.
 - **Still not handled:** no state table beyond those four, more income patterns than the two added, and no review by an immigration lawyer. `tests/golden_eligibility.json` was written from the audit's messages, so it guards against regressions and says nothing about messages nobody has seen.
 
+## Routing findings from the 2026-11 blind audit
+
+- **No route.** The app's own "Health care" button label, typed by hand, got the "what do you need?" reply. So did "money", "Can I get Medi-Cal?" and "ICE came to my job". `engine/need_words.jac` adds plain words, state Medicaid and SNAP names, and Spanish phrasings. Plain words weigh little, so "I have no money for food" stays about food, and they don't turn a long story into a request.
+- **Named things first.** "WIC" showed other food cards with WIC hidden; a named program now leads. A court date started at SNAP because SNAP has a monthly value; the need the person named now outranks that.
+- **Smaller.** "My landlord says he will call ICE" no longer opens on the DV hotline; a partner saying it still raises the concern. Living in a car in Spanish sets the homeless flag. Nebraska's Medicaid work rule shows as already in effect.
+- **The gate itself.** The eval's floor was 90%, so it exited 0 with seven regressions from this work. Any miss now fails it.
+- **Still not handled** (audit F17, F19): several incomes beyond the two patterns, savings read as income, corrections in later turns, questions like "what's the phone number" or "is this private", and disaster or foreclosure programs missing from the catalog. `tests/golden_routing.json` is a development set.
+

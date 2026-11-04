@@ -270,9 +270,12 @@ def policy_today -> str {
 glob SNAP_TIME_LIMIT_NOTE: str = "Time limit: adults 18–64 without a child under 14 at home may get SNAP for only 3 months in 3 years unless they work, volunteer or train 80 hours a month or are exempt, e.g. unable to work or pregnant (P.L. 119-21 §10102; the SNAP office decides exemptions)";
 
 """Medicaid work-requirement note, effective-dated (P.L. 119-21 §71119)."""
-def medicaid_work_note -> str {
+# Nebraska started its work rule on May 1, 2026 (KFF, Ballotpedia).
+glob MEDICAID_WORK_EARLY: dict = {"NE": "2026-05-01"};
+
+def medicaid_work_note(state: str = "") -> str {
     rule = "adults 19–64 covered through the expansion must show 80 hours a month of work, school or volunteering (or $580/month in earnings) unless exempt, e.g. parents of a child 13 or younger, pregnant or medically frail (P.L. 119-21 §71119)";
-    if policy_today() < MEDICAID_WORK_DATE {
+    if policy_today() < str(MEDICAID_WORK_EARLY.get(state, MEDICAID_WORK_DATE)) {
         return "From January 1, 2027 at the latest, " + rule + "; some states start earlier";
     }
     return rule[0].upper() + rule[1:];
@@ -403,7 +406,7 @@ def income_limit(rule_id: str, profile: dict, flat_fallback: int = 0) -> dict {
             } else {
                 note = "ACA expansion adults; children and pregnant women qualify at higher incomes";
                 if _work_rule_applies(profile, 19) {
-                    note = note + ". " + medicaid_work_note();
+                    note = note + ". " + medicaid_work_note(state);
                 }
             }
         }

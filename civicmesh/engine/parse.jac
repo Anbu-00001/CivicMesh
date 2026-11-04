@@ -23,6 +23,7 @@ Output contract (plain dict so it serialises straight into walker reports):
 """
 
 import re;
+import from engine.need_words { EXTRA_NEEDS, EXTRA_HOMELESS }
 import from engine.danger_words { EXTRA_SELF_HARM, EXTRA_CONCERN, EXTRA_DV, EXTRA_ASSAULT, EXTRA_TRAFFICKING, EXTRA_CHILD, EXTRA_EMERGENCY, THREAT_BY_OTHER, danger_normalize, distress_emoji, DYE_SENSE }
 import from engine.i18n { detect_script, detect_latin_other, route_i18n, crisis_any_language, negated, need_focus, LATIN_MARKERS, NEG_RIGHT, is_small_talk }
 import from engine.facts_i18n { facts_i18n, place_i18n }
@@ -40,7 +41,7 @@ with entry {
 # ---------- lexicons ----------
 # (pattern, weight). Patterns are regex fragments matched on lowercase text
 # with word boundaries, so "legal" never fires inside "illegally".
-glob CATEGORY_LEXICON: dict = {
+glob BASE_LEXICON: dict = {
     "food": [
         ("food", 2.0), ("hungry", 2.0), ("hunger", 2.0), ("starving", 2.5),
         ("eat", 1.0), ("eaten", 2.0), ("meals?", 1.5), ("grocer(?:y|ies)", 1.5),
@@ -124,6 +125,8 @@ glob CATEGORY_LEXICON: dict = {
         ("help with money", 2.5), ("need money", 2.0), ("need cash", 2.0), ("ayuda con dinero", 2.5), ("necesito dinero", 2.0)
     ]
 };
+
+glob CATEGORY_LEXICON: dict = {k: v + EXTRA_NEEDS.get(k, []) for (k, v) in BASE_LEXICON.items()};
 
 # What someone can't do or afford is a need even with no need keyword ("i
 # lost my job and cant feed my kids" was routed nowhere; outside review).
@@ -212,7 +215,7 @@ glob FLAG_LEXICON: dict = {
     "homeless": ["homeless", "on the streets", "(?:living|live|lived|sleeping|sleep|slept|staying|stay|ended up|end up|been|out) on the street",
                  "sleeping in (?:my|our|the|a) car", "nowhere to (?:go|stay|sleep|live)", "no place to (?:go|stay|sleep|live)", "(?:with|has|have|had|got) no place(?! like)", "(?:need|find|get) (?:a )?shelter tonight",
                  "sin hogar", "sin techo", "no tenemos d[oó]nde (?:vivir|dormir|quedarnos)",
-                 "(?:vivo|vivimos|viv[ií]a|dormimos|duermo|dorm[ií]|estoy|estamos|quedamos|qued[eé]|terminamos|dejaron|echaron|sacaron|tiraron)(?: \\w+){0,2} en la calle"],
+                 "(?:vivo|vivimos|viv[ií]a|dormimos|duermo|dorm[ií]|estoy|estamos|quedamos|qued[eé]|terminamos|dejaron|echaron|sacaron|tiraron)(?: \\w+){0,2} en la calle"] + EXTRA_HOMELESS,
     "pregnant": ["pregnant", "expecting a baby", "embarazada", "gr[aá]vida"],
     "children": ["kids?", "children", "child", "sons?", "daughters?", "grand(?:sons?|daughters?|kids?|child(?:ren)?)", "niet[oa]s?", "baby", "toddler", "infant", "teens?", "teenagers?", "hij[oa]s?", "ni[nñ][oa]s?", "beb[eé]"],
     "family": ["my family", "our family", "mi familia", "nuestra familia", "familia"]
@@ -445,7 +448,8 @@ glob LONG_MESSAGE: int = 500;
 # Topic words that say what something is about, not that it is needed: in a
 # rambling story ("food over the streets", "selling bad medicine") they routed
 # a confident answer (live Space, 2026-10-29). They count only in a frame.
-glob BARE_TOPIC: list = ["food", "foods", "meal", "meals", "medicine", "medicines", "medication", "medications", "eat", "grocery", "groceries", "cook", "cooking"];
+glob PLAIN_NEED_WORDS: list = ["money", "cash", "dinero", "medical", "disability", "stamps", "pregnant"];
+glob BARE_TOPIC: list = ["money", "cash", "dinero", "medical", "disability", "stamps", "pregnant", "food", "foods", "meal", "meals", "medicine", "medicines", "medication", "medications", "eat", "grocery", "groceries", "cook", "cooking"];
 glob NEED_FRAME_LEFT: str = "\\b(?:no|out of|without|enough|need|needs|needed|afford|get|find|buy|pay for|any|some|help with|help|for|lack of|run out of|ran out of|nothing to|can'?t|cannot|couldn'?t|don'?t have|didn'?t have)(?:\\s+\\w+){0,2}\\s*$";
 glob NEED_FRAME_RIGHT: str = "^\\s*(?:stamps|bank|pantry|pantries|assistance|aid|help|benefits?|insecurity|for (?:my|our|the) (?:kids|children|family|son|daughter|baby))\\b";
 # A sentence that asks: a question mark or a request word.
@@ -1063,6 +1067,18 @@ def middle_danger(text: str) -> list {
 }
 
 """Which danger flags a lowercased text raises, by pattern alone."""
+# "My landlord says he will call ICE" is a threat to report to legal aid, not a sign of
+# abuse at home (blind audit, 2026-11: it opened on the DV hotline).
+glob NOT_AT_HOME: str = "\\b(?:landlord|landlady|boss|employer|manager|supervisor|coworker|neighbou?r)\\b[^.!?]{0,20}$";
+
+def _concern_hit(cflag: str, pat: str, low: str) -> bool {
+    for m in re.finditer("\\b" + pat + "\\b", low) {
+        if cflag == "dv_concern" and re.search(NOT_AT_HOME, low[max(0, m.start() - 30):m.start()]) { continue; }
+        return True;
+    }
+    return False;
+}
+
 def danger_scan(low: str) -> list {
     found: list = [];
     for flag in ["self_harm", "dv"] {
@@ -1077,7 +1093,7 @@ def danger_scan(low: str) -> list {
         if f not in found and f.replace("_concern", "") not in found { found.append(f); }
     }
     for (cflag, cpats) in CONCERN_LEXICON.items() {
-        if cflag.replace("_concern", "") not in found and cflag not in found and [cp for cp in cpats if re.search("\\b" + cp + "\\b", low)] {
+        if cflag.replace("_concern", "") not in found and cflag not in found and [cp for cp in cpats if _concern_hit(cflag, cp, low)] {
             found.append(cflag);
         }
     }
@@ -1172,7 +1188,7 @@ def parse_intake(text: str) -> dict {
         if direct in flags or cflag in flags { continue; }
         for cp in cpats {
             cm = re.search("\\b" + cp + "\\b", low);
-            if cm {
+            if cm and _concern_hit(cflag, cp, low) {
                 flags.append(cflag);
                 _ev(evidence, "flag", cflag, cm.start(), cm.end(), raw);
                 break;
@@ -1351,12 +1367,14 @@ def parse_intake(text: str) -> dict {
     # recall fell 2.7 points when every long one-keyword message was dropped).
     asked = False;
     for e in evidence {
-        if e["field"] == "category" and _in_request(low, int(e["start"]), int(e["end"])) { asked = True; }
+        # A plain word in a long story isn't a request: "...help the people... for money".
+        if e["field"] == "category" and low[int(e["start"]):int(e["end"])].strip() not in PLAIN_NEED_WORDS and _in_request(low, int(e["start"]), int(e["end"])) { asked = True; }
     }
     framed = asked;
     for e in evidence {
         if e["field"] != "category" or framed { continue; }
         word = low[int(e["start"]):int(e["end"])].strip();
+        if word in PLAIN_NEED_WORDS { continue; }
         if word not in BARE_TOPIC or re.search(NEED_FRAME_LEFT, low[max(0, int(e["start"]) - 40):int(e["start"])]) or re.search(NEED_FRAME_RIGHT, low[int(e["end"]):int(e["end"]) + 40]) {
             framed = True;
         }

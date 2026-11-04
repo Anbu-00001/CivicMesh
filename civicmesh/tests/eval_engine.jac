@@ -6,7 +6,8 @@ tests/golden_adversarial.json (negation, idioms, cross-category traps,
 crisis, code-switching, romanized scripts, no-signal input) and
 tests/golden_crisis.json (crisis recall, strict),
 tests/golden_danger.json (a blind audit's misses and quiet controls, strict),
-tests/golden_eligibility.json (the same audit's wrong answers, strict) and
+tests/golden_eligibility.json (the same audit's wrong answers, strict),
+tests/golden_routing.json (needs with no route, and quick replies typed, strict) and
 tests/golden_facts_i18n.json (income, household, age, status and location
 stated in 20 other languages, with traps) through
 parse → rank → plan → routes, and tests/golden_conversations.json
@@ -32,7 +33,8 @@ import from engine.paths { plan_routes }
 import from engine.compose { merge_profiles }
 import from engine.prior { sanitize_prior }
 
-glob FLOORS: dict = {"field_accuracy": 0.9, "top3_hit_rate": 0.85, "exclusion_violations": 0};
+# One miss fails the run: at 0.9 the eval exited 0 with seven regressions in it.
+glob FLOORS: dict = {"field_accuracy": 1.0, "top3_hit_rate": 1.0, "exclusion_violations": 0};
 # A whole turn (parse, rank 44 programs, plan, routes) is ~2 ms here; 15 ms of
 # headroom absorbs a slow CI runner but not the regex-cache thrash that made
 # it 28 ms (engine/parse.jac).
@@ -70,7 +72,9 @@ with entry {
     for c in danger_cases { c["suite"] = "danger"; }
     elig_cases = json.load(open("tests/golden_eligibility.json", encoding="utf-8"))["cases"];
     for c in elig_cases { c["suite"] = "eligibility"; }
-    cases = cases + i18n_cases + adv_cases + hold_cases + fact_cases + probe_cases + crisis_cases + danger_cases + elig_cases;
+    route_cases = json.load(open("tests/golden_routing.json", encoding="utf-8"))["cases"];
+    for c in route_cases { c["suite"] = "routing"; }
+    cases = cases + i18n_cases + adv_cases + hold_cases + fact_cases + probe_cases + crisis_cases + danger_cases + elig_cases + route_cases;
     suite_tot: dict = {};
     suite_ok: dict = {};
     langs_ok: dict = {};
@@ -92,7 +96,7 @@ with entry {
         t0 = time.perf_counter();
         p = parse_intake(text);
         rk = rank_resources(items, p, text, 6, p["language"] or "en");
-        pl = build_plan(rk["ranked"], p["urgency"], p["language"] or "en");
+        pl = build_plan(rk["ranked"], p["urgency"], p["language"] or "en", 4, str(p.get("category", "")));
         p_of: dict = {};
         for s in rk["ranked"] { p_of[s["resource_name"]] = float(s["p_eligible"]) * float(s["approval"]["mean"]); }
         srcs = [s["resource_name"] for s in rk["ranked"] if s["tier"] in ["likely", "possible"]];
@@ -117,6 +121,9 @@ with entry {
             } elif k == "secondary_nonempty" {
                 got = p.get("secondary", []);
                 ok = len(got) > 0;
+            } elif k == "first_step_not" {
+                got = str(pl["steps"][0]["agency_name"]) if pl["steps"] else "";
+                ok = v.lower() not in got.lower();
             } elif k == "tier_of" {
                 every = rank_resources(items, p, text, 60, p["language"] or "en")["ranked"];
                 got = {};
@@ -308,7 +315,7 @@ with entry {
         "failures": failures
     }, open(report_path, "w"), indent=2);
     # Crisis recall has no floor below 100%: one miss hides a hotline.
-    for strict in ["crisis", "danger", "eligibility"] {
+    for strict in ["crisis", "danger", "eligibility", "routing"] {
         if int(suite_ok.get(strict, 0)) < int(suite_tot.get(strict, 0)) {
             print(f"  FAIL: {strict} suite {int(suite_ok.get(strict, 0))}/{int(suite_tot.get(strict, 0))}; every check must pass");
             sys.exit(1);

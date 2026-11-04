@@ -293,7 +293,7 @@ walker EligibilityWalker {
         # (catalogs are machine-drafted until a native speaker reviews them).
         reply_en = "";
         if ui_lang != "en" {
-            plan_en = build_plan(ranked, str(self.profile.get("urgency", "within_weeks")), "en");
+            plan_en = build_plan(ranked, str(self.profile.get("urgency", "within_weeks")), "en", 4, str(self.profile.get("category", "")));
             reply_en = compose_reply("en", self.profile, ranking, plan_en, routes, (question_for(str(ask["key"]), "en") if ask["key"] else ""));
         }
         chips = [] if guessed else chips_for(ranked, self.profile, ui_lang);
