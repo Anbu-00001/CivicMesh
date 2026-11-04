@@ -90,8 +90,8 @@ To avoid tuning to the test, each task's posts are split by index. Misses were r
 | Task (engine output checked) | Held-out recall, first run | Held-out recall now (95% CI) | False positives (held-out, now) |
 |---|---|---|---|
 | Domestic violence (the dv flag or the concern layer, which pin the hotline) | 38.6% (17/44) | **70.5%** (31/44; 56–82%) | 2.3% (1/43) |
-| Housing (routed to housing) | 77.0% | 81.4% (912/1,120; 79–84%) | 12.0% |
-| Health (routed to healthcare) | 78.9% | 77.2% (44/57; 65–86%) | 10.7% |
+| Housing (routed to housing) | 77.0% | 81.3% (911/1,120; 79–84%) | 11.9% |
+| Health (routed to healthcare) | 78.9% | 77.2% (44/57; 65–86%) | 12.5% |
 | Immigration (an immigration status read) | 67.6% (23/34) | **79.4%** (27/34; 63–90%) | 3.0% |
 
 ### Suicide risk, on wording nobody here wrote
