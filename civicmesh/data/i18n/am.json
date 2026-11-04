@@ -109,5 +109,7 @@
   "ui.safety_home": "ቤት ውስጥ ደህንነት ከሌለዎት:",
   "ui.safety_text": "ወይም START ወደ 88788 ይላኩ",
   "ui.details": "ዝርዝሮች",
-  "ui.hide_details": "ዝርዝሮችን ደብቅ"
+  "ui.hide_details": "ዝርዝሮችን ደብቅ",
+  "ui.more_lines": "ሌሎች አስቸኳይ ሁኔታዎች",
+  "ui.show_programs": "ፕሮግራሞችን እና ቀጣይ እርምጃዎችን አሳይ"
 }

@@ -64,6 +64,9 @@ impl ClientApp.startApp -> None {
     # yet, ChatPane's sendMessage waits for it — don't block the UI here.
     show_landing = False;
     active_tab = "chat";
+    # The page kept its scroll: a phone opened on the pipeline panel, with the
+    # message box above the screen (blind audit, 2026-11).
+    window.scrollTo(0, 0);
 }
 
 impl ClientApp.pushWalkerEvent(events: list) -> None {

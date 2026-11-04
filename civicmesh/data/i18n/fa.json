@@ -109,5 +109,7 @@
   "ui.safety_home": "در خانه امنیت ندارید:",
   "ui.safety_text": "یا START را به 88788 بفرستید",
   "ui.details": "جزئیات",
-  "ui.hide_details": "پنهان کردن جزئیات"
+  "ui.hide_details": "پنهان کردن جزئیات",
+  "ui.more_lines": "موارد اضطراری دیگر",
+  "ui.show_programs": "نمایش برنامه‌ها و گام‌های بعدی"
 }

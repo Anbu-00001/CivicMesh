@@ -109,5 +109,7 @@
   "ui.safety_home": "Zu Hause nicht sicher:",
   "ui.safety_text": "oder SMS mit START an 88788",
   "ui.details": "Details",
-  "ui.hide_details": "Details ausblenden"
+  "ui.hide_details": "Details ausblenden",
+  "ui.more_lines": "Andere Notfälle",
+  "ui.show_programs": "Programme und nächste Schritte anzeigen"
 }

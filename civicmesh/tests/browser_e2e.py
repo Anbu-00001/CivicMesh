@@ -396,6 +396,44 @@ def main(app: str) -> int:
         time.sleep(1.0)
         check("5b and opens no tab", not [t for t in targets() if t["type"] == "page" and t["id"] not in before_pages])
         tab.close()
+
+        # ---- 6: what a person in crisis actually sees on a phone (blind audit, 2026-11) ----
+        raw = urllib.request.urlopen(urllib.request.Request(app + "/", headers={"Accept-Encoding": "identity"}), timeout=30).read()
+        check("6a the numbers are in the page before any script runs", b"tel:988" in raw and b"tel:911" in raw and raw.find(b"tel:988") < raw.find(b'id="root"'))
+        tab = new_tab()
+        tab.call("Page.enable")
+        tab.call("Emulation.setDeviceMetricsOverride", width=360, height=640, deviceScaleFactor=1, mobile=True)
+        tab.call("Page.navigate", url=app)
+        tab.until("!!document.querySelector('.lp-safety')")
+        check("6b the landing page shows 988 and Quick exit on the first screen", tab.js("""(()=>{const a=document.querySelector('.lp-safety a[href="tel:988"]');const q=document.querySelector('.lp-safety .cm-quick-exit');
+            return a&&q&&a.getBoundingClientRect().bottom<640&&q.getBoundingClientRect().bottom<640})()"""))
+        tab.js("window.scrollTo(0,800)")
+        check("6c the chat opens", open_chat(tab, ""))
+        time.sleep(0.5)
+        check("6d the chat opens at the top of the page", tab.js("window.scrollY") == 0, tab.js("window.scrollY"))
+        rows = tab.js("document.querySelectorAll('.cm-thread .cm-row').length")
+        send(tab, "I want to kill myself")
+        tab.until(f"document.querySelectorAll('.cm-thread .cm-row').length>={rows + 2} && !document.querySelector('.cm-typing')")
+        time.sleep(1.0)
+        check("6e the crisis box is inside the visible part of the thread", tab.js("""(()=>{const t=document.querySelector('.cm-thread').getBoundingClientRect();const boxes=document.querySelectorAll('.cm-crisis');
+            const c=boxes[boxes.length-1].getBoundingClientRect();return c.top>=t.top-1&&c.top<t.bottom-20&&c.top>=0&&c.top<640})()"""), tab.js("""JSON.stringify([document.querySelector('.cm-thread').getBoundingClientRect().top,document.querySelector('.cm-thread').getBoundingClientRect().bottom,[...document.querySelectorAll('.cm-crisis')].pop().getBoundingClientRect().top,window.scrollY])"""))
+        check("6f the call button stays in view", tab.js("""(()=>{const a=document.querySelector('.cm-crisis-pin-call');if(!a)return false;const r=a.getBoundingClientRect();return a.getAttribute('href')==='tel:988'&&r.top>=0&&r.bottom<=640})()"""))
+        check("6g no document list on a crisis turn", "Proof of" not in str(tab.js("document.querySelector('.cm-thread').innerText")))
+        check("6h the crisis line has no odds", tab.js("""[...document.querySelectorAll('.cm-card-line')].length>0&&[...document.querySelectorAll('.cm-card-line')].every(c=>!/%|Needs info/.test(c.innerText))"""))
+        check("6i the programs are one tap away", tab.js("!!document.querySelector('.cm-show-programs')"))
+        tab.js("document.querySelector('.cm-show-programs').click()")
+        check("6j and appear when asked for", tab.until("document.querySelectorAll('.cm-card').length>1", 5.0))
+        # A restart invalidates the token. The next message must still be answered in place.
+        time.sleep(21)
+        tab.js("localStorage.setItem('jac_token','expired-token');sessionStorage.getItem('jac_token')&&sessionStorage.setItem('jac_token','expired-token')")
+        mark = len(tab.events)
+        rows = tab.js("document.querySelectorAll('.cm-thread .cm-row').length")
+        send(tab, "I need food")
+        answered = tab.until(f"document.querySelectorAll('.cm-thread .cm-row').length>={rows + 2} && !document.querySelector('.cm-typing')")
+        reloads = [e for e in tab.events[mark:] if e.get("method") == "Page.frameNavigated" and not e["params"]["frame"].get("parentId")]
+        check("6k an expired sign-in doesn't reload the page", not reloads, len(reloads))
+        check("6l the message is answered and the thread is kept", answered and "I want to kill myself" in str(tab.js("document.querySelector('.cm-thread').innerText")))
+        tab.close()
     finally:
         proc.terminate()
         if srv:

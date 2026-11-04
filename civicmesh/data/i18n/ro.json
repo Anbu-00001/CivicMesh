@@ -109,5 +109,7 @@
   "ui.safety_home": "Nu sunteți în siguranță acasă:",
   "ui.safety_text": "sau trimiteți START la 88788",
   "ui.details": "Detalii",
-  "ui.hide_details": "Ascunde detaliile"
+  "ui.hide_details": "Ascunde detaliile",
+  "ui.more_lines": "Alte urgențe",
+  "ui.show_programs": "Arată programele și pașii următori"
 }

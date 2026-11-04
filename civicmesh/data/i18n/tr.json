@@ -109,5 +109,7 @@
   "ui.safety_home": "Evde güvende değilseniz:",
   "ui.safety_text": "veya 88788'e START yazın",
   "ui.details": "Ayrıntılar",
-  "ui.hide_details": "Ayrıntıları gizle"
+  "ui.hide_details": "Ayrıntıları gizle",
+  "ui.more_lines": "Diğer acil durumlar",
+  "ui.show_programs": "Programları ve sonraki adımları göster"
 }

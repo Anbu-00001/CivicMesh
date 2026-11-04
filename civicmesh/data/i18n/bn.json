@@ -109,5 +109,7 @@
   "ui.safety_home": "বাড়িতে নিরাপদ নন:",
   "ui.safety_text": "অথবা 88788-এ START পাঠান",
   "ui.details": "বিস্তারিত",
-  "ui.hide_details": "বিস্তারিত লুকান"
+  "ui.hide_details": "বিস্তারিত লুকান",
+  "ui.more_lines": "অন্যান্য জরুরি অবস্থা",
+  "ui.show_programs": "প্রোগ্রাম ও পরবর্তী ধাপ দেখান"
 }

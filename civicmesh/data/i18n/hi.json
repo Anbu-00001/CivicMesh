@@ -109,5 +109,7 @@
   "ui.safety_home": "घर पर सुरक्षित नहीं:",
   "ui.safety_text": "या 88788 पर START भेजें",
   "ui.details": "विवरण",
-  "ui.hide_details": "विवरण छिपाएँ"
+  "ui.hide_details": "विवरण छिपाएँ",
+  "ui.more_lines": "अन्य आपात स्थितियाँ",
+  "ui.show_programs": "कार्यक्रम और अगले कदम दिखाएँ"
 }

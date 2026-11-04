@@ -26,6 +26,7 @@ counters (cmguard/telemetry.py).
 """
 
 import asyncio
+import gzip
 import hashlib
 import json
 import os
@@ -103,6 +104,40 @@ def cors_filter(raw_headers, origin: bytes, allowed: frozenset):
                 v = origin
         out.append((k, v))
     return out
+
+
+# In the HTML itself, so it shows on a slow phone before the 766 KB bundle runs,
+# and when scripts are off or the bundle fails (blind audit, 2026-11). The app
+# removes the visible copy once it is up.
+SAFETY_NOTICE = (
+    "<div id='cm-shell-safety' style='font:16px/1.5 system-ui,sans-serif;background:#3a1216;color:#fff;padding:12px 16px'>"
+    "In danger now: <a style='color:#fff' href='tel:911'>911</a> &middot; Suicide or crisis: <a style='color:#fff' href='tel:988'>988</a> "
+    "&middot; Not safe at home: <a style='color:#fff' href='tel:18007997233'>1-800-799-7233</a><br>"
+    "En peligro: <a style='color:#fff' href='tel:911'>911</a> &middot; Suicidio o crisis: <a style='color:#fff' href='tel:988'>988</a>, oprima dos</div>"
+    "<noscript><p style='font:16px/1.5 system-ui,sans-serif;background:#111;color:#fff;margin:0;padding:12px 16px'>"
+    "CivicMesh needs JavaScript to look up programs. For local help, call 211.</p></noscript>"
+).encode("utf-8")
+COMPRESSIBLE = (b"text/html", b"text/css", b"javascript", b"application/json", b"image/svg")
+MAX_BUFFERED = 16 * 1024 * 1024
+GZIP_CACHE: dict = {}
+
+
+def with_safety_notice(html: bytes) -> bytes:
+    html = html.replace(b"<title>app</title>", b"<title>CivicMesh</title>", 1)
+    at = html.find(b"<body>")
+    return html if at < 0 else html[:at + 6] + SAFETY_NOTICE + html[at + 6:]
+
+
+def gzipped(body: bytes) -> bytes:
+    """The client bundle is the same bytes for everyone: compress it once."""
+    key = hashlib.sha256(body).digest()
+    hit = GZIP_CACHE.get(key)
+    if hit is None:
+        hit = gzip.compress(body, 6, mtime=0)
+        if len(GZIP_CACHE) >= 32:
+            GZIP_CACHE.clear()
+        GZIP_CACHE[key] = hit
+    return hit
 
 
 STARTING_PAGE = (b"<!doctype html><html lang='en'><head><meta charset='utf-8'><meta http-equiv='refresh' content='3'>"
@@ -574,6 +609,24 @@ class Gateway:
             return
         try:
             raw = list(r.headers.raw)
+            kind = r.headers.get("content-type", "").lower().encode("latin-1", "ignore")
+            size = int(r.headers.get("content-length", "0") or 0)
+            if scope["method"] == "GET" and r.status_code == 200 and size <= MAX_BUFFERED and any(c in kind for c in COMPRESSIBLE):
+                payload = await r.aread()
+                if b"text/html" in kind:
+                    payload = with_safety_notice(payload)
+                out = [(k, v) for k, v in raw if k.lower() not in HOP_HEADERS and k.lower() not in (b"cache-control", b"content-encoding", b"etag", b"vary")]
+                # Hashed names are safe to keep; the page itself is checked each time.
+                hashed = b"hash=" in scope.get("query_string", b"")
+                out.append((b"cache-control", b"public, max-age=31536000, immutable" if hashed else b"no-cache"))
+                out.append((b"vary", b"accept-encoding"))
+                if b"gzip" in headers.get(b"accept-encoding", b"") and len(payload) > 1024:
+                    payload = gzipped(payload)
+                    out.append((b"content-encoding", b"gzip"))
+                out.append((b"content-length", str(len(payload)).encode()))
+                await send({"type": "http.response.start", "status": 200, "headers": out + SECURITY_HEADERS})
+                await send({"type": "http.response.body", "body": payload, "more_body": False})
+                return
             raw = [(k, v) for k, v in raw if k.lower() not in HOP_HEADERS or k.lower() == b"content-length"]
             await send({"type": "http.response.start", "status": r.status_code, "headers": raw + SECURITY_HEADERS})
             async for chunk in r.aiter_raw():

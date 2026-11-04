@@ -109,5 +109,7 @@
   "ui.safety_home": "Huko salama nyumbani:",
   "ui.safety_text": "au tuma START kwa 88788",
   "ui.details": "Maelezo",
-  "ui.hide_details": "Ficha maelezo"
+  "ui.hide_details": "Ficha maelezo",
+  "ui.more_lines": "Dharura nyingine",
+  "ui.show_programs": "Onyesha programu na hatua zinazofuata"
 }

@@ -11,7 +11,7 @@ taken back is already missing from `prior`.
 """
 
 import re;
-import from engine.parse { parse_intake, STATES }
+import from engine.parse { parse_intake, STATES, DANGER_FLAGS }
 import from engine.compose { ANSWER_EVIDENCE, ANSWER_FLAGS, COUNT_WORDS }
 
 glob CATEGORIES: list = ["housing", "food", "healthcare", "legal", "money"];
@@ -33,7 +33,7 @@ def _str(v: any, limit: int) -> str {
 }
 
 """A prior profile with only checked fields; {} for anything that isn't a dict."""
-def sanitize_prior(prior: any) -> dict {
+def sanitize_prior(prior: any, sealed: list = []) -> dict {
     if not isinstance(prior, dict) or not prior {
         return {};
     }
@@ -73,7 +73,9 @@ def sanitize_prior(prior: any) -> dict {
     fl = prior.get("flags", []);
     claimed = [f for f in fl if isinstance(f, str)][:40] if isinstance(fl, list) else [];
     reparsed: dict = parse_intake(case_text) if case_text else {};
-    supported = list(reparsed.get("flags", []));
+    # A danger flag the server signed outlasts the 1,500-character cap on the text
+    # (blind audit, 2026-11: three long messages dropped "I want to kill myself").
+    supported = list(reparsed.get("flags", [])) + [f for f in list(sealed) if f in DANGER_FLAGS];
     # A household count must come from the words too: the re-parse, or the
     # number itself as a reply to "How many people live in your household?".
     hh = out["household_size"];

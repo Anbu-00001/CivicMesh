@@ -109,5 +109,7 @@
   "ui.safety_home": "घरमा सुरक्षित हुनुहुन्न:",
   "ui.safety_text": "वा 88788 मा START पठाउनुहोस्",
   "ui.details": "विवरण",
-  "ui.hide_details": "विवरण लुकाउनुहोस्"
+  "ui.hide_details": "विवरण लुकाउनुहोस्",
+  "ui.more_lines": "अन्य आपतकालीन अवस्था",
+  "ui.show_programs": "कार्यक्रम र अर्को चरणहरू देखाउनुहोस्"
 }

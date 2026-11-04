@@ -84,10 +84,19 @@ The fourth review (again a chat model, not an audit) credited the deliberate cho
 
 ## Smaller findings from the 2026-11 blind audit
 
-A blind audit scored the project 4.5/10 as a public tool for people in crisis. Its critical and high findings are still open; these are the contained medium and low ones.
+A blind audit scored the project 4.5/10 as a public tool for people in crisis. These are its contained medium and low findings; the crisis findings are in the next section.
 
 - **Gateway.** Paths are judged after normalising, so `/./graph/data` is a 404. A 5xx from the server behind it no longer carries a traceback. Half an emoji in a message gets an answer instead of an HTTP 500. A language pin has to look like a language tag.
 - **Model text.** The summary guard also voids words that send someone away from help, links read aloud and benefits the engine never named, and caps the length. Translations pass the number, link and program checks too.
 - **False alarms.** "I don't want to live in this neighborhood", "I work at a suicide hotline", "he beat me to the appointment", "my job is abusive" and 我老公打电话给我 raise no crisis flag. Each has a control that still does ("I don't want to live here anymore" with no housing word stays a crisis).
 - **Screen.** Numbers read left to right in right-to-left footers. New case clears the thread. A server failure shows 911 and 988 instead of internals. On a phone, Quick exit stays in reach at 44 px. A skip link leads to the message box. Telemetry passes axe at phone width. The header no longer claims a model when none may be connected.
 - **Data.** HUD's FY2026 U.S. median family income is $106,800. Two links were replaced: one dead, one redirected to a marketing site. Spanish crisis lines say to press 2 or text AYUDA, and the 988 card covers Spanish, veterans and interpreters. A broken catalog is named in the log at boot.
+
+## Crisis findings from the 2026-11 blind audit
+
+- **The crisis box was off screen.** On a 360 px phone the view pinned to the bottom of a long answer, so "I want to kill myself" ended on a Medicaid document list with the crisis box 1,100 px above. A Call button now stays above the thread, the answer opens at its first line, the crisis box comes first, and a danger turn holds back programs, plan and questions until the person taps "Show programs and next steps". A line that matters on a crisis turn shows a name and a Call button, with no tier or percentage.
+- **The safety lines needed JavaScript.** The gateway now puts 911, 988 and the DV line in the page HTML, and the landing page shows them with Quick exit on the first screen. The gateway also gzips the page and marks hashed assets immutable, because a slow phone waited on the bundle before seeing any of it.
+- **An expired sign-in lost the message.** A token that lapsed mid-conversation made the client reload the page. It now signs in again quietly before sending, and the thread stays.
+- **A danger flag could be edited away.** The client holds the profile, so a stale or edited one could drop a flag. The server now returns a signed list of danger flags tied to the visitor, and a flag in a valid seal survives.
+- **Missed wording.** The audit's 458 missed messages became `engine/danger_words.jac`: typos, spacing tricks, emoji, indirect wording, and phrases in about 45 languages (machine-drafted, unreviewed). Sexual assault, trafficking, child abuse and emergencies now also fire in other languages. This fixed those messages and barely moved outside recall (`docs/EVALUATION.md`).
+- **Still not handled:** one in four at-risk users on the outside set, and most single posts. A classifier was tried and left out, for the reasons in `docs/EVALUATION.md`. On a 360 x 640 phone the thread itself is only about 175 px tall on a crisis turn, though the Call button is always visible.

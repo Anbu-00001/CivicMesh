@@ -109,5 +109,7 @@
   "ui.safety_home": "집이 안전하지 않다면:",
   "ui.safety_text": "또는 88788로 START 문자",
   "ui.details": "자세히",
-  "ui.hide_details": "자세히 숨기기"
+  "ui.hide_details": "자세히 숨기기",
+  "ui.more_lines": "다른 긴급 상황",
+  "ui.show_programs": "프로그램과 다음 단계 보기"
 }

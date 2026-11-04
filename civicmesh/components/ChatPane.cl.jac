@@ -12,10 +12,11 @@ real timing from the last turn's trace.
 sv import from walkers.intake { IntakeWalker }
 sv import from walkers.narrate { NarrateWalker }
 sv import from walkers.forget { ForgetWalker }
-import from "@jac/runtime" { jacSpawn, jacIsLoggedIn }
+import from "@jac/runtime" { jacSpawn, jacIsLoggedIn, jacSignup, jacLogin }
 
 # The id of the chat request waiting for an answer (see sendMessage).
 glob CM_INFLIGHT: dict = {"id": ""};
+glob CM_AUTH: dict = {"checked": 0};
 
 # Follow-up questions answered with a quick Yes / No (must live in the .cl.jac:
 # globs in .impl.jac files don't reach the client bundle).
@@ -39,6 +40,7 @@ def:pub ChatPane(
         last_llm: Any = {},
         open_key: str = "",
         waterfall_open: int = -1,
+        open_programs: list = [],
         narr_tick: float = 0.0,
         # Mutated in place by background narration; narr_tick forces a re-render.
         narrations: dict = {},
@@ -82,12 +84,34 @@ def:pub ChatPane(
 
     # Keep the newest turn in view (also when a narration lands), unless the
     # person has scrolled up to read: a narration landing seconds later used
-    # to pull them back down. Sending a message always shows the bottom.
+    # to pull them back down. Only a new message moves the view.
     can with [messages, narr_tick] entry {
         try {
             thread = document.querySelector(".cm-thread");
-            just_sent = len(messages) > 0 and messages[len(messages) - 1]["role"] == "user";
-            if thread and (just_sent or thread.dataset.away != "1") { thread.scrollTop = thread.scrollHeight; }
+            n = len(messages);
+            last: Any = messages[n - 1] if n > 0 else None;
+            if thread and last and thread.dataset.lastId != str(last["id"]) {
+                thread.dataset.lastId = str(last["id"]);
+                if last["role"] == "user" {
+                    thread.scrollTop = thread.scrollHeight;
+                } elif n > 1 {
+                    # Blind audit, 2026-11: pinning to the bottom left the
+                    # crisis box 1,100 px above the view and showed a Medicaid
+                    # document list after "I want to kill myself".
+                    # The typing row can still be there, and it isn't the answer.
+                    rows = thread.querySelectorAll(".cm-row");
+                    row: Any = None;
+                    for ri in range(rows.length - 1, -1, -1) {
+                        if not rows[ri].querySelector(".cm-typing") { row = rows[ri]; break; }
+                    }
+                    if row {
+                        # offsetTop, because the row's enter animation shifts its on-screen box.
+                        thread.scrollTop = row.offsetTop - 8;
+                        box = thread.getBoundingClientRect();
+                        if box.top < 0 or box.bottom > window.innerHeight { thread.scrollIntoView({"block": "start"}); }
+                    }
+                }
+            }
         } except Exception as _ex {}
     }
 
@@ -98,11 +122,13 @@ def:pub ChatPane(
         try {
             if (not is_loading) and len(messages) > 1 and (document.activeElement == document.body or not document.activeElement) {
                 box = document.querySelector(".cm-input");
-                if box { box.focus(); }
+                if box { box.focus({"preventScroll": True}); }
             }
         } except Exception as _ex {}
     }
 
+    async def ensureSignedIn -> None;
+    def renderCrisisPin -> Any;
     async def sendMessage(text_override: str = "", answering: str = "", display: str = "", pin: bool = False) -> None;
     async def safeSpawn(walker_name: str, fields: dict) -> Any;
     async def narrate(msg_id: str, data: Any, user_text: str) -> None;
@@ -150,6 +176,7 @@ def:pub ChatPane(
                     {renderLangPicker()}
                     <button className="cm-ghost-btn" onClick={lambda _e: MouseEvent { resetCase(); }} title="Start a new case">New case</button>
                 </div>
+                {renderCrisisPin()}
                 <div className="cm-thread" role="log" aria-live="polite" aria-relevant="additions" aria-label="Conversation" aria-busy={is_loading} tabIndex={0}
                     onScroll={lambda e: Any { e.target.dataset.away = ("1" if (e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight) > 120 else ""); }}>
                     {[renderMessage(messages[i], i, (i == len(messages) - 1) and (not is_loading)) for i in range(len(messages))]}
@@ -187,6 +214,13 @@ def:pub ChatPane(
                     {" · " + L(fui, "ui.safety_crisis", "Suicide or crisis: call or text") + " "}<a href="tel:988"><bdi dir="ltr">988</bdi></a>
                     {" · " + L(fui, "ui.safety_home", "Not safe at home:") + " "}<a href="tel:18007997233"><bdi dir="ltr">1-800-799-7233</bdi></a>{" " + L(fui, "ui.safety_text", "or text START to 88788")}
                 </p>
+                <details className="cm-more-lines">
+                    <summary dir="auto">{L(fui, "ui.more_lines", "Other emergencies")}</summary>
+                    <p dir="auto"><a href="tel:18006564673"><bdi dir="ltr">1-800-656-4673</bdi></a>{" RAINN · " + L(fui, "esc.sexual_assault", "24/7 confidential support after sexual assault")}</p>
+                    <p dir="auto"><a href="tel:18004224453"><bdi dir="ltr">1-800-422-4453</bdi></a>{" Childhelp · " + L(fui, "esc.child_abuse", "24/7 help for children being hurt and for adults worried about a child")}</p>
+                    <p dir="auto"><a href="tel:18883737888"><bdi dir="ltr">1-888-373-7888</bdi></a>{" Polaris · " + L(fui, "esc.trafficking", "24/7 confidential help for anyone forced to work or to have sex; text 233733")}</p>
+                    <p dir="auto"><a href="tel:18002221222"><bdi dir="ltr">1-800-222-1222</bdi></a>{" Poison Help"}</p>
+                </details>
                 {renderPrivacy()}
             </div>
             <div className="cm-side" role="region" aria-label="Case file and pipeline" tabIndex={0}>

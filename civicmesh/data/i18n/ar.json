@@ -109,5 +109,7 @@
   "ui.safety_home": "لست بأمان في المنزل:",
   "ui.safety_text": "أو أرسل START إلى 88788",
   "ui.details": "التفاصيل",
-  "ui.hide_details": "إخفاء التفاصيل"
+  "ui.hide_details": "إخفاء التفاصيل",
+  "ui.more_lines": "حالات طارئة أخرى",
+  "ui.show_programs": "عرض البرامج والخطوات التالية"
 }

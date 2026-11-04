@@ -109,5 +109,7 @@
   "ui.safety_home": "Không an toàn ở nhà:",
   "ui.safety_text": "hoặc nhắn START đến 88788",
   "ui.details": "Chi tiết",
-  "ui.hide_details": "Ẩn chi tiết"
+  "ui.hide_details": "Ẩn chi tiết",
+  "ui.more_lines": "Các trường hợp khẩn cấp khác",
+  "ui.show_programs": "Hiện các chương trình và bước tiếp theo"
 }

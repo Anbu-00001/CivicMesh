@@ -42,6 +42,26 @@ def _sign(payload: bytes) -> str:
     return hmac.new(KEY, payload, hashlib.sha256).hexdigest()
 
 
+def danger_seal(flags: list, subject: str) -> dict:
+    """Danger flags, signed for the client to carry between turns. Bound to the
+    visitor, so a flag can't be forged onto a case. Empty when there are none."""
+    held = sorted(str(f) for f in flags)[:12]
+    if not held:
+        return {}
+    return {"flags": held, "sig": _sign(content_hash("danger_seal", str(subject), held).encode("utf-8"))}
+
+
+def sealed_flags(seal, subject: str) -> list:
+    """The flags in a seal this server signed for this visitor, else []."""
+    if not isinstance(seal, dict):
+        return []
+    held, sig = seal.get("flags"), seal.get("sig")
+    if not (isinstance(held, list) and isinstance(sig, str) and len(held) <= 12 and all(isinstance(f, str) for f in held)):
+        return []
+    want = _sign(content_hash("danger_seal", str(subject), held).encode("utf-8"))
+    return list(held) if hmac.compare_digest(want, sig) else []
+
+
 def issue(kind: str, subject: str, digest: str, ttl_s: "float | None" = None, now: "float | None" = None) -> str:
     now = time.time() if now is None else now
     claims = {"k": kind, "s": str(subject), "h": digest, "e": round(now + (ttl_s or TTL_S), 1),

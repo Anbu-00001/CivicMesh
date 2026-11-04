@@ -109,5 +109,7 @@
   "ui.safety_home": "Doma nejste v bezpečí:",
   "ui.safety_text": "nebo pošlete START na 88788",
   "ui.details": "Podrobnosti",
-  "ui.hide_details": "Skrýt podrobnosti"
+  "ui.hide_details": "Skrýt podrobnosti",
+  "ui.more_lines": "Další tísňové situace",
+  "ui.show_programs": "Zobrazit programy a další kroky"
 }

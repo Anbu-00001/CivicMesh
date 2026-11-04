@@ -109,5 +109,7 @@
   "ui.safety_home": "گھر میں محفوظ نہیں:",
   "ui.safety_text": "یا 88788 پر START بھیجیں",
   "ui.details": "تفصیلات",
-  "ui.hide_details": "تفصیلات چھپائیں"
+  "ui.hide_details": "تفصیلات چھپائیں",
+  "ui.more_lines": "دیگر ہنگامی حالات",
+  "ui.show_programs": "پروگرام اور اگلے اقدامات دکھائیں"
 }

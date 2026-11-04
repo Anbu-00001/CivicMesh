@@ -4,7 +4,8 @@ Runs every case in tests/golden.json (EN/ES, full pipeline) and
 tests/golden_i18n.json (language ID + routing in 70+ more languages) and
 tests/golden_adversarial.json (negation, idioms, cross-category traps,
 crisis, code-switching, romanized scripts, no-signal input) and
-tests/golden_crisis.json (crisis recall, strict) and
+tests/golden_crisis.json (crisis recall, strict),
+tests/golden_danger.json (a blind audit's misses and quiet controls, strict) and
 tests/golden_facts_i18n.json (income, household, age, status and location
 stated in 20 other languages, with traps) through
 parse → rank → plan → routes, and tests/golden_conversations.json
@@ -64,7 +65,9 @@ with entry {
     for c in probe_cases { c["suite"] = "probes"; }
     crisis_cases = json.load(open("tests/golden_crisis.json", encoding="utf-8"))["cases"];
     for c in crisis_cases { c["suite"] = "crisis"; }
-    cases = cases + i18n_cases + adv_cases + hold_cases + fact_cases + probe_cases + crisis_cases;
+    danger_cases = json.load(open("tests/golden_danger.json", encoding="utf-8"))["cases"];
+    for c in danger_cases { c["suite"] = "danger"; }
+    cases = cases + i18n_cases + adv_cases + hold_cases + fact_cases + probe_cases + crisis_cases + danger_cases;
     suite_tot: dict = {};
     suite_ok: dict = {};
     langs_ok: dict = {};
@@ -111,6 +114,9 @@ with entry {
             } elif k == "secondary_nonempty" {
                 got = p.get("secondary", []);
                 ok = len(got) > 0;
+            } elif k == "flags_none" {
+                got = [f for f in p.get("flags", []) if f in v];
+                ok = not got;
             } elif k == "flag_any" {
                 got = p.get("flags", []);
                 ok = any([f in got for f in v]);
@@ -291,9 +297,11 @@ with entry {
         "failures": failures
     }, open(report_path, "w"), indent=2);
     # Crisis recall has no floor below 100%: one miss hides a hotline.
-    if int(suite_ok.get("crisis", 0)) < int(suite_tot.get("crisis", 0)) {
-        print(f"  FAIL: crisis suite {int(suite_ok.get('crisis', 0))}/{int(suite_tot.get('crisis', 0))}; every crisis check must pass");
-        sys.exit(1);
+    for strict in ["crisis", "danger"] {
+        if int(suite_ok.get(strict, 0)) < int(suite_tot.get(strict, 0)) {
+            print(f"  FAIL: {strict} suite {int(suite_ok.get(strict, 0))}/{int(suite_tot.get(strict, 0))}; every check must pass");
+            sys.exit(1);
+        }
     }
     if field_acc < FLOORS["field_accuracy"] or top_rate < FLOORS["top3_hit_rate"] or excl_viol > FLOORS["exclusion_violations"] {
         print("  FAIL: below regression floor");

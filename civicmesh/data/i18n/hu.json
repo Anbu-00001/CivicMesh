@@ -109,5 +109,7 @@
   "ui.safety_home": "Otthon nincs biztonságban:",
   "ui.safety_text": "vagy küldje: START a 88788-ra",
   "ui.details": "Részletek",
-  "ui.hide_details": "Részletek elrejtése"
+  "ui.hide_details": "Részletek elrejtése",
+  "ui.more_lines": "Egyéb vészhelyzetek",
+  "ui.show_programs": "Programok és következő lépések mutatása"
 }

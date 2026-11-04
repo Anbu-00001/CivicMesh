@@ -26,6 +26,7 @@ heavy agglutination (Chinese, Japanese, Thai, Tamil, Telugu, ...).
 
 import re;
 import unicodedata;
+import from engine.danger_words { CRISIS_WORDS, DYE_SENSE, THREAT_BY_OTHER, fold_latin }
 import bisect;
 import from engine.messages { has_messages, catalog_review }
 
@@ -1258,7 +1259,7 @@ def route_i18n(code: str, low: str) -> dict {
 # frappe", "Mari m bat mwen" came back as ""), and a missed crisis hides a
 # hotline. Words in Latin script only count when they are phrases, so a
 # single foreign word that is also English ("suicide" aside) can't fire.
-glob CRISIS_KEYS: list = ["self_harm", "dv", "self_harm_concern", "dv_concern"];
+glob CRISIS_KEYS: list = ["self_harm", "dv", "self_harm_concern", "dv_concern", "emergency", "sexual_assault", "trafficking", "child_abuse"];
 glob _CRISIS_RE: dict = {};
 
 def _crisis_patterns() -> dict {
@@ -1275,6 +1276,13 @@ def _crisis_patterns() -> dict {
                 else { spaced.append(re.escape(wl)); }
             }
         }
+        # The audit's phrases, plus each without accents ("nao quero mais viver").
+        for w in CRISIS_WORDS.get(key, []) {
+            wl = str(w).lower();
+            target = spaced if all([ord(c) < 0x250 for c in wl]) else unspaced;
+            target.append(re.escape(wl));
+            target.append(re.escape(fold_latin(wl)));
+        }
         parts: list = [];
         if spaced { parts.append("(?<![^\\W\\d_])(?:" + "|".join(sorted(set(spaced), key=len, reverse=True)) + ")"); }
         if unspaced { parts.append("(?:" + "|".join(sorted(set(unspaced), key=len, reverse=True)) + ")"); }
@@ -1289,6 +1297,9 @@ def crisis_any_language(low: str) -> list {
     for (key, rx) in _crisis_patterns().items() {
         for m in rx.finditer(low) {
             if key == "dv" and low[m.end():m.end() + 2] in ZH_NOT_HITTING { continue; }
+            if key == "self_harm" and re.search(DYE_SENSE, low[m.end():m.end() + 40]) { continue; }
+            # "He threatens to kill me" in French or Portuguese is not self-harm.
+            if key == "self_harm" and re.search(THREAT_BY_OTHER, low) and not rx.search(re.sub(THREAT_BY_OTHER, " ", low)) { continue; }
             out.append((key, m.start(), m.end()));
             break;
         }

@@ -5,6 +5,7 @@
 The container-level attack simulations are in tests/security_e2e.py.
 """
 
+import gzip
 import json
 import logging
 import logging.config
@@ -22,7 +23,7 @@ from cmguard import budget as budget_mod  # noqa: E402
 from cmguard.budget import ModelBudget, ModelBudgetExceeded, estimate_tokens, guard  # noqa: E402
 from cmguard.clientip import client_ip  # noqa: E402
 from cmguard.config import BudgetConfig, parse_rate  # noqa: E402
-from cmguard.gateway import classify, content_security_policy, cors_filter, json_shape_problem, scrub_surrogates  # noqa: E402
+from cmguard.gateway import classify, content_security_policy, cors_filter, gzipped, json_shape_problem, scrub_surrogates, with_safety_notice  # noqa: E402
 from cmguard.jacbind import bind_upstream, silence_access_log  # noqa: E402
 from cmguard.preflight import data_problems  # noqa: E402
 from cmguard.limits import ExpiringSet, InflightCounter, TokenBuckets  # noqa: E402
@@ -369,6 +370,27 @@ class TestAuditDents(unittest.TestCase):
             self.assertEqual(classify("GET", path)[0], "blocked", path)
         for path in ("/", "/assets/index.css", "/docs", "/some/page/"):
             self.assertNotEqual(classify("GET", path)[0], "blocked", path)
+
+    def test_numbers_are_in_the_page_before_any_script(self):
+        page = with_safety_notice(b"<html><head><title>app</title></head><body><div id='root'></div></body></html>")
+        for needed in (b"tel:911", b"tel:988", b"1-800-799-7233", b"<noscript>", b"<title>CivicMesh</title>"):
+            self.assertIn(needed, page)
+        self.assertLess(page.find(b"tel:988"), page.find(b"id='root'"))
+
+    def test_bundle_compresses_once(self):
+        body = b"x" * 5000
+        first = gzipped(body)
+        self.assertLess(len(first), 200)
+        self.assertIs(gzipped(body), first)
+        self.assertEqual(gzip.decompress(first), body)
+
+    def test_danger_seal_cannot_be_forged(self):
+        seal = tokens.danger_seal(["self_harm"], "visitor-a")
+        self.assertEqual(tokens.sealed_flags(seal, "visitor-a"), ["self_harm"])
+        self.assertEqual(tokens.sealed_flags(seal, "visitor-b"), [])
+        self.assertEqual(tokens.sealed_flags({"flags": ["dv"], "sig": seal["sig"]}, "visitor-a"), [])
+        self.assertEqual(tokens.sealed_flags("nonsense", "visitor-a"), [])
+        self.assertEqual(tokens.danger_seal([], "visitor-a"), {})
 
     def test_half_an_emoji_can_be_encoded(self):
         fixed = scrub_surrogates({"message": "help \ud83d", "n": 1, "l": ["\ud83d\ude00 ok"]})

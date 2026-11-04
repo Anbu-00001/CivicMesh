@@ -109,5 +109,7 @@
   "ui.safety_home": "Hindi ligtas sa bahay:",
   "ui.safety_text": "o i-text ang START sa 88788",
   "ui.details": "Mga detalye",
-  "ui.hide_details": "Itago ang mga detalye"
+  "ui.hide_details": "Itago ang mga detalye",
+  "ui.more_lines": "Iba pang emergency",
+  "ui.show_programs": "Ipakita ang mga programa at susunod na hakbang"
 }
