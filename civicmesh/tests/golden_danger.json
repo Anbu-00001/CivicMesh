@@ -1,0 +1,5129 @@
+{
+"_about": "Danger recall, development only: the messages a blind audit (2026-11-02) found missed, which the word lists in engine/danger_words.jac were then written from, plus everyday messages that must stay quiet. Passing this says nothing about messages nobody has seen; tests/eval_crisis_external.jac measures that. Non-English phrases are machine-drafted and unreviewed.",
+"cases": [
+{
+"text": "I've been looking up how many pills it takes",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I have pills saved up for when I finally do it",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I've written my note",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I burn myself when it gets bad",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I am going to shoot myself",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I'm about to jump",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I just want it all to stop",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I want the pain to stop",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "you won't have to worry about me soon",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "soon it won't matter",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "this is my last night",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "tonight is the night I end things",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I gave my dog to my sister because I won't be here",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "please tell my kids I love them, I can't do this",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I hope I die in my sleep",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I wouldn't care if a car hit me",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "sometimes when I drive I think about going off the bridge",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I keep thinking about the bridge",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I stood on the bridge last night",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I've been standing at the train tracks",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "if I was gone they would be fine",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "nobody would miss me",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I should just disappear",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "might as well be dead",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "maybe it's time for me to go",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I can't see a future for myself",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "my kids deserve better than me, they'd be better off",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "there is no hope for me",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I've got the rope",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "i'm so done. goodbye",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I still have my service weapon and I think about using it every night",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I keep cleaning my gun and thinking about it",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "the world would be a better place without me",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I feel like I'm a waste of space and nobody needs me",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I've made my peace and put my affairs in order",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I just want to go to sleep and not deal with any of this ever again",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I am at the end of my rope",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "Last night I sat in the garage with the car running",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I think about not being alive all the time",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I'd rather be dead than go back",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "how many tylenol does it take",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "how much ibuprofen is too much, I have 800mg ones and a full bottle",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "how much antifreeze is lethal",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "how long does it take to bleed out",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "how many sleeping pills would it take",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "how to tie a noose",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "does it hurt to die from carbon monoxide",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "where can I buy a gun today, I only need it once",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "kms",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "i wanna not exist",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "wanna yeet myself off a bridge",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "id be better off 6 feet under",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ready to check out for good",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "im checking out permanently",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "life is so ass im done im ending it",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "im 14 and i cut myself",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "my parents would be happier if i wasnt here",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "i cant anymore",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "catching the bus soon, already picked the date",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "i relapsed on sh",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "been sh-ing again",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "s/h is getting worse",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "i want to s*icide",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "wanna k*ll myself",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "i wnat to kil myself",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "i wanna kil my self",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "suicde",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "im suisidal",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "thinkin about sucide",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "want 2 die",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "i wan to die",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "wan2die",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "i want too die",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "killl myself",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "end my lfe",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "i  want   to    die",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "k i l l  m y s e l f",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "i w a n t t o d i e",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "wanna diee",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "i want to dei",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "i wanna dye",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ending it al",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "my daughter is cutting herself",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "my dad keeps saying we'd be better off without him",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "my mom gave away all her stuff and said goodbye",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I'm worried about my brother, he bought a gun and seems calm all of a sudden",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "my roommate locked herself in the bathroom and said goodbye",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "my friend posted a goodbye on instagram and now won't answer",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "my student told me he doesn't want to live",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "my teenage daughter wrote in her journal that she wants to disappear forever",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "my veteran husband sits with his gun at night and says we'd be better off",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "my mom says she wishes she wouldn't wake up",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "my life insurance would do more for my kids than I can",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "my family would get the insurance money if I was gone",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I'd rather die than be homeless",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "need help w food. also i dont really see the point anymore",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I'm a single mom in Ohio, I lost Medicaid and can't get my meds. Without them I don't see any reason to stay alive.",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "got evicted today. sleeping in my car in walmart parking lot. might just not wake up one of these days and that's fine with me",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "My name is Rosa, I'm 34, I live in Phoenix AZ, I have 3 kids and I make about $2000 a month. I work at a laundromat. I'm behind on rent. The landlord says we have until Friday. I've been crying every night and I've started to think my kids would be better off with my mother and that I should just go away for good. I need to know if there's rent help.",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "I took 30 tylenol an hour ago",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "my son took fentanyl and he's blue",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "I need narcan right now, my brother is on the floor",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "I think my toddler swallowed pills",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "I mixed bleach and ammonia and can't breathe",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "took too much xanax and can't stay awake",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "my mom mixed up her pills and took double, now she is confused",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "I think I OD'd",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "my 2 year old ate some of grandma's heart pills",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "my dad took too much insulin and he's sweating and confused",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "I'm having chest pain and my left arm is numb",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "my chest hurts really bad and i can't catch my breath",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "my husband's face is drooping and he can't talk right",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "my mom is slurring her words and can't move her arm",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "he collapsed and isn't responding",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "I can't breathe",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "my throat is closing, allergic reaction",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "I've been soaking through pads since I delivered and I'm dizzy",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "my 3 week old has a fever of 101",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "I ran out of oxygen for my COPD and I can't breathe",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "my dialysis got canceled three times and now I can't breathe lying down",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "someone got shot outside my house",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "he's been stabbed and he's bleeding out",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "my dad fell and hit his head and now he's confused",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "her lips are swelling after a bee sting",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "my kid has been hit by a car",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "my house is on fire",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "I smell gas and everyone has a headache",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "it's 110 degrees, my AC is broken, grandma is confused and stopped sweating",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "our heat is out, it's freezing and my baby is cold and limp",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "my daughter is choking",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "she can't breathe and we have no inhaler",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "water broke, baby is coming now, nobody is here",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "my baby fell and is not moving",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "severe bleeding from my leg, chainsaw accident",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "I'm pregnant and I have the worst headache of my life and blurry vision",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "I ran out of insulin and I keep vomiting",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "I have no insulin left and my sugar is over 500",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "the carbon monoxide alarm is going off and my kids feel sick",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "I need to get away from my husband, he's dangerous",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I need a safe place, he's looking for me",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I am hiding from him in my car with my kids",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "he has a gun and said he'd use it on me",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "He says no one will believe me",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "he broke my arm and told the hospital I fell",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my boyfriend threw me against the wall",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "he gave me a black eye",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "i have bruises, he told me not to tell anyone",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "he threatens to hurt the dog if I leave",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my husband says he will send me back to my country and keep the kids",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "He makes me hand over my paycheck every week and I have to ask for gas money",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "he's going to kill me",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "he's outside my door and I'm scared",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "he broke in and is banging on my door",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my same sex partner is hurting me",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my ex posted my nudes and says he'll send them to my boss",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "he follows me everywhere and has a tracker on my car",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my caregiver slaps me and won't give me my medication",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "the aide at the nursing home is hurting my mother",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "someone assaulted me last night and I don't know what to do",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "I think I was drugged and woke up with no clothes on",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "i woke up and he was on top of me",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "he forced himself on me",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "I said no but he didn't stop",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "I got pregnant from rape",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "i need a rape kit",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "my date wouldn't stop when I told him to",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "a man grabbed me on the street and tried to pull my pants down",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "I was attacked and assaulted walking home",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "the landlord keeps coming on to me and says he'll evict me if I don't sleep with him",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "my boss touches me and says i will lose my job if I tell",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "I can't leave the house where I clean, they keep my papers",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "He makes me sleep with men for money",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "They force me to work at the farm and threaten to call immigration",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "I work 16 hours a day and they keep my documents and don't pay me",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "they brought me here promising a job and now they won't let me go",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "someone is selling my daughter online",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "my 15 year old's boyfriend is making her see men",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "I want to get out of the life",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "Someone is forcing me to sell drugs",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "my employer locks us in at night",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "my labor recruiter charged me $8000 and I can't quit until i pay it",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "I want to leave my job but my boss says I owe him and he knows where my family lives",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "they took my passport and I have to work to pay off my debt",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "I owe them money and they won't let me leave",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "my boyfriend makes me have sex with guys for money and keeps it all",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "my pimp takes all my money",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "I'm a live-in nanny, they took my passport and I'm not allowed outside alone",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "my stepdad comes into my room at night",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "my parents lock me in the closet",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "my parents don't feed me",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "my niece told me her stepfather is touching her",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "a child is being beaten next door, I can hear screaming",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "there's a kid left alone in a car in the heat",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "my sister's boyfriend shook the baby",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "the teacher asked me about my bruises but i lied",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "i am 14 and my mom's boyfriend makes me do stuff to him",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "my daughter's coach is sending her naked pictures",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "a man online is making my 13 year old send pictures",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "my sister leaves her kids alone for days without food",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "I'm scared of my dad",
+"expect": {
+"flag_any": [
+"child_abuse",
+"dv_concern"
+]
+}
+},
+{
+"text": "I think my neighbor's kid is being abused",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "my brother touches me and i'm 11",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "my dad comes home drunk and beats us",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "መሞት እፈልጋለሁ",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "لا أريد أن أعيش",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "عايز أموت",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "نفسي أموت",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "لا أريد الحياة",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "الجميع سيكون أفضل بدوني",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ana 3ayez amoot",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "bedi moot",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "3ayza amoot",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "আমি মরতে চাই",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "আমি বাঁচতে চাই না",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ich will sterben",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ich bringe mich um",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "θέλω να πεθάνω",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ya no aguanto más",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "no puedo más",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "estoy harta de vivir",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "estaría mejor muerta",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ojalá no despertara mañana",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "quisiera dormir y no despertar",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "quiero desaparecer",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ya me quiero ir de este mundo",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "me corto los brazos",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "me estoy cortando otra vez",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "me hago daño a propósito",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "mejor me muero",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "quisiera ya no existir",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "me voy a aventar del puente",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "me voy a colgar",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "me kiero morir",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ya no kiero vivir",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "me kiero matar",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "quiero suisidarme",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "kiero morir",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ya no le hallo sentido a nada",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "nadie me va a extrañar",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "tengo una pistola y ya sé lo que voy a hacer",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ya escribí mi carta de despedida",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "no tengo razón para vivir",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ojalá me muriera",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "esta es mi última noche",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ya no quiero live anymore",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "i want to morir",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "me quiero kill",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "no quiero estar alive",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "می‌خواهم بمیرم",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "نمی‌خواهم زندگی کنم",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "je ne veux plus vivre",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "tout le monde serait mieux sans moi",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "j'en peux plus de vivre",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "મારે મરી જવું છે",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "હું આપઘાત કરવા માંગુ છું",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "mujhe jeena nahi hai",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "mujhe mar jana hai",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "aatmahatya karna chahta hu",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "i want to mar jana",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ab jeene ka mann nahi hai",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "kuv xav tuag",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "mwen pa vle viv ankò",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "mwen pa ka kontinye ankò",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "mwen vle touye tet mwen",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ուզում եմ մեռնել",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "saya ingin mati",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "non voglio più vivere",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "消えたい",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "生きていたくない",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ខ្ញុំចង់ស្លាប់",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "살고 싶지 않아요",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "내가 없으면 모두 더 행복할 거예요",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "죽고싶다",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ຂ້ອຍຢາກຕາຍ",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "എനിക്ക് മരിക്കണം",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "သေချင်တယ်",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "म मर्न चाहन्छु",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ik wil dood",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ਮੈਂ ਮਰਨਾ ਚਾਹੁੰਦਾ ਹਾਂ",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "chcę umrzeć",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "زه غواړم مړ شم",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "não quero mais viver",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "nao quero mais viver",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "todos ficariam melhor sem mim",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "quero acabar com tudo",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "estou pensando em suicídio",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "nu mai vreau să trăiesc",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "hochu umeret",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ne hochu zhit",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "я покончу с собой",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "želim da umrem",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "hoću da se ubijem",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "waxaan rabaa inaan dhinto",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "waxaan doonayaa inaan is dilo",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ma rabo inaan noolaado",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "dua të vdes",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "nataka kufa",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "nataka kujiua",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "நான் சாக விரும்புகிறேன்",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "నాకు చనిపోవాలని ఉంది",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "อยากตาย",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ክመውት ደሊየ",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ርእሰይ ክቐትል ደሊየ",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "magpapakamatay ako",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "pagod na akong mabuhay",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "wala na akong silbi, mas mabuti pa kung wala ako",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "ölmek istiyorum",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "intihar etmek istiyorum",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "yaşamak istemiyorum",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "хочу вбити себе",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "میں مرنا چاہتا ہوں",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "میں جینا نہیں چاہتا",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "mọi người sẽ tốt hơn nếu không có tôi",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "tôi muốn kết thúc cuộc đời",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "唔想再活落去",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "死咗算啦",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "我想结束自己的生命",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "我撑不下去了",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "大家没有我会过得更好",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "我是家人的负担",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "想一了百了",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "我想轻生",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "我吃了很多安眠药想睡过去不再醒来",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "死了算了",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "我想輕生",
+"expect": {
+"flag_any": [
+"self_harm",
+"self_harm_concern"
+]
+}
+},
+{
+"text": "أخذت كل الحبوب",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "tomé muchas pastillas",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "mi hija se tragó unas pastillas",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "mi hijo tomó cloro",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "el niño se tomó el veneno para ratas",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "j'ai pris tous les médicaments",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "약을 많이 먹었어요",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "tomei todos os remédios",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "выпила все таблетки",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "我吃了很多药",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "孩子吞了药片",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "我吃了一整瓶药",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "tôi uống hết thuốc rồi",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "me tomé todas las pastillas",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "طفلي لا يتنفس",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "ألم شديد في صدري ولا أستطيع التنفس",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "আমার বাচ্চা শ্বাস নিচ্ছে না",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "me duele mucho el pecho y no puedo respirar",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "se desmayó y no responde",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "está convulsionando",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "está sangrando mucho",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "mi mamá no puede hablar y tiene la cara caída",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "creo que me está dando un infarto",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "estoy embarazada y estoy sangrando mucho",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "no puedo respirar",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "mon bébé ne respire plus",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "j'ai très mal à la poitrine et je ne peux plus respirer",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "मेरा बच्चा सांस नहीं ले रहा",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "seene mein bahut dard hai saans nahi aa rahi",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "tibebe m pa respire",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "pitit mwen pa ka respire",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "赤ちゃんが息をしていない",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "아기가 숨을 안 쉬어요",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "가슴이 너무 아프고 숨을 못 쉬겠어요",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "meu bebê não está respirando",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "estou com muita dor no peito e não consigo respirar",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "ребёнок не дышит",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "сильная боль в груди и не могу дышать",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "hindi humihinga ang anak ko",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "masakit ang dibdib ko at hindi ako makahinga",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "bebeğim nefes almıyor",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "дитина не дихає",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "میرا بچہ سانس نہیں لے رہا",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "con tôi không thở",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "em bé không thở",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "đau ngực không thở được",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "我的宝宝没有呼吸了",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "我妈不省人事",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "胸口很痛,喘不过气",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "他晕倒了叫不醒",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "流了很多血止不住",
+"expect": {
+"flag_any": [
+"emergency"
+]
+}
+},
+{
+"text": "هددني بالقتل",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "zawji yadribuni",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "gozy bydrabny",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "me amenaza con llamar a la migra",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "me quitó mis papeles y dice que me van a deportar",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "mi esposo controla todo el dinero y me revisa el teléfono",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "me dijo que si me voy me mata",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "sufro violencia familiar",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "el papá de mis hijos me golpeó",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "tengo moretones, me dijo que no le dijera a nadie",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "mi boyfriend me hit",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "mera pati mujhe marta hai",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "mera husband mujhe hit karta hai",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "मेरे पति मुझे पीटते हैं",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "ghar mein mere pati mujhe peet te hain",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "li menase touye m",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "mwen pè mari m",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "ကျွန်မယောက်ျားက ရိုက်တယ်",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "mąż mnie bije",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "میړه مې ما وهي",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "muzh menya b'yot",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "mume wangu ananipiga",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "tinatakot niya akong papatayin",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "mera shohar mujhe marta hai",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "chong toi danh toi",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "他掐我的脖子",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "il menace de me tuer",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "ele ameaçou me matar",
+"expect": {
+"flag_any": [
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "تعرضت للاغتصاب",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "اغتصبني",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "me violaron",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "me violaron anoche",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "abusaron de mí",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "me abusó sexualmente mi jefe",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "me forzó a tener relaciones",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "fui víctima de violación",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "j'ai été violée",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "मेरे साथ बलात्कार हुआ",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "mere saath rape hua",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "yo kadejak mwen",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "yo vyole m",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "レイプされた",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "강간당했어요",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "fui estuprada",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "fui violentada",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "меня изнасиловали",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "ginahasa ako",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "tecavüze uğradım",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "мене зґвалтували",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "tôi bị hiếp dâm",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "tôi bị cưỡng hiếp",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "我被强奸了",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "我被人强奸了",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "我被性侵了",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "我被強姦了",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "我被性侵",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "성폭행을 당했어요",
+"expect": {
+"flag_any": [
+"sexual_assault"
+]
+}
+},
+{
+"text": "صاحب العمل أخذ جواز سفري ولا يسمح لي بالمغادرة",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "mi jefe me quitó el pasaporte y no me deja ir",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "me obligan a trabajar sin pago y me quitaron los papeles",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "me obliga a acostarme con hombres por dinero",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "me trajeron con engaños y no me dejan salir",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "le debo dinero al coyote y me hacen trabajar sin pagarme",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "mon patron a pris mon passeport et ne me laisse pas partir",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "사장이 여권을 빼앗고 못 나가게 해요",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "начальник забрал мой паспорт и не отпускает",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "chủ giữ hộ chiếu của tôi và không cho tôi đi",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "老板扣了我的护照不让我走",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "他们拿走了我的证件,逼我干活还债",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "人口贩卖",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "meu patrão pegou meu passaporte e não me deixa sair",
+"expect": {
+"flag_any": [
+"trafficking"
+]
+}
+},
+{
+"text": "mi padrastro me toca",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "mi padrastro me viola",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "el vecino golpea a su hijo y lo oigo gritar",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "mi tío me tocó y me dijo que no le dijera a nadie",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "我爸打我",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "我继父摸我",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "邻居打孩子",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "mi papá me pega",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "mi mamá me pega con el cinturón",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "tengo 12 años y mi papá me pega",
+"expect": {
+"flag_any": [
+"child_abuse"
+]
+}
+},
+{
+"text": "this rent is killing me",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my landlord is killing me with these fees",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "the deadline is killing me",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I'm dying to get a place with a yard",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I killed it at my job interview and need a bus pass",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my phone died yesterday and I need a free one",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my car died and I need a ride to work",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I need to end my lease early",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my father died and I need help with the funeral",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my husband died last year, can I get survivor benefits",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my mother passed away and left me her debts",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I want to get off food stamps once I find work",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I take pills for my blood pressure and can't afford them",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I overdrafted my bank account again",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I can't keep paying this much for rent",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I can't do this lease anymore, we are moving out",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I don't want to live here anymore, the mold is bad",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I don't want to live in this neighborhood because of the schools",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I work at a suicide hotline and need health insurance",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I need a flu shot for my kid",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I need to shoot a photo for my ID",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I gave birth last week and need WIC",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I got hit with a huge medical bill",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "a recruiter hit me up about a job",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my boss hit me with a pay cut",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I got a traffic ticket I can't pay",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I got fired from my job last week",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "the fire department inspected my building",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my ex is not paying child support",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I left my job to care for my mom",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I'm tired of paying for insulin",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I'm so tired after my night shift, can I get child care help",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I'm sick of my landlord ignoring the heat",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I am done with this paperwork, where do I send it",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I feel hopeful about the new job",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I lost my insurance when I lost my job",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my kid hit another kid at school and got suspended",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my son has a bruise from soccer, is there a free clinic",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I need a lawyer for my divorce",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my husband and I need help paying rent",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my boyfriend moved out and I can't afford rent",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I'm scared I will lose my apartment",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I'm afraid I will miss the deadline for my visa",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "we were forced to move when the building was sold",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I was forced to retire early",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my employer owes me wages for two weeks",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "the shelter dog needs shots and I can't pay the vet",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I need a gun safe voucher for my security job",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I want to end my phone contract",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "how do I end my Medicaid and switch to Marketplace",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I'm a nurse and my patient took an overdose, I need student loan help",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I need a ride to my dialysis",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "there's no heat and it's freezing but we are fine",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I volunteer at a domestic violence shelter and need food stamps",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "the pill bottle cap broke",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I have a sleep problem and no insurance",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I smoke and want to quit, is there free help",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "my chest of drawers was stolen in the move",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I want to die my hair for an interview",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I could just die of embarrassment, my card got declined",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "kill the lights on the way out is what my landlord said about the power bill",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I can't breathe easy until this bill is paid",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I'm drowning in debt",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I'm drowning in medical bills",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I'm buried in bills",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "give up my car or pay rent",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{
+"text": "I'm at my wit's end with this paperwork",
+"expect": {
+"flags_none": [
+"self_harm",
+"self_harm_concern",
+"dv",
+"dv_concern",
+"trafficking",
+"sexual_assault",
+"child_abuse",
+"emergency"
+]
+}
+},
+{"text": "my toddler swallowed my pills", "expect": {"flag_any": ["emergency"]}}
+]
+}

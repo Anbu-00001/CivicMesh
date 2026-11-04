@@ -109,5 +109,7 @@
   "ui.safety_home": "Non al sicuro a casa:",
   "ui.safety_text": "oppure scrivi START al 88788",
   "ui.details": "Dettagli",
-  "ui.hide_details": "Nascondi dettagli"
+  "ui.hide_details": "Nascondi dettagli",
+  "ui.more_lines": "Altre emergenze",
+  "ui.show_programs": "Mostra programmi e prossimi passi"
 }

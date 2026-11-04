@@ -65,6 +65,11 @@ def:pub ClientApp -> JsxElement {
     def renderPalette -> JsxElement;
 
     can with entry {
+        # The server's static notice has done its job once the app is up.
+        try {
+            shell = document.getElementById("cm-shell-safety");
+            if shell { shell.remove(); }
+        } except Exception as _ex {}
         # Always run initAuth: it also migrates browsers still holding the
         # old shared demo token onto their own visitor account.
         auth_ready = initAuth();
@@ -123,7 +128,17 @@ def:pub ClientApp -> JsxElement {
     def tabIcon(tab_id: str, is_active: bool) -> JsxElement;
 
     if show_landing {
-        return <LandingPage on_start={startApp} platform={platform}/>;
+        return
+            <div>
+                <div className="lp-safety" role="note">
+                    <span dir="auto">{"In danger now: "}<a href="tel:911"><bdi dir="ltr">911</bdi></a>{" · Suicide or crisis: "}<a href="tel:988"><bdi dir="ltr">988</bdi></a>{" · Not safe at home: "}<a href="tel:18007997233"><bdi dir="ltr">1-800-799-7233</bdi></a></span>
+                    <span className="lp-safety-actions">
+                        <button className="lp-safety-start" onClick={lambda _e: MouseEvent { startApp(); }}>Get help now</button>
+                        <button className="cm-quick-exit" onClick={lambda _e: MouseEvent { quickExit(); }} title="Leave this site right now (or press Shift three times)">Quick exit</button>
+                    </span>
+                </div>
+                <LandingPage on_start={startApp} platform={platform}/>
+            </div>;
     }
 
     return

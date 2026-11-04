@@ -114,6 +114,7 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "", display:
     # message is lost: wait for the login, and never send without one.
     uid = user_id;
     if auth_ready { uid = (await auth_ready) or user_id; }
+    await ensureSignedIn();
     t0 = window.performance.now();
     res: Any = {"reports": [], "spawn_error": "couldn't sign in to the server"};
     if uid and jacIsLoggedIn() {
@@ -422,7 +423,57 @@ impl ChatPane.renderQuickReplies(q: Any, lang: str, labels: list, q_text: str, a
         </div>;
 }
 
+impl ChatPane.renderCrisisPin -> Any {
+    for i in range(len(messages) - 1, -1, -1) {
+        d: Any = messages[i]["data"] if messages[i]["kind"] == "result" else None;
+        esc: Any = d["escalation"] if d else None;
+        if esc and esc["lead_phone"] {
+            phone = str(esc["lead_phone"]);
+            return
+                <div className="cm-crisis-pin" role="note">
+                    <a className="cm-crisis-pin-call" href={"tel:" + phone}>{L(footerUi(), "ui.call", "Call") + " "}<bdi dir="ltr">{phone}</bdi></a>
+                </div>;
+        }
+    }
+    return None;
+}
+
+impl ChatPane.ensureSignedIn -> None {
+    # After a restart the old token is refused, and the client runtime answers
+    # a refused walker call by reloading the page: the thread and the message
+    # are gone, with no number on screen (blind audit, 2026-11). So check first
+    # and sign in again quietly. The case itself is held by the client.
+    now = Date.now();
+    if now - Number(CM_AUTH["checked"]) < 20000 { return; }
+    CM_AUTH["checked"] = now;
+    token = localStorage.getItem("jac_token");
+    if not token { return; }
+    probe = await fetch("/user/me", {"headers": {"Authorization": "Bearer " + str(token)}}).catch(lambda e: Any -> dict { return {"status": 0}; });
+    if probe.status != 401 and probe.status != 403 { return; }
+    localStorage.removeItem("jac_token");
+    priv = False;
+    try { priv = sessionStorage.getItem("cm_private") == "1"; } except Exception as _ex {}
+    store = sessionStorage if priv else localStorage;
+    uid = store.getItem("cm_uid");
+    pw = store.getItem("cm_pw");
+    if uid and pw {
+        await jacSignup(uid, pw).catch(lambda e: Any -> dict { return {}; });
+        await jacLogin(uid, pw).catch(lambda e: Any -> dict { return {}; });
+    }
+}
+
 impl ChatPane.renderMatchCard(m: Any, idx: int, j: int, ui: Any) -> JsxElement {
+    if m["pinned"] {
+        line_phone = str(m["contact_phone"]) if m["contact_phone"] else "";
+        return
+            <div key={"card-" + str(idx) + ":" + str(j)} className="cm-card cm-card-line card-enter">
+                <div className="cm-card-name">{str(m["resource_name"])}</div>
+                <div className="cm-card-actions">
+                    {line_phone and <a className="cm-call" href={"tel:" + line_phone}>{L(ui, "ui.call", "Call") + " "}<bdi dir="ltr">{line_phone}</bdi></a>}
+                    {m["online_url"] and <a className="cm-link" href={str(m["online_url"])} target="_blank" rel="noreferrer">{L(ui, "ui.website", "Website")}</a>}
+                </div>
+            </div>;
+    }
     ts = tierStyle(str(m["tier"]), ui);
     cat_key = {"food": "opt.food", "housing": "opt.housing", "healthcare": "opt.health", "legal": "opt.legal", "money": "opt.money"}[str(m["category"])];
     card_key = str(idx) + ":" + str(j);
@@ -585,6 +636,11 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
     interp_tier = linfo["tier"] == "interpreter";
     card: Any = d["interpreter"] if d["interpreter"] else {};
     matches: list = list(d["matches"]) if d["matches"] else [];
+    # After "I want to kill myself" the answer is the crisis line, not a list of
+    # documents to bring (blind audit, 2026-11). Everything else is one tap away.
+    held_back = bool(d["escalation"] and d["escalation"]["danger"]) and not open_programs.includes(str(msg["id"]));
+    shown_matches: list = [m for m in matches if m["pinned"]] if held_back else matches;
+    n_held = len(matches) - len(shown_matches);
     plan: Any = d["plan"] if d["plan"] else {};
     routes: list = list(d["routes"]) if d["routes"] else [];
     esc: Any = d["escalation"] if d["escalation"] else {};
@@ -625,6 +681,11 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                         {str(narr["message"])}
                     </span>
                 </div>}
+                {esc["lead_line"] and <div className="cm-crisis">
+                    <div className="cm-crisis-lead">{str(esc["lead_line"])}</div>
+                    {esc["lead_line_en"] and <div className="cm-crisis-en" lang="en" dir="ltr">{"In English: " + str(esc["lead_line_en"])}</div>}
+                    {[<div key={"cr" + str(i)} className="cm-crisis-item">{str(esc["crisis_resources"][i])}</div> for i in range(len(esc["crisis_resources"]) if esc["crisis_resources"] else 0)]}
+                </div>}
                 {(narr and narr["status"] == "pending") and <div className="cm-narration cm-narration-pending">{("✦ Writing this in " + str(lname[1]) + "…") if foreign else "✦ Writing a personalized summary…"}</div>}
                 {(foreign and narr and narr["status"] == "failed") and <div className="cm-narration cm-narration-pending">{"Couldn't reach the translator just now — here is the answer in English."}</div>}
                 {interp_tier and renderInterpreter(card, True)}
@@ -660,16 +721,12 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                     {prof["carried_category"] and <span className="cm-fact cm-fact-dim">carried from earlier</span>}
                 </div>}
                 {(d["privacy"] and d["privacy"]["private_turn"] and is_last) and <div className="cm-private-note">{("Sesión privada activada: cuando cierre esta pestaña, este navegador no guardará nada de esta conversación. «Quick exit» (arriba a la derecha, o pulse Mayús tres veces) sale al instante." if lang == "es" else "Private session is on: once you close this tab, this browser keeps nothing about this conversation. Quick exit (top right, or press Shift three times) leaves instantly.")}</div>}
-                {esc["lead_line"] and <div className="cm-crisis">
-                    <div className="cm-crisis-lead">{str(esc["lead_line"])}</div>
-                    {esc["lead_line_en"] and <div className="cm-crisis-en" lang="en" dir="ltr">{"In English: " + str(esc["lead_line_en"])}</div>}
-                    {[<div key={"cr" + str(i)} className="cm-crisis-item">{str(esc["crisis_resources"][i])}</div> for i in range(len(esc["crisis_resources"]) if esc["crisis_resources"] else 0)]}
+                {len(shown_matches) > 0 and <div className="cm-cards">
+                    {[renderMatchCard(shown_matches[j], idx, j, ui) for j in range(len(shown_matches) if len(shown_matches) < 4 else 4)]}
                 </div>}
-                {len(matches) > 0 and <div className="cm-cards">
-                    {[renderMatchCard(matches[j], idx, j, ui) for j in range(len(matches) if len(matches) < 4 else 4)]}
-                </div>}
-                {(plan["steps"] and len(plan["steps"]) > 0) and renderPlan(plan, ui)}
-                {renderLocal(locals[msg["id"]])}
+                {(held_back and n_held > 0) and <button className="cm-why cm-show-programs" onClick={lambda _e: MouseEvent { open_programs = open_programs + [str(msg["id"])]; }}>{L(ui, "ui.show_programs", "Show programs and next steps") + " (" + str(n_held) + ")"}</button>}
+                {((not held_back) and plan["steps"] and len(plan["steps"]) > 0) and renderPlan(plan, ui)}
+                {(not held_back) and renderLocal(locals[msg["id"]])}
                 {(len(routes) > 0 and waterfall_open == idx) and <div className="cm-block">
                     <div className="cm-block-title">
                         <span>{L(ui, "ui.routes", "Longer-term routes")}</span>
@@ -677,8 +734,8 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                     </div>
                     {[renderRoute(routes[r], r) for r in range(len(routes) if len(routes) < 2 else 2)]}
                 </div>}
-                {(is_last and q["text"]) and renderQuickReplies(q, lang, (list(loc_c["quick"]) if (loc_c and loc_c["quick"]) else []), (str(loc_c["q_text"]) if (loc_c and loc_c["q_text"]) else ""), (str(loc_c["affects"]) if (loc_c and loc_c["affects"]) else ""))}
-                {(is_last and len(chips) > 0) and <div className="cm-chips" dir="auto">
+                {(is_last and q["text"] and not held_back) and renderQuickReplies(q, lang, (list(loc_c["quick"]) if (loc_c and loc_c["quick"]) else []), (str(loc_c["q_text"]) if (loc_c and loc_c["q_text"]) else ""), (str(loc_c["affects"]) if (loc_c and loc_c["affects"]) else ""))}
+                {(is_last and len(chips) > 0 and not held_back) and <div className="cm-chips" dir="auto">
                     {[renderChip(str(chips[c]), str(en_chips[c]) if c < len(en_chips) else str(chips[c]), "") for c in range(len(chips))]}
                 </div>}
                 <div className="cm-hud">

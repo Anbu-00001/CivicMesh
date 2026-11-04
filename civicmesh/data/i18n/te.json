@@ -109,5 +109,7 @@
   "ui.safety_home": "ఇంట్లో సురక్షితం కాకపోతే:",
   "ui.safety_text": "లేదా 88788కు START పంపండి",
   "ui.details": "వివరాలు",
-  "ui.hide_details": "వివరాలు దాచు"
+  "ui.hide_details": "వివరాలు దాచు",
+  "ui.more_lines": "ఇతర అత్యవసర పరిస్థితులు",
+  "ui.show_programs": "కార్యక్రమాలు మరియు తదుపరి దశలను చూపించు"
 }

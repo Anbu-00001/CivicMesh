@@ -109,5 +109,7 @@
   "ui.safety_home": "ኣብ ገዛ ውሑስ እንተዘይኮንኩም:",
   "ui.safety_text": "ወይ START ናብ 88788 ስደዱ",
   "ui.details": "ዝርዝር",
-  "ui.hide_details": "ዝርዝር ሕባእ"
+  "ui.hide_details": "ዝርዝር ሕባእ",
+  "ui.more_lines": "ካልኦት ህጹጽ ኩነታት",
+  "ui.show_programs": "ፕሮግራማትን ቀጻሊ ስጉምትታትን ኣርኢ"
 }

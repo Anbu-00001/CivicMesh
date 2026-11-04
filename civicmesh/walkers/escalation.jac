@@ -95,6 +95,8 @@ walker EscalationWalker {
             "type": "escalation_complete",
             "trigger": str(self.context.trigger_reason) if self.context.trigger_reason else ("risk_flag" if key in LEAD_ORDER else "no_credible_match"),
             "is_emergency": key in LEAD_ORDER or "homeless" in flags,
+            "danger": key in LEAD_ORDER,
+            "lead_phone": str(lead[1]) if key in LEAD_ORDER else ("988" if "self_harm_concern" in flags else ("1-800-799-7233" if "dv_concern" in flags else "")),
             "lead_line": lead_line,
             "lead_line_en": lead_line_en,
             "personalized_message": lead_line,

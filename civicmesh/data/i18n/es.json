@@ -113,5 +113,7 @@
   "ui.safety_home": "No está a salvo en casa:",
   "ui.safety_text": "o envíe START al 88788",
   "ui.details": "Detalles",
-  "ui.hide_details": "Ocultar detalles"
+  "ui.hide_details": "Ocultar detalles",
+  "ui.more_lines": "Otras emergencias",
+  "ui.show_programs": "Mostrar programas y próximos pasos"
 }

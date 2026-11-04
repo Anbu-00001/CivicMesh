@@ -109,5 +109,7 @@
   "ui.safety_home": "Tsis muaj kev nyab xeeb hauv tsev:",
   "ui.safety_text": "los yog xa START rau 88788",
   "ui.details": "Ntsiab lus",
-  "ui.hide_details": "Muab ntsiab lus zais"
+  "ui.hide_details": "Muab ntsiab lus zais",
+  "ui.more_lines": "Lwm yam xwm txheej ceev",
+  "ui.show_programs": "Qhia cov kev pab thiab cov kauj ruam tom ntej"
 }

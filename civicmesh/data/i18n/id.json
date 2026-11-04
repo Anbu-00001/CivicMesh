@@ -109,5 +109,7 @@
   "ui.safety_home": "Tidak aman di rumah:",
   "ui.safety_text": "atau kirim START ke 88788",
   "ui.details": "Rincian",
-  "ui.hide_details": "Sembunyikan rincian"
+  "ui.hide_details": "Sembunyikan rincian",
+  "ui.more_lines": "Keadaan darurat lainnya",
+  "ui.show_programs": "Tampilkan program dan langkah berikutnya"
 }

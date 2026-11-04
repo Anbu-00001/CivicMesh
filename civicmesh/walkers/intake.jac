@@ -32,6 +32,8 @@ import from engine.stats { record_turn }
 import from engine.privacy { redact, is_private_turn, need_summary, model_may_read_messages }
 import from engine.compose { merge_profiles, new_trace, span_begin, span_end, export_spans }
 import from engine.prior { sanitize_prior }
+import from engine.parse { DANGER_FLAGS }
+import from cmguard.tokens { danger_seal, sealed_flags }
 import from walkers.eligibility { EligibilityWalker, quiet_summary }
 import from walkers.critique { CritiqueWalker }
 import from cmguard.tokens { issue as issue_token, content_hash }
@@ -84,7 +86,8 @@ walker IntakeWalker {
             parsed["language"] = pin;
             parsed["language_conf"] = 1.0;
         }
-        profile = merge_profiles(sanitize_prior(self.prior), parsed, text, str(self.answering));
+        prior_seal = self.prior.get("danger_seal") if isinstance(self.prior, dict) else None;
+        profile = merge_profiles(sanitize_prior(self.prior, sealed_flags(prior_seal, jid(root))), parsed, text, str(self.answering));
         span_end(tr, sp, {"civicmesh.category": profile["category"], "civicmesh.category_conf": profile["category_conf"], "civicmesh.language": profile["language"], "civicmesh.fields_known": profile["completeness"], "civicmesh.evidence_spans": len(parsed["evidence"])});
 
         llm_sync = False;
@@ -241,6 +244,7 @@ walker IntakeWalker {
         spans = export_spans(tr);
 
         public_profile = {k: v for (k, v) in profile.items() if k not in ["evidence", "category_scores"]};
+        public_profile["danger_seal"] = danger_seal([f for f in list(profile.get("flags", [])) if f in DANGER_FLAGS], jid(root));
         # Sorted, non-overlapping evidence spans so the client can highlight
         # the user's own words inline in a single linear pass.
         ev_sorted = sorted(list(parsed["evidence"]), key=lambda e: dict : (int(e["start"]), -int(e["end"])));

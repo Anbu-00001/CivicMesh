@@ -157,7 +157,8 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                 </div>
 
                 <h1 style={{
-                    "fontSize": "78px",
+                    "fontSize": "clamp(34px, 10vw, 78px)",
+                    "overflowWrap": "break-word",
                     "fontWeight": "800",
                     "letterSpacing": "-0.045em",
                     "lineHeight": "0.98",

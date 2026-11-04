@@ -109,5 +109,7 @@
   "ui.safety_home": "Nuk jeni i sigurt në shtëpi:",
   "ui.safety_text": "ose dërgoni START te 88788",
   "ui.details": "Detaje",
-  "ui.hide_details": "Fshih detajet"
+  "ui.hide_details": "Fshih detajet",
+  "ui.more_lines": "Urgjenca të tjera",
+  "ui.show_programs": "Shfaq programet dhe hapat e ardhshëm"
 }

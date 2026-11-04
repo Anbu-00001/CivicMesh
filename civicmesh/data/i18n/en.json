@@ -114,5 +114,7 @@
   "ui.safety_home": "Not safe at home:",
   "ui.safety_text": "or text START to 88788",
   "ui.details": "Details",
-  "ui.hide_details": "Hide details"
+  "ui.hide_details": "Hide details",
+  "ui.more_lines": "Other emergencies",
+  "ui.show_programs": "Show programs and next steps"
 }

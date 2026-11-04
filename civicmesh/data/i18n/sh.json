@@ -109,5 +109,7 @@
   "ui.safety_home": "Niste sigurni kod kuće:",
   "ui.safety_text": "ili pošaljite START na 88788",
   "ui.details": "Detalji",
-  "ui.hide_details": "Sakrij detalje"
+  "ui.hide_details": "Sakrij detalje",
+  "ui.more_lines": "Druge hitne situacije",
+  "ui.show_programs": "Prikaži programe i sljedeće korake"
 }

@@ -23,6 +23,7 @@ Output contract (plain dict so it serialises straight into walker reports):
 """
 
 import re;
+import from engine.danger_words { EXTRA_SELF_HARM, EXTRA_CONCERN, EXTRA_DV, EXTRA_ASSAULT, EXTRA_TRAFFICKING, EXTRA_CHILD, EXTRA_EMERGENCY, THREAT_BY_OTHER, danger_normalize, distress_emoji, DYE_SENSE }
 import from engine.i18n { detect_script, detect_latin_other, route_i18n, crisis_any_language, negated, need_focus, LATIN_MARKERS, NEG_RIGHT, is_small_talk }
 import from engine.facts_i18n { facts_i18n, place_i18n }
 
@@ -174,7 +175,7 @@ glob FLAG_LEXICON: dict = {
            "threatened (?:me|her|us) with (?:a )?(?:gun|knife|weapon|bat)",
            "(?:forced|forces|pressured|pressures|made|makes) (?:me|her) (?:to )?(?:have sex|into (?:having )?sex|do sexual)",
            "me (?:amenaz[oó]|amenaza) con (?:matarme|un cuchillo|una pistola|un arma)", "me (?:ahorc[oó]|estrangul[oó]|ahorca)", "me (?:oblig[oó]|obliga) a tener relaciones",
-           "(?:touch(?:es|ed)?|molest(?:s|ed)?|fondl(?:es|ed)) (?:me|my (?:daughter|son|kids?|child|children|sister|brother))\\b(?! (?:up|base)\\b)"],
+           "(?:touch(?:es|ed)?|molest(?:s|ed)?|fondl(?:es|ed)) (?:me|my (?:daughter|son|kids?|child|children|sister|brother))\\b(?! (?:up|base)\\b)"] + EXTRA_DV,
     "self_harm": ["suicid\\w*", "kill myself", "end my life", "want to die", "self[- ]harm", "hurt myself", "quitarme la vida", "matarme", "no quiero vivir",
                   "(?:don'?t|do not) want to (?:live|be alive|be here|wake up)", "no reason to (?:live|go on)", "better off dead", "end it all",
                   "take my (?:own )?life", "(?:can'?t|cant|cannot) go on(?: anymore| like this| living)?(?=\\s*(?:$|[.!,;]))", "quiero morir(?:me)?", "suicidarme", "no quiero seguir viviendo",
@@ -205,7 +206,7 @@ glob FLAG_LEXICON: dict = {
                   "want (?:my life|it all|everything) (?:to be )?over", "hate my life\\b[^.!?]{0,20}\\bwant it (?:to be )?over", "end my suffering",
                   "kill (?:himself|herself|themselves|themself)", "end (?:his|her|their) (?:own )?life", "(?:hang|hanged) (?:himself|herself|themselves)",
                   "(?:me|te|se) (?:quiero|quiere|quieres|voy a|va a) matar", "(?:me|te|se) (?:quiere|quiero|quieres) morir", "quiere morirse", "ya no quiero estar (?:en este mundo|aqu[ií]|viv[oa])",
-                  "no quiero estar viv[oa]", "(?:wo )?xiang (?:zisha|si le)", "wo xiang si", "(?:he|she|they) (?:wants?|wanted|wanna) to die", "muon (?:chet|tu tu|tu sat)", "khong muon song"],
+                  "no quiero estar viv[oa]", "(?:wo )?xiang (?:zisha|si le)", "wo xiang si", "(?:he|she|they) (?:wants?|wanted|wanna) to die", "muon (?:chet|tu tu|tu sat)", "khong muon song"] + EXTRA_SELF_HARM,
     # "on the street" / "en la calle" only with a verb of living there: a car
     # parked on the street is not homelessness.
     "homeless": ["homeless", "on the streets", "(?:living|live|lived|sleeping|sleep|slept|staying|stay|ended up|end up|been|out) on the street",
@@ -236,7 +237,7 @@ glob FLAG_SENSE_LEFT: dict = {
 glob FLAG_SENSE_RIGHT: dict = {
     "senior": "^\\s+(?:at|in)\\s+(?:the\\s+|a\\s+|my\\s+)?(?:\\w+\\s+)?(?:college|high school|school|university)|^\\s+(?:year|center|centre|class|discount)|^\\s+from\\s+(?:the\\s+)?(?:u\\.?s\\.?\\s+)?(?:army|navy|marines?|marine corps|air force|coast guard|national guard|military|police|fire department)|^\\s+(?:at|at age|at the age of)\\s+[1-5]\\d\\b",
     "children": "^\\s+(?:are|is)\\s+(?:all\\s+)?(?:grown|adults?|over 18)|^\\s+(?:have\\s+|has\\s+)?(?:all\\s+)?moved out|^\\s+(?:don'?t|doesn'?t|do not|does not) live with (?:me|us)|^\\s*care\\s+(?:provider|worker|teacher|job|center|centre|business)|^\\s+support\\b",
-    "self_harm": "^\\s+(?:at|on)\\s+(?:work|the job|my job)|^\\s+(?:lifting|falling|playing|cleaning|cooking|working|moving)|^\\s+(?:when|while) (?:i|lifting|falling|working|playing)|^\\s+in\\s+(?:a|an|the)\\s+(?:accident|fall|crash|car)"
+    "self_harm": "^\\s+(?:at|on)\\s+(?:work|the job|my job)|^\\s+(?:lifting|falling|playing|cleaning|cooking|working|moving)|^\\s+(?:when|while) (?:i\\b|lifting|falling|working|playing)|^\\s+in\\s+(?:a|an|the)\\s+(?:accident|fall|crash|car)"
 };
 glob DV_IDIOM: str = "\\bbeat (?:me|us) to (?:it|the (?:appointment|punch|office|job|spot|line|store|last))\\b|\\bhit (?:me|us|him|her|them) up\\b(?! against)|\\bhit (?:me|us) with (?:a|an|the|this|that|another) (?:\\w+ ){0,2}(?:bill|fee|fine|charge|lawsuit|notice|question|deal|rent|price|increase)\\b|\\bpush(?:es|ed)? (?:me|us|him|her) to (?:sign|apply|file|go to|do|take|get|move|pay|quit|finish|see)\\b|\\bgrab(?:s|bed)? (?:me|us) (?:a|an|some|lunch|dinner|coffee|food)\\b";
 # "I don't want to live in this neighborhood" is about housing. Only a named
@@ -266,6 +267,9 @@ def flag_other_sense(flag: str, low: str, start: int, end: int) -> bool {
     if flag == "dv" and re.search(DV_IDIOM, low[start:end + 40]) { return True; }
     if flag == "self_harm" and re.search("(?:\\blive|\\bvivir)$", low[start:end]) and re.search(LIVE_PLACE, low[end:end + 80]) { return True; }
     if flag == "self_harm" and low[start:end].startswith("suicid") and re.search(SUICIDE_JOB, left) and re.search("^\\s+(?:hotline|helpline|prevention|line|crisis|center|centre)", right) { return True; }
+    if flag == "self_harm" and re.search(DYE_SENSE, right) { return True; }
+    # "I volunteer at a domestic violence shelter": the person's job, not their danger.
+    if flag == "dv" and re.search(SUICIDE_JOB, left) and re.search("^\\s+(?:shelter|hotline|helpline|prevention|program|agency|center|centre|clinic|nonprofit|charity)", right) { return True; }
     lp = FLAG_SENSE_LEFT.get(flag, "");
     rp = FLAG_SENSE_RIGHT.get(flag, "");
     if lp and re.search(lp, left) { return True; }
@@ -318,7 +322,7 @@ glob CONCERN_LEXICON: dict = {
         "(?:want|wanna) (?:to )?disappear (?:forever|for good)", "feel like dying",
         "(?:easier|better) (?:for everyone )?if i (?:just )?(?:wasn'?t|weren'?t|was not|were not) (?:here|around|alive)", "tired of everything",
         "(?:i'?ve|i have|she'?s|she has|he'?s|he has) lived too long", "nobody needs (?:me|her|him) any ?more", "(?:estar[ií]an|estarian) mejor sin m[ií]", "soy una carga", "ya no puedo m[aá]s",
-        "no (?:le )?veo (?:el )?sentido (?:a|de) (?:la vida|vivir|seguir)", "quisiera desaparecer", "no hay salida", "estoy cansad[oa] de vivir"],
+        "no (?:le )?veo (?:el )?sentido (?:a|de) (?:la vida|vivir|seguir)", "quisiera desaparecer", "no hay salida", "estoy cansad[oa] de vivir"] + EXTRA_CONCERN,
     "dv_concern": [
         "(?:scared|afraid|terrified) (?:to|of going) (?:go )?(?:back )?home", "(?:don'?t|do not) feel safe (?:at|in my) home", "(?:isn'?t|is not|not) safe (?:at|in my) home",
         "(?:controls|takes|keeps) (?:all )?(?:my|our) (?:money|paycheck|cards?|documents|passport|papers)",
@@ -453,10 +457,10 @@ glob MINOR_RE: str = "\\b(?:i'?m|i am) (?:only |just )?(?:a )?(?:minor|under 18|
 # a stepdad, a worker whose employer holds her passport, a baby who won't wake
 # all got a generic answer). Childhelp, the Trafficking Hotline, RAINN, 911.
 glob PARENT_FIGURE: str = "(?:dad|father|stepdad|stepfather|mom|mother|stepmom|stepmother|mom'?s boyfriend|dad'?s girlfriend|uncle|aunt|grandpa|grandfather|grandma|grandmother|parents?|babysitter|coach|teacher|padrastro|madrastra|pap[aá]|mam[aá]|t[ií]o)";
-glob CHILD_ABUSE_RE: str = "\\b(?:child abuse|abus(?:e|es|ed|ing) (?:my|our|the|a|his|her) (?:child|kid|son|daughter|baby|kids|children)|(?:hits|beats|hurts|touches|molests|burns|starves|chokes) (?:my|our|the|his|her) (?:child|kid|son|daughter|baby|kids|children)|(?:hits?|beats?|hurts?) me and (?:the|my|our) (?:kids|children|baby)|maltrato infantil|abuso infantil)\\b|\\b" + PARENT_FIGURE + "\\b[^.!?]{0,20}\\b(?:touch(?:es|ed)?|molest\\w*|fondl\\w*|hits?|beats?|hurts?|punch\\w*|kick\\w*|burns?|chok\\w*|slap\\w*|rapes?|raped) me\\b(?! out\\b)|\\bme (?:toca|toc[oó]|pega|golpea)\\b[^.!?]{0,20}\\bmi (?:padrastro|pap[aá]|t[ií]o)";
-glob SEXUAL_ASSAULT_RE: str = "\\b(?:rap(?:e|es|ed|ing) (?:me|her|my)|raped|sexually (?:assault|abus)\\w*|sexual assault|molest\\w*|(?:forces|forced|pressures|pressured|made|makes) (?:me|her) (?:to )?(?:have sex|into (?:having )?sex|do sexual))\\b|\\bme viol[oó]\\b|\\babus[oó] (?:sexualmente )?de m[ií]\\b";
-glob TRAFFICKING_RE: str = "\\b(?:human trafficking|traffick(?:ed|ing|er)|trata de personas)\\b|\\b(?:employer|boss|manager|recruiter|agency|agent|smuggler|coyote|owner|patr[oó]n|jefe)\\b[^.!?]{0,40}\\b(?:took|takes|keeps?|kept|holds?|held|has|confiscated|quit[oó]|tiene) (?:away )?(?:my|our|mi|mis) (?:passports?|papers|documents|ids?|visas?|pasaporte|papeles|documentos)|\\b(?:won'?t|will not|doesn'?t|don'?t) (?:let|allow) (?:me|us) (?:to )?(?:leave|quit|go home)\\b[^.!?]{0,40}\\b(?:work|job|boss|employer|farm|factory|restaurant)|\\b(?:work|working|worked|make me work|makes me work) \\d{1,2} hours?\\b[^.!?]{0,30}\\b(?:no pay|not paid|without pay|unpaid|for free|for nothing|no money)|\\b(?:forced|forces|made|makes) (?:me|us|her) (?:to )?(?:have sex with (?:men|customers|clients|strangers)|sell sex|prostitut\\w*)";
-glob EMERGENCY_RE: str = "\\b(?:(?:not|isn'?t|stopped|can'?t|cannot|is not|barely) breathing|(?:won'?t|will not|can'?t|cannot|doesn'?t|does not) wake(?: up| him| her| them)?(?!(?: up| him| her| them)? (?:for|in time|on time|early|in the morning|at night|before|till|until)\\b)|unconscious|unresponsive|(?:is|he'?s|she'?s|they'?re|i'?m) overdosing|overdosed|having a (?:heart attack|stroke|seizure)|crushing chest pain|chest pains? (?:right now|and can'?t breathe)|(?:bleeding (?:a lot|heavily|badly|everywhere)|(?:won'?t|will not) stop bleeding)|fever (?:of |is |at )?10[4-9]|10[4-9] (?:degree|f\\b)|(?:turning|turned|lips are) blue|(?:took|swallowed) (?:a |the )?(?:whole |entire )?(?:bottle|handful|pack) of|(?:took|swallowed|ate|downed) (?:a bunch|a lot|a ton|too many|way too many|so many|all|lots|handfuls?|a fistful|most)(?: of)?(?: my| the)? (?:\\w+ )?(?:pills|tablets|meds|medications?|painkillers|tylenol|advil|benadryl)(?! (?:today|this morning|on time|as prescribed|every|for|over|in the past|since|when|while|like|back)\\b)|(?:swallowed|drank|ate|got into) (?:some |the |a (?:bottle|cup) of |my |a )?(?:bleach|detergent|laundry pods?|antifreeze|poison|rat poison|drain cleaner|button batter(?:y|ies)|cleaning (?:products?|supplies))|got into (?:the |my |some )?(?:pills|medicine|medications?|meds)|no respira|no despierta|est[aá] inconsciente|sobredosis)";
+glob CHILD_ABUSE_RE: str = "\\b(?:child abuse|abus(?:e|es|ed|ing) (?:my|our|the|a|his|her) (?:child|kid|son|daughter|baby|kids|children)|(?:hits|beats|hurts|touches|molests|burns|starves|chokes) (?:my|our|the|his|her) (?:child|kid|son|daughter|baby|kids|children)|(?:hits?|beats?|hurts?) me and (?:the|my|our) (?:kids|children|baby)|maltrato infantil|abuso infantil)\\b|\\b" + PARENT_FIGURE + "\\b[^.!?]{0,20}\\b(?:touch(?:es|ed)?|molest\\w*|fondl\\w*|hits?|beats?|hurts?|punch\\w*|kick\\w*|burns?|chok\\w*|slap\\w*|rapes?|raped) me\\b(?! out\\b)|\\bme (?:toca|toc[oó]|pega|golpea)\\b[^.!?]{0,20}\\bmi (?:padrastro|pap[aá]|t[ií]o)" + "|" + EXTRA_CHILD;
+glob SEXUAL_ASSAULT_RE: str = "\\b(?:rap(?:e|es|ed|ing) (?:me|her|my)|raped|sexually (?:assault|abus)\\w*|sexual assault|molest\\w*|(?:forces|forced|pressures|pressured|made|makes) (?:me|her) (?:to )?(?:have sex|into (?:having )?sex|do sexual))\\b|\\bme viol[oó]\\b|\\babus[oó] (?:sexualmente )?de m[ií]\\b" + "|" + EXTRA_ASSAULT;
+glob TRAFFICKING_RE: str = "\\b(?:human trafficking|traffick(?:ed|ing|er)|trata de personas)\\b|\\b(?:employer|boss|manager|recruiter|agency|agent|smuggler|coyote|owner|patr[oó]n|jefe)\\b[^.!?]{0,40}\\b(?:took|takes|keeps?|kept|holds?|held|has|confiscated|quit[oó]|tiene) (?:away )?(?:my|our|mi|mis) (?:passports?|papers|documents|ids?|visas?|pasaporte|papeles|documentos)|\\b(?:won'?t|will not|doesn'?t|don'?t) (?:let|allow) (?:me|us) (?:to )?(?:leave|quit|go home)\\b[^.!?]{0,40}\\b(?:work|job|boss|employer|farm|factory|restaurant)|\\b(?:work|working|worked|make me work|makes me work) \\d{1,2} hours?\\b[^.!?]{0,30}\\b(?:no pay|not paid|without pay|unpaid|for free|for nothing|no money)|\\b(?:forced|forces|made|makes) (?:me|us|her) (?:to )?(?:have sex with (?:men|customers|clients|strangers)|sell sex|prostitut\\w*)" + "|" + EXTRA_TRAFFICKING;
+glob EMERGENCY_RE: str = "\\b(?:(?:not|isn'?t|stopped|can'?t|cannot|is not|barely) breathing|(?:won'?t|will not|can'?t|cannot|doesn'?t|does not) wake(?: up| him| her| them)?(?!(?: up| him| her| them)? (?:for|in time|on time|early|in the morning|at night|before|till|until)\\b)|unconscious|unresponsive|(?:is|he'?s|she'?s|they'?re|i'?m) overdosing|overdosed|having a (?:heart attack|stroke|seizure)|crushing chest pain|chest pains? (?:right now|and can'?t breathe)|(?:bleeding (?:a lot|heavily|badly|everywhere)|(?:won'?t|will not) stop bleeding)|fever (?:of |is |at )?10[4-9]|10[4-9] (?:degree|f\\b)|(?:turning|turned|lips are) blue|(?:took|swallowed) (?:a |the )?(?:whole |entire )?(?:bottle|handful|pack) of|(?:took|swallowed|ate|downed) (?:a bunch|a lot|a ton|too many|way too many|so many|all|lots|handfuls?|a fistful|most)(?: of)?(?: my| the)? (?:\\w+ )?(?:pills|tablets|meds|medications?|painkillers|tylenol|advil|benadryl)(?! (?:today|this morning|on time|as prescribed|every|for|over|in the past|since|when|while|like|back)\\b)|(?:swallowed|drank|ate|got into) (?:some |the |a (?:bottle|cup) of |my |a )?(?:bleach|detergent|laundry pods?|antifreeze|poison|rat poison|drain cleaner|button batter(?:y|ies)|cleaning (?:products?|supplies))|got into (?:the |my |some )?(?:pills|medicine|medications?|meds)|no respira|no despierta|est[aá] inconsciente|sobredosis)" + "|" + EXTRA_EMERGENCY;
 
 glob PAST_INCOME_CUES: str = "\\b(?:used to (?:make|earn|get)|was (?:making|earning|paid|getting)|were (?:making|earning)|earned|made|paid me|paid us|it paid|that paid|old job|last job|previous job|before|ganaba|ganábamos|me pagaban)\\b[^,.;!?]*$";
 glob INCOME_CUES: str ="(?:earn|earning|make|making|income|salary|paid|wage|wages|pension|social security|ssi|ssdi|disability|benefits?|gano|ganamos|ingresos?|sueldo|salario|pensi[oó]n|seguro social)";
@@ -1056,12 +1060,13 @@ def parse_intake(text: str) -> dict {
     low = raw.lower();
     # Spelled to get past a filter, or to say it without saying it. Danger
     # patterns only, and only ever adds a flag.
-    plain = deobfuscate(low);
+    plain = deobfuscate(danger_normalize(low));
     if plain != low {
         for f in danger_scan(plain) {
             if f not in mid_danger { mid_danger.append(f); }
         }
     }
+    if distress_emoji(raw) and "self_harm_concern" not in mid_danger { mid_danger.append("self_harm_concern"); }
     evidence: list = [];
 
     (lang, lang_conf) = detect_language(raw);

@@ -109,5 +109,7 @@
   "ui.safety_home": "Niet veilig thuis:",
   "ui.safety_text": "of sms START naar 88788",
   "ui.details": "Details",
-  "ui.hide_details": "Details verbergen"
+  "ui.hide_details": "Details verbergen",
+  "ui.more_lines": "Andere noodgevallen",
+  "ui.show_programs": "Programma's en volgende stappen tonen"
 }

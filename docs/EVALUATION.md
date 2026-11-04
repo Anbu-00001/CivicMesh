@@ -39,7 +39,7 @@ flowchart LR
 
 ```
 cd civicmesh && jac run tests/eval_engine.jac
-  723 cases + 27 conversations (66 turns) · field accuracy 100% (1502/1502) · 73/73 languages · top-3 100% · exclusion errors 0
+  1248 cases + 27 conversations (66 turns) · field accuracy 100% (2027/2027) · 73/73 languages · top-3 100% · exclusion errors 0
   metamorphic 296/296 neutral additions moved no verdict · latency / turn p50 ~1.2 ms · p95 ~2.4 ms
 
 cd civicmesh && jac run tests/check_messages.jac
@@ -89,7 +89,7 @@ To avoid tuning to the test, each task's posts are split by index. Misses were r
 
 | Task (engine output checked) | Held-out recall, first run | Held-out recall now (95% CI) | False positives (held-out, now) |
 |---|---|---|---|
-| Domestic violence (the dv flag or the concern layer, which pin the hotline) | 38.6% (17/44) | **68.2%** (30/44; 53–80%) | 2.3% (1/43) |
+| Domestic violence (the dv flag or the concern layer, which pin the hotline) | 38.6% (17/44) | **70.5%** (31/44; 56–82%) | 2.3% (1/43) |
 | Housing (routed to housing) | 77.0% | 81.4% (912/1,120; 79–84%) | 12.0% |
 | Health (routed to healthcare) | 78.9% | 77.2% (44/57; 65–86%) | 10.7% |
 | Immigration (an immigration status read) | 67.6% (23/34) | **79.4%** (27/34; 63–90%) | 3.0% |
@@ -100,12 +100,16 @@ To avoid tuning to the test, each task's posts are split by index. Misses were r
 
 | Held-out half (146 at-risk users) | Before, 2026-11-02 | Now (95% CI) |
 |---|---|---|
-| The user's posts joined, clipped to the 4,000-character chat box | 63.0% | **74.0%** (66–80%) |
-| The same with the direct words removed ("suicide", "kill myself", …) | 16.4% | **31.5%** (25–39%) |
-| The first post alone | 22.6% | 26.7% (20–34%) |
-| Legal posts flagged (2,300) | 1.00% | 1.13% |
+| The user's posts joined, clipped to the 4,000-character chat box | 63.0% | **74.7%** (67–81%) |
+| The same with the direct words removed ("suicide", "kill myself", …) | 16.4% | **32.9%** (26–41%) |
+| The first post alone | 22.6% | 28.1% (21–36%) |
+| Legal posts flagged (2,300) | 1.00% | 1.43% |
 
 **One in four at-risk users here is still missed, and most single posts are.** A word list won't fix that: many of the dev-half misses have no first-person signal in the text at all, because the label grades the user, not one post. The first-post figure understates a chat message for the same reason. These aren't people typing to this app either, so treat the numbers as a direction, not a clinical sensitivity. This is why every "what do you need?" reply now carries 911 and 988, flagged or not.
+
+**More phrases have stopped helping.** After the November blind audit, hundreds of phrases went in from the audit's own missed messages (`engine/danger_words.jac`, kept as the strict `tests/golden_danger.json`, so that set now only guards against regressions). It passes all 525 checks in that suite (458 missed messages and 67 everyday messages that must stay quiet), and held-out recall moved from 74.0% to 74.7%, with false alarms up from 1.13% to 1.43%. Passing the danger suite therefore says nothing about messages nobody has seen. The non-English phrases are machine-drafted and unreviewed.
+
+**A classifier was tried and left out.** A logistic regression on the dev half first looked perfect (100% of at-risk users), but its top features were "im", "dont" and "ive": it had learned Reddit's writing style, and flagged 19% of this repo's benign messages. With style words removed and same-forum users added as negatives, it flagged 33% of at-risk users and 35% of the same forum's other users, out of fold, with top features like "bunch", "yes" and "helped". That's no separation, so it was never scored on the held-out half and isn't in the app. Better recall here needs more labeled messages than this dataset has, reviewed by people who do this work.
 
 New patterns came from the 988 Lifeline's warning signs, the Columbia screener's questions and behavior examples, and the dev half only. The dataset's anonymizer garbled some words ("feel like" became "feel hyperactive behavior"); the eval undoes those it knows.
 

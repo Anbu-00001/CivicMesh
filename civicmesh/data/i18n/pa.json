@@ -109,5 +109,7 @@
   "ui.safety_home": "ਘਰ ਵਿੱਚ ਸੁਰੱਖਿਅਤ ਨਹੀਂ:",
   "ui.safety_text": "ਜਾਂ 88788 'ਤੇ START ਭੇਜੋ",
   "ui.details": "ਵੇਰਵੇ",
-  "ui.hide_details": "ਵੇਰਵੇ ਲੁਕਾਓ"
+  "ui.hide_details": "ਵੇਰਵੇ ਲੁਕਾਓ",
+  "ui.more_lines": "ਹੋਰ ਐਮਰਜੈਂਸੀਆਂ",
+  "ui.show_programs": "ਪ੍ਰੋਗਰਾਮ ਅਤੇ ਅਗਲੇ ਕਦਮ ਦਿਖਾਓ"
 }

@@ -109,5 +109,7 @@
   "ui.safety_home": "ไม่ปลอดภัยที่บ้าน:",
   "ui.safety_text": "หรือส่ง START ไปที่ 88788",
   "ui.details": "รายละเอียด",
-  "ui.hide_details": "ซ่อนรายละเอียด"
+  "ui.hide_details": "ซ่อนรายละเอียด",
+  "ui.more_lines": "เหตุฉุกเฉินอื่น ๆ",
+  "ui.show_programs": "แสดงโครงการและขั้นตอนถัดไป"
 }

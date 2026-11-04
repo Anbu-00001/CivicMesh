@@ -109,5 +109,7 @@
   "ui.safety_home": "ઘરે સુરક્ષિત નથી:",
   "ui.safety_text": "અથવા 88788 પર START મોકલો",
   "ui.details": "વિગતો",
-  "ui.hide_details": "વિગતો છુપાવો"
+  "ui.hide_details": "વિગતો છુપાવો",
+  "ui.more_lines": "અન્ય કટોકટી",
+  "ui.show_programs": "કાર્યક્રમો અને આગળનાં પગલાં બતાવો"
 }

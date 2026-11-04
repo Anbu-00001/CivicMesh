@@ -109,5 +109,7 @@
   "ui.safety_home": "家が安全でないなら:",
   "ui.safety_text": "または88788にSTARTと送信",
   "ui.details": "詳細",
-  "ui.hide_details": "詳細を隠す"
+  "ui.hide_details": "詳細を隠す",
+  "ui.more_lines": "その他の緊急事態",
+  "ui.show_programs": "プログラムと次のステップを表示"
 }

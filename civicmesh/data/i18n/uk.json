@@ -109,5 +109,7 @@
   "ui.safety_home": "Вдома небезпечно:",
   "ui.safety_text": "або надішліть START на 88788",
   "ui.details": "Докладніше",
-  "ui.hide_details": "Сховати подробиці"
+  "ui.hide_details": "Сховати подробиці",
+  "ui.more_lines": "Інші екстрені випадки",
+  "ui.show_programs": "Показати програми та наступні кроки"
 }
