@@ -351,7 +351,7 @@ People, needs, applications, programs, rules and forms are typed nodes, and each
 | Policy checks against published figures | 100/100 |
 | PolicyEngine US oracle | SNAP 98.2% (384 households); Medicaid, CHIP, school meals, WIC 660/660 |
 | HTTP end-to-end on the Docker image, accessibility, real browser, attack simulations | 77/77, 0 axe violations, pass, 64/64 |
-| Real posts labeled by lawyers (held-out, measured, not gated) | DV 68.2%, housing 81.2%, health 77.2%, immigration 79.4% recall |
+| Real posts labeled by lawyers (held-out, measured, not gated) | DV 70.5%, housing 81.3%, health 77.2%, immigration 79.4% recall |
 
 The suites are written by the author, so 100% on them shows only that the engine handles what the author thought of. The external check is the number to quote. Every suite and how it's built: [docs/EVALUATION.md](./docs/EVALUATION.md).
 
