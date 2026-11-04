@@ -444,7 +444,8 @@ def main(app: str) -> int:
 def open_chat_in_frame(inner):
     inner.until("!!document.querySelector('button')")
     inner.js("(()=>{const b=[...document.querySelectorAll('button,a')].find(e=>/Enter the Navigator/i.test(e.textContent)); b&&b.click()})()")
-    return inner.until("!!document.querySelector('.cm-quick-exit')")
+    # Not .cm-quick-exit: the landing page has that button too.
+    return inner.until("!!document.querySelector('.cm-input')")
 
 
 def report():
