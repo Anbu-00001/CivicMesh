@@ -862,6 +862,268 @@
         "how": "1-800-318-2596, the 100% to 400% range and the 2027 status list on HealthCare.gov",
         "source": "https://www.healthcare.gov/immigrants/lawfully-present-immigrants/"
       }
+    },
+    "medicare-rule": {
+      "program": "Medicare",
+      "contact_checked": "2026-11-05",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "msp-rule": {
+      "program": "Medicare Savings Programs",
+      "contact_checked": "2026-11-05",
+      "contact_result": "unconfirmed",
+      "url_status": 200,
+      "phone_on_page": false,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "extra-help-rule": {
+      "program": "Medicare Extra Help (Part D Low-Income Subsidy)",
+      "contact_checked": "2026-11-05",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "ship-rule": {
+      "program": "SHIP (State Health Insurance Assistance Program)",
+      "contact_checked": "2026-11-05",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "va-health-rule": {
+      "program": "VA Health Care",
+      "contact_checked": "2026-11-05",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "ihs-rule": {
+      "program": "Indian Health Service",
+      "contact_checked": "2026-11-05",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "title-x-rule": {
+      "program": "Title X Family Planning Clinics",
+      "contact_checked": "2026-11-05",
+      "contact_result": "unconfirmed",
+      "url_status": 200,
+      "phone_on_page": false,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "eldercare-rule": {
+      "program": "Eldercare Locator",
+      "contact_checked": "2026-11-05",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "aps-rule": {
+      "program": "Adult Protective Services (state directory)",
+      "contact_checked": "2026-11-05",
+      "contact_result": "unconfirmed",
+      "url_status": 200,
+      "phone_on_page": false,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "stronghearts-rule": {
+      "program": "StrongHearts Native Helpline",
+      "contact_checked": "2026-11-05",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "trevor-rule": {
+      "program": "The Trevor Project",
+      "contact_checked": "2026-11-05",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "lifeline-rule": {
+      "program": "Lifeline (phone and internet discount)",
+      "contact_checked": "2026-11-05",
+      "contact_result": "confirmed",
+      "url_status": 200,
+      "phone_on_page": true,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "hud-counseling-rule": {
+      "program": "HUD Housing Counselors",
+      "contact_checked": "2026-11-05",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-11-05",
+        "how": "HUD housing counseling pages, read through search excerpts; hud.gov refused a direct fetch",
+        "source": "https://www.hud.gov/stat/sfh/housing-counseling"
+      }
+    },
+    "ajc-rule": {
+      "program": "American Job Centers",
+      "contact_checked": "2026-11-05",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-11-05",
+        "how": "CareerOneStop pages, read through search excerpts; a direct fetch was refused. dol.gov's own page swaps the voice and TTY numbers and is years old, so CareerOneStop's is used",
+        "source": "https://www.careeronestop.org/LocalHelp/AmericanJobCenters/american-job-centers.aspx"
+      }
+    },
+    "fema-rule": {
+      "program": "FEMA Disaster Assistance",
+      "contact_checked": "2026-11-05",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      },
+      "contact_manual": {
+        "checked": "2026-11-05",
+        "how": "ACL's emergency response page (acl.gov/programs/emergency-response-information); fema.gov refused a direct fetch",
+        "source": "https://www.disasterassistance.gov/"
+      }
+    },
+    "head-start-rule": {
+      "program": "Head Start",
+      "contact_checked": "2026-11-05",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "sun-bucks-rule": {
+      "program": "SUN Bucks (Summer EBT)",
+      "contact_checked": "2026-11-05",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "fdpir-rule": {
+      "program": "Food Distribution Program on Indian Reservations (FDPIR)",
+      "contact_checked": "2026-11-05",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
+    },
+    "child-support-rule": {
+      "program": "Child Support Services",
+      "contact_checked": "2026-11-05",
+      "contact_result": "unconfirmed",
+      "url_status": 403,
+      "phone_on_page": false,
+      "form_url_status": null,
+      "rules": {
+        "checked": null,
+        "how": "",
+        "source": ""
+      }
     }
   }
 }

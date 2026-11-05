@@ -87,6 +87,19 @@ glob TARGETS: dict = {
     "energy": ("electric|heating|\\bheat\\b|gas bill|utilit|power bill|power (?:is|was) (?:off|cut)|\\bluz\\b|calefacci|factura de gas", "", "heating or power bills", "facturas de luz o calefacción"),
     "job_loss": ("unemploy|laid off|lay ?off|lost (?:my|our|his|her|their) jobs?|out of work|\\bno job\\b|\\bfired\\b|furlough|hours (?:were|got) cut|desemple|sin trabajo|sin empleo|perd[ií] (?:mi|el) (?:trabajo|empleo)|despedid", "", "people who lost a job", "personas que perdieron su trabajo"),
     "child_care": ("child ?care|day ?care|babysit|nanny|preschool|guarder[ií]a|cuidado (?:de ni|infantil)", "", "families who need child care", "familias que necesitan cuidado infantil"),
+    "veteran_care": ("", "", "veterans", "veteranos"),
+    "medicare": ("medicare|\\bpart [abd]\\b|turning 65|extra help|\\bship counsel", "", "people on Medicare or turning 65", "personas con Medicare o que cumplen 65"),
+    "native": ("native american|american indian|alaska native|\\btribal\\b|\\btribe\\b|reservation\\b(?! (?:for|at|number))|\\bihs\\b|ind[ií]gena nativ|nativ[oa] american", "", "American Indian and Alaska Native people", "personas indígenas americanas y nativas de Alaska"),
+    "family_planning": ("birth control|contracepti|family planning|\\bstd\\b|\\bsti\\b|pregnancy test|pap smear|anticonceptiv|planificaci[oó]n familiar|prueba de embarazo", "", "birth control and sexual health care", "anticonceptivos y salud sexual"),
+    "older_help": ("eldercare|elder care|aging parent|my (?:elderly|aging) (?:mom|mother|dad|father|parents?)|caregiver for my|home care|in-home care|adult day|cuidado de (?:mi )?(?:mam[aá]|pap[aá]|ancian)", "", "older adults and their caregivers", "adultos mayores y quienes los cuidan"),
+    "elder_abuse": ("elder abuse|financial exploitation|(?:stealing|taking|took|stole) (?:from )?(?:my|her|his) (?:elderly |aging )?(?:mom|mother|dad|father|grandma|grandmother|grandpa|grandfather)|(?:neglect|neglecting|abus\\w+|hurting|hitting) (?:my |her |his )?(?:elderly |aging )?(?:mom|mother|dad|father|grandma|grandmother|grandpa|grandfather)|nursing home abuse|maltrato (?:a|de) (?:ancian|adulto mayor)", "", "older adults and adults with disabilities being harmed", "adultos mayores y personas con discapacidad que sufren daño"),
+    "phone_service": ("phone bill|internet bill|cell ?phone (?:service|bill|plan)|free phone|lifeline phone|need (?:a )?(?:phone|internet)|can'?t (?:afford|pay) (?:my |the )?(?:phone|internet)|(?:phone|internet) (?:got |was |is )?(?:shut|cut) off|factura (?:de|del) (?:tel[eé]fono|celular|internet)|necesito (?:un )?(?:tel[eé]fono|celular|internet)", "", "help paying for phone or internet", "ayuda para pagar teléfono o internet"),
+    "foreclosure": ("foreclos|behind on (?:my |our |the )?(?:mortgage|house payments?)|can'?t (?:pay|afford) (?:my |our |the )?mortgage|housing counsel|ejecuci[oó]n hipotecaria|hipoteca", "", "people facing foreclosure or housing trouble", "personas con riesgo de ejecución hipotecaria"),
+    "job_search": ("need (?:a |to find (?:a )?)?(?:job|work)\\b|looking for (?:a )?(?:job|work)\\b|find (?:a )?(?:job|work)\\b|job training|job search|r[eé]sum[eé]\\b|american job center|laid off|lost (?:my|our) jobs?|out of work|busco trabajo|necesito (?:un )?(?:trabajo|empleo)|capacitaci[oó]n laboral", "", "people looking for work", "personas que buscan trabajo"),
+    "disaster": ("hurricane|wildfire|tornado|earthquake|\\bfema\\b|natural disaster|disaster (?:relief|aid|help|assistance)|flood(?:ed|ing)?\\b|(?:house|home|apartment) (?:burned|flooded|was destroyed|was damaged)|hurac[aá]n|inundaci[oó]n|incendio forestal|terremoto|desastre", "", "people hit by a disaster", "personas afectadas por un desastre"),
+    "summer_food": ("sun bucks|summer ebt|summer (?:meals?|food|groceries)|food (?:for|this|over|during) (?:the )?summer|out of school for (?:the )?summer|comida (?:de|en|para el) verano", "", "children out of school for the summer", "niños sin clases en verano"),
+    "head_start": ("head start|preschool|pre-?k\\b|child ?care|day ?care|guarder[ií]a|cuidado infantil", "", "children under 5 and their families", "niños menores de 5 años y sus familias"),
+    "child_support": ("child support|collect support|paternity|manutenci[oó]n|pensi[oó]n alimenticia", "", "parents collecting child support", "padres que cobran manutención"),
     "taxes": ("\\btax(?:es)?\\b|\\beitc\\b|earned income|\\birs\\b|impuestos", "", "people filing taxes", "personas que declaran impuestos"),
     "insurance": ("(?<!no )(?<!no health )(?<!without )(?<!without health )(?<!have )(?<!have health )insurance|\\bcoverage\\b|obamacare|marketplace|affordable care|\\baca\\b|premiums?\\b|health plan|seguro m[eé]dico|seguro de salud|cobertura", "", "people looking for health insurance", "personas que buscan seguro médico"),
     "tanf_fit": ("\\btanf\\b|welfare|cash (?:assistance|aid|help|benefits?)|ayuda en efectivo|asistencia (?:en efectivo|monetaria)", "children", "families with a child or a pregnancy", "familias con hijos o embarazo"),
@@ -112,10 +125,19 @@ glob FLAG_TARGETS: dict = {"homeless": "homeless", "veteran": "veteran", "disabi
 # can ask about (homeless, veteran, children) still show as "needs info".
 glob TOPIC_TARGETS: list = ["hiv", "crisis", "poison", "mental_health", "substance", "medication", "dental", "vision",
                             "criminal", "conviction", "immigration", "consumer", "dv", "wage", "tenant", "disability", "school",
-                            "job_loss", "child_care", "taxes", "insurance", "ssi_fit", "tanf_fit"];
+                            "job_loss", "child_care", "taxes", "insurance", "ssi_fit", "tanf_fit",
+                            "medicare", "native", "family_planning", "older_help", "elder_abuse", "phone_service", "foreclosure",
+                            "job_search", "disaster", "summer_food", "child_support", "head_start", "veteran_care"];
 # A topic that also counts as evidence for another: 988 serves mental-health
 # distress, not only suicide.
 glob TOPIC_ALSO: dict = {"crisis": ["mental_health"]};
+# Programs whose eligibility the engine can't test from a chat: income and asset
+# limits set by a state, a Tribe or an office, a disaster declaration, service history.
+glob OFFICE_CHECKS: list = ["medicare-rule", "msp-rule", "extra-help-rule", "va-health-rule", "ihs-rule", "fdpir-rule", "lifeline-rule", "fema-rule", "head-start-rule", "sun-bucks-rule"];
+# Narrow programs in the money category: not listed on a guess in a language whose
+# topics aren't read, where they'd push the cash programs off the list.
+glob NOT_GUESSED: list = ["phone_service", "job_search", "child_support", "head_start"];
+glob LGBTQ_RE: str = "\\b(?:lgbtq?\\+?|gay|lesbian|bisexual|queer|trans|transgender|nonbinary|non-binary|gender identity|coming out|came out|gay[oa]?|lesbiana|bisexual|transg[eé]nero)\\b";
 # Lines for one danger: shown only when the message shows it, never as clutter.
 glob DANGER_TARGETS: list = ["child_abuse", "trafficking", "sexual_assault"];
 
@@ -123,6 +145,7 @@ glob DANGER_TARGETS: list = ["child_abuse", "trafficking", "sexual_assault"];
 def target_hit(t: str, low_msg: str, flags: list) -> bool {
     f = FLAG_TARGETS.get(t, "");
     if f { return f in flags; }
+    if t == "veteran_care" { return "veteran" in flags; }
     # SSI serves age or disability, so either fact is evidence.
     if t == "ssi_fit" and ("disabled" in flags or "senior" in flags) { return True; }
     # A family short of money, but not one only asking about child care.
@@ -458,7 +481,7 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         # These topics are read in English and Spanish only. In another
         # language the category came from its own words, so show the programs
         # as a question rather than hide them all.
-        unread = str(resource.get("category", "")) == "money" and str(profile.get("language", "") or "en") not in ["en", "es"];
+        unread = str(resource.get("category", "")) == "money" and str(profile.get("language", "") or "en") not in ["en", "es"] and not [t for t in targets if t in NOT_GUESSED];
         if unread { off_topic = False; }
         # A youth line for someone who is plainly an adult: a parent, or 18+.
         if targets == ["minor"] and not hit and ("children" in flags or int(profile.get("age", 0) or 0) >= 18) { off_topic = True; }
@@ -533,6 +556,12 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
     } else {
         tier = "unlikely";
     }
+    # These have rules this engine doesn't score, so being on topic isn't a yes.
+    p_shown = p_elig;
+    if rule_id in OFFICE_CHECKS and tier == "likely" {
+        tier = "possible";
+        p_shown = min(p_elig, 0.6);
+    }
 
     capacity = str(resource.get("capacity", "open"));
     post = beta_posterior(int(rule.get("prior_approvals", 0) or 0), int(rule.get("prior_attempts", 0) or 0), capacity);
@@ -548,11 +577,11 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         "resource_name": str(resource.get("agency_name", "")),
         "category": str(resource.get("category", "")),
         "capacity": capacity,
-        "p_eligible": round(p_elig, 3),
+        "p_eligible": round(p_shown, 3),
         "coverage": round(coverage, 2),
         "tier": tier,
         "office_decides": office_decides,
-        "match_score": int(round(p_elig * 100)),
+        "match_score": int(round(p_shown * 100)),
         "approval": post,
         "rank_score": round(rank, 4),
         "criteria": crits,
@@ -599,6 +628,18 @@ def rank_resources(items: list, profile: dict, message: str, limit: int = 6, lan
         # number and read as a mislabelled safety line when pinned.
         if "dv" in flags and "domestic violence hotline" in name_low { pinned = True; }
         if "dv_concern" in flags and "domestic violence hotline" in name_low { pinned = True; }
+        # Lines for one group in one danger: named only when both show (988lifeline.org
+        # sent LGBTQ+ youth to its own option until July 2025; these are the lines left).
+        # Can't afford a medicine isn't a poisoning.
+        if "poison control" in name_low and "emergency" not in flags and re.search("afford|pay for|paying for|refill|prescription|cost", str(message).lower()) { continue; }
+        if "stronghearts" in name_low {
+            if not ([f for f in flags if f in ["dv", "dv_concern", "sexual_assault"]] and re.search(str(TARGETS["native"][0]), str(message).lower())) { continue; }
+            pinned = True;
+        }
+        if "trevor project" in name_low {
+            if not (("self_harm" in flags or "self_harm_concern" in flags) and re.search(LGBTQ_RE, str(message).lower()) and int(profile.get("age", 0) or 0) < 25) { continue; }
+            pinned = True;
+        }
         danger = [str(t) for t in list(it["rule"].get("targets", []) or []) if str(t) in DANGER_TARGETS];
         if danger {
             if not [t for t in danger if t in flags] { continue; }

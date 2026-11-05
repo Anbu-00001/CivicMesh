@@ -465,6 +465,41 @@
      ]
     }
    }
-  }
- ]
+  },
+{"text": "I'm on Medicare and can't afford my medicine", "top3_any": ["Medicare Extra Help (Part D Low-Income Subsidy)", "Medicare Savings Programs"], "expect": {"category": "healthcare"}},
+{"text": "Can I get help paying my Medicare premium", "top3_any": ["Medicare Savings Programs"], "expect": {"category": "healthcare"}},
+{"text": "extra help for Part D", "top3_any": ["Medicare Extra Help (Part D Low-Income Subsidy)"], "expect": {"category": "healthcare"}},
+{"text": "I'm a veteran and need a doctor", "top3_any": ["VA Health Care"], "expect": {"category": "healthcare"}},
+{"text": "I'm Native American and need health care", "top3_any": ["Indian Health Service"], "expect": {"category": "healthcare"}},
+{"text": "I live on a reservation and need food", "top3_any": ["Food Distribution Program on Indian Reservations (FDPIR)"], "expect": {"category": "food"}},
+{"text": "I need birth control and I have no insurance", "top3_any": ["Title X Family Planning Clinics"], "expect": {"category": "healthcare"}},
+{"text": "where can I get an STD test for free", "top3_any": ["Title X Family Planning Clinics"], "expect": {"category": "healthcare"}},
+{"text": "Who can help take care of my aging mother at home, she needs home care", "top3_any": ["Eldercare Locator"], "expect": {"category": "healthcare"}},
+{"text": "my son is stealing from my elderly mother", "top3_any": ["Adult Protective Services (state directory)"], "expect": {"category": "legal"}},
+{"text": "my phone got cut off and I can't pay the bill", "top3_any": ["Lifeline (phone and internet discount)"], "expect": {"category": "money"}},
+{"text": "I need help with my internet bill", "top3_any": ["Lifeline (phone and internet discount)"], "expect": {"category": "money"}},
+{"text": "I'm behind on my mortgage and facing foreclosure", "top3_any": ["HUD Housing Counselors"], "expect": {"category": "housing"}},
+{"text": "I need a job", "top3_any": ["American Job Centers"], "expect": {"category": "money"}},
+{"text": "a hurricane destroyed my house", "top3_any": ["FEMA Disaster Assistance"], "expect": {"category": "housing"}},
+{"text": "FEMA help after the wildfire", "top3_any": ["FEMA Disaster Assistance"], "expect": {"category": "housing"}},
+{"text": "Head Start for my 3 year old", "top3_any": ["Head Start"], "expect": {"category": "money"}},
+{"text": "I need free preschool for my daughter", "top3_any": ["Head Start"], "expect": {"category": "money"}},
+{"text": "my kids need summer meals when school is out", "top3_any": ["SUN Bucks (Summer EBT)"], "expect": {"category": "food"}},
+{"text": "what is SUN Bucks", "top3_any": ["SUN Bucks (Summer EBT)"], "expect": {"category": "food"}},
+{"text": "my ex won't pay child support, how do I collect it", "top3_any": ["Child Support Services"], "expect": {"category": "legal"}},
+{"text": "necesito manutención de mis hijos", "top3_any": ["Child Support Services"], "expect": {"category": "legal"}},
+{"text": "I'm gay, I'm 17 and I want to kill myself", "top3_any": ["The Trevor Project"], "expect": {}},
+{"text": "I'm Native American and my husband hits me", "top3_any": ["StrongHearts Native Helpline"], "expect": {}},
+{"text": "I need food", "expect": {"tier_of": {"Food Distribution Program": ["hidden"], "SUN Bucks": ["hidden"]}}},
+{"text": "I need a doctor", "expect": {"tier_of": {"VA Health Care": ["hidden"], "Medicare": ["hidden"], "Indian Health Service": ["hidden"], "Title X": ["hidden"]}}},
+{"text": "I want to kill myself", "expect": {"tier_of": {"The Trevor Project": ["hidden"], "VA Health Care": ["hidden"]}}},
+{"text": "My husband hits me", "expect": {"tier_of": {"StrongHearts": ["hidden"]}}},
+{"text": "I'm 40 and gay and I want to kill myself", "expect": {"tier_of": {"The Trevor Project": ["hidden"]}}},
+{"text": "I can't afford my medicine", "expect": {"tier_of": {"Poison Control": ["hidden"]}}},
+{"text": "I need housing", "expect": {"tier_of": {"FEMA": ["hidden"], "HUD Housing Counselors": ["hidden"]}}},
+{"text": "I'm turning 65 and need Medicare help", "expect": {"tier_of": {"Medicare Savings": ["possible"], "Medicare Extra Help": ["possible"], "SHIP": ["likely"]}}},
+{"text": "a hurricane destroyed my house", "expect": {"tier_of": {"FEMA": ["possible"]}}},
+{"text": "I'm a veteran and need a doctor", "expect": {"tier_of": {"VA Health Care": ["possible"]}}},
+{"text": "my phone bill got cut off, I make $900 a month, 1 person", "expect": {"tier_of": {"Lifeline": ["possible"]}}}
+]
 }
