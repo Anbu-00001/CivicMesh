@@ -127,6 +127,12 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "", display:
             "preferred_language": send_lang
         });
     }
+    # No account, or the server turned this turn away: the same answer through
+    # the route that needs no account and keeps its own capacity (blind audit
+    # F24). Nothing is stored on that route and no model is called.
+    if res["spawn_error"] {
+        res = await guestTurn({"conversation": user_text, "user_id": "guest", "prior": profile_ctx if profile_ctx else {}, "answering": ans, "preferred_language": send_lang});
+    }
     rtt = window.performance.now() - t0;
     if CM_INFLIGHT["id"] != req_id { return; }
     CM_INFLIGHT["id"] = "";
@@ -166,6 +172,8 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "", display:
     # A language with a message catalog gets its answer, question, chips and
     # labels composed natively by the server: nothing to translate. Others get
     # the short strings (fast) and the full answer (slower) translated after.
+    # Translation and the local search need an account: the no-account route has neither.
+    if data["guest"] { return; }
     if code and code != "en" and code != "es" and li["tier"] != "interpreter" and str(data["reply_language"]) != code {
         localizeStrings(bot_id, data);
         localize(bot_id, data);
@@ -951,6 +959,16 @@ impl ChatPane.saveList(msg_id: str, matches: list, plan: Any, ui: Any) -> None {
         }
     } except Exception as _ex {}
     download();
+}
+
+impl ChatPane.guestTurn(fields: dict) -> Any {
+    out: Any = {"reports": [], "spawn_error": "no answer"};
+    r = await fetch("/walker/GuestIntakeWalker", {"method": "POST", "headers": {"Content-Type": "application/json"}, "body": JSON.stringify(fields)}).catch(lambda _e: Any { return None; });
+    if r and r.status == 200 {
+        j = await r.json().catch(lambda _e: Any { return None; });
+        if j and j["data"] and j["data"]["reports"] { out = {"reports": j["data"]["reports"], "spawn_error": ""}; }
+    }
+    return out;
 }
 
 impl ChatPane.footerUi -> Any {

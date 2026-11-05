@@ -78,9 +78,10 @@ survive a restart (they otherwise end with the rest of a free Space's state).
 | `CIVICMESH_SIGNING_KEY` | Signs the narration and translation tokens |
 | `SYSTEM_USER_PASSWORD` | jac-scale's internal scheduler account |
 
-**Client address.** `CIVICMESH_TRUSTED_PROXY_HOPS` (default `1`): how many
+**Client address.** `CIVICMESH_TRUSTED_PROXY_HOPS` (default `1` on a Hugging Face Space, otherwise `0`): how many
 `X-Forwarded-For` entries the proxy in front appends. Hugging Face appends one
-(verified). Use `0` on a host with no proxy. The header is only read when the
+(verified). Behind your own proxy, set this to the number of proxies. Left at `0`
+behind one, every visitor shares one address and its limits. The header is only read when the
 direct peer is a private address.
 
 **Rate limits.** Token buckets written `COUNT/SECONDS` (a burst of COUNT,
@@ -99,10 +100,11 @@ page frames the app from huggingface.co, and nothing else may.
 |---|---|---|---|---|---|---|
 | `static` | pages, scripts, images, API docs | 600/60 | — | 12000/60 | — | 30 s |
 | `health` | /healthz | 60/60 | — | 600/60 | — | 5 s |
-| `register` | POST /user/register | 20/600 | — | 200/600 | 2 KB | 15 s |
+| `register` | POST /user/register | 20/600 | — | 1200/600 | 2 KB | 15 s |
 | `login` | POST /user/login, /user/refresh-token | 60/600 | — | 900/600 | 2 KB | 15 s |
 | `me` | GET /user/me | 180/60 | 40/60 | 3000/60 | — | 10 s |
 | `chat` | IntakeWalker | 90/60 | 40/60 | 600/60 | 64 KB | 40 s |
+| `guest` | GuestIntakeWalker (no account, nothing stored, 8 slots of its own) | 30/60 | — | 1500/60 | 64 KB | 20 s |
 | `model` | NarrateWalker, LocalizeWalker | 60/60 | 12/60 | 180/60 | 32 KB | 60 s |
 | `external` | LocalHelpWalker (open-data lookups) | 30/60 | 8/60 | 200/60 | 8 KB | 30 s |
 | `light` | Memory, GraphSnapshot, Impact, Platform, ReflectionRead walkers | 240/60 | 60/60 | 4000/60 | 8 KB | 20 s |
@@ -177,7 +179,6 @@ The `Dockerfile` and `.dockerignore` are portable — any of these platforms can
 |---|---|---|
 | Build fails on `pip install` | RAM during install | Render's free-tier build has more RAM than runtime — should pass. If not, comment unused deps in `requirements.txt`. |
 | `jac build app.jac` step hangs > 8 min | bun downloading deps | First build is slow; subsequent builds reuse cached layers. |
-| All chats route to EscalationWalker | Graph not seeded yet | The client triggers SeedWalker on login automatically. Log out and back in once, OR `curl -X POST https://<service>.onrender.com/walker/SeedWalker -H "Authorization: Bearer <token>"` |
 | LLM returns 429 | NIM rate limit | Set `FEATHERLESS_API_KEY` env var and redeploy |
 | Wrong language detected | missing marker words | add the case to `civicmesh/tests/golden_i18n.json`, then the words to `civicmesh/engine/i18n.jac`; run `jac run tests/eval_engine.jac` |
 | Long pause on first request | Service was asleep | Expected; wait ~30 s |

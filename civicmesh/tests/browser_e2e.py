@@ -487,6 +487,25 @@ def main(app: str) -> int:
         tab.js("window.cm_saved_list=false;sessionStorage.setItem('cm_private','1')")
         check("7h a private session never asks", not tab.js(leaving))
         tab.close()
+        # ---- 9: sign-up is refused, and the person still gets an answer (blind audit F24) ----
+        tab = new_tab()
+        tab.call("Page.enable")
+        tab.call("Page.navigate", url=app)
+        tab.until("!!document.querySelector('.lp-safety')")
+        check("9a the chat opens", open_chat(tab, ""))
+        tab.js("""localStorage.clear();sessionStorage.clear();const f=window.fetch;
+            window.fetch=(u,o)=>String(u).includes('/user/')?Promise.resolve(new Response('{"ok":false}',{status:429})):f(u,o)""")
+        rows = tab.js("document.querySelectorAll('.cm-thread .cm-row').length")
+        send(tab, "I want to kill myself")
+        tab.until(f"document.querySelectorAll('.cm-thread .cm-row').length>={rows + 2} && !document.querySelector('.cm-typing')")
+        shown = str(tab.js("document.querySelector('.cm-thread').innerText"))
+        check("9b a crisis message is answered with no account", "988" in str(tab.js("[...document.querySelectorAll('.cm-crisis')].pop()?.innerText || ''")), shown[-120:])
+        rows = tab.js("document.querySelectorAll('.cm-thread .cm-row').length")
+        send(tab, "I need food too")
+        tab.until(f"document.querySelectorAll('.cm-thread .cm-row').length>={rows + 2} && !document.querySelector('.cm-typing')")
+        check("9c the next turn keeps the case: the crisis box is still there", tab.js("!!document.querySelector('.cm-crisis-pin')"))
+        check("9d and no error message", not tab.js("!!document.querySelector('.cm-retry')"))
+        tab.close()
     finally:
         proc.terminate()
         if srv:

@@ -194,7 +194,7 @@ jobs:
             -e OPENAI_API_BASE=http://host.docker.internal:8799/v1 -e OPENAI_API_KEY=sk-test-DO-NOT-LEAK-openai-123456 \
             -e NVIDIA_NIM_API_BASE=http://host.docker.internal:8799/v1 \
             -e NVIDIA_NIM_API_KEY=nvapi-TESTSECRET-DO-NOT-LEAK-123456 -e NVIDIA_API_KEY=nvapi-TESTSECRET-DO-NOT-LEAK-123456 \
-            -e CIVICMESH_RL_REGISTER_IP=5/600 -e CIVICMESH_RL_CHAT_USER=6/60 -e CIVICMESH_RL_CHAT_IP=12/60 \
+            -e CIVICMESH_TRUSTED_PROXY_HOPS=1 -e CIVICMESH_RL_REGISTER_IP=5/600 -e CIVICMESH_RL_CHAT_USER=6/60 -e CIVICMESH_RL_CHAT_IP=12/60 \
             -e CIVICMESH_INFLIGHT_PER_IP=2 -e CIVICMESH_LLM_MAX_PER_HOUR=12 -e CIVICMESH_LLM_MAX_CONCURRENT=2 \
             -e CIVICMESH_SECURITY_LOG_S=5 civicmesh:ci
           for _ in $(seq 1 90); do curl -sf -o /dev/null http://localhost:7861/ && break; sleep 2; done

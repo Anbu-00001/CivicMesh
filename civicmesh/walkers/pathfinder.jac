@@ -15,10 +15,10 @@ import from graph.nodes { ResourceNode }
 import from graph.edges { leads_to }
 import from engine.paths { plan_routes }
 import from engine.compose { span_begin, span_end }
+import from graph.catalog { shared_edges, shared_resources }
 
 # leads_to edges are static after seeding: read them from the graph once per
 # visitor per process.
-glob EDGE_CACHE: dict = {};
 
 walker PathfinderWalker {
     has start_category: str = "";
@@ -28,32 +28,16 @@ walker PathfinderWalker {
     has max_paths: int = 3;
     has trace: dict = {};
     has parent_span: str = "";
-    has cache_key: str = "";
     has summary: dict = {};
 
     can search with `Root entry {
         sp = span_begin(self.trace, "PathfinderWalker yen_k_shortest", "INTERNAL", self.parent_span, {"gen_ai.agent.name": "PathfinderWalker"});
-        edges: list = list(EDGE_CACHE.get(self.cache_key, [])) if self.cache_key else [];
-        # `[edge r ->:leads_to:->]` yields the edge objects themselves, so the
-        # transition payload (days, difficulty, reason) is read off the edge.
-        for r in ([] if edges else [root --> [?:ResourceNode]]) {
-            for e in [edge r ->:leads_to:->] {
-                tgt: Any = e.__jac__.target.archetype;
-                edges.append({
-                    "from": str(r.agency_name), "to": str(tgt.agency_name),
-                    "reason": str(e.transition_reason), "days": int(e.typical_days),
-                    "difficulty": str(e.difficulty)
-                });
-            }
-        }
-        if self.cache_key and edges and self.cache_key not in EDGE_CACHE {
-            EDGE_CACHE[self.cache_key] = edges;
-        }
+        edges: list = shared_edges();
         sources = list(self.sources);
         goals = dict(self.goals);
         if not sources and self.start_category {
             cat = self.start_category;
-            sources = [str(n.agency_name) for n in [root --> [?:ResourceNode, category == cat]] if str(n.capacity) == "open"];
+            sources = [str(n.agency_name) for n in shared_resources() if str(n.category) == cat and str(n.capacity) == "open"];
         }
         routes: list = [];
         if sources and goals {

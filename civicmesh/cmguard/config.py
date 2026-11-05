@@ -47,13 +47,16 @@ DEFAULT_RATES = {
     #            per client address   per signed-in visitor   whole server
     "static":   {"ip": "600/60",     "user": None,           "global": "12000/60"},
     "health":   {"ip": "60/60",      "user": None,           "global": "600/60"},
-    "register": {"ip": "20/600",     "user": None,           "global": "200/600"},
+    # A sign-up now writes one row, so the server-wide limit can be far higher,
+    # and anyone it refuses still gets an answer through "guest".
+    "register": {"ip": "20/600",     "user": None,           "global": "1200/600"},
     "login":    {"ip": "60/600",     "user": None,           "global": "900/600"},
     "me":       {"ip": "180/60",     "user": "40/60",        "global": "3000/60"},
     # A caseworker trying phrasings can send a turn every couple of seconds;
     # an account hammering past that is still capped by its address and the
     # server-wide bucket.
     "chat":     {"ip": "90/60",      "user": "40/60",        "global": "600/60"},
+    "guest":    {"ip": "30/60",      "user": None,           "global": "1500/60"},
     "model":    {"ip": "60/60",      "user": "12/60",        "global": "180/60"},
     "external": {"ip": "30/60",      "user": "8/60",         "global": "200/60"},
     "light":    {"ip": "240/60",     "user": "60/60",        "global": "4000/60"},
@@ -64,7 +67,7 @@ DEFAULT_RATES = {
 
 # Largest request body per class, in bytes (checked before it is read).
 DEFAULT_BODY_BYTES = {
-    "register": 2048, "login": 2048, "me": 0, "chat": 65536, "model": 32768,
+    "register": 2048, "login": 2048, "me": 0, "chat": 65536, "guest": 65536, "model": 32768,
     "external": 8192, "light": 8192, "seed": 4096, "forget": 4096, "sink": 8192,
     "static": 0, "health": 0,
 }
@@ -72,7 +75,7 @@ DEFAULT_BODY_BYTES = {
 # Upstream timeout per class, seconds.
 DEFAULT_TIMEOUT_S = {
     "static": 30.0, "health": 5.0, "register": 15.0, "login": 15.0, "me": 10.0,
-    "chat": 40.0, "model": 60.0, "external": 30.0, "light": 20.0, "seed": 30.0,
+    "chat": 40.0, "guest": 20.0, "model": 60.0, "external": 30.0, "light": 20.0, "seed": 30.0,
     "forget": 20.0,
 }
 
@@ -84,7 +87,11 @@ class GatewayConfig:
         # (verified: a spoofed left entry is kept, the real one is appended),
         # so exactly one hop is trusted, and only when the direct peer is a
         # private address (the proxy), never a public one.
-        self.trusted_hops = env_int("CIVICMESH_TRUSTED_PROXY_HOPS", 1)
+        # On a Hugging Face Space (it sets SPACE_ID) one load balancer appends the
+        # real address. Anywhere else nothing is known to do that: `docker run -p`
+        # shows a private bridge address, so trusting the header by default let
+        # anyone spoof their way around the per-address limits (blind audit F24).
+        self.trusted_hops = env_int("CIVICMESH_TRUSTED_PROXY_HOPS", 1 if os.environ.get("SPACE_ID") else 0)
         self.rates = {}
         for cls, scopes in DEFAULT_RATES.items():
             self.rates[cls] = {}
@@ -103,6 +110,7 @@ class GatewayConfig:
         self.inflight_per_ip = env_int("CIVICMESH_INFLIGHT_PER_IP", 6)
         self.inflight_global = env_int("CIVICMESH_INFLIGHT_GLOBAL", 16)
         self.inflight_model = env_int("CIVICMESH_INFLIGHT_MODEL", 6)
+        self.inflight_guest = env_int("CIVICMESH_INFLIGHT_GUEST", 8)
         self.queue_wait_s = env_float("CIVICMESH_QUEUE_WAIT_S", 3.0)
         self.body_read_s = env_float("CIVICMESH_BODY_READ_S", 15.0)
         # Duplicate collapse: identical requests from the same visitor share

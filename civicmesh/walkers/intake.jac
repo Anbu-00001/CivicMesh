@@ -22,8 +22,7 @@ import re;
 import datetime;
 import contextvars;
 import concurrent.futures;
-import from graph.nodes { PersonNode, NeedNode, ResourceNode }
-import from walkers.seed { SeedWalker }
+import from graph.nodes { PersonNode, NeedNode }
 import from graph.edges { has_need }
 import from llm.stubs { understand_message, pool_model_names }
 import from engine.parse { parse_intake, clip_message }
@@ -67,12 +66,11 @@ walker IntakeWalker {
         ts = datetime.datetime.utcnow().isoformat();
         # Bounded before anything reads or stores it (engine.parse.clip_message).
         text = clip_message(str(self.conversation));
-        # A visitor whose SeedWalker call was lost (flaky proxy at sign-in) had
-        # no programs, so every answer came back empty with no follow-up
-        # question. Seeding is idempotent: do it here if the catalog is empty.
-        if not [root --> [?:ResourceNode]] {
-            root spawn SeedWalker(user_id=self.user_id);
-        }
+        # The route for someone with no account (GuestIntakeWalker below). The
+        # class decides it, not a field a client could set: nothing it builds
+        # is connected to the root, so nothing is written.
+        guest = type(self).__name__ == "GuestIntakeWalker";
+        if guest { self.user_id = "guest"; }
 
         sp = span_begin(tr, "intake.parse", "INTERNAL", rid);
         parsed = parse_intake(text);
@@ -186,10 +184,12 @@ walker IntakeWalker {
             }
 
             sp = span_begin(tr, "graph.write person+need", "INTERNAL", rid);
-            existing = [root --> [?:PersonNode, user_id == self.user_id]];
+            existing = [] if guest else [root --> [?:PersonNode, user_id == self.user_id]];
             person_node: PersonNode;
             if existing {
                 person_node = existing[0];
+            } elif guest {
+                person_node = PersonNode(user_id=self.user_id, language=lang_out, created_at=ts);
             } else {
                 created = root ++> PersonNode(user_id=self.user_id, language=lang_out, created_at=ts);
                 person_node = created[0];
@@ -213,6 +213,7 @@ walker IntakeWalker {
                 person_node=person_node,
                 message=str(profile.get("case_text", text)),
                 language=lang_out,
+                guest=guest,
                 # A first message that asks how to apply gets the whole answer; a
                 # later question about it gets the answer to that question.
                 followup=asked if (asked and (asked["kind"] == "app" or (isinstance(self.prior, dict) and self.prior.get("category")))) else {},
@@ -224,6 +225,7 @@ walker IntakeWalker {
 
             sp = span_begin(tr, "reflexion.critique", "INTERNAL", rid);
             try {
+                if guest { raise ValueError("no account, nothing to reflect on"); }
                 ranked = list(result.get("matches", []));
                 # What actually ran this turn, read off the trace (not estimated).
                 fired: list = ["IntakeWalker"];
@@ -276,6 +278,7 @@ walker IntakeWalker {
         telemetry.maybe_log(None, "app");
         report {
             "version": 2,
+            "guest": guest,
             "language": lang_out,
             # "auto": no language identified — the narrator mirrors the user's.
             "narrate_language": narrate_lang,
@@ -310,7 +313,7 @@ walker IntakeWalker {
                 "strings_token": issue_token("loc_strings", jid(root), content_hash("loc_strings", loc_strings, str(info["code"]))),
                 "text_token": issue_token("loc_text", jid(root), content_hash("loc_text", str(result.get("reply", "")), str(info["code"])))
             },
-            "llm": {"sync_used": llm_sync, "reason": llm_reason, "error": llm_error, "models": pool_model_names(), "narrate": (not private_turn) and bool(result.get("facts", "")), "budget_s": SYNC_LLM_BUDGET_S},
+            "llm": {"sync_used": llm_sync, "reason": llm_reason, "error": llm_error, "models": pool_model_names(), "narrate": (not guest) and (not private_turn) and bool(result.get("facts", "")), "budget_s": SYNC_LLM_BUDGET_S},
             # Privacy, as measured behavior: the words were neither stored nor
             # sent to a model (unless an operator opted in and the engine could
             # not route them); crisis turns are never sent.
@@ -320,6 +323,13 @@ walker IntakeWalker {
     }
 }
 
+# A person's answer must not depend on getting an account: sign-up can be full
+# or refused (blind audit F24). The same turn, with nothing stored and no model.
+# The gateway gives it its own limits and slots and its own service login. The
+# case travels in `prior`, as it does for everyone, so a conversation still works.
+walker GuestIntakeWalker(IntakeWalker) {}
+
+sem GuestIntakeWalker is "One chat turn for someone with no account: the same engine answer, nothing stored, no model call.";
 sem IntakeWalker is "Entry walker for every chat turn: deterministic parse (plus one LLM call only if the message can't be routed), graph write, then the eligibility chain; returns explainable matches, a plan, routes and trace spans.";
 sem IntakeWalker.conversation is "The user's latest message, in any language.";
 sem IntakeWalker.user_id is "Stable per-visitor id; finds or creates the PersonNode.";

@@ -13,6 +13,8 @@ node carries the fields a tooltip shows, and every edge its schema label and
 payload. Read-only, no LLM; one bounded traversal per call.
 """
 
+import types;
+import from graph.catalog { shared_items, shared_edges, shared_resource }
 import from graph.nodes { PersonNode, NeedNode, ResourceNode, EligibilityRuleNode, FormNode, ApplicationNode, SessionInsight }
 import from graph.edges { has_need, eligible_for, governed_by, requires_form, applied_to, leads_to, reflected_on }
 
@@ -47,7 +49,7 @@ walker GraphSnapshotWalker {
         nodes: list = [{"id": "root", "type": "Root", "label": "root", "tip": "Your private graph root — every visitor gets their own."}];
         edges: list = [];
         counts: dict = {
-            "ResourceNode": len([root --> [?:ResourceNode]]),
+            "ResourceNode": len(shared_items()),
             "PersonNode": 0, "NeedNode": 0, "ApplicationNode": 0, "SessionInsight": 0, "eligible_for": 0
         };
         persons = [root --> [?:PersonNode, user_id == self.user_id]];
@@ -108,11 +110,10 @@ walker GraphSnapshotWalker {
         # Escape routes: leads_to edges out of the programs on screen.
         routes = 0;
         for (rid, name) in list(shown.items()) {
-            src_nodes = [root --> [?:ResourceNode, agency_name == name]];
-            if not src_nodes { continue; }
-            for le in [edge src_nodes[0] ->:leads_to:->] {
+            for t in [t for t in shared_edges() if t["from"] == name] {
+                le = types.SimpleNamespace(typical_days=t["days"], difficulty=t["difficulty"], transition_reason=t["reason"]);
                 if routes >= self.max_routes { break; }
-                tgt: Any = le.__jac__.target.archetype;
+                tgt: Any = shared_resource(t["to"]);
                 tid = "res:" + str(tgt.agency_name);
                 if tid not in shown {
                     shown[tid] = str(tgt.agency_name);

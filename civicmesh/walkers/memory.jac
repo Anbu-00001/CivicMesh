@@ -19,7 +19,7 @@ import from graph.edges { applied_to, governed_by }
 import from llm.stubs { NeedProfile, EscalationContext }
 import from walkers.escalation { EscalationWalker }
 import from engine.score { beta_posterior }
-import from walkers.eligibility { invalidate_catalog }
+import from graph.catalog { ensure_resource }
 
 walker MemoryWalker {
     has user_id: str;
@@ -113,9 +113,9 @@ walker MemoryWalker {
             is_terminal = self.new_status == "approved" or self.new_status == "denied";
             if is_terminal {
                 # Find the ResourceNode by name to walk to its rule.
-                res_matches = [root --> [?:ResourceNode, agency_name == self.resource_name]];
-                if res_matches {
-                    rule_nodes = [res_matches[0] ->:governed_by:-> [?:EligibilityRuleNode]];
+                res_node = ensure_resource(root, str(self.resource_name));
+                if res_node {
+                    rule_nodes = [res_node ->:governed_by:-> [?:EligibilityRuleNode]];
                     if rule_nodes {
                         rule_node: Any = rule_nodes[0];
                         # Increment attempts, conditionally increment approvals.
@@ -135,7 +135,6 @@ walker MemoryWalker {
                         cap = str(res_matches[0].capacity);
                         posterior_out = beta_posterior(new_approvals, new_attempts, cap);
                         posterior_out["before"] = beta_posterior(old_approvals, old_attempts, cap)["mean"];
-                        invalidate_catalog(self.user_id);
                         setattr(rule_node, "prior_attempts", new_attempts);
                         setattr(rule_node, "prior_approvals", new_approvals);
                         setattr(rule_node, "prior_success_rate", new_rate);
