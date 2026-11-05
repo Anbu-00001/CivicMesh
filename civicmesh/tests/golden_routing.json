@@ -500,6 +500,7 @@
 {"text": "I'm turning 65 and need Medicare help", "expect": {"tier_of": {"Medicare Savings": ["possible"], "Medicare Extra Help": ["possible"], "SHIP": ["likely"]}}},
 {"text": "a hurricane destroyed my house", "expect": {"tier_of": {"FEMA": ["possible"]}}},
 {"text": "I'm a veteran and need a doctor", "expect": {"tier_of": {"VA Health Care": ["possible"]}}},
-{"text": "my phone bill got cut off, I make $900 a month, 1 person", "expect": {"tier_of": {"Lifeline": ["possible"]}}}
+{"text": "my phone bill got cut off, I make $900 a month, 1 person", "expect": {"tier_of": {"Lifeline": ["possible"]}}},
+{"text": "I'm 16, my parents threw me out for being gay, where can I go", "top3_any": ["The Trevor Project"], "expect": {"tier_of": {"National Runaway Safeline": ["likely"]}}}
 ]
 }
