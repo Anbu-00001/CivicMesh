@@ -32,6 +32,7 @@ import from engine.stats { record_turn }
 import from engine.privacy { redact, is_private_turn, need_summary, model_may_read_messages }
 import from engine.compose { merge_profiles, new_trace, span_begin, span_end, export_spans }
 import from engine.prior { sanitize_prior }
+import from engine.followup { followup_intent, app_answer, program_answer, can_answer }
 import from engine.parse { DANGER_FLAGS }
 import from cmguard.tokens { danger_seal, sealed_flags }
 import from walkers.eligibility { EligibilityWalker, quiet_summary }
@@ -163,10 +164,17 @@ walker IntakeWalker {
         # or repeated, no crisis box, no narration, nothing written to the
         # graph. Guessing a need here is how "Hello how are you??" once came
         # back as "you're looking for housing help", with Section 8 to call.
-        quiet = bool(profile.get("small_talk")) or (not profile.get("category") and not list(profile.get("flags", [])));
+        asked = followup_intent(text) if can_answer(lang_out) else {};
+        quiet = (bool(profile.get("small_talk")) and not (asked and profile.get("category"))) or (not profile.get("category") and not list(profile.get("flags", [])));
         result: dict = {};
         if quiet {
             result = quiet_summary(profile, lang_out, str(self.answering));
+            if asked {
+                # An app question always gets its answer; a question about a program,
+                # with no need known yet, gets told what's needed first.
+                result["reply"] = app_answer(asked, lang_out) if asked["kind"] == "app" else program_answer(asked, lang_out, text, [], {});
+                result["reply_en"] = "";
+            }
         } else {
             if not profile.get("category") {
                 # Crisis or warning-sign words but no need named: route on the
@@ -205,6 +213,10 @@ walker IntakeWalker {
                 person_node=person_node,
                 message=str(profile.get("case_text", text)),
                 language=lang_out,
+                # A first message that asks how to apply gets the whole answer; a
+                # later question about it gets the answer to that question.
+                followup=asked if (asked and (asked["kind"] == "app" or (isinstance(self.prior, dict) and self.prior.get("category")))) else {},
+                asked_text=text if asked else "",
                 trace=tr,
                 parent_span=rid
             );

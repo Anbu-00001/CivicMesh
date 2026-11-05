@@ -7,7 +7,8 @@ crisis, code-switching, romanized scripts, no-signal input) and
 tests/golden_crisis.json (crisis recall, strict),
 tests/golden_danger.json (a blind audit's misses and quiet controls, strict),
 tests/golden_eligibility.json (the same audit's wrong answers, strict),
-tests/golden_routing.json (needs with no route, and quick replies typed, strict) and
+tests/golden_routing.json (needs with no route, and quick replies typed, strict),
+tests/golden_understanding.json (household, income, place and subject misreads, strict) and
 tests/golden_facts_i18n.json (income, household, age, status and location
 stated in 20 other languages, with traps) through
 parse → rank → plan → routes, and tests/golden_conversations.json
@@ -74,7 +75,9 @@ with entry {
     for c in elig_cases { c["suite"] = "eligibility"; }
     route_cases = json.load(open("tests/golden_routing.json", encoding="utf-8"))["cases"];
     for c in route_cases { c["suite"] = "routing"; }
-    cases = cases + i18n_cases + adv_cases + hold_cases + fact_cases + probe_cases + crisis_cases + danger_cases + elig_cases + route_cases;
+    under_cases = json.load(open("tests/golden_understanding.json", encoding="utf-8"))["cases"];
+    for c in under_cases { c["suite"] = "understanding"; }
+    cases = cases + i18n_cases + adv_cases + hold_cases + fact_cases + probe_cases + crisis_cases + danger_cases + elig_cases + route_cases + under_cases;
     suite_tot: dict = {};
     suite_ok: dict = {};
     langs_ok: dict = {};

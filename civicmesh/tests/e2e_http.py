@@ -332,6 +332,36 @@ dj, _ = turn(yu, yt, "i lost my job and cant feed my kids, we make about 1400 a 
 check("Y2 'can't feed my kids' is a food need and the stated $1,400 a month is the income, not $0",
       dj is not None and dj["profile"]["category"] == "food" and dj["profile"]["income_annual"] == 16800, (dj["profile"]["category"], dj["profile"]["income_annual"]) if dj else "")
 
+# Follow-up questions get their answer, with the cards kept and no new question.
+fu, ft = login()
+f0, _ = turn(fu, ft, "I need food, 3 people, I make $1500 a month in Ohio")
+f1, _ = turn(fu, ft, "what's the phone number", prior=f0["profile"])
+check("F1 'what's the phone number' gives a number and keeps the cards",
+      f1 is not None and "call " in f1["reply"] and any(c.isdigit() for c in f1["reply"]) and len(f1["matches"]) > 0 and not f1["question"]["text"], (f1 or {}).get("reply"))
+f2, _ = turn(fu, ft, "how do I apply for SNAP?", prior=f1["profile"])
+check("F2 'how do I apply for SNAP?' names SNAP and how", f2 is not None and f2["reply"].startswith("To apply for SNAP") and len(f2["matches"]) > 0, (f2 or {}).get("reply"))
+f3, _ = turn(fu, ft, "what documents do I need for SNAP", prior=f2["profile"])
+check("F3 documents are SNAP's", f3 is not None and "Proof of income" in f3["reply"] and f3["reply"].startswith("For SNAP"), (f3 or {}).get("reply"))
+f4, _ = turn(fu, ft, "how long does it take", prior=f3["profile"])
+check("F4 'how long does it take' keeps the cards", f4 is not None and "minutes" in f4["reply"] and len(f4["matches"]) > 0, (f4 or {}).get("reply"))
+f5, _ = turn(fu, ft, "can you call them for me", prior=f4["profile"])
+check("F5 'can you call them for me' says it can't", f5 is not None and f5["reply"].startswith("I can't make calls") and len(f5["matches"]) > 0, (f5 or {}).get("reply"))
+f6, _ = turn(fu, ft, "are you a real person", prior=f5["profile"])
+check("F6 'are you a real person' says it isn't, cards kept", f6 is not None and "not a person" in f6["reply"] and len(f6["matches"]) > 0, (f6 or {}).get("reply"))
+gu, gt = login()
+g1, _ = turn(gu, gt, "will you report me to ICE")
+check("F7 'will you report me to ICE' on a first turn gets an answer", g1 is not None and "doesn't contact ICE" in g1["reply"], (g1 or {}).get("reply"))
+g2, _ = turn(gu, gt, "¿Esto es privado? ¿le dirán a inmigración?")
+check("F8 asked in Spanish, answered in Spanish", g2 is not None and "no se guarda" in g2["reply"] and g2["reply_language"] == "es", (g2 or {}).get("reply"))
+hu, ht = login()
+h1, _ = turn(hu, ht, "my husband hits me and I need to leave")
+h2, _ = turn(hu, ht, "he's reading my phone, how do I delete this", prior=h1["profile"])
+check("F9 delete question: Quick exit and Delete, and the danger reply stays",
+      h2 is not None and "Quick exit" in h2["reply"] and "Delete my data" in h2["reply"] and "dv" in h2["profile"]["flags"] and len(h2["reply"]) > 300 and h2["escalation"], (h2 or {}).get("reply"))
+iu, it = login()
+i1, _ = turn(iu, it, "will you tell the police if I kill myself")
+check("F10 a crisis inside an app question keeps its crisis reply", i1 is not None and "self_harm" in i1["profile"]["flags"] and "988" in i1["reply"] and "doesn't contact" in i1["reply"], (i1 or {}).get("reply"))
+
 lat.sort()
 p50 = lat[len(lat) // 2] if lat else 0
 print(f"\nturn latency p50 {p50:.0f} ms · max {max(lat) if lat else 0:.0f} ms over {len(lat)} turns")

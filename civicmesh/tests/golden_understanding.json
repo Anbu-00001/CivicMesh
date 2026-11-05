@@ -1,0 +1,192 @@
+{
+ "_about": "Household, income, place and who-is-it-for misreads from a blind audit (2026-11-02), with controls. Development set: the rules were written from these messages.",
+ "cases": [
+  {
+   "text": "4 of us in Ohio, need food",
+   "expect": {
+    "household_size": 4
+   }
+  },
+  {
+   "text": "3 of us, $1500 a month",
+   "expect": {
+    "household_size": 3
+   }
+  },
+  {
+   "text": "5 of us",
+   "expect": {
+    "household_size": 5
+   }
+  },
+  {
+   "text": "3 people, I need housing",
+   "expect": {
+    "household_size": 3
+   }
+  },
+  {
+   "text": "2 people, need food",
+   "expect": {
+    "household_size": 2
+   }
+  },
+  {
+   "text": "I make $1500 a month and my husband makes $2000 a month. 4 of us in Ohio",
+   "expect": {
+    "income_annual": 42000,
+    "household_size": 4,
+    "state": "OH"
+   }
+  },
+  {
+   "text": "I'm active duty military, E-2, wife and 2 kids, $2800 a month",
+   "expect": {
+    "household_size": 4,
+    "income_annual": 33600
+   }
+  },
+  {
+   "text": "$50,000 in savings and no income",
+   "expect": {
+    "income_annual": 0
+   }
+  },
+  {
+   "text": "I have $20,000 saved and I make $1000 a month",
+   "expect": {
+    "income_annual": 12000
+   }
+  },
+  {
+   "text": "I used to make $5000 a month but got laid off, now nothing. 2 kids, Ohio",
+   "expect": {
+    "income_annual": 0
+   }
+  },
+  {
+   "text": "I used to make $5000 a month, now I make $1500 a month",
+   "expect": {
+    "income_annual": 18000
+   }
+  },
+  {
+   "text": "I drive for Uber, $3000 before gas, $1800 after",
+   "expect": {
+    "income_annual": 21600
+   }
+  },
+  {
+   "text": "I get $900 in child support and $1200 from my job. 3 people",
+   "expect": {
+    "income_annual": 25200,
+    "household_size": 3
+   }
+  },
+  {
+   "text": "$1100 in social security and $500 pension",
+   "expect": {
+    "income_annual": 19200
+   }
+  },
+  {
+   "text": "we bring in like 3 grand a month",
+   "expect": {
+    "income_annual": 36000
+   }
+  },
+  {
+   "text": "we make around 2 to 3 thousand a month",
+   "expect": {
+    "income_annual": 30000
+   }
+  },
+  {
+   "text": "I make $1000 a week",
+   "expect": {
+    "income_annual": 52000
+   }
+  },
+  {
+   "text": "I pay $900 in rent and make $2000 a month",
+   "expect": {
+    "income_annual": 24000
+   }
+  },
+  {
+   "text": "I live in 43215",
+   "expect": {
+    "state": "OH",
+    "zip": "43215"
+   }
+  },
+  {
+   "text": "I live in 60629, need food",
+   "expect": {
+    "state": "IL"
+   }
+  },
+  {
+   "text": "my zip is 94103",
+   "expect": {
+    "state": "CA"
+   }
+  },
+  {
+   "text": "we are in 20002",
+   "expect": {
+    "state": "DC"
+   }
+  },
+  {
+   "text": "00918 food",
+   "expect": {
+    "state": "PR"
+   }
+  },
+  {
+   "text": "I got an eviction notice, Cook County",
+   "expect": {
+    "state": "IL"
+   }
+  },
+  {
+   "text": "Harris County, I need food",
+   "expect": {
+    "state": "TX"
+   }
+  },
+  {
+   "text": "Maricopa County food bank",
+   "expect": {
+    "state": "AZ"
+   }
+  },
+  {
+   "text": "I live in Dallas Texas 75201",
+   "expect": {
+    "state": "TX"
+   }
+  },
+  {
+   "text": "My mom is 72 and needs food, I'm 40. She makes $900 a month in Ohio",
+   "expect": {
+    "age": 72,
+    "flag": "senior",
+    "income_annual": 10800
+   }
+  },
+  {
+   "text": "I'm 40, I need food, my mom is 72",
+   "expect": {
+    "age": 40
+   }
+  },
+  {
+   "text": "I'm 35 and my dad is 70 but he lives far away, I need a job",
+   "expect": {
+    "age": 35
+   }
+  }
+ ]
+}

@@ -101,6 +101,17 @@ A blind audit scored the project 4.5/10 as a public tool for people in crisis. T
 - **Missed wording.** The audit's 458 missed messages became `engine/danger_words.jac`: typos, spacing tricks, emoji, indirect wording, and phrases in about 45 languages (machine-drafted, unreviewed). Sexual assault, trafficking, child abuse and emergencies now also fire in other languages. This fixed those messages and barely moved outside recall (`docs/EVALUATION.md`).
 - **Still not handled:** one in four at-risk users on the outside set, and most single posts. A classifier was tried and left out, for the reasons in `docs/EVALUATION.md`. On a 360 x 640 phone the thread itself is only about 175 px tall on a crisis turn, though the Call button is always visible.
 
+## Understanding findings from the 2026-11 blind audit
+
+Everyday messages were misread: 32 of the new checks failed on the old code before the fixes. The rest are controls, which passed before and still do.
+
+- **Household and income:** "4 of us", "3 people", "wife and 2 kids", "3 grand a month" and "2 to 3 thousand" now read correctly. Savings aren't income. "Used to make $5000, now nothing" is $0. Amounts named with their source add up. Self-employed pay is taken after costs.
+- **Place:** a ZIP gives its state from its first three digits, when the words around it read as an address ("I owe 12000" doesn't). The largest counties with a name most people read as one place also give a state. A state named in the message wins.
+- **Someone typing for a parent:** "My mom is 72 and needs food, I'm 40" uses her age, and "I'm 40, I need food, my mom is 72" still uses the speaker's.
+- **Corrections:** "sorry I meant 2500", "I meant 26", "wait that's every two weeks" and "it's just 4 of us now" change the case. A child's age no longer answers the household question.
+- **Follow-up questions:** "what's the phone number", "how do I apply", "what documents", "how long", "can you call them", "are you a real person", "is this private", "will you report me to ICE" and "how do I delete this" now get an answer, with the cards kept and no new question pushed. Crisis text stays underneath. This works in English and Spanish only; other languages keep the ordinary answer.
+- **A hole in the test gate:** `jac test` exits 0 even when a test fails, so the five in-process walker test files, in CI and locally, could fail without anyone seeing. It showed up when a typo in this round broke them and the gate still passed. CI and the local gate now read the result line.
+
 ## Eligibility findings from the 2026-11 blind audit
 
 - **Mixed-status families.** "I'm undocumented but my kids are US citizens" hid SNAP and pointed to food banks. USDA says a state must still decide for the members who are eligible, so SNAP now shows, and housing shows as prorated help. HUD proposed ending proration in February 2026; the card says to ask whether that has changed, because no final rule turned up when this was written.

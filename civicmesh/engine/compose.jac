@@ -15,6 +15,8 @@ import time;
 import uuid;
 import from engine.i18n { yes_no, unspaced_chars, ascii_digits }
 import from engine.facts_i18n { zh_number }
+import from engine.parse { _annualize }
+import from engine.followup { followup_intent }
 import from engine.messages { msg, has_messages }
 
 glob MERGE_FIELDS: list = ["income_annual", "household_size", "age", "state", "city", "zip", "citizenship"];
@@ -56,6 +58,53 @@ glob NO_RE: str = "^\\s*(?:no|nope|nah|not really|i'?m not|i don'?t|we don'?t|no
 # and pay periods ("about $2,000 a month", "unos 1500 al mes", "大概两千块").
 glob ANSWER_FILLER: str = "\\b(?:about|around|approximately|approx|roughly|maybe|almost|nearly|just|only|like|over|under|per|a|an|each|every|i|we|make|earn|get|it'?s|is|months?|monthly|mo|years?|yearly|annual|annually|weeks?|weekly|hours?|hourly|hrs?|dollars?|usd|bucks|k|cerca|de|unos|unas|como|m[aá]s|o|menos|aproximadamente|al|por|mes|mensual|a[nñ]o|semana|hora|d[oó]lares|gano|ganamos|ganho|m[eê]s|reais)\\b|大概|大约|大約|左右|差不多|美元|美金|块钱|塊錢|块|塊|元|每个月|每個月|每月|一个月|一個月|月|每年|年|每小时|每小時|小时|小時|每周|每週|周|週|星期";
 
+# A short message that only fixes something said before (blind audit, 2026-11):
+# "sorry I meant 2500", "I meant 26", "wait that's every two weeks".
+glob CORRECTION_LEAD: str = "^\\W*(?:(?:sorry|oops|wait|no|nope|actually|correction|my bad|typo|perd[oó]n|digo)\\W+)*(?:i meant|i mean|meant|it'?s|it is|that'?s|that is|make that|should be|quise decir|son|es)?\\W*";
+glob CORRECTION_MARK: str = "^\\W*(?:sorry|oops|wait|no|nope|actually|correction|my bad|typo|perd[oó]n|digo|i meant|i mean|meant|make that|should be|quise decir)\\b";
+glob CORRECTION_AMOUNT_RE: str = CORRECTION_LEAD + "\\$?(\\d{1,3}(?:,\\d{3})+|\\d{1,7})\\s*(k)?\\W*$";
+glob CORRECTION_PERIOD_RE: str = CORRECTION_LEAD + "(?:paid |i get paid |we get paid )?(?:every |per |a |an |each )?(two weeks|2 weeks|other week|bi-?weekly|week|weekly|month|monthly|year|yearly|hour|hourly)\\W*$";
+# The usual ways of stating an amount per period, for finding which number and
+# period gave the income on file.
+glob ANNUAL_FACTORS: list = [12, 52, 26, 1, 2080];
+
+def apply_correction(prior: dict, cur: dict, text: str) -> dict {
+    low = str(text).lower();
+    if len(low) > 60 or not re.search(CORRECTION_MARK, low) { return cur; }
+    out = dict(cur);
+    mp = re.match(CORRECTION_PERIOD_RE, low);
+    if mp and int(cur.get("income_annual", -1)) < 0 and int(prior.get("income_annual", -1)) > 0 {
+        amount = _amount_on_file(prior);
+        if amount > 0 { out["income_annual"] = _annualize(float(amount), mp.group(1), ""); }
+        return out;
+    }
+    ma = re.match(CORRECTION_AMOUNT_RE, low);
+    if not ma { return cur; }
+    n = int(ma.group(1).replace(",", "")) * (1000 if ma.group(2) else 1);
+    if n >= 100 and int(cur.get("income_annual", -1)) < 0 {
+        out["income_annual"] = n * 12 if n < 5000 else n;
+    } elif 14 <= n <= 110 and int(prior.get("age", 0) or 0) > 0 and int(cur.get("age", 0) or 0) == 0 {
+        out["age"] = n;
+        out["age_other"] = False;
+        out["flags"] = [f for f in list(cur.get("flags", [])) if f != "senior"];
+    } elif 0 < n < 20 and int(prior.get("household_size", 0) or 0) > 0 and int(cur.get("household_size", 0) or 0) == 0 {
+        out["household_size"] = n;
+        out["household_stated"] = True;
+    }
+    return out;
+}
+
+"""The per-period amount behind the income on file, found by matching the numbers
+said earlier against it: $1000 said and $12,000 on file is $1000 a month."""
+def _amount_on_file(prior: dict) -> int {
+    annual = int(prior.get("income_annual", -1));
+    for raw in re.findall("\\d[\\d,]*", str(prior.get("case_text", ""))) {
+        amount = int(raw.replace(",", ""));
+        if amount > 0 and annual in [amount * f for f in ANNUAL_FACTORS] { return amount; }
+    }
+    return 0;
+}
+
 """Fold a new parse into the case carried over from earlier turns.
 
 One conversation is one person. New evidence wins, unknown fields keep their
@@ -68,6 +117,10 @@ need instead of forcing an LLM call. Starting over is explicit: the New case
 button sends no prior.
 """
 def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") -> dict {
+    if prior { cur = apply_correction(prior, cur, str(text)); }
+    # "What's the phone number?" asks about the case and answers nothing pending.
+    asked = followup_intent(str(text));
+    if asked { answering = ""; }
     out = dict(cur);
     out["answered"] = [];
     text = re.sub("[’‘ʼ′＇`´]", "'", str(text));
@@ -134,7 +187,7 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
     # the place alone doesn't make it a follow-up on the earlier need.
     no_signal = no_signal or (bool(cur.get("story_demoted")) and not answering);
     no_signal = no_signal or ((not cur.get("category")) and (not cur.get("flags")) and not answering and bool(re.search(OVERWHELM_RE, str(text).lower())));
-    if not cur.get("category") and prior.get("category") and not no_signal {
+    if not cur.get("category") and prior.get("category") and (asked or not no_signal) {
         out["category"] = prior.get("category");
         out["secondary"] = list(prior.get("secondary", []));
         out["category_conf"] = float(prior.get("category_conf", 0.5));
@@ -180,7 +233,8 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
     # "How many people live in your household?" → "3", "three", "there are 3 people".
     if answering == "household" and int(out.get("household_size", 0) or 0) <= 0 {
         mc = re.search("\\b(\\d{1,2}|" + "|".join(COUNT_WORDS.keys()) + ")\\b", str(text).lower());
-        if mc {
+        # "my son needs a doctor, he's 6" gives an age, not a household.
+        if mc and not re.search("\\b(?:he|she|they|son|daughter|kid|child|baby|boy|girl)(?:'s|'re| is| are| turned)\\s+$|\\baged?\\s+$", str(text).lower()[max(0, mc.start() - 16):mc.start()]) and not re.match("\\s*(?:years?|yrs?|y/?o|months?)\\b", str(text).lower()[mc.end():mc.end() + 12]) {
             tok = mc.group(1);
             n = int(tok) if tok.isdigit() else int(COUNT_WORDS.get(tok, 0));
             if 0 < n < 20 { out["household_size"] = n; }
@@ -221,7 +275,7 @@ def answer_income(text: str) -> int {
     if re.search("^(?:0|zero|cero|nothing|none|nada|没有|沒有)(?!\\w)", t) {
         return 0;
     }
-    rest = re.sub("[零〇一二两兩三四五六七八九十百千万萬]", " ", re.sub(ANSWER_FILLER, " ", t));
+    rest = re.sub("(?<=\\d)\\s*k\\b", " ", re.sub("[零〇一二两兩三四五六七八九十百千万萬]", " ", re.sub(ANSWER_FILLER, " ", t)));
     if re.search("[^\\W\\d_]", rest) {
         return -1;
     }

@@ -17,6 +17,8 @@ import from graph.nodes { PersonNode, NeedNode, ResourceNode, EligibilityRuleNod
 import from graph.edges { governed_by, requires_form, eligible_for }
 import from engine.score { rank_resources, question_for }
 import from engine.compose { span_begin, span_end, compose_reply, reply_language }
+import from engine.followup { app_answer, program_answer }
+import from engine.parse { DANGER_FLAGS }
 import from engine.messages { msg, quick_options, ui_labels }
 import from engine.plan { build_plan }
 import from walkers.navigation { NavigationWalker }
@@ -178,6 +180,8 @@ walker EligibilityWalker {
     has profile: dict;
     has person_node: PersonNode;
     has message: str = "";
+    has followup: dict = {};
+    has asked_text: str = "";
     has language: str = "en";
     has trace: dict = {};
     has parent_span: str = "";
@@ -298,6 +302,15 @@ walker EligibilityWalker {
         }
         chips = [] if guessed else chips_for(ranked, self.profile, ui_lang);
         qkey = str(ask["key"]);
+        if self.followup {
+            # The answer to what was asked, with the cards still showing and no new
+            # question. Danger text stays: a follow-up never replaces it.
+            answer = app_answer(self.followup, ui_lang) if self.followup["kind"] == "app" else program_answer(self.followup, ui_lang, self.asked_text, ranked, plan);
+            reply = (answer + "\n\n" + reply) if [f for f in list(self.profile.get("flags", [])) if f in DANGER_FLAGS] else answer;
+            reply_en = "";
+            (qkey, question) = ("", "");
+            ask = {"key": "", "affects": 0, "gain": 0.0};
+        }
         self.summary = {
             "reply": reply,
             "reply_language": ui_lang,
@@ -318,7 +331,7 @@ walker EligibilityWalker {
             "ui": ui_labels(ui_lang),
             # What the narrator may say: only what was understood. A guessed
             # need would come back as "it sounds like you need housing".
-            "facts": "" if guessed else facts_for(ranking, plan, question, self.profile)
+            "facts": "" if (guessed or self.followup) else facts_for(ranking, plan, question, self.profile)
         };
     }
 }
