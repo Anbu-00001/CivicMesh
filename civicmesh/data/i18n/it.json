@@ -53,7 +53,7 @@
   "r.unsure": "Non ho ancora capito di che tipo di aiuto ha bisogno. Scelga un'opzione qui sotto o mi dica qualcosa in più — nel frattempo, il **211** la mette in contatto con l'aiuto locale 24/7.",
   "r.safety": "**Prima di tutto, la sua sicurezza:** {name} — {phone} (24/7, gratuito e riservato).",
   "r.emergency": "**Se la vita di qualcuno è in pericolo adesso, chiama il 911.**",
-  "r.crisis_net": "In pericolo, o pensi al suicidio? Chiama il **911**, oppure chiama o scrivi al **988**.",
+  "r.crisis_net": "In pericolo, o pensi al suicidio? Chiama il **911**, oppure il **988** e di' \"Italian\" per un interprete gratuito.",
   "r.found": "Ho trovato **{n}** programmi per cui probabilmente ha diritto.",
   "r.found_more": "Ho trovato **{n}** programmi per cui probabilmente ha diritto e altri {m} che potrebbero andare bene.",
   "r.maybe": "Niente di sicuro per ora, ma **{m}** programmi potrebbero andare bene appena ne so un po' di più.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Può comunque fare domanda. Solo l'ufficio del programma può dire di no.",
   "ui.charge_title": "I sussidi e la sua pratica di immigrazione",
   "ui.charge_body": "Dal 18 settembre 2026 i funzionari possono considerare i sussidi legati al reddito che lei usa personalmente quando chiede la green card. Quelli usati dai familiari in genere non contano, e rifugiati e titolari di asilo sono esenti. Parli con un rappresentante per l'immigrazione accreditato prima di decidere.",
-  "ui.charge_link": "Trova assistenza legale gratuita sull'immigrazione"
+  "ui.charge_link": "Trova assistenza legale gratuita sull'immigrazione",
+  "r.more_lines": "Veterani: chiama il 988 e premi 1. Persone sorde o con problemi di udito: chiama il 988 da un videotelefono, oppure con TTY componi il 711 e poi il 988."
 }

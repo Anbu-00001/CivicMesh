@@ -53,7 +53,7 @@
   "r.unsure": "Još nisam siguran kakva vam pomoć treba. Odaberite nešto ispod ili mi recite malo više — u međuvremenu vas **211** povezuje s lokalnom pomoći 24/7.",
   "r.safety": "**Prvo, vaša sigurnost:** {name} — {phone} (24/7, besplatno i povjerljivo).",
   "r.emergency": "**Ako je nečiji život sada u opasnosti, zovite 911.**",
-  "r.crisis_net": "U opasnosti ste ili mislite o samoubistvu? Zovite **911**, ili zovite ili pošaljite SMS na **988**.",
+  "r.crisis_net": "U opasnosti ste ili mislite o samoubistvu? Zovite **911**, ili zovite **988** i recite \"Serbian\" ili \"Croatian\" za besplatnog prevodioca.",
   "r.found": "Programi za koje vjerojatno ispunjavate uvjete: **{n}**.",
   "r.found_more": "Programi za koje vjerojatno ispunjavate uvjete: **{n}**; drugi koji bi mogli odgovarati: {m}.",
   "r.maybe": "Još ništa nije sigurno, ali kad saznam malo više, mogli bi odgovarati programi: **{m}**.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Ipak možete podnijeti zahtjev. Samo ured programa može odbiti.",
   "ui.charge_title": "Naknade i vaš imigracijski slučaj",
   "ui.charge_body": "Od 18. septembra 2026. službenici mogu uzeti u obzir naknade prema prihodu koje sami koristite kada podnosite zahtjev za zelenu kartu. Naknade članova porodice se uglavnom ne računaju, a izbjeglice i osobe s azilom su izuzete. Prije odluke razgovarajte s akreditovanim imigracijskim predstavnikom.",
-  "ui.charge_link": "Pronađite besplatnu pravnu pomoć za imigraciju"
+  "ui.charge_link": "Pronađite besplatnu pravnu pomoć za imigraciju",
+  "r.more_lines": "Veterani: zovite 988 i pritisnite 1. Gluve i nagluve osobe: zovite 988 s videotelefona, ili preko TTY-a birajte 711, pa 988."
 }

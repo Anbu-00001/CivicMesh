@@ -786,7 +786,7 @@
         "citizenship_required": false,
         "age_min": 0,
         "age_max": 0,
-        "exceptions": "Press 1 for Veterans Crisis Line; press 3 for LGBTQI+ specialized support.",
+        "exceptions": "Press 1 for the Veterans Crisis Line, or text 838255. Press 2 for Spanish, or text AYUDA to 988. Other languages: free interpreter by phone. Deaf or hard of hearing: call 988 from a videophone, or dial 711 then 988 by TTY.",
         "criteria_summary": "Anyone in mental health crisis or supporting someone in crisis. No eligibility check.",
         "targets": ["crisis"]
       },

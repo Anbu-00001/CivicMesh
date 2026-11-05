@@ -122,5 +122,6 @@
   "ui.near_ask": "You can still apply. Only the program's office can say no.",
   "ui.charge_title": "Benefits and your immigration case",
   "ui.charge_body": "Since September 18, 2026, officers can weigh means-tested benefits you use yourself when you apply for a green card. Benefits your family members use generally aren't counted, and refugees and asylees are exempt. Talk to an accredited immigration representative before you decide.",
-  "ui.charge_link": "Find free immigration legal help"
+  "ui.charge_link": "Find free immigration legal help",
+  "r.more_lines": "Veterans: call 988 and press 1. Deaf or hard of hearing: call 988 from a videophone, or dial 711 then 988 by TTY."
 }

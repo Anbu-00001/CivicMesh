@@ -101,6 +101,15 @@ A blind audit scored the project 4.5/10 as a public tool for people in crisis. T
 - **Missed wording.** The audit's 458 missed messages became `engine/danger_words.jac`: typos, spacing tricks, emoji, indirect wording, and phrases in about 45 languages (machine-drafted, unreviewed). Sexual assault, trafficking, child abuse and emergencies now also fire in other languages. This fixed those messages and barely moved outside recall (`docs/EVALUATION.md`).
 - **Still not handled:** one in four at-risk users on the outside set, and most single posts. A classifier was tried and left out, for the reasons in `docs/EVALUATION.md`. On a 360 x 640 phone the thread itself is only about 175 px tall on a crisis turn, though the Call button is always visible.
 
+## Crisis line instructions from the 2026-11 blind audit
+
+Checked on [988lifeline.org](https://988lifeline.org/help-yourself/for-deaf-hard-of-hearing/) and [veteranscrisisline.net](https://www.veteranscrisisline.net/get-help-now/military-crisis-line/) on 2026-11-05.
+
+- **"Call or text 988" was wrong in 49 languages.** Text and chat are in English and Spanish only, and interpreters are by phone. Those catalogs now say to call 988 and name the language. The translations are machine drafts, like the rest of those catalogs, and nobody has reviewed them.
+- **Veterans and Deaf callers:** every suicide-risk reply now gives the veterans line (988, press 1; text 838255 in English and Spanish) and the videophone and TTY routes. A veteran doesn't always say so, which is why it isn't tied to a veteran flag. Asking directly ("I'm deaf, how do I reach the crisis line") gets its own answer.
+- **Missed message:** "I still have my service weapon and I think about using it every night" got the quiet reply, and now gets the crisis answer. It's one more phrase added to the word lists, so it doesn't change the measured recall.
+- **Stale data:** the 988 entry still offered "press 3" for LGBTQ+ youth, which ended on July 17, 2025.
+
 ## Understanding findings from the 2026-11 blind audit
 
 Everyday messages were misread: 32 of the new checks failed on the old code before the fixes. The rest are controls, which passed before and still do.

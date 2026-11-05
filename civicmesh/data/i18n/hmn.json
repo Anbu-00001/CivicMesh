@@ -53,7 +53,7 @@
   "r.unsure": "Kuv tseem tsis tau paub tias koj xav tau kev pab zoo li cas. Xaiv ib qho hauv qab no los yog qhia kuv ntxiv me ntsis — lub sijhawm no, **211** txuas koj rau kev pab hauv zos 24/7.",
   "r.safety": "**Ua ntej tshaj, koj txoj kev nyab xeeb:** {name} — {phone} (24/7, dawb thiab zais cia).",
   "r.emergency": "**Yog tias leej twg txoj sia muaj kev txaus ntshai tam sim no, hu 911.**",
-  "r.crisis_net": "Koj puas muaj kev txaus ntshai, los yog xav tua koj tus kheej? Hu **911**, los yog hu los yog xa ntawv rau **988**.",
+  "r.crisis_net": "Koj puas muaj kev txaus ntshai, los yog xav tua koj tus kheej? Hu **911**, los yog hu **988** thiab hais tias \"Hmong\" kom tau tus txhais lus dawb.",
   "r.found": "Kuv nrhiav tau **{n}** qhov kev pab uas koj zoo li tsim nyog tau.",
   "r.found_more": "Kuv nrhiav tau **{n}** qhov kev pab uas koj zoo li tsim nyog tau thiab {m} qhov ntxiv uas yuav siv tau.",
   "r.maybe": "Tseem tsis tau muaj qhov twg paub tseeb, tab sis **{m}** qhov kev pab yuav siv tau thaum kuv paub ntxiv me ntsis.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Koj tseem thov tau. Tsuas yog lub chaw ua haujlwm ntawm qhov kev pab thiaj hais tias tsis tau.",
   "ui.charge_title": "Cov kev pab thiab koj rooj plaub neeg tsiv teb tsaws",
   "ui.charge_body": "Txij li 18 Cuaj Hlis 2026, cov nom tswv tuaj yeem xav txog cov kev pab raws nyiaj khwv tau uas koj siv rau koj tus kheej thaum koj thov green card. Cov uas koj tsev neeg siv feem ntau tsis suav, thiab cov neeg tawg rog thiab cov neeg tau kev tiv thaiv raug zam. Tham nrog ib tug neeg sawv cev txog kev tsiv teb tsaws uas tau txais kev lees paub ua ntej koj txiav txim siab.",
-  "ui.charge_link": "Nrhiav kev pab raws cai dawb txog kev tsiv teb tsaws"
+  "ui.charge_link": "Nrhiav kev pab raws cai dawb txog kev tsiv teb tsaws",
+  "r.more_lines": "Cov qub tub rog: hu 988 thiab nias 1. Cov neeg lag ntseg los yog hnov lus tsis zoo: hu 988 ntawm lub xov tooj video, los yog siv TTY nias 711 ces 988."
 }

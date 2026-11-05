@@ -53,7 +53,7 @@
   "r.unsure": "Je ne sais pas encore de quelle aide vous avez besoin. Choisissez une option ci-dessous ou dites-m'en un peu plus — en attendant, le **211** vous met en contact avec l'aide locale 24/7.",
   "r.safety": "**D'abord, votre sécurité :** {name} — {phone} (24/7, gratuit et confidentiel).",
   "r.emergency": "**Si la vie de quelqu'un est en danger en ce moment, appelez le 911.**",
-  "r.crisis_net": "En danger, ou vous pensez au suicide ? Appelez le **911**, ou appelez ou envoyez un SMS au **988**.",
+  "r.crisis_net": "En danger, ou vous pensez au suicide ? Appelez le **911**, ou le **988** et dites \"French\" pour un interprète gratuit.",
   "r.found": "J'ai trouvé **{n}** programme(s) auxquels vous avez probablement droit.",
   "r.found_more": "J'ai trouvé **{n}** programme(s) auxquels vous avez probablement droit, et {m} autre(s) qui pourraient convenir.",
   "r.maybe": "Rien de certain pour l'instant, mais **{m}** programme(s) pourraient convenir quand j'en saurai un peu plus.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Vous pouvez quand même faire la demande. Seul le bureau du programme peut refuser.",
   "ui.charge_title": "Les aides et votre dossier d'immigration",
   "ui.charge_body": "Depuis le 18 septembre 2026, les agents peuvent tenir compte des aides sous condition de ressources que vous utilisez vous-même lorsque vous demandez une carte verte. Celles de vos proches ne comptent généralement pas, et les réfugiés et personnes ayant obtenu l'asile sont exemptés. Parlez à un représentant en immigration accrédité avant de décider.",
-  "ui.charge_link": "Trouver une aide juridique gratuite en immigration"
+  "ui.charge_link": "Trouver une aide juridique gratuite en immigration",
+  "r.more_lines": "Anciens combattants : appelez le 988 et appuyez sur 1. Personnes sourdes ou malentendantes : appelez le 988 depuis un visiophone, ou composez le 711 puis le 988 par ATS."
 }

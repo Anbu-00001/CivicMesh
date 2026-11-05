@@ -16,6 +16,14 @@ ChatPane.renderPrivacy. Quick exit erases things only in a private session
 import re;
 
 glob APP_INTENTS: dict = {
+    "deaf": [
+        "\\b(?:deaf|hard of hearing|asl|tty|videophone)\\b[^.?!]{0,60}\\b(?:crisis|988|hotline|lifeline|call|talk to someone)\\b|\\b(?:crisis|988|hotline|lifeline)\\b[^.?!]{0,60}\\b(?:deaf|hard of hearing|asl|tty|videophone)\\b",
+        "\\b(?:sord[oa]s?|dificultad auditiva|videotel[eé]fono)\\b[^.?!]{0,60}\\b(?:crisis|988|l[ií]nea|llamar)\\b|\\b(?:crisis|988|l[ií]nea)\\b[^.?!]{0,60}\\b(?:sord[oa]s?|dificultad auditiva|videotel[eé]fono)\\b"
+    ],
+    "veteran": [
+        "\\b(?:veterans?|vets?|military|service member)\\b[^.?!]{0,40}\\b(?:crisis|988|hotline|lifeline)\\b|\\b(?:crisis|988|hotline|lifeline)\\b[^.?!]{0,40}\\b(?:veterans?|vets?|military)\\b",
+        "\\b(?:veteran[oa]s?|militar(?:es)?)\\b[^.?!]{0,40}\\b(?:crisis|988|l[ií]nea)\\b|\\b(?:crisis|988|l[ií]nea)\\b[^.?!]{0,40}\\b(?:veteran[oa]s?|militar(?:es)?)\\b"
+    ],
     "delete": [
         "\\b(?:how (?:do|can|could) (?:i|we)|can i|need to|want to|help me) (?:delete|erase|clear|hide|remove) (?:this|it|that|everything|my (?:data|history|chat|messages?|case|info\\w*)|the (?:chat|history|conversation|messages?))\\b|\\bdelete (?:this|my|the) (?:chat|history|conversation|data|messages?)\\b|\\b(?:reads?|reading|checks?|checking|looks? through|looking through|goes through|going through|sees?) my (?:phone|messages|texts)\\b",
         "\\b(?:borro|borrar|elimino|eliminar) (?:esto|todo|el chat|mi historial|la conversaci[oó]n|mis datos)\\b|\\b(?:revisa|lee|mira|ve) mi (?:celular|tel[eé]fono|m[oó]vil)\\b"
@@ -55,6 +63,8 @@ glob PROGRAM_INTENTS: dict = {
 
 glob ANSWERS: dict = {
     "en": {
+        "deaf": "To reach 988 if you're Deaf or hard of hearing: call 988 from a videophone, dial 711 then 988 by TTY, or text 988. In danger right now: texting 911 works in some places, and if it doesn't you'll get a message back saying so.",
+        "veteran": "Veterans Crisis Line: call 988 and press 1, or text 838255. It's free, confidential and open 24/7.",
         "who": "I'm an automated guide, not a person. I follow written rules to find programs you may qualify for, but only each program's office can decide. To talk to a person, call 2-1-1.",
         "private": "This tool doesn't report you. It doesn't contact ICE, the police or any office, and it never asks your name. What you type is read to find programs and isn't saved. Only what it understood (the kind of help, household size, income) stays, until you press Delete my data or the server restarts. Hugging Face, which hosts this site, sees ordinary web traffic such as your IP address. A court order could reach what is kept. Details are under Private by design, at the bottom of the chat.",
         "delete": "Quick exit leaves this page at once. To erase your case, open Private by design at the bottom of the chat and press Delete my data. Then delete this site from your browser history. If someone can check this phone, a friend's phone or a library computer is safer. National Domestic Violence Hotline: 1-800-799-7233.",
@@ -76,6 +86,8 @@ glob ANSWERS: dict = {
         "none": "Tell me what kind of help you need first, and I'll find the program and how to reach it. You can also call 2-1-1."
     },
     "es": {
+        "deaf": "Para comunicarse con el 988 si es sordo o tiene dificultad auditiva: llame al 988 desde un videoteléfono, marque 711 y luego 988 por TTY, o envíe AYUDA por texto al 988. Si está en peligro ahora: enviar un texto al 911 funciona en algunos lugares; si no funciona, recibirá un mensaje que se lo dice.",
+        "veteran": "Línea de Crisis para Veteranos: llame al 988 y oprima 1, o envíe un texto al 838255. Es gratis, confidencial y atiende las 24 horas.",
         "who": "Soy una guía automática, no una persona. Sigo reglas escritas para encontrar programas para los que podría calificar, pero solo la oficina de cada programa puede decidir. Para hablar con una persona, llame al 2-1-1.",
         "private": "Esta herramienta no lo denuncia. No se comunica con ICE, ni con la policía ni con ninguna oficina, y nunca le pide su nombre. Lo que escribe se lee para buscar programas y no se guarda. Solo queda lo que entendió (el tipo de ayuda, el tamaño del hogar, los ingresos), hasta que presione Delete my data (borrar mis datos) o se reinicie el servidor. Hugging Face, que aloja este sitio, ve el tráfico normal de la web, como su dirección IP. Una orden judicial podría alcanzar lo que se guarda. Los detalles están en Private by design, al final del chat.",
         "delete": "Quick exit (salida rápida) sale de esta página de inmediato. Para borrar su caso, abra Private by design al final del chat y presione Delete my data (borrar mis datos). Luego borre este sitio del historial del navegador. Si alguien puede revisar este teléfono, es más seguro usar el de una amistad o una computadora de la biblioteca. Línea Nacional de Violencia Doméstica: 1-800-799-7233.",

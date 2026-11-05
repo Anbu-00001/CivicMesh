@@ -5124,6 +5124,10 @@
 ]
 }
 },
-{"text": "my toddler swallowed my pills", "expect": {"flag_any": ["emergency"]}}
+{"text": "my toddler swallowed my pills", "expect": {"flag_any": ["emergency"]}},
+{"text": "I still have my service weapon and I think about using it every night", "expect": {"flag": "self_harm"}},
+{"text": "I keep thinking about using my gun", "expect": {"flag": "self_harm"}},
+{"text": "I still have my service weapon and I want to sell it", "expect": {"flags_none": true}},
+{"text": "I think about using my rifle at the range next weekend", "expect": {"flags_none": true}}
 ]
 }

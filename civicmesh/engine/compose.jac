@@ -320,6 +320,12 @@ def crisis_lines(lang: str, profile: dict, pinned: list) -> list {
         if lang == "en" { lines.append("I'm glad you told me. You don't have to go through this alone."); }
         if lang == "es" { lines.append("Me alegra que me lo haya contado. No tiene que pasar por esto a solas."); }
         lines.append(msg(lang, "r.crisis_net"));
+        # Lines someone may need without saying why (988lifeline.org, 2026-11).
+        # The text line is in English and Spanish only, so it isn't in the catalogs.
+        more = msg(lang, "r.more_lines");
+        if lang == "en" { more = more.replace("press 1.", "press 1, or text 838255."); }
+        if lang == "es" { more = more.replace("oprima 1.", "oprima 1, o envíe un texto al 838255."); }
+        lines.append(more);
     }
     return lines;
 }

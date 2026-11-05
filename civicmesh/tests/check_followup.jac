@@ -7,6 +7,8 @@ import sys;
 import from engine.followup { followup_intent, app_answer, program_answer, target_program, can_answer }
 
 glob CASES: list = [
+    ("I'm deaf, how do I reach the crisis line", "deaf"), ("does 988 have ASL", "deaf"), ("soy sorda, ¿cómo llamo a la línea de crisis?", "deaf"), ("is there a crisis line for veterans", "veteran"),
+    ("I'm deaf and I need food", ""), ("I'm a veteran and I need housing", ""),
     ("who are you", "who"), ("are you a real person", "who"), ("is this a bot?", "who"), ("¿eres una persona?", "who"), ("¿Con quién hablo?", "who"),
     ("is this private", "private"), ("will you report me to ICE", "private"), ("¿Esto es privado? ¿le dirán a inmigración?", "private"), ("do you save my messages", "private"), ("who can see this", "private"),
     ("he's reading my phone, how do I delete this", "delete"), ("how do I delete my data", "delete"), ("¿cómo borro esto?", "delete"), ("mi esposo revisa mi celular", "delete"),

@@ -53,7 +53,7 @@
   "r.unsure": "Încă nu știu de ce fel de ajutor aveți nevoie. Alegeți o opțiune de mai jos sau spuneți-mi puțin mai mult — între timp, **211** vă pune în legătură cu ajutor local 24/7.",
   "r.safety": "**Mai întâi, siguranța dumneavoastră:** {name} — {phone} (24/7, gratuit și confidențial).",
   "r.emergency": "**Dacă viața cuiva este în pericol chiar acum, sunați la 911.**",
-  "r.crisis_net": "Sunteți în pericol sau vă gândiți la sinucidere? Sunați la **911**, sau sunați ori trimiteți SMS la **988**.",
+  "r.crisis_net": "Sunteți în pericol sau vă gândiți la sinucidere? Sunați la **911**, sau la **988** și spuneți \"Romanian\" pentru un interpret gratuit.",
   "r.found": "Am găsit programe pentru care probabil sunteți eligibil: **{n}**.",
   "r.found_more": "Am găsit programe pentru care probabil sunteți eligibil: **{n}**, plus altele care s-ar putea potrivi: {m}.",
   "r.maybe": "Nimic sigur încă, dar când aflu puțin mai mult s-ar putea potrivi programe: **{m}**.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Puteți totuși să aplicați. Doar biroul programului poate refuza.",
   "ui.charge_title": "Ajutoarele și dosarul dvs. de imigrare",
   "ui.charge_body": "Din 18 septembrie 2026, funcționarii pot lua în calcul ajutoarele în funcție de venit pe care le folosiți personal când solicitați cartea verde. Cele folosite de membrii familiei de obicei nu contează, iar refugiații și azilanții sunt exceptați. Vorbiți cu un reprezentant de imigrare acreditat înainte de a decide.",
-  "ui.charge_link": "Găsiți ajutor juridic gratuit pentru imigrare"
+  "ui.charge_link": "Găsiți ajutor juridic gratuit pentru imigrare",
+  "r.more_lines": "Veterani: sunați la 988 și apăsați 1. Persoane surde sau cu deficiențe de auz: sunați la 988 de pe un videotelefon, sau prin TTY formați 711, apoi 988."
 }

@@ -53,7 +53,7 @@
   "r.unsure": "Dar nežinau, kokios pagalbos jums reikia. Pasirinkite ką nors žemiau arba papasakokite šiek tiek daugiau — tuo tarpu **211** sujungs jus su vietine pagalba 24/7.",
   "r.safety": "**Pirmiausia — jūsų saugumas:** {name} — {phone} (24/7, nemokamai ir konfidencialiai).",
   "r.emergency": "**Jei kieno nors gyvybei dabar gresia pavojus, skambinkite 911.**",
-  "r.crisis_net": "Esate pavojuje ar galvojate apie savižudybę? Skambinkite **911** arba skambinkite ar rašykite SMS **988**.",
+  "r.crisis_net": "Esate pavojuje ar galvojate apie savižudybę? Skambinkite **911** arba **988** ir pasakykite \"Lithuanian\", kad gautumėte nemokamą vertėją.",
   "r.found": "Programos, kurioms tikriausiai tinkate: **{n}**.",
   "r.found_more": "Programos, kurioms tikriausiai tinkate: **{n}**; kitos, kurios gali tikti: {m}.",
   "r.maybe": "Kol kas nieko tikro, bet sužinojus šiek tiek daugiau gali tikti programos: **{m}**.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Vis tiek galite kreiptis. Atsisakyti gali tik programos įstaiga.",
   "ui.charge_title": "Išmokos ir jūsų imigracijos byla",
   "ui.charge_body": "Nuo 2026 m. rugsėjo 18 d. pareigūnai gali atsižvelgti į nuo pajamų priklausančias išmokas, kuriomis naudojatės patys, kai prašote žaliosios kortelės. Šeimos narių išmokos paprastai neskaičiuojamos, o pabėgėliams ir prieglobstį gavusiems ši taisyklė netaikoma. Prieš nuspręsdami pasikalbėkite su akredituotu imigracijos atstovu.",
-  "ui.charge_link": "Rasti nemokamą teisinę pagalbą imigracijos klausimais"
+  "ui.charge_link": "Rasti nemokamą teisinę pagalbą imigracijos klausimais",
+  "r.more_lines": "Veteranai: skambinkite 988 ir paspauskite 1. Kurtieji ir neprigirdintieji: skambinkite 988 vaizdo telefonu arba per TTY surinkite 711, tada 988."
 }

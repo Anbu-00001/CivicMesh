@@ -53,7 +53,7 @@
   "r.unsure": "Ik weet nog niet welke hulp u nodig heeft. Kies hieronder een optie of vertel me iets meer — ondertussen brengt **211** u 24/7 in contact met hulp in de buurt.",
   "r.safety": "**Eerst uw veiligheid:** {name} — {phone} (24/7, gratis en vertrouwelijk).",
   "r.emergency": "**Is iemands leven nu in gevaar, bel dan 911.**",
-  "r.crisis_net": "In gevaar, of denkt u aan zelfdoding? Bel **911**, of bel of sms **988**.",
+  "r.crisis_net": "In gevaar, of denkt u aan zelfdoding? Bel **911**, of bel **988** en zeg \"Dutch\" voor een gratis tolk.",
   "r.found": "Ik heb **{n}** programma's gevonden waarvoor u waarschijnlijk in aanmerking komt.",
   "r.found_more": "Ik heb **{n}** programma's gevonden waarvoor u waarschijnlijk in aanmerking komt, en nog {m} die zouden kunnen passen.",
   "r.maybe": "Nog niets past zeker, maar **{m}** programma's kunnen passen zodra ik iets meer weet.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "U kunt nog steeds aanvragen. Alleen het programmabureau kan nee zeggen.",
   "ui.charge_title": "Uitkeringen en uw immigratiezaak",
   "ui.charge_body": "Sinds 18 september 2026 mogen ambtenaren inkomensafhankelijke uitkeringen die u zelf gebruikt meewegen wanneer u een green card aanvraagt. Wat uw gezinsleden gebruiken telt meestal niet mee, en vluchtelingen en asielgerechtigden zijn vrijgesteld. Spreek met een geaccrediteerde immigratievertegenwoordiger voordat u beslist.",
-  "ui.charge_link": "Gratis juridische hulp bij immigratie vinden"
+  "ui.charge_link": "Gratis juridische hulp bij immigratie vinden",
+  "r.more_lines": "Veteranen: bel 988 en druk op 1. Doven en slechthorenden: bel 988 met een videotelefoon, of kies met TTY 711 en dan 988."
 }
