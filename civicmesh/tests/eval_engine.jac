@@ -29,7 +29,7 @@ import sys;
 import time;
 import from engine.parse { parse_intake }
 import from engine.score { rank_resources }
-import from engine.plan { build_plan }
+import from engine.plan { build_plan, plan_need }
 import from engine.paths { plan_routes }
 import from engine.compose { merge_profiles }
 import from engine.prior { sanitize_prior }
@@ -99,7 +99,7 @@ with entry {
         t0 = time.perf_counter();
         p = parse_intake(text);
         rk = rank_resources(items, p, text, 6, p["language"] or "en");
-        pl = build_plan(rk["ranked"], p["urgency"], p["language"] or "en", 4, str(p.get("category", "")));
+        pl = build_plan(rk["ranked"], p["urgency"], p["language"] or "en", 4, plan_need(p, text));
         p_of: dict = {};
         for s in rk["ranked"] { p_of[s["resource_name"]] = float(s["p_eligible"]) * float(s["approval"]["mean"]); }
         srcs = [s["resource_name"] for s in rk["ranked"] if s["tier"] in ["likely", "possible"]];
@@ -127,6 +127,9 @@ with entry {
             } elif k == "first_step_not" {
                 got = str(pl["steps"][0]["agency_name"]) if pl["steps"] else "";
                 ok = v.lower() not in got.lower();
+            } elif k == "first_step_has" {
+                got = str(pl["steps"][0]["agency_name"]) if pl["steps"] else "";
+                ok = v.lower() in got.lower();
             } elif k == "tier_of" {
                 every = rank_resources(items, p, text, 60, p["language"] or "en")["ranked"];
                 got = {};
