@@ -226,12 +226,15 @@ def main():
 
     # ---- S10: rotating identities from one address ----
     ok_total = 0
+    s10_start = time.time()
     accounts = [visitor("10.60.0.1") for _ in range(5)]
     for (u, t, _) in accounts:
         for i in range(5):
             if t and turn(u, t, f"We need a food bank in Houston {i}", "10.60.0.1")[0] == 200:
                 ok_total += 1
-    check("S10 many accounts from one address share the address's chat limit", ok_total <= 12, ok_total)
+    # The limit refills over time (12 a minute), so a slower machine earns a few more.
+    s10_allowed = 12 + int((time.time() - s10_start) * 12 / 60)
+    check("S10 many accounts from one address share the address's chat limit", ok_total <= s10_allowed, (ok_total, s10_allowed))
 
     # ---- S11: concurrency ----
     users = [visitor(f"10.61.0.{i}") for i in range(1, 5)]
