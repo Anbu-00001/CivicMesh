@@ -39,7 +39,7 @@ flowchart LR
 
 ```
 cd civicmesh && jac run tests/eval_engine.jac
-  1436 cases + 41 conversations (94 turns) · field accuracy 100% (2247/2247) · 73/73 languages · top-3 100% · exclusion errors 0
+  1454 cases + 41 conversations (94 turns) · field accuracy 100% (2275/2275) · 73/73 languages · top-3 100% · exclusion errors 0
   metamorphic 296/296 neutral additions moved no verdict · latency / turn p50 ~1.2 ms · p95 ~2.4 ms
 
 cd civicmesh && jac run tests/check_messages.jac

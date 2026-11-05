@@ -83,10 +83,10 @@ glob LANG_NAMES: dict = {
 # Distinctive function words for Latin-script languages (never English or
 # Spanish words, which detect_language already counts).
 glob LATIN_MARKERS: dict = {
-    "pt": ["eu", "não", "nao", "você", "voce", "nós", "estou", "preciso", "minha", "meu", "meus", "minhas", "também", "está", "são", "tenho", "temos", "uma", "com", "sem", "hoje", "emprego", "obrigado", "obrigada", "filhos",
+    "pt": ["advogado", "advogada", "um", "eu", "não", "nao", "você", "voce", "nós", "estou", "preciso", "minha", "meu", "meus", "minhas", "também", "está", "são", "tenho", "temos", "uma", "com", "sem", "hoje", "emprego", "obrigado", "obrigada", "filhos",
            "em", "moro", "moramos", "ganho", "ganhamos", "mês", "califórnia", "flórida", "geórgia", "pensilvânia", "havaí", "ajuda", "fome", "aluguel", "precisamos", "família", "dinheiro", "quero", "onde", "posso", "pra", "muito", "trabalho", "agora", "então"],
-    "fr": ["je", "j'ai", "nous", "pour", "avec", "les", "des", "est", "pas", "mon", "ma", "mes", "besoin", "aide", "suis", "sommes", "avons", "enfants", "travail", "dans", "ne", "une", "aujourd'hui", "merci", "loyer"],
-    "it": ["io", "non", "sono", "ho", "bisogno", "aiuto", "mio", "mia", "siamo", "abbiamo", "figli", "perché", "della", "sto", "anche", "lavoro", "oggi", "grazie", "affitto",
+    "fr": ["propriétaire", "m'expulse", "expulse", "je", "j'ai", "nous", "pour", "avec", "les", "des", "est", "pas", "mon", "ma", "mes", "besoin", "aide", "suis", "sommes", "avons", "enfants", "travail", "dans", "ne", "une", "aujourd'hui", "merci", "loyer"],
+    "it": ["il", "padrone", "sfrattando", "sfratto", "io", "non", "sono", "ho", "bisogno", "aiuto", "mio", "mia", "siamo", "abbiamo", "figli", "perché", "della", "sto", "anche", "lavoro", "oggi", "grazie", "affitto",
            "gli", "di", "che", "per", "è", "più", "sua", "suo", "lei", "qualcuno", "stanotte", "c'è", "dove", "posso", "mangiare", "soldi", "cibo", "mese", "anni", "figlio"],
     # Lithuanian / Latvian: identified so the answer and narration come back
     # in the language (no routing lexicon yet; words shared with Spanish or
@@ -96,7 +96,7 @@ glob LATIN_MARKERS: dict = {
     "de": ["ich", "und", "nicht", "wir", "mein", "meine", "brauche", "hilfe", "habe", "keine", "kein", "bin", "sind", "haben", "für", "kinder", "arbeit", "heute", "mir", "mich", "bitte"],
     "tl": ["ako", "ang", "mga", "ng", "sa", "po", "namin", "kami", "wala", "kailangan", "tulong", "hindi", "akin", "ko", "naman", "lang", "pero", "dahil", "kasi", "ngayon", "trabaho"],
     "ht": ["mwen", "nou", "gen", "pou", "ak", "bezwen", "èd", "ki", "li", "pitit", "travay", "lajan", "kounye", "jodi", "pa gen", "m pa"],
-    "pl": ["nie", "jestem", "mam", "potrzebuję", "potrzebuje", "pomocy", "się", "moja", "mój", "dzieci", "pracy", "że", "jest", "mamy", "dla", "dzisiaj", "proszę"],
+    "pl": ["mąż", "mnie", "bije", "nie", "jestem", "mam", "potrzebuję", "potrzebuje", "pomocy", "się", "moja", "mój", "dzieci", "pracy", "że", "jest", "mamy", "dla", "dzisiaj", "proszę"],
     "tr": ["ben", "ve", "bir", "bu", "için", "yardım", "ihtiyacım", "yok", "var", "benim", "beni", "bana", "istiyor", "istiyorum", "lazım", "gerek", "çocuk", "çocuklarım", "değil", "çok", "ama", "bugün", "lütfen"],
     "id": ["saya", "dan", "tidak", "kami", "untuk", "dengan", "butuh", "perlu", "bantuan", "ada", "anak", "yang", "ini", "itu", "tolong", "bisa", "sudah", "belum", "hari ini"],
     "sw": ["mimi", "sina", "nina", "kwa", "msaada", "nahitaji", "watoto", "kazi", "hakuna", "sisi", "tafadhali", "leo"],
@@ -1074,7 +1074,7 @@ def detect_script(text: str) -> tuple {
             code = "ko";
         } elif int(counts.get("kana", 0)) > 0 {
             code = "ja";
-        } elif len(re.findall(r"[係冇唔嘅咗啲喺佢哋嘢睇咩乜]", text)) >= 2 {
+        } elif len(re.findall(r"[冇唔嘅咗啲喺佢哋嘢睇咩乜]", text)) >= 1 {
             # Written Cantonese: colloquial characters Mandarin doesn't use.
             code = "yue";
         } else {

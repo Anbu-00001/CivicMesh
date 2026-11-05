@@ -20,7 +20,7 @@ import from engine.compose { span_begin, span_end, compose_reply, reply_language
 import from engine.followup { app_answer, program_answer }
 import from engine.parse { DANGER_FLAGS }
 import from engine.messages { msg, quick_options, ui_labels }
-import from engine.plan { build_plan }
+import from engine.plan { build_plan, plan_need }
 import from walkers.navigation { NavigationWalker }
 import from walkers.pathfinder { PathfinderWalker }
 import from walkers.escalation { EscalationWalker }
@@ -253,7 +253,7 @@ walker EligibilityWalker {
         if ranked {
             nav = self.person_node spawn NavigationWalker(
                 ranked=ranked, urgency=str(self.profile.get("urgency", "within_weeks")),
-                language=ui_lang, trace=tr, parent_span=self.parent_span
+                language=ui_lang, need=plan_need(self.profile, self.message), trace=tr, parent_span=self.parent_span
             );
             plan = nav.summary;
         }
@@ -297,7 +297,7 @@ walker EligibilityWalker {
         # (catalogs are machine-drafted until a native speaker reviews them).
         reply_en = "";
         if ui_lang != "en" {
-            plan_en = build_plan(ranked, str(self.profile.get("urgency", "within_weeks")), "en", 4, str(self.profile.get("category", "")));
+            plan_en = build_plan(ranked, str(self.profile.get("urgency", "within_weeks")), "en", 4, plan_need(self.profile, self.message));
             reply_en = compose_reply("en", self.profile, ranking, plan_en, routes, (question_for(str(ask["key"]), "en") if ask["key"] else ""));
         }
         chips = [] if guessed else chips_for(ranked, self.profile, ui_lang);

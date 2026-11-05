@@ -187,6 +187,24 @@
    "expect": {
     "age": 35
    }
-  }
+  },
+  {"text": "I got an eviction notice, court date is Friday, Cook County. 2 kids $2100 a month", "expect": {"first_step_has": "LawHelp", "state": "IL"}},
+  {"text": "I'm a gay teen, my parents kicked me out, I need somewhere safe", "expect": {"flag": "minor"}},
+  {"text": "I'm undocumented and my landlord says he will call ICE if I don't leave. Illinois", "expect": {"category": "legal"}},
+  {"text": "need help with medicine", "expect": {"first_step_not": "Poison"}},
+  {"text": "I took too many of my pills", "expect": {"flag": "emergency"}},
+  {"text": "I'm 30, no kids, in Nebraska, no job, $0. Medicaid?", "expect": {"language": "en", "first_step_has": "Medicaid"}},
+  {"text": "I'm a teacher and I need to report child abuse", "expect": {"flag": "child_abuse", "flag_absent": "dv"}},
+  {"text": "I'm a teacher and one of my students told me her dad hits her", "expect": {"flag": "child_abuse", "flag_absent": "dv"}},
+  {"text": "I'm a teacher and my husband hits me", "expect": {"flag": "dv"}},
+  {"text": "Me van a desalojar", "expect": {"language": "es", "category": "housing"}},
+  {"text": "Me cortaron la luz", "expect": {"language": "es", "category": "housing"}},
+  {"text": "Se llevaron a mi esposo los de ICE", "expect": {"language": "es", "category": "legal"}},
+  {"text": "Mon propriétaire m'expulse", "expect": {"language": "fr", "category": "housing"}},
+  {"text": "Il padrone di casa mi sta sfrattando", "expect": {"language": "it", "category": "housing"}},
+  {"text": "Preciso de um advogado", "expect": {"language": "pt", "category": "legal"}},
+  {"text": "Mąż mnie bije", "expect": {"language": "pl", "flag": "dv"}},
+  {"text": "no tengo trabajo", "expect": {"language": "es"}},
+  {"text": "mi casa", "expect": {}}
  ]
 }

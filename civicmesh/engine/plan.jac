@@ -10,6 +10,7 @@ The top steps are chosen by w (value), then sequenced by w/p. Crisis lines are p
 once ("bring your photo ID — needed by 3 of 4 steps").
 """
 
+import re;
 import from engine.messages { msg, has_messages }
 
 glob URGENCY_W: dict = {"immediate": 3.0, "within_days": 2.0, "within_weeks": 1.0};
@@ -47,6 +48,17 @@ def action_text(name: str, method: str, phone: str, url: str, lang: str) -> str 
     return ("Contacte a " + name) if es else ("Contact " + name);
 }
 
+# A date with a court comes first: an answer can be due within days, and the first
+# call should be to someone who can help with that (blind audit, 2026-11).
+glob COURT_RE: str = "\\b(?:court date|court on|hearing|summons|sheriff|eviction notice|notice to (?:quit|vacate)|unlawful detainer|audiencia|citaci[oó]n|orden de desalojo)\\b";
+
+"""The need the plan should lead with: what the person named, or legal help when a court is involved."""
+def plan_need(profile: dict, message: str) -> str {
+    category = str(profile.get("category", ""));
+    if category == "housing" and re.search(COURT_RE, str(message).lower()) { return "legal"; }
+    return category;
+}
+
 """Build the ordered plan from ranked matches (engine.score output)."""
 def build_plan(ranked: list, urgency: str, lang: str, max_steps: int = 4, need: str = "") -> dict {
     uw = float(URGENCY_W.get(urgency, 1.0));
@@ -66,7 +78,11 @@ def build_plan(ranked: list, urgency: str, lang: str, max_steps: int = 4, need: 
         value_f = 1.0 if other_need else 1.0 + min(8.0, ben / 100.0);
         w = uw * float(s["p_eligible"]) * float(s["approval"]["mean"]) * access * value_f * (0.4 if other_need else 1.0);
         ratio = w / max(5.0, minutes);
+        # What the person came for comes before a quicker errand for another need.
+        if need and not other_need { ratio += 10.0; }
         if s.get("pinned", False) { ratio += 100.0; w += 100.0; }
+        # A program asked for by name comes first: "Medicaid?" started at a clinic.
+        if s.get("named", False) { ratio += 50.0; w += 50.0; }
         jobs.append((ratio, s, form, minutes, w));
     }
     # Choose WHICH steps by value, then order them by Smith's rule — the rule

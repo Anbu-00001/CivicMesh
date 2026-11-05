@@ -101,6 +101,14 @@ A blind audit scored the project 4.5/10 as a public tool for people in crisis. T
 - **Missed wording.** The audit's 458 missed messages became `engine/danger_words.jac`: typos, spacing tricks, emoji, indirect wording, and phrases in about 45 languages (machine-drafted, unreviewed). Sexual assault, trafficking, child abuse and emergencies now also fire in other languages. This fixed those messages and barely moved outside recall (`docs/EVALUATION.md`).
 - **Still not handled:** one in four at-risk users on the outside set, and most single posts. A classifier was tried and left out, for the reasons in `docs/EVALUATION.md`. On a 360 x 640 phone the thread itself is only about 175 px tall on a crisis turn, though the Call button is always visible.
 
+## First steps and reply language from the 2026-11 blind audit
+
+- **The live plan ignored the need.** `build_plan` had learned to put the named need first, but the walker that calls it never passed the need, so the fix worked only in tests. It's passed now. What the person came for comes before a quicker errand for another need.
+- **Court dates and named programs:** an eviction with a court date starts at legal help, and "Medicaid?" starts at Medicaid.
+- **Other wrong starts:** "need help with medicine" no longer starts at Poison Control. A landlord threatening to call ICE goes to legal help. A thrown-out gay teen is read as a minor and sees the Runaway Safeline and the Trevor Project.
+- **Someone else's child:** a teacher reporting abuse gets Childhelp rather than the domestic violence hotline, unless the message also shows the writer's own danger.
+- **Reply language:** "I'm 30, no kids, no job" no longer reads as Spanish. "Me van a desalojar", "Me cortaron la luz", French and Italian evictions, Portuguese and Polish messages get their own language. One Cantonese word is now enough to tell it from Mandarin. This fixes the audit's examples; other short messages can still be misread.
+
 ## Programs added after the 2026-11 blind audit
 
 Nineteen programs people asked for had no entry. Each shows only when the message gives its topic, so "I need food" doesn't list a reservation program, and "I want to kill myself" doesn't list a youth line unless the message also shows the person is LGBTQ+ and isn't 25 or older.

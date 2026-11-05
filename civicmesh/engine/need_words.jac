@@ -26,7 +26,7 @@ glob EXTRA_NEEDS: dict = {
         ("(?:vivo|vivimos|viviendo|dormimos|duermo) en (?:mi|nuestro|el|un) (?:carro|coche|auto)", 3.0), ("(?:live|living|sleep|sleeping) in (?:my|our|the|a) (?:car|truck|van)", 3.0)
     ],
     "legal": [
-        ("child support", 2.5), ("manutenci[oó]n", 2.5), ("elder abuse", 1.5), ("stealing from (?:my |her |his )?(?:elderly |aging )?(?:mom|mother|dad|father|grandma|grandmother|grandpa|grandfather)", 1.5),
+        ("(?:call(?:ing)?|report(?:ing)?|threaten\\w*)[^.!?]{0,30}\\b(?:ice|immigration|la migra)", 3.0), ("child support", 2.5), ("manutenci[oó]n", 2.5), ("elder abuse", 1.5), ("stealing from (?:my |her |his )?(?:elderly |aging )?(?:mom|mother|dad|father|grandma|grandmother|grandpa|grandfather)", 1.5),
         ("ice (?:came|took|raid(?:ed)?|agents?|detained|arrested|picked|showed|is at|at my|has)", 3.0), ("(?:de|por|con) ice", 2.5), ("la migra", 3.0), ("detained", 2.0),
         ("(?:no|sin) (?:tengo )?papeles", 2.0), ("no papers", 1.5), ("(?:patr[oó]n|jefe)[^.!?]{0,15}no me paga\\w*", 3.0), ("ayuda legal", 2.5),
         ("school[^.!?]{0,40}(?:enroll\\w*|register\\w*|papers)", 2.5), ("enroll\\w*[^.!?]{0,30}school", 2.5), ("escuela[^.!?]{0,40}(?:inscrib\\w*|papeles|matricul\\w*)", 2.5), ("papeles[^.!?]{0,40}escuela", 2.5)

@@ -425,9 +425,10 @@ glob CITIES: dict = {
 glob EN_MARKERS: list = [
     "i", "i'm", "im", "my", "me", "the", "and", "is", "are", "have", "need",
     "help", "to", "for", "with", "we", "our", "you", "am", "was", "can",
-    "what", "how", "where", "who", "don't", "haven't", "trying"
+    "what", "how", "where", "who", "don't", "haven't", "trying", "in", "kids", "job"
 ];
 glob ES_MARKERS: list = [
+    "desalojar", "cortaron", "luz", "llevaron", "esposo", "esposa",
     "y", "de", "la", "el", "en", "no", "mi", "yo", "para", "con", "que",
     "los", "las", "una", "un", "estoy", "estamos", "tengo", "tenemos",
     "necesito", "necesitamos", "ayuda", "hemos", "por", "del", "soy", "somos",
@@ -456,7 +457,9 @@ glob NEED_FRAME_RIGHT: str = "^\\s*(?:stamps|bank|pantry|pantries|assistance|aid
 # A sentence that asks: a question mark or a request word.
 glob REQUEST_RE: str = "\\?|¿|\\b(?:i need|we need|need help|help me|help us|can i|can we|can (?:he|she|they)|could i|how (?:do|can|should) i|what (?:can|should|do) i|should i|is (?:it|this|that) legal|am i allowed|do i have to|please|necesito|necesitamos|ay[uú]d(?:a|eme|enos)|puedo|podemos|c[oó]mo (?:puedo|hago)|qu[eé] (?:puedo|debo|hago))\\b";
 # The speaker is under 18 without saying an age.
-glob MINOR_RE: str = "\\b(?:i'?m|i am) (?:only |just )?(?:a )?(?:minor|under 18|under eighteen|teenager|teen|high school(?:er| student))\\b|\\bsoy menor de edad\\b";
+glob DV_OWN_RE: str = "\\b(?:hits|hit|beats|beat|hurts|hurt|choked|chokes|abuses|abused|threatens|threatened) me\\b|\\bmy (?:abusive )?(?:husband|wife|partner|spouse|boyfriend|girlfriend|fianc[eé]e?|ex)\\b|\\babusive (?:husband|wife|partner|spouse|boyfriend|girlfriend|ex)\\b";
+glob THIRD_CHILD_RE: str = "\\breport(?:ing)? (?:child )?abuse\\b|\\bmandated reporter\\b|\\b(?:one of my|my) students?\\b|\\bneighbor'?s (?:kid|child|son|daughter)\\b|\\b(?:son|daughter)'?s friend\\b";
+glob MINOR_RE: str = "\\b(?:i'?m|i am) (?:only |just )?(?:a )?(?:\\w+ )?(?:minor|under 18|under eighteen|teenager|teen|high school(?:er| student))\\b|\\bsoy menor de edad\\b";
 # Before an amount: it was earned in the past, not lived on now.
 # Danger with its own line (outside judge, 2026-10-28: a 12-year-old touched by
 # a stepdad, a worker whose employer holds her passport, a baby who won't wake
@@ -542,8 +545,17 @@ def detect_language(text: str) -> tuple {
     # "Ching ching mi hwa" was read as Spanish at full confidence and switched
     # a Chinese conversation's replies to Spanish.
     es_words = [w for w in words if w in ES_MARKERS];
-    if en == 0 and not accent_es and es_words and all([w in ES_WEAK for w in es_words]) {
-        return ("", 0.0);
+    if not accent_es and all([w in ES_WEAK for w in es_words]) {
+        # Italian "il padrone di casa mi sta sfrattando" has Spanish-looking short
+        # words; so has "I'm 30, no kids, no job" (blind audit, 2026-11).
+        if en > 0 and es_words { return ("en", 0.7); }
+        if en == 0 and other and other_hits >= 1 { return (other, round(min(0.95, 0.5 + 0.08 * other_hits), 2)); }
+        if en == 0 and es_words { return ("", 0.0); }
+    }
+    # French "mon propriétaire": an accent is no Spanish evidence beside another
+    # language's own word, with no Spanish or English word in sight.
+    if accent_es and en == 0 and other and other_hits >= 1 and not [w for w in es_words if w not in ES_WEAK] and not re.search(r"[ñ¿¡]", low) {
+        return (other, round(min(0.95, 0.5 + 0.08 * other_hits), 2));
     }
     total = en + es;
     # One stray marker ("mi") in a long sentence is not evidence of English
@@ -1361,6 +1373,12 @@ def parse_intake(text: str) -> dict {
         }
     }
     if "minor" in flags and ("dv" in flags or "sexual_assault" in flags) and "child_abuse" not in flags { flags.append("child_abuse"); }
+    # Someone worried about another person's child: Childhelp's call, not the DV
+    # hotline's (blind audit, 2026-11: a teacher reporting abuse got the DV line).
+    if "dv" in flags and re.search(THIRD_CHILD_RE, low) and not re.search(DV_OWN_RE, low) {
+        flags.remove("dv");
+        if "child_abuse" not in flags { flags.append("child_abuse"); }
+    }
     if [f for f in ["emergency", "child_abuse", "sexual_assault", "trafficking"] if f in flags] {
         urgency = "immediate";
         if not top_cat {

@@ -134,6 +134,8 @@ glob TOPIC_ALSO: dict = {"crisis": ["mental_health"]};
 # Programs whose eligibility the engine can't test from a chat: income and asset
 # limits set by a state, a Tribe or an office, a disaster declaration, service history.
 glob OFFICE_CHECKS: list = ["medicare-rule", "msp-rule", "extra-help-rule", "va-health-rule", "ihs-rule", "fdpir-rule", "lifeline-rule", "fema-rule", "head-start-rule", "sun-bucks-rule"];
+glob POISON_HAZARD: str = "swallow|ingest|drank|overdos|poison|bleach|detergent|laundry pod|antifreeze|drain cleaner|button batter|too many|took (?:a lot|a bunch|all|some)|ate (?:some|the|my|a )|got into";
+glob THROWN_OUT_RE: str = "kicked (?:me )?out|threw me out|thrown out|homeless|nowhere to go|somewhere safe|not safe at home";
 # Narrow programs in the money category: not listed on a guess in a language whose
 # topics aren't read, where they'd push the cash programs off the list.
 glob NOT_GUESSED: list = ["phone_service", "job_search", "child_support", "head_start"];
@@ -507,7 +509,8 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
     }
 
     # "WIC" typed on its own showed other food cards with WIC hidden (blind audit, 2026-11).
-    if rule_id in NAMED_PROGRAMS and re.search(NAMED_PROGRAMS[rule_id], str(message).lower()) {
+    named = rule_id in NAMED_PROGRAMS and bool(re.search(NAMED_PROGRAMS[rule_id], str(message).lower()));
+    if named {
         specificity = 2.0;
         gate_extra = 1.0;
     }
@@ -581,6 +584,7 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         "coverage": round(coverage, 2),
         "tier": tier,
         "office_decides": office_decides,
+        "named": named,
         "match_score": int(round(p_shown * 100)),
         "approval": post,
         "rank_score": round(rank, 4),
@@ -630,15 +634,20 @@ def rank_resources(items: list, profile: dict, message: str, limit: int = 6, lan
         if "dv_concern" in flags and "domestic violence hotline" in name_low { pinned = True; }
         # Lines for one group in one danger: named only when both show (988lifeline.org
         # sent LGBTQ+ youth to its own option until July 2025; these are the lines left).
-        # Can't afford a medicine isn't a poisoning.
-        if "poison control" in name_low and "emergency" not in flags and re.search("afford|pay for|paying for|refill|prescription|cost", str(message).lower()) { continue; }
+        # Needing a medicine isn't a poisoning: "need help with medicine" started at
+        # Poison Control (blind audit, 2026-11).
+        if "poison control" in name_low and "emergency" not in flags and not re.search(POISON_HAZARD, str(message).lower()) { continue; }
         if "stronghearts" in name_low {
             if not ([f for f in flags if f in ["dv", "dv_concern", "sexual_assault"]] and re.search(str(TARGETS["native"][0]), str(message).lower())) { continue; }
             pinned = True;
         }
         if "trevor project" in name_low {
-            if not (("self_harm" in flags or "self_harm_concern" in flags) and re.search(LGBTQ_RE, str(message).lower()) and int(profile.get("age", 0) or 0) < 25) { continue; }
-            pinned = True;
+            low_m = str(message).lower();
+            if not (re.search(LGBTQ_RE, low_m) and int(profile.get("age", 0) or 0) < 25) { continue; }
+            if "self_harm" in flags or "self_harm_concern" in flags { pinned = True; }
+            # A young person thrown out for who they are, with no suicide words.
+            elif ("minor" in flags or int(profile.get("age", 0) or 0) > 0) and re.search(THROWN_OUT_RE, low_m) { w = 0.9; }
+            else { continue; }
         }
         danger = [str(t) for t in list(it["rule"].get("targets", []) or []) if str(t) in DANGER_TARGETS];
         if danger {

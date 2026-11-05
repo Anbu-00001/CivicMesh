@@ -18,6 +18,7 @@ walker NavigationWalker {
     has ranked: list = [];
     has urgency: str = "within_weeks";
     has language: str = "en";
+    has need: str = "";
     has trace: dict = {};
     has parent_span: str = "";
     has summary: dict = {};
@@ -25,7 +26,7 @@ walker NavigationWalker {
     can plan with PersonNode entry {
         sp = span_begin(self.trace, "NavigationWalker plan", "INTERNAL", self.parent_span, {"gen_ai.agent.name": "NavigationWalker"});
         ts = datetime.datetime.utcnow().isoformat();
-        plan = build_plan(list(self.ranked), self.urgency, self.language);
+        plan = build_plan(list(self.ranked), self.urgency, self.language, 4, self.need);
 
         archived = 0;
         for app in [here ->:applied_to:-> [?:ApplicationNode, status == "pending"]] {
