@@ -24,6 +24,7 @@ Output contract (plain dict so it serialises straight into walker reports):
 
 import re;
 import from engine.need_words { EXTRA_NEEDS, EXTRA_HOMELESS }
+import from engine.places { state_from_zip, state_from_county }
 import from engine.danger_words { EXTRA_SELF_HARM, EXTRA_CONCERN, EXTRA_DV, EXTRA_ASSAULT, EXTRA_TRAFFICKING, EXTRA_CHILD, EXTRA_EMERGENCY, THREAT_BY_OTHER, danger_normalize, distress_emoji, DYE_SENSE }
 import from engine.i18n { detect_script, detect_latin_other, route_i18n, crisis_any_language, negated, need_focus, LATIN_MARKERS, NEG_RIGHT, is_small_talk }
 import from engine.facts_i18n { facts_i18n, place_i18n }
@@ -597,7 +598,23 @@ glob SPELLED_MONEY_RE: str = "\\b(?:(twenty|thirty|forty|fifty|sixty|seventy|eig
 """Spelled amounts as digits, padded to the same length so spans still line
 up: "twenty five thousand a year" → "25000                a year"."""
 def spell_money(low: str) -> str {
-    return re.sub(SPELLED_MONEY_RE, _spelled_amount, low);
+    return re.sub(GRAND_RE, _grand_amount, re.sub(MONEY_RANGE_RE, _range_amount, re.sub(SPELLED_MONEY_RE, _spelled_amount, low)));
+}
+
+# "3 grand a month", "3 thousand a month"; "2 to 3 thousand" reads as the middle.
+glob GRAND_RE: str = "(?<![\\d,.])(\\d{1,3})\\s*(?:grand|thousand)\\b";
+glob MONEY_RANGE_RE: str = "(?<![\\d,.])(\\d{1,3})\\s*(?:to|or|-)\\s*(\\d{1,3})\\s*(?:grand|thousand|k)\\b";
+
+def _grand_amount(m: any) -> str {
+    v = str(int(m.group(1)) * 1000);
+    return v + " " * max(0, len(m.group(0)) - len(v));
+}
+
+def _range_amount(m: any) -> str {
+    (lo, hi) = (int(m.group(1)), int(m.group(2)));
+    if hi <= lo { return m.group(0); }
+    v = str(int((lo + hi) * 500));
+    return v + " " * max(0, len(m.group(0)) - len(v));
 }
 
 def _spelled_amount(m: any) -> str {
@@ -608,6 +625,11 @@ def _spelled_amount(m: any) -> str {
 
 def parse_income(low: str) -> tuple {
     low = spell_money(low);
+    # "Used to make $5000 ... now nothing" (blind audit, 2026-11).
+    m_now = re.search(NOW_NOTHING_RE, low);
+    if m_now { return (0, m_now); }
+    sources = _source_incomes(low);
+    if sources[1] { return sources; }
     # A job loss means no earnings, but a current amount said in the same
     # message is what the household lives on now: "i lost my job … we make
     # about 1400 a month" is $16,800 a year, not $0 (outside review). Only an
@@ -633,12 +655,39 @@ glob TWO_INCOMES_RE: str = "\\b(?:earn|earns|make|makes|get paid|gets paid|bring
 
 def _two_incomes(low: str) -> tuple {
     m = re.search(TWO_INCOMES_RE, low);
-    if not m { return (-1, None); }
+    if not m or re.search(GONE_INCOME_LEFT, low[max(0, m.start() - 30):m.end(1)]) { return (-1, None); }
     first_period = m.group(2) or "";
     second_period = m.group(4) or first_period;
     first_period = first_period or second_period;
     total = _annualize(float(m.group(1).replace(",", "")), first_period, low) + _annualize(float(m.group(3).replace(",", "")), second_period, low);
     return (total, m);
+}
+
+# An income that has stopped. Narrower than PAST_INCOME_CUES: "made $2000 last
+# month" is still what someone lives on.
+glob GONE_INCOME_LEFT: str = "\\b(?:used to (?:make|earn|get|bring in)|was (?:making|earning|getting)|were (?:making|earning)|(?:my|our) (?:old|last|previous) job|ganaba|gan[aá]bamos|me pagaban)\\b[^,.;!?]*$";
+glob NOW_NOTHING_RE: str = "\\bnow (?:nothing|zero|no income|i (?:make|get|earn|have) nothing|we (?:make|get|earn|have) nothing)\\b|\\b(?:making|earning) nothing now\\b|\\bahora nada\\b";
+# Money someone has isn't money coming in: "$50,000 in savings and no income".
+glob SAVED_RIGHT: str = "^\\s*(?:dollars?\\s*)?(?:in (?:my |our |the )?(?:savings?|bank|checking|account|assets|retirement|401k|ira)\\b|saved\\b|of savings\\b|savings\\b|en (?:el banco|ahorros)\\b|ahorrados\\b)";
+# Self-employed pay is counted after the costs of the work: "$3000 before gas, $1800 after".
+glob BEFORE_COSTS_RIGHT: str = "^\\s*(?:(?:a|per) (?:month|week)\\s*)?before (?:gas|expenses?|costs?|fees?|car|maintenance|repairs)\\b";
+# Amounts each named with where they come from add up: "$900 in child support and $1200 from my job".
+glob SOURCE_NAME: str = "child support|social security|ssi|ssdi|pension|disability|unemployment|job|work|wages|alimony|tips|va benefits|manutenci[oó]n|seguro social|pensi[oó]n|trabajo";
+glob SOURCE_INCOME_RE: str = AMOUNT_PART + "\\s*(?:(?:in|from|of|de|en)\\s+)?(?:(?:my|our|his|her|mi|su)\\s+)?(?:" + SOURCE_NAME + ")\\b";
+glob SOURCE_EXPENSE_LEFT: str = "\\b(?:owe|owed|owes|behind|pay|paying|pays|debo|debe|pago|pagar)\\b[^,.;!?]*$";
+
+def _source_incomes(low: str) -> tuple {
+    total = 0;
+    first: any = None;
+    found = 0;
+    for m in re.finditer(SOURCE_INCOME_RE, low) {
+        left = low[max(0, m.start() - 40):m.start()];
+        if re.search(SOURCE_EXPENSE_LEFT, left) or re.search(GONE_INCOME_LEFT, left) { continue; }
+        total += _annualize(float(m.group(1).replace(",", "")), m.group(2) or "", low);
+        if found == 0 { first = m; }
+        found += 1;
+    }
+    return (total, first) if found >= 2 else (-1, None);
 }
 
 """The best-cued amount in the message: (income_annual, match) or (-1, None).
@@ -658,6 +707,7 @@ def _stated_income(low: str, cued_only: bool) -> tuple {
         if kflag { amount = amount * 1000.0; }
         tail = low[m.end():m.end() + 24];
         head = low[max(0, m.start() - 40):m.start()];
+        if re.match(SAVED_RIGHT, tail) or re.match(BEFORE_COSTS_RIGHT, tail) or re.search(GONE_INCOME_LEFT, head) { continue; }
         pm = re.match(PERIOD_RE, tail);
         period = pm.group(1) if pm else "";
         cue = 0.0;
@@ -687,6 +737,7 @@ def _stated_income(low: str, cued_only: bool) -> tuple {
             period = pm.group(1) if pm else "";
             hourly = period.startswith("h") or period == "hora";
             if (amount < 100 and not hourly) or re.search(EXPENSE_CUES, clause) or re.search(EXPENSE_CUES, after) { continue; }
+            if re.match(SAVED_RIGHT, low[m.end():m.end() + 24]) or re.match(BEFORE_COSTS_RIGHT, low[m.end():m.end() + 24]) or re.search(GONE_INCOME_LEFT, low[max(0, m.start() - 40):m.start()]) { continue; }
             cued = re.search(INCOME_CUES + "\\W*(?:about|around|like|roughly|approximately|unos|como)?\\W*$", clause) or re.match(BARE_SOURCE_RE, low[m.end():m.end() + 40]);
             if not (cued or pm) { continue; }
             return (_annualize(amount, period, low), m);
@@ -809,6 +860,12 @@ def parse_household(low: str, evidence: list, text: str, flags: list) -> tuple {
             return (n, True);
         }
     }
+    mu = re.search(HOUSEHOLD_COUNT_RE, low);
+    if mu and 0 < _num(mu.group(1) or mu.group(2)) < 20 {
+        n_us = _num(mu.group(1) or mu.group(2));
+        _ev(evidence, "household_size", n_us, mu.start(), mu.end(), text);
+        return (n_us, True);
+    }
     kids = 0;
     km = re.search(r"\b(\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten|un|uno|una|dos|tres|cuatro|cinco|seis)\s+(?:little\s+|young\s+|small\s+)?(?:kids?|children|child|sons?|daughters?|babies|baby|dependents|grandchildren|grandkids|hij[oa]s|ni[nñ][oa]s|niet[oa]s|beb[eé]s?)\b", low);
     if km {
@@ -830,7 +887,7 @@ def parse_household(low: str, evidence: list, text: str, flags: list) -> tuple {
         _ev(evidence, "household_size", n_mk, mm.start(), mm.end(), text);
         return (n_mk, True);
     }
-    partner = 1 if re.search(r"\b(?:my|our) (?:husband|wife|partner|spouse|boyfriend|girlfriend)\b|\bmi (?:esposo|esposa|pareja|marido|mujer)\b|\bmarried\b|\bcasad[oa]\b", low) else 0;
+    partner = 1 if re.search(r"\b(?:my|our) (?:husband|wife|partner|spouse|boyfriend|girlfriend)\b|\bmi (?:esposo|esposa|pareja|marido|mujer)\b|\bmarried\b|\bcasad[oa]\b|(?:^|[,.;]\s*|\bwith (?:a |the )?)(?:husband|wife|spouse|partner)(?: and| &| \+|,)\s", low) else 0;
     if partner and re.search(r"\b(?:husband|wife|partner|spouse|boyfriend|girlfriend|esposo|esposa|pareja|marido)\b[^.?!]{0,30}\b(?:got |was |has been |is being )?(?:deported|left|died|passed away|in (?:jail|prison|detention)|locked up|walked out|deportad[oa]|se fue|muri[oó])\b", low) {
         partner = 0;
     }
@@ -854,9 +911,19 @@ def parse_household(low: str, evidence: list, text: str, flags: list) -> tuple {
     return ((2, False) if partner else (0, False));
 }
 
+# "4 of us", and "3 people" opening a clause or after "for": "two of us got laid
+# off" counts part of a family, and "3 people came by" counts no one's.
+glob HOUSEHOLD_COUNT_RE: str = "\\b(\\d{1,2}|two|three|four|five|six|seven|eight|nine|ten) of us\\b(?!\\s+(?:got|were|was|lost|work|worked))|(?:^|[,.;:]\\s*|\\bfor\\s+)(\\d{1,2}|two|three|four|five|six|seven|eight|nine|ten) people\\b(?!\\s+(?:came|said|told|called|at|are|were|got))";
+
+# The person who needs the help is the one whose age counts, ahead of the helper
+# typing: "My mom is 72 and needs food, I'm 40" (blind audit, 2026-11). The
+# "i" stop keeps the speaker's own need: "my mom is 72 and I need food".
+glob AGE_OF_PERSON_HELPED: str = "\\bmy\\s+(?:elderly\\s+)?(?:mom|mother|dad|father|grandma|grandmother|grandpa|grandfather|aunt|uncle)\\s+is\\s+(\\d{2,3})\\b(?:(?!\\bi\\b)[^?!]){0,30}?\\b(?:needs?|can'?t (?:afford|pay|get|buy)|has no|is out of|ran out)\\b";
+
 """Age from "I'm 72", "72 years old", "tengo 72 años"."""
 def parse_age(low: str, evidence: list, text: str) -> int {
     for pat in [
+        AGE_OF_PERSON_HELPED,
         r"\b(?:i'?m|i am|aged?|age of)\s+(\d{2,3})\b(?!\s*(?:min|minutes|hours|days|months|weeks|dollars|%|k\b))",
         r"\b(\d{2,3})\s*(?:years? old|yrs? old|y/?o\b|year-old)",
         r"\btengo\s+(\d{2,3})\s+a[nñ]os\b",
@@ -944,12 +1011,20 @@ def parse_location(text: str, low: str, evidence: list) -> dict {
             _ev(evidence, "location", m.group(1), m.start(1), m.end(1), text);
         }
     }
-    z = re.search(r"(?<![\$\d,.])\b(\d{5})\b(?![\d,.]|\s*(?:dollars|bucks|usd|k\b|(?:a|an|per|every|each|al|por) (?:year|yr|month|mo|week|a[nñ]o|mes)|yearly|annually|monthly|/))", text);
+    z = re.search(r"(?<![\$\d,.])\b(\d{5})\b(?!\d|[,.]\d|\s*(?:dollars|bucks|usd|k\b|(?:a|an|per|every|each|al|por) (?:year|yr|month|mo|week|a[nñ]o|mes)|yearly|annually|monthly|/))", text);
     # "I make 30000 per year" is income, not a ZIP code.
     if z and re.search(INCOME_CUES + "\\W*(?:about|around|like|roughly)?\\W*$", low[max(0, z.start(1) - 24):z.start(1)]) { z = None; }
     if z {
         out["zip"] = z.group(1);
         _ev(evidence, "location", z.group(1), z.start(1), z.end(1), text);
+        if not out["state"] { out["state"] = state_from_zip(low, z.start(1), z.end(1), z.group(1)); }
+    }
+    if not out["state"] {
+        (county_state, cs, ce) = state_from_county(low);
+        if county_state {
+            out["state"] = county_state;
+            _ev(evidence, "location", county_state, cs, ce, text);
+        }
     }
     return out;
 }

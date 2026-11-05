@@ -207,6 +207,12 @@
     {"name": "declining the status question sets no status: no se", "turns": [{"text": "I'm a single mom with 2 kids in Ohio, I make $1800 a month and need housing help"}, {"text": "no se", "answering": "citizenship", "expect": {"citizenship": ""}}]},
     {"name": "declining the status question sets no status: no quiero decir", "turns": [{"text": "I'm a single mom with 2 kids in Ohio, I make $1800 a month and need housing help"}, {"text": "no quiero decir", "answering": "citizenship", "expect": {"citizenship": ""}}]},
     {"name": "declining the status question sets no status: I'd rather not say", "turns": [{"text": "I'm a single mom with 2 kids in Ohio, I make $1800 a month and need housing help"}, {"text": "I'd rather not say", "answering": "citizenship", "expect": {"citizenship": ""}}]},
-    {"name": "a plain no to the status question still counts", "turns": [{"text": "I need housing help in Ohio, $1800 a month"}, {"text": "no", "answering": "citizenship", "expect": {"citizenship": "non_citizen"}}]}
+    {"name": "a plain no to the status question still counts", "turns": [{"text": "I need housing help in Ohio, $1800 a month"}, {"text": "no", "answering": "citizenship", "expect": {"citizenship": "non_citizen"}}]},
+    {"name": "a correction to income: sorry I meant", "turns": [{"text": "I need food, I make $2000 a month in Ohio", "expect": {"income_annual": 24000}}, {"text": "sorry I meant 2500", "expect": {"income_annual": 30000, "state": "OH"}}]},
+    {"name": "a correction to age: I meant", "turns": [{"text": "I'm 62 and need food in Ohio", "expect": {"age": 62}}, {"text": "I meant 26", "expect": {"age": 26}}]},
+    {"name": "a correction to pay period", "turns": [{"text": "I need food, I make $1000 a month in Ohio", "expect": {"income_annual": 12000}}, {"text": "wait that's every two weeks", "expect": {"income_annual": 26000}}]},
+    {"name": "household corrected in passing", "turns": [{"text": "We are 5, need food in Ohio", "expect": {"household_size": 5}}, {"text": "my oldest moved out so it's just 4 of us now", "expect": {"household_size": 4}}]},
+    {"name": "a child's age isn't the household", "turns": [{"text": "I need food in Ohio", "expect": {"category": "food"}}, {"text": "and my son needs a doctor, he's 6", "answering": "household", "expect": {"household_size": 0}}]},
+    {"name": "maybe 2k to the income question", "turns": [{"text": "I need food in Ohio", "expect": {"category": "food"}}, {"text": "maybe 2k", "answering": "income", "expect": {"income_annual": 24000}}]}
 ]
 }

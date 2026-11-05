@@ -72,6 +72,7 @@ Jac-specific part is plumbing.
   | `report` also prints every report to stdout, so user text reached the server logs | swap in a non-printing `log_report` after walkers load | `walkers/log_privacy.jac` |
   | litellm's NIM provider drops `max_retries`, so SDK retries stack into 40 s waits | pin the OpenAI SDK to zero retries | `llm/stubs.jac` |
   | Walker entry points match the type `` `Root ``, not the instance `root` | — | noted in `walkers/forget.jac` |
+  | `jac test` exits 0 when a test fails (found 2026-11-05) | read the `OK` result line, not the exit code | CI and the local gate do this; any new script that calls `jac test` must too |
   | In the CLI's local store (`jac run` / `jac test`), removing an edge or node leaves a dangling reference: the third process to open the store fails with "EdgeAnchor … is not a valid reference". Reproduced with a 30-line script and no app code. The jac-scale server persists deletions correctly: verified by deleting a visitor, restarting the container three times, and reusing both that visitor and another one | tests start from a clean store (`rm -rf .jac/data` in CI; locally `docker run --tmpfs /w/.jac/data …`) | `.github/workflows/ci.yml` |
 
 - **Tests that don't need Jac knowledge to read.** The goldens are JSON, and the
