@@ -101,6 +101,16 @@ A blind audit scored the project 4.5/10 as a public tool for people in crisis. T
 - **Missed wording.** The audit's 458 missed messages became `engine/danger_words.jac`: typos, spacing tricks, emoji, indirect wording, and phrases in about 45 languages (machine-drafted, unreviewed). Sexual assault, trafficking, child abuse and emergencies now also fire in other languages. This fixed those messages and barely moved outside recall (`docs/EVALUATION.md`).
 - **Still not handled:** one in four at-risk users on the outside set, and most single posts. A classifier was tried and left out, for the reasons in `docs/EVALUATION.md`. On a 360 x 640 phone the thread itself is only about 175 px tall on a crisis turn, though the Call button is always visible.
 
+## Programs added after the 2026-11 blind audit
+
+Nineteen programs people asked for had no entry. Each shows only when the message gives its topic, so "I need food" doesn't list a reservation program, and "I want to kill myself" doesn't list a youth line unless the message also shows the person is LGBTQ+ and isn't 25 or older.
+
+- **Contacts:** read on each program's own page on 2026-11-05 where the site allowed it (Medicare, Extra Help, SHIP, VA, Eldercare Locator, StrongHearts, Trevor, Lifeline). HUD counselors, American Job Centers and FEMA refused automated fetches, so their numbers come from search excerpts of their own sites or another federal page. `data/verification.json` says which is which.
+- **No phone listed on purpose:** Medicare Savings Programs, Indian Health Service, Title X, Adult Protective Services, Head Start, SUN Bucks, FDPIR and child support are run locally, and a national office number would send people to the wrong desk. The national Head Start line couldn't be confirmed, so it was left out.
+- **Rules:** written from those pages and from search excerpts. FDPIR, Indian Health Service and child support pages refused fetches, so their short summaries were not read on the official page. None has an independent rule check, and the entries say to ask the office. None is scored against income. The ones with rules a chat can't test (Medicare, Medicare Savings, Extra Help, VA, Indian Health Service, FDPIR, Lifeline, FEMA, Head Start, SUN Bucks) are capped at "possible". Services open to anyone, such as SHIP or Eldercare Locator, can show as likely.
+- **Not added:** medical rides under Medicaid, because they vary by state.
+- **Also fixed:** "I can't afford my medicine" no longer lists Poison Control.
+
 ## Crisis line instructions from the 2026-11 blind audit
 
 Checked on [988lifeline.org](https://988lifeline.org/help-yourself/for-deaf-hard-of-hearing/) and [veteranscrisisline.net](https://www.veteranscrisisline.net/get-help-now/military-crisis-line/) on 2026-11-05.
