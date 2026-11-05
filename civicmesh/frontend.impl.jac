@@ -81,6 +81,7 @@ impl ClientApp.navTab(tab_id: str, label: str) -> JsxElement {
     is_active = active_tab == tab_id;
     return
         <button
+            className={"cm-tab-" + tab_id}
             onClick={lambda _e: MouseEvent { active_tab = tab_id; }}
             style={{
                 "padding": "7px 14px",
@@ -363,6 +364,7 @@ impl ClientApp.renderPalette -> JsxElement {
 }
 
 impl ClientApp.quickExit -> None {
+    window.cm_quiet_leave = True;
     # Leave now. location.replace means Back won't return here. In a private
     # session also erase the case on the server and everything in this browser.
     try {

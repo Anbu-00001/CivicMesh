@@ -142,7 +142,7 @@ def open_chat(tab, url):
 
 
 def send(tab, text):
-    tab.js("""(()=>{const i=document.querySelector('.cm-input');const s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
+    tab.js("""(()=>{const i=document.querySelector('.cm-input');const s=Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set;
            s.call(i,%s);i.dispatchEvent(new Event('input',{bubbles:true}));setTimeout(()=>document.querySelector('.cm-send').click(),200)})()""" % json.dumps(text))
 
 
@@ -240,9 +240,16 @@ def main(app: str) -> int:
         tab.call("Page.enable")
         tab.call("Page.navigate", url=app)
         tab.until("!!document.querySelector('button')")
+        # This page's own sign-in must end first: if it finished after the clear,
+        # the reload below would already hold a token and never ask for a login.
+        tab.until("!!localStorage.getItem('jac_token') || !!sessionStorage.getItem('jac_token')", 20)
+        time.sleep(0.5)
         tab.js("localStorage.clear(); sessionStorage.clear()")  # a first-time visitor
         tab.call("Fetch.enable", patterns=[{"urlPattern": "*/user/login*", "requestStage": "Request"}])
+        # The old page's button can still be there just after the reload command.
+        tab.js("window.cm_old_page=1")
         tab.call("Page.reload")
+        tab.until("!window.cm_old_page && !!document.querySelector('button')", 20)
         chat = open_chat(tab, None)
         rows = tab.js("document.querySelectorAll('.cm-thread .cm-row').length") or 0
         mark = len(tab.events)
@@ -447,6 +454,38 @@ def main(app: str) -> int:
         send(tab, "will using food stamps hurt my immigration case")
         tab.until(f"document.querySelectorAll('.cm-thread .cm-row').length>={rows + 2} && !document.querySelector('.cm-typing')")
         check("6n a question about an immigration case gets the public charge answer, open", tab.js("(()=>{const c=[...document.querySelectorAll('.cm-charge')].pop();return !!c&&c.open&&/September 18, 2026/.test(c.innerText)})()"))
+        check("7z a private session offers no save", not tab.js("!!document.querySelector('.cm-save')"))
+        tab.close()
+        # ---- 7: the phone screen, and keeping the list (blind audit F23, F30) ----
+        tab = new_tab()
+        tab.call("Page.enable")
+        tab.call("Emulation.setDeviceMetricsOverride", width=360, height=640, deviceScaleFactor=1, mobile=True)
+        tab.call("Page.navigate", url=app)
+        tab.until("!!document.querySelector('.lp-safety')")
+        tab.js("sessionStorage.clear()")
+        check("7y a new tab opens the chat", open_chat(tab, ""))
+        time.sleep(0.5)
+        check("7a no developer views on a phone", tab.js("""(()=>{const shown=s=>{const e=document.querySelector(s);return !!e&&e.getClientRects().length>0};
+            return !shown('.cm-dev-only')&&!shown('.cm-tab-telemetry')&&!shown('.cm-tab-graph')&&!shown('.cm-tab-impact')&&shown('.cm-tab-chat')})()"""))
+        tab.js("document.querySelector('.cm-input').focus()")
+        tab.call("Input.dispatchKeyEvent", type="keyDown", key="Enter", code="Enter", windowsVirtualKeyCode=13, modifiers=8, text="\r")
+        tab.call("Input.dispatchKeyEvent", type="keyUp", key="Enter", code="Enter", windowsVirtualKeyCode=13, modifiers=8)
+        time.sleep(0.3)
+        check("7b Shift+Enter is a new line, not a send", tab.js("document.querySelector('.cm-input').value") == "\n" and not tab.js("!!document.querySelector('.cm-typing')"), tab.js("document.querySelector('.cm-input').value"))
+        rows = tab.js("document.querySelectorAll('.cm-thread .cm-row').length")
+        send(tab, "my name is Dana Whitlock, I earn 1400 a month in Ohio and need food")
+        tab.until(f"document.querySelectorAll('.cm-thread .cm-row').length>={rows + 2} && !document.querySelector('.cm-typing') && !!document.querySelector('.cm-save')")
+        leaving = "(()=>{const e=new Event('beforeunload',{cancelable:true});window.dispatchEvent(e);return e.defaultPrevented})()"
+        check("7c leaving with an unsaved list asks first", tab.js(leaving))
+        tab.js("document.querySelector('.cm-card a[href^=\\'tel:\\'], .cm-safety-line a[href^=\\'tel:\\']').addEventListener('click',e=>e.preventDefault());document.querySelector('.cm-card a[href^=\\'tel:\\'], .cm-safety-line a[href^=\\'tel:\\']').click()")
+        check("7d a call never meets that prompt", not tab.js(leaving))
+        tab.js("window.cm_dial_at=0;navigator.share=o=>{window.cm_shared=o;return Promise.resolve()};[...document.querySelectorAll('.cm-save button')].pop().click()")
+        kept = str(tab.js("window.cm_shared&&window.cm_shared.text") or "")
+        check("7e saving keeps the programs and numbers", "988" in kept and any(c.isdigit() for c in kept) and len(kept.splitlines()) > 4, kept[:80])
+        check("7f saving leaves out the person's own words", "Whitlock" not in kept and "1400" not in kept and "1,400" not in kept)
+        check("7g once saved, leaving doesn't ask", not tab.js(leaving))
+        tab.js("window.cm_saved_list=false;sessionStorage.setItem('cm_private','1')")
+        check("7h a private session never asks", not tab.js(leaving))
         tab.close()
     finally:
         proc.terminate()
