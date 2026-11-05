@@ -53,7 +53,7 @@
   "r.unsure": "Hangi yardıma ihtiyacınız olduğunu henüz anlayamadım. Aşağıdan birini seçin ya da biraz daha anlatın — bu arada **211** sizi 24/7 yerel yardıma bağlar.",
   "r.safety": "**Önce güvenliğiniz:** {name} — {phone} (24/7, ücretsiz ve gizli).",
   "r.emergency": "**Şu anda birinin hayatı tehlikedeyse 911'i arayın.**",
-  "r.crisis_net": "Tehlikede misiniz ya da intiharı mı düşünüyorsunuz? **911**'i arayın ya da **988**'i arayın veya mesaj atın.",
+  "r.crisis_net": "Tehlikede misiniz ya da intiharı mı düşünüyorsunuz? **911**'i arayın ya da **988**'i arayıp ücretsiz tercüman için \"Turkish\" deyin.",
   "r.found": "Muhtemelen uygun olduğunuz **{n}** program buldum.",
   "r.found_more": "Muhtemelen uygun olduğunuz **{n}** program ve işinize yarayabilecek {m} program daha buldum.",
   "r.maybe": "Henüz kesin bir eşleşme yok, ama biraz daha bilgi alınca **{m}** program uygun olabilir.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Yine de başvurabilirsiniz. Yalnızca programın ofisi hayır diyebilir.",
   "ui.charge_title": "Yardımlar ve göçmenlik dosyanız",
   "ui.charge_body": "18 Eylül 2026'dan beri, yeşil karta başvurduğunuzda görevliler kendinizin kullandığı gelire bağlı yardımları dikkate alabilir. Aile üyelerinizin kullandıkları genellikle sayılmaz; mülteciler ve sığınma hakkı alanlar muaftır. Karar vermeden önce akredite bir göçmenlik temsilcisiyle konuşun.",
-  "ui.charge_link": "Ücretsiz göçmenlik hukuki yardımı bulun"
+  "ui.charge_link": "Ücretsiz göçmenlik hukuki yardımı bulun",
+  "r.more_lines": "Gaziler: 988'i arayın ve 1'e basın. Duymayan veya az duyanlar: görüntülü telefondan 988'i arayın ya da TTY ile 711'i, ardından 988'i tuşlayın."
 }

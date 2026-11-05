@@ -53,7 +53,7 @@
   "r.unsure": "Bado sijui ni msaada wa aina gani unaohitaji. Chagua mojawapo hapa chini au niambie kidogo zaidi — wakati huo huo, **211** inakuunganisha na msaada wa karibu 24/7.",
   "r.safety": "**Kwanza, usalama wako:** {name} — {phone} (24/7, bure na siri).",
   "r.emergency": "**Ikiwa maisha ya mtu yako hatarini sasa hivi, piga 911.**",
-  "r.crisis_net": "Uko hatarini, au unafikiria kujiua? Piga **911**, au piga au tuma ujumbe kwa **988**.",
+  "r.crisis_net": "Uko hatarini, au unafikiria kujiua? Piga **911**, au piga **988** na useme \"Swahili\" upate mkalimani bila malipo.",
   "r.found": "Nimepata programu **{n}** ambazo huenda unastahili.",
   "r.found_more": "Nimepata programu **{n}** ambazo huenda unastahili, na nyingine {m} zinazoweza kufaa.",
   "r.maybe": "Bado hakuna inayofaa kwa uhakika, lakini programu **{m}** zinaweza kufaa nikijua zaidi kidogo.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Bado unaweza kuomba. Ofisi ya programu pekee ndiyo inaweza kukataa.",
   "ui.charge_title": "Misaada na kesi yako ya uhamiaji",
   "ui.charge_body": "Tangu 18 Septemba 2026, maafisa wanaweza kuzingatia misaada inayotegemea kipato unayotumia wewe mwenyewe unapoomba green card. Ile wanayotumia wanafamilia kwa kawaida haihesabiwi, na wakimbizi na waliopewa hifadhi wamesamehewa. Zungumza na mwakilishi wa uhamiaji aliyeidhinishwa kabla ya kuamua.",
-  "ui.charge_link": "Tafuta msaada wa kisheria wa uhamiaji bila malipo"
+  "ui.charge_link": "Tafuta msaada wa kisheria wa uhamiaji bila malipo",
+  "r.more_lines": "Maveterani: piga 988 kisha bonyeza 1. Viziwi na wenye shida ya kusikia: piga 988 kwa simu ya video, au kwa TTY piga 711 kisha 988."
 }

@@ -53,7 +53,7 @@
   "r.unsure": "Tôi chưa rõ bạn cần loại giúp đỡ nào. Hãy chọn một mục bên dưới hoặc kể thêm cho tôi — trong lúc đó, gọi **211** để được kết nối với trợ giúp địa phương 24/7.",
   "r.safety": "**Trước hết, sự an toàn của bạn:** {name} — {phone} (24/7, miễn phí và bảo mật).",
   "r.emergency": "**Nếu tính mạng của ai đó đang gặp nguy hiểm ngay lúc này, hãy gọi 911.**",
-  "r.crisis_net": "Bạn đang gặp nguy hiểm, hay đang nghĩ đến chuyện tự tử? Hãy gọi **911**, hoặc gọi hay nhắn tin đến **988**.",
+  "r.crisis_net": "Bạn đang gặp nguy hiểm, hay đang nghĩ đến chuyện tự tử? Hãy gọi **911**, hoặc gọi **988** và nói \"Vietnamese\" để có thông dịch viên miễn phí.",
   "r.found": "Tôi tìm thấy **{n}** chương trình mà bạn nhiều khả năng đủ điều kiện.",
   "r.found_more": "Tôi tìm thấy **{n}** chương trình mà bạn nhiều khả năng đủ điều kiện và thêm {m} chương trình có thể phù hợp.",
   "r.maybe": "Chưa có chương trình nào chắc chắn phù hợp, nhưng **{m}** chương trình có thể phù hợp khi tôi biết thêm một chút.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Bạn vẫn có thể nộp đơn. Chỉ văn phòng chương trình mới có thể từ chối.",
   "ui.charge_title": "Phúc lợi và hồ sơ di trú của bạn",
   "ui.charge_body": "Từ ngày 18 tháng Chín năm 2026, khi bạn xin thẻ xanh, nhân viên có thể xem xét các phúc lợi theo thu nhập mà chính bạn sử dụng. Phúc lợi của người thân thường không được tính, và người tị nạn cùng người được cấp quy chế tị nạn được miễn. Hãy nói chuyện với một đại diện di trú được công nhận trước khi quyết định.",
-  "ui.charge_link": "Tìm trợ giúp pháp lý di trú miễn phí"
+  "ui.charge_link": "Tìm trợ giúp pháp lý di trú miễn phí",
+  "r.more_lines": "Cựu chiến binh: gọi 988 rồi bấm 1. Người khiếm thính hoặc lãng tai: gọi 988 từ điện thoại video, hoặc dùng TTY bấm 711 rồi 988."
 }

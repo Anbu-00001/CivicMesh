@@ -53,7 +53,7 @@
   "r.unsure": "Ainda não sei que tipo de ajuda você precisa. Escolha uma opção abaixo ou me conte um pouco mais — enquanto isso, o **211** conecta você com ajuda local 24/7.",
   "r.safety": "**Primeiro, sua segurança:** {name} — {phone} (24/7, grátis e confidencial).",
   "r.emergency": "**Se a vida de alguém está em perigo agora, ligue para o 911.**",
-  "r.crisis_net": "Em perigo, ou pensando em suicídio? Ligue para o **911**, ou ligue ou mande mensagem para o **988**.",
+  "r.crisis_net": "Em perigo, ou pensando em suicídio? Ligue para o **911**, ou para o **988** e diga \"Portuguese\" para ter um intérprete grátis.",
   "r.found": "Encontrei **{n}** programas para os quais você provavelmente se qualifica.",
   "r.found_more": "Encontrei **{n}** programas para os quais você provavelmente se qualifica e mais {m} que podem funcionar.",
   "r.maybe": "Ainda não há uma opção certa, mas **{m}** programas podem funcionar quando eu souber um pouco mais.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Você ainda pode solicitar. Só o escritório do programa pode dizer não.",
   "ui.charge_title": "Os benefícios e o seu caso de imigração",
   "ui.charge_body": "Desde 18 de setembro de 2026, os agentes podem considerar os benefícios por renda que você mesmo usa quando pede o green card. Os que seus familiares usam geralmente não contam, e refugiados e asilados estão isentos. Fale com um representante de imigração credenciado antes de decidir.",
-  "ui.charge_link": "Encontrar ajuda jurídica gratuita de imigração"
+  "ui.charge_link": "Encontrar ajuda jurídica gratuita de imigração",
+  "r.more_lines": "Veteranos: liguem para o 988 e apertem 1. Pessoas surdas ou com deficiência auditiva: liguem para o 988 por videofone, ou por TTY disquem 711 e depois 988."
 }

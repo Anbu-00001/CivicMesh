@@ -53,7 +53,7 @@
   "r.unsure": "Weli ma hubo nooca caawimaadda aad u baahan tahay. Hoos ka dooro mid ama wax yar ii sheeg — inta lagu jiro, **211** wuxuu kugu xiraa caawimaad deegaan 24/7.",
   "r.safety": "**Marka hore, badbaadadaada:** {name} — {phone} (24/7, bilaash iyo qarsoodi).",
   "r.emergency": "**Haddii nolosha qof ay hadda khatar ku jirto, wac 911.**",
-  "r.crisis_net": "Ma khatar baad ku jirtaa, mise waxaad ka fikiraysaa is-dil? Wac **911**, ama wac ama fariin u dir **988**.",
+  "r.crisis_net": "Ma khatar baad ku jirtaa, mise waxaad ka fikiraysaa is-dil? Wac **911**, ama wac **988** oo dheh \"Somali\" si aad u hesho turjubaan bilaash ah.",
   "r.found": "Waxaan helay **{n}** barnaamij oo ay u badan tahay inaad u qalanto.",
   "r.found_more": "Waxaan helay **{n}** barnaamij oo ay u badan tahay inaad u qalanto iyo {m} kale oo shaqeyn kara.",
   "r.maybe": "Weli wax la hubo ma jiraan, laakiin **{m}** barnaamij ayaa shaqeyn kara marka aan wax yar oo dheeraad ah ogaado.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Weli waad codsan kartaa. Xafiiska barnaamijka oo keliya ayaa diidi kara.",
   "ui.charge_title": "Gargaarka iyo kiiskaaga socdaalka",
   "ui.charge_body": "Laga bilaabo 18 Sebtembar 2026, saraakiishu way tixgelin karaan gargaarka dakhliga ku saleysan ee adigu aad isticmaasho marka aad codsato kaarka cagaaran. Waxa xubnaha qoyskaagu isticmaalaan guud ahaan lama tiriyo, qaxootiga iyo kuwa magangelyada helay waa laga dhaafay. Ka hor intaadan go'aan gaarin la hadal wakiil socdaal oo la aqoonsan yahay.",
-  "ui.charge_link": "Hel caawimaad sharci oo bilaash ah oo socdaal"
+  "ui.charge_link": "Hel caawimaad sharci oo bilaash ah oo socdaal",
+  "r.more_lines": "Askartii hore: wac 988 oo riix 1. Dadka dhegoolaha ah ama maqalka ku adag: 988 ka wac taleefan fiidiyow, ama TTY ku garaac 711 ka dibna 988."
 }

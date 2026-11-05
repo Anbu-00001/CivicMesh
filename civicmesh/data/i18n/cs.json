@@ -53,7 +53,7 @@
   "r.unsure": "Zatím nevím, jakou pomoc potřebujete. Vyberte něco níže nebo mi řekněte trochu víc — mezitím vás **211** spojí s místní pomocí 24/7.",
   "r.safety": "**Nejdřív vaše bezpečí:** {name} — {phone} (24/7, zdarma a důvěrně).",
   "r.emergency": "**Pokud je teď něčí život v ohrožení, volejte 911.**",
-  "r.crisis_net": "Jste v nebezpečí nebo myslíte na sebevraždu? Volejte **911**, nebo volejte či pište SMS na **988**.",
+  "r.crisis_net": "Jste v nebezpečí nebo myslíte na sebevraždu? Volejte **911**, nebo **988** a pro bezplatného tlumočníka řekněte \"Czech\".",
   "r.found": "Programy, na které máte pravděpodobně nárok: **{n}**.",
   "r.found_more": "Programy, na které máte pravděpodobně nárok: **{n}**; další, které by mohly sedět: {m}.",
   "r.maybe": "Zatím nic jistého, ale až budu vědět trochu víc, mohly by sedět programy: **{m}**.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Stále můžete požádat. Odmítnout může jen úřad programu.",
   "ui.charge_title": "Dávky a vaše imigrační řízení",
   "ui.charge_body": "Od 18. září 2026 mohou úředníci při žádosti o zelenou kartu přihlížet k dávkám podle příjmu, které využíváte sami. Dávky členů rodiny se obvykle nepočítají a uprchlíci a azylanti jsou vyňati. Než se rozhodnete, promluvte si s akreditovaným imigračním zástupcem.",
-  "ui.charge_link": "Najít bezplatnou imigrační právní pomoc"
+  "ui.charge_link": "Najít bezplatnou imigrační právní pomoc",
+  "r.more_lines": "Veteráni: volejte 988 a stiskněte 1. Neslyšící a nedoslýchaví: volejte 988 z videotelefonu, nebo přes TTY vytočte 711 a pak 988."
 }

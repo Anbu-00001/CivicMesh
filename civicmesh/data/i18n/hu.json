@@ -53,7 +53,7 @@
   "r.unsure": "Még nem tudom, milyen segítségre van szüksége. Válasszon lent egyet, vagy mondjon el kicsit többet — addig is a **211** összeköti a helyi segítséggel 24/7.",
   "r.safety": "**Először is, az Ön biztonsága:** {name} — {phone} (24/7, ingyenes és bizalmas).",
   "r.emergency": "**Ha most valakinek az élete veszélyben van, hívja a 911-et.**",
-  "r.crisis_net": "Veszélyben van, vagy öngyilkosságra gondol? Hívja a **911**-et, vagy hívja a **988**-at, illetve írjon SMS-t.",
+  "r.crisis_net": "Veszélyben van, vagy öngyilkosságra gondol? Hívja a **911**-et, vagy a **988**-at, és mondja: \"Hungarian\", így ingyenes tolmácsot kap.",
   "r.found": "**{n}** olyan programot találtam, amelyre valószínűleg jogosult.",
   "r.found_more": "**{n}** olyan programot találtam, amelyre valószínűleg jogosult, és még {m} másikat, ami szóba jöhet.",
   "r.maybe": "Még semmi sem biztos, de ha kicsit többet tudok, **{m}** program szóba jöhet.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Ettől még jelentkezhet. Csak a program irodája mondhat nemet.",
   "ui.charge_title": "Az ellátások és a bevándorlási ügye",
   "ui.charge_body": "2026. szeptember 18. óta a tisztviselők figyelembe vehetik a jövedelemhez kötött ellátásokat, amelyeket Ön maga vesz igénybe, amikor zöldkártyát igényel. A családtagok ellátásai általában nem számítanak, a menekültek és menedékjogot kapottak pedig mentesek. Döntés előtt beszéljen akkreditált bevándorlási képviselővel.",
-  "ui.charge_link": "Ingyenes bevándorlási jogi segítség keresése"
+  "ui.charge_link": "Ingyenes bevándorlási jogi segítség keresése",
+  "r.more_lines": "Veteránok: hívják a 988-at, és nyomják meg az 1-est. Siketek és nagyothallók: hívják a 988-at videotelefonról, vagy TTY-n a 711-et, majd a 988-at."
 }

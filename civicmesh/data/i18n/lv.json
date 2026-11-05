@@ -53,7 +53,7 @@
   "r.unsure": "Vēl nezinu, kāda palīdzība jums vajadzīga. Izvēlieties kaut ko zemāk vai pastāstiet nedaudz vairāk — tikmēr **211** jūs savieno ar vietējo palīdzību 24/7.",
   "r.safety": "**Vispirms jūsu drošība:** {name} — {phone} (24/7, bez maksas un konfidenciāli).",
   "r.emergency": "**Ja kāda dzīvība šobrīd ir briesmās, zvaniet 911.**",
-  "r.crisis_net": "Esat briesmās vai domājat par pašnāvību? Zvaniet **911** vai zvaniet vai rakstiet SMS uz **988**.",
+  "r.crisis_net": "Esat briesmās vai domājat par pašnāvību? Zvaniet **911** vai **988** un sakiet \"Latvian\", lai saņemtu bezmaksas tulku.",
   "r.found": "Programmas, kurām jūs, visticamāk, atbilstat: **{n}**.",
   "r.found_more": "Programmas, kurām jūs, visticamāk, atbilstat: **{n}**; citas, kas varētu derēt: {m}.",
   "r.maybe": "Pagaidām nekas nav droši, bet, uzzinot nedaudz vairāk, varētu derēt programmas: **{m}**.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Jūs joprojām varat pieteikties. Atteikt var tikai programmas birojs.",
   "ui.charge_title": "Pabalsti un jūsu imigrācijas lieta",
   "ui.charge_body": "Kopš 2026. gada 18. septembra amatpersonas var ņemt vērā no ienākumiem atkarīgos pabalstus, ko izmantojat jūs pats, kad piesakāties zaļajai kartei. Ģimenes locekļu pabalsti parasti netiek skaitīti, un bēgļi un patvēruma saņēmēji ir atbrīvoti. Pirms izlemjat, konsultējieties ar akreditētu imigrācijas pārstāvi.",
-  "ui.charge_link": "Atrast bezmaksas juridisko palīdzību imigrācijas jautājumos"
+  "ui.charge_link": "Atrast bezmaksas juridisko palīdzību imigrācijas jautājumos",
+  "r.more_lines": "Veterāni: zvaniet 988 un nospiediet 1. Nedzirdīgie un vājdzirdīgie: zvaniet 988 no videotālruņa vai ar TTY izsauciet 711 un pēc tam 988."
 }

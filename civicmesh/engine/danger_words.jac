@@ -66,6 +66,8 @@ def distress_emoji(text: str) -> bool {
 }
 
 glob EXTRA_SELF_HARM: list = [
+    # A veteran's way of saying it (blind audit, 2026-11).
+    r"(?:my |the )?(?:service (?:weapon|pistol|rifle)|gun|pistol|rifle|firearm)\b[^.?!]{0,40}\b(?:think|thinking|thought) (?:about|of) using it\b", r"\b(?:think|thinking|thought) (?:about|of) using (?:my|the) (?:service weapon|gun|pistol|rifle|firearm)\b(?! (?:at|for|to (?:hunt|protect))|\s+range)",
     r"(?:going to|gonna|about to|will|want to|wanna) (?:shoot|hang|drown|stab|poison) myself",
     r"i'?m about to jump", r"(?:yeet|throw|fling|hurl) myself", r"i?wantt?odie", r"killmyself", r"endmylife",
     r"i'?m (?:just )?(?:ending|gonna end) it", r"ending it all", r"(?:tonight|today) is the night",

@@ -53,7 +53,7 @@
   "r.unsure": "Saya belum yakin bantuan apa yang Anda butuhkan. Pilih salah satu di bawah atau ceritakan sedikit lagi — sementara itu, **211** menghubungkan Anda dengan bantuan setempat 24/7.",
   "r.safety": "**Pertama, keselamatan Anda:** {name} — {phone} (24/7, gratis dan rahasia).",
   "r.emergency": "**Jika nyawa seseorang dalam bahaya sekarang, telepon 911.**",
-  "r.crisis_net": "Anda dalam bahaya, atau sedang memikirkan bunuh diri? Telepon **911**, atau telepon atau kirim SMS ke **988**.",
+  "r.crisis_net": "Anda dalam bahaya, atau sedang memikirkan bunuh diri? Telepon **911**, atau telepon **988** dan katakan \"Indonesian\" untuk juru bahasa gratis.",
   "r.found": "Saya menemukan **{n}** program yang kemungkinan besar bisa Anda dapatkan.",
   "r.found_more": "Saya menemukan **{n}** program yang kemungkinan besar bisa Anda dapatkan dan {m} lagi yang mungkin cocok.",
   "r.maybe": "Belum ada yang pasti cocok, tetapi **{m}** program mungkin cocok setelah saya tahu sedikit lagi.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Anda tetap bisa mendaftar. Hanya kantor program yang bisa menolak.",
   "ui.charge_title": "Bantuan dan kasus imigrasi Anda",
   "ui.charge_body": "Sejak 18 September 2026, petugas dapat mempertimbangkan bantuan berbasis pendapatan yang Anda gunakan sendiri saat mengajukan green card. Bantuan yang digunakan anggota keluarga umumnya tidak dihitung, dan pengungsi serta penerima suaka dikecualikan. Bicaralah dengan perwakilan imigrasi terakreditasi sebelum memutuskan.",
-  "ui.charge_link": "Cari bantuan hukum imigrasi gratis"
+  "ui.charge_link": "Cari bantuan hukum imigrasi gratis",
+  "r.more_lines": "Veteran: telepon 988 lalu tekan 1. Tuli atau sulit mendengar: telepon 988 dari telepon video, atau dengan TTY tekan 711 lalu 988."
 }

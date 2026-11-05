@@ -53,7 +53,7 @@
   "r.unsure": "Ende nuk e di çfarë ndihme ju duhet. Zgjidhni një opsion më poshtë ose më tregoni pak më shumë — ndërkohë, **211** ju lidh me ndihmë vendore 24/7.",
   "r.safety": "**Së pari, siguria juaj:** {name} — {phone} (24/7, falas dhe konfidenciale).",
   "r.emergency": "**Nëse jeta e dikujt është në rrezik tani, telefononi 911.**",
-  "r.crisis_net": "Jeni në rrezik apo mendoni për vetëvrasje? Telefononi **911**, ose telefononi ose dërgoni SMS në **988**.",
+  "r.crisis_net": "Jeni në rrezik apo mendoni për vetëvrasje? Telefononi **911**, ose **988** dhe thoni \"Albanian\" për një përkthyes falas.",
   "r.found": "Gjeta **{n}** programe për të cilat ka shumë të ngjarë të kualifikoheni.",
   "r.found_more": "Gjeta **{n}** programe për të cilat ka shumë të ngjarë të kualifikoheni dhe {m} të tjera që mund të shkojnë.",
   "r.maybe": "Ende asgjë e sigurt, por **{m}** programe mund të shkojnë kur të di pak më shumë.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Përsëri mund të aplikoni. Vetëm zyra e programit mund të thotë jo.",
   "ui.charge_title": "Përfitimet dhe çështja juaj e imigracionit",
   "ui.charge_body": "Që nga 18 shtatori 2026, zyrtarët mund të marrin parasysh përfitimet sipas të ardhurave që përdorni vetë kur aplikoni për kartën e gjelbër. Ato që përdorin anëtarët e familjes në përgjithësi nuk numërohen, dhe refugjatët e personat me azil janë të përjashtuar. Flisni me një përfaqësues të akredituar imigracioni para se të vendosni.",
-  "ui.charge_link": "Gjeni ndihmë ligjore falas për imigracionin"
+  "ui.charge_link": "Gjeni ndihmë ligjore falas për imigracionin",
+  "r.more_lines": "Veteranët: telefononi 988 dhe shtypni 1. Personat e shurdhër ose me dëgjim të dobët: telefononi 988 nga një videotelefon, ose me TTY formoni 711 dhe pastaj 988."
 }

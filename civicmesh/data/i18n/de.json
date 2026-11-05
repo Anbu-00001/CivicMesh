@@ -53,7 +53,7 @@
   "r.unsure": "Ich weiß noch nicht, welche Hilfe Sie brauchen. Wählen Sie unten eine Option oder erzählen Sie mir etwas mehr — in der Zwischenzeit verbindet Sie **211** 24/7 mit Hilfe vor Ort.",
   "r.safety": "**Zuerst Ihre Sicherheit:** {name} — {phone} (24/7, kostenlos und vertraulich).",
   "r.emergency": "**Wenn gerade jemandes Leben in Gefahr ist, rufen Sie 911 an.**",
-  "r.crisis_net": "In Gefahr oder Gedanken an Suizid? Rufen Sie **911** an, oder rufen Sie **988** an bzw. schreiben Sie eine SMS.",
+  "r.crisis_net": "In Gefahr oder Gedanken an Suizid? Rufen Sie **911** an, oder rufen Sie **988** an und sagen Sie \"German\" für einen kostenlosen Dolmetscher.",
   "r.found": "Ich habe **{n}** Programme gefunden, für die Sie wahrscheinlich berechtigt sind.",
   "r.found_more": "Ich habe **{n}** Programme gefunden, für die Sie wahrscheinlich berechtigt sind, und {m} weitere, die passen könnten.",
   "r.maybe": "Noch passt nichts sicher, aber **{m}** Programme könnten passen, sobald ich etwas mehr weiß.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Sie können sich trotzdem bewerben. Nur das Programmamt kann ablehnen.",
   "ui.charge_title": "Leistungen und Ihr Einwanderungsverfahren",
   "ui.charge_body": "Seit dem 18. September 2026 können Beamte einkommensabhängige Leistungen, die Sie selbst beziehen, berücksichtigen, wenn Sie eine Green Card beantragen. Leistungen von Familienangehörigen zählen in der Regel nicht, und Flüchtlinge und Asylberechtigte sind ausgenommen. Sprechen Sie mit einem akkreditierten Einwanderungsvertreter, bevor Sie entscheiden.",
-  "ui.charge_link": "Kostenlose Rechtshilfe zur Einwanderung finden"
+  "ui.charge_link": "Kostenlose Rechtshilfe zur Einwanderung finden",
+  "r.more_lines": "Veteranen: 988 anrufen und 1 drücken. Gehörlose und Schwerhörige: 988 per Bildtelefon anrufen oder per TTY 711 und dann 988 wählen."
 }

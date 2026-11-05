@@ -53,7 +53,7 @@
   "r.unsure": "Hindi ko pa alam kung anong tulong ang kailangan mo. Pumili ng isa sa ibaba o magkuwento pa nang kaunti — samantala, ikinokonekta ka ng **211** sa lokal na tulong 24/7.",
   "r.safety": "**Una, ang kaligtasan mo:** {name} — {phone} (24/7, libre at kumpidensyal).",
   "r.emergency": "**Kung may buhay na nasa panganib ngayon, tumawag sa 911.**",
-  "r.crisis_net": "Nasa panganib ka ba, o iniisip mong magpakamatay? Tumawag sa **911**, o tumawag o mag-text sa **988**.",
+  "r.crisis_net": "Nasa panganib ka ba, o iniisip mong magpakamatay? Tumawag sa **911**, o tumawag sa **988** at sabihin ang \"Tagalog\" para sa libreng interpreter.",
   "r.found": "Nakakita ako ng **{n}** programa na malamang ay kwalipikado ka.",
   "r.found_more": "Nakakita ako ng **{n}** programa na malamang ay kwalipikado ka at {m} pa na puwedeng bagay sa iyo.",
   "r.maybe": "Wala pang siguradong tugma, pero **{m}** programa ang puwedeng bagay kapag may alam pa ako nang kaunti.",
@@ -117,5 +117,6 @@
   "ui.near_ask": "Maaari ka pa ring mag-apply. Ang opisina lang ng programa ang makakatanggi.",
   "ui.charge_title": "Mga benepisyo at ang iyong kaso sa imigrasyon",
   "ui.charge_body": "Mula Setyembre 18, 2026, maaaring isaalang-alang ng mga opisyal ang mga benepisyong batay sa kita na ikaw mismo ang gumagamit kapag nag-apply ka ng green card. Ang ginagamit ng pamilya mo ay karaniwang hindi binibilang, at exempted ang mga refugee at asylee. Makipag-usap sa isang accredited na kinatawan sa imigrasyon bago magpasya.",
-  "ui.charge_link": "Maghanap ng libreng legal na tulong sa imigrasyon"
+  "ui.charge_link": "Maghanap ng libreng legal na tulong sa imigrasyon",
+  "r.more_lines": "Mga beterano: tumawag sa 988 at pindutin ang 1. Mga bingi o hirap makarinig: tumawag sa 988 mula sa videophone, o sa TTY i-dial ang 711 at saka 988."
 }
