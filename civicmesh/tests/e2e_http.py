@@ -375,6 +375,15 @@ lu, lt_ = login()
 l1, _ = turn(lu, lt_, "I still have my service weapon and I think about using it every night")
 check("L3 the service weapon message gets the crisis answer, not the quiet reply", l1 is not None and "988" in l1["reply"] and l1["escalation"], (l1 or {}).get("reply"))
 
+# The route for someone with no account: no token, a real answer, nothing stored (blind audit F24).
+def guest(msg):
+    req = urllib.request.Request(H + "/walker/GuestIntakeWalker", json.dumps({"conversation": msg, "user_id": "x", "prior": {}}).encode(), {"Content-Type": "application/json"}, method="POST")
+    return json.load(urllib.request.urlopen(req, timeout=30))["data"]["reports"][-1]
+g1 = guest("I want to kill myself")
+check("G1 a crisis message gets 988 with no account", g1["guest"] and g1["escalation"]["lead_phone"] == "988" and g1["privacy"]["private_turn"], g1["escalation"].get("lead_phone"))
+g2 = guest("I need food, 3 of us in Ohio, we earn $1500 a month")
+check("G2 a need gets programs and a plan with no account", len(g2["matches"]) > 0 and len(g2["plan"]["steps"]) > 0 and not g2["llm"]["narrate"], len(g2["matches"]))
+
 lat.sort()
 p50 = lat[len(lat) // 2] if lat else 0
 print(f"\nturn latency p50 {p50:.0f} ms · max {max(lat) if lat else 0:.0f} ms over {len(lat)} turns")

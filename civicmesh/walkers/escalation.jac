@@ -12,6 +12,7 @@ import from llm.stubs { EscalationContext }
 import from engine.compose { span_begin, span_end }
 import from engine.messages { msg, has_messages }
 import from engine.i18n { language_info }
+import from graph.catalog { shared_resources }
 
 glob LEADS: dict = {
     "self_harm": ("988 Suicide and Crisis Lifeline", "988", "free, 24/7, confidential crisis counseling", "consejería de crisis gratuita, 24/7 y confidencial"),
@@ -75,7 +76,7 @@ walker EscalationWalker {
         # A danger gets only the lines pinned for it: the DV box listed
         # HUD-VASH (veterans only) for a non-veteran (outside judge, 2026-10-28).
         pinned_names = [str(s["resource_name"]) for s in list(self.ranked) if s.get("pinned", False)];
-        for r in [root --> [?:ResourceNode]] {
+        for r in shared_resources() {
             if str(r.capacity) == "closed" { continue; }
             name = str(r.agency_name);
             low = name.lower();

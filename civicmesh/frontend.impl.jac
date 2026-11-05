@@ -24,7 +24,7 @@ impl ClientApp.initAuth -> str {
     # Auth bootstrap that survives container rebuilds on free HF Spaces:
     # 1) drop a stale token (the users DB is wiped on redeploy) by probing
     #    /user/me; 2) signup is idempotent (409 if the visitor exists), then
-    #    login; 3) seed this visitor's graph.
+    #    login.
     creds = visitorCreds();
     is_authed = False;
     if jacIsLoggedIn() {
@@ -45,9 +45,6 @@ impl ClientApp.initAuth -> str {
     }
     if jacIsLoggedIn() {
         user_id = creds[0];
-        # Seeding failed through a flaky proxy once and left a visitor with no
-        # programs; IntakeWalker now re-seeds an empty catalog itself.
-        await jacSpawn("SeedWalker", "", {"user_id": creds[0]}).catch(lambda e: Any -> dict { return {"reports": [], "spawn_error": str(e)}; });
         is_authed = True;
         # jacSpawn + .catch: a rejected walker call must never break auth
         # (client-side `except` can't match the runtime's exception class).

@@ -14,7 +14,7 @@ bundle.
 # Pathfinder and Critique run inside IntakeWalker (walkers/intake.jac imports
 # them) and are not reachable from outside. cmguard/gateway.py enforces the
 # same list at the front door.
-import from walkers.intake { IntakeWalker }
+import from walkers.intake { IntakeWalker, GuestIntakeWalker }
 import from walkers.memory { MemoryWalker }
 import from walkers.narrate { NarrateWalker }
 import from walkers.impact { ImpactWalker }

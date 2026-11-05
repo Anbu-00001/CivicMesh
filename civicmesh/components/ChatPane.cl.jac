@@ -143,6 +143,7 @@ def:pub ChatPane(
     def setPrivate(on: bool) -> None;
     def renderPrivacy -> JsxElement;
     def saveList(msg_id: str, matches: list, plan: Any, ui: Any) -> None;
+    async def guestTurn(fields: dict) -> Any;
     def footerUi -> Any;
     def spansToEvents(spans: list) -> list;
     def fmtMs(ms: float) -> str;

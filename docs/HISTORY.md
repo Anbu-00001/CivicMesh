@@ -101,6 +101,14 @@ A blind audit scored the project 4.5/10 as a public tool for people in crisis. T
 - **Missed wording.** The audit's 458 missed messages became `engine/danger_words.jac`: typos, spacing tricks, emoji, indirect wording, and phrases in about 45 languages (machine-drafted, unreviewed). Sexual assault, trafficking, child abuse and emergencies now also fire in other languages. This fixed those messages and barely moved outside recall (`docs/EVALUATION.md`).
 - **Still not handled:** one in four at-risk users on the outside set, and most single posts. A classifier was tried and left out, for the reasons in `docs/EVALUATION.md`. On a 360 x 640 phone the thread itself is only about 175 px tall on a crisis turn, though the Call button is always visible.
 
+## Capacity after the 2026-11 blind audit
+
+- **Every visitor had a copy of the catalog.** That was about 400 database records and 410 KB before they typed a word. It's now one shared copy in memory (`graph/catalog.jac`). A program becomes a node in a visitor's graph only when a verdict or an outcome has to point at it, and Delete my data removes those copies too. Measured after one turn: 57 records and 139 KB per visitor, including database overhead.
+- **Sign-up could lock people out.** 214 sign-ups could fill the server-wide limit, and the next person got no answer. Now anyone with no account, or turned away, gets the same answer through `GuestIntakeWalker`: its own limits and 8 slots, one service login that stays in the gateway, nothing stored, no model call. The answer is identical to the signed-in one. The case travels with the client, so a conversation still works. Crisis messages get no separate queue. This route is the reserved capacity, and it is open to everyone turned away.
+- **Measured** on one machine with limits off, no CPU cap (the audit capped near one core, so these aren't like for like): chat at 2, 5 and 10 turns a second had p50 181, 184 and 144 ms, p95 239, 906 and 6,023 ms, refusing 0, 0 and 7 of 150. The no-account route at 40 a second: p50 37 ms, p95 690 ms, 0 of 400 refused.
+- **Slow model replies** no longer use up an address's chat slots: model calls and the no-account route count separately per address.
+- **Spoofed addresses:** `X-Forwarded-For` is now trusted by default only on a Hugging Face Space, which sets `SPACE_ID`. A self-hoster behind a proxy must set `CIVICMESH_TRUSTED_PROXY_HOPS`.
+
 ## The screen after the 2026-11 blind audit
 
 - **The model's summary came first.** A lying fake model's sentences appeared above the engine's answer. The summary now comes after the answer and the programs, labelled "AI summary. It can be wrong." It still comes first in a language with no catalog, because there it's the only text the person can read, but after any crisis box. The length cap and the claim guard were already on both model paths. `tests/browser_model.py` checks the order in a browser, with a fake model.

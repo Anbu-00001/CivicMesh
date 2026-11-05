@@ -9,7 +9,7 @@ limits so the tests run in about a minute (CI does exactly this):
       -e OPENAI_API_BASE=http://host.docker.internal:8799/v1 -e OPENAI_API_KEY=sk-test-DO-NOT-LEAK-openai-123456 \\
       -e NVIDIA_NIM_API_BASE=http://host.docker.internal:8799/v1 \\
       -e NVIDIA_NIM_API_KEY=nvapi-TESTSECRET-DO-NOT-LEAK-123456 -e NVIDIA_API_KEY=nvapi-TESTSECRET-DO-NOT-LEAK-123456 \\
-      -e CIVICMESH_RL_REGISTER_IP=5/600 -e CIVICMESH_RL_CHAT_USER=6/60 -e CIVICMESH_RL_CHAT_IP=12/60 \\
+      -e CIVICMESH_TRUSTED_PROXY_HOPS=1 -e CIVICMESH_RL_REGISTER_IP=5/600 -e CIVICMESH_RL_CHAT_USER=6/60 -e CIVICMESH_RL_CHAT_IP=12/60 \\
       -e CIVICMESH_INFLIGHT_PER_IP=2 -e CIVICMESH_LLM_MAX_PER_HOUR=12 -e CIVICMESH_LLM_MAX_CONCURRENT=2 \\
       -e CIVICMESH_SECURITY_LOG_S=5 civicmesh:ci
     CM_CONTAINER=cm-sec CM_FAKE=http://localhost:8799 \\
@@ -322,6 +322,14 @@ def main():
     for path in ("/./graph/data", "/x/../graph/data", "/./user/me", "/.jac/client/configs/package.json"):
         s = req("GET", path, ip="10.66.0.3")[0]
         check(f"S17 {path} is not served", s == 404, f"HTTP {s}")
+
+    # ---- S17: the no-account route has its own limit, and can't reach anyone's graph ----
+    gs = []
+    for _ in range(40):
+        gs.append(req("POST", "/walker/GuestIntakeWalker", {"conversation": "I need food", "user_id": "victim"}, ip="10.67.0.1")[0])
+    check("S17 the no-account route is rate limited per address", gs.count(200) > 0 and 429 in gs, (gs.count(200), gs.count(429)))
+    s, g, _ = req("POST", "/walker/GuestIntakeWalker", {"conversation": "I need food in Ohio", "user_id": "victim"}, ip="10.67.0.2")
+    check("S17 it asks for no model and returns no login", s == 200 and "cm-guest" not in json.dumps(g) and "password" not in json.dumps(g), s)
 
     # ---- S16: a new visitor is still served normally at the end ----
     u, t, _ = visitor("10.66.0.1")

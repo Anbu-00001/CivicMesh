@@ -2,17 +2,17 @@
 
 Deletes everything the chat wrote about this visitor under their own root:
 the PersonNode, every NeedNode (and with it the scored eligible_for edges),
-every ApplicationNode and every SessionInsight. The public program data
-(ResourceNode, EligibilityRuleNode, FormNode) stays — it's the same for
-everyone and holds nothing about the person. Deleting a node removes its
-edges, so nothing personal is left reachable.
+every ApplicationNode and every SessionInsight, and this visitor's copies of the
+programs they were scored against, since which programs a person matched says
+something about them. The catalog itself is shared and isn't in their graph.
+Deleting a node removes its edges, so nothing personal is left reachable.
 
 The client then drops the browser's anonymous login (a random id and
 password with no personal data), so the next visit starts as a stranger.
 """
 
-import from graph.nodes { PersonNode, NeedNode, ApplicationNode, SessionInsight }
-import from graph.edges { has_need, applied_to, reflected_on }
+import from graph.nodes { PersonNode, NeedNode, ApplicationNode, SessionInsight, ResourceNode, EligibilityRuleNode, FormNode }
+import from graph.edges { has_need, applied_to, reflected_on, governed_by, requires_form }
 
 walker ForgetWalker {
     has user_id: str = "";
@@ -35,6 +35,15 @@ walker ForgetWalker {
             }
             del p;
             removed["PersonNode"] += 1;
+        }
+        if not [root --> [?:PersonNode]] {
+            for r in [root --> [?:ResourceNode]] {
+                for rule in [r ->:governed_by:-> [?:EligibilityRuleNode]] {
+                    for f in [rule ->:requires_form:-> [?:FormNode]] { del f; }
+                    del rule;
+                }
+                del r;
+            }
         }
         left = len([root --> [?:PersonNode, user_id == self.user_id]]);
         self.summary = {"ok": left == 0, "removed": removed};

@@ -24,6 +24,7 @@ import from engine.plan { build_plan, plan_need }
 import from walkers.navigation { NavigationWalker }
 import from walkers.pathfinder { PathfinderWalker }
 import from walkers.escalation { EscalationWalker }
+import from graph.catalog { shared_items, visitor_items, ensure_resource }
 
 # Category defaults, as message keys (data/i18n): the English text is the
 # payload the engine parses, the label is shown in the user's language.
@@ -115,36 +116,6 @@ def quiet_summary(profile: dict, lang: str, pending: str) -> dict {
     };
 }
 
-"""Snapshot a node's fields into a plain dict for the pure engine."""
-def resource_dict(r: ResourceNode) -> dict {
-    return {
-        "agency_name": str(r.agency_name), "category": str(r.category), "capacity": str(r.capacity),
-        "languages_supported": list(r.languages_supported), "contact_phone": str(r.contact_phone),
-        "contact_email": str(r.contact_email), "address": str(r.address),
-        "online_url": str(r.online_url), "description": str(r.description)
-    };
-}
-
-def rule_dict(e: EligibilityRuleNode) -> dict {
-    return {
-        "rule_id": str(e.rule_id), "income_limit_annual": int(e.income_limit_annual),
-        "residency_requirement": str(e.residency_requirement), "min_family_size": int(e.min_family_size),
-        "citizenship_required": bool(e.citizenship_required), "age_min": int(e.age_min),
-        "age_max": int(e.age_max), "exceptions": str(e.exceptions),
-        "criteria_summary": str(e.criteria_summary), "prior_success_rate": float(e.prior_success_rate),
-        "prior_attempts": int(e.prior_attempts), "prior_approvals": int(e.prior_approvals),
-        "targets": list(getattr(e, "targets", []) or [])
-    };
-}
-
-def form_dict(f: FormNode) -> dict {
-    return {
-        "form_id": str(f.form_id), "form_name": str(f.form_name), "url": str(f.url),
-        "required_documents": list(f.required_documents), "deadline_type": str(f.deadline_type),
-        "submission_method": str(f.submission_method), "estimated_minutes": int(f.estimated_minutes)
-    };
-}
-
 """Compact, authoritative fact sheet for the narrator LLM."""
 def facts_for(ranking: dict, plan: dict, question: str, profile: dict) -> str {
     lines: list = [];
@@ -165,22 +136,12 @@ def facts_for(ranking: dict, plan: dict, question: str, profile: dict) -> str {
     return "\n".join(lines);
 }
 
-# Per-visitor catalog snapshot (resource + rule + form dicts). The catalog is
-# static except for recorded outcomes, so MemoryWalker invalidates the entry
-# whenever an approval/denial updates a rule's posterior. Saves ~60-90 ms of
-# anchor loads per turn on the server.
-glob CATALOG_CACHE: dict = {};
-
-"""Drop a visitor's cached catalog (called after outcome updates)."""
-def invalidate_catalog(key: str) -> None {
-    CATALOG_CACHE.pop(key, None);
-}
-
 walker EligibilityWalker {
     has profile: dict;
     has person_node: PersonNode;
     has message: str = "";
     has followup: dict = {};
+    has guest: bool = False;
     has asked_text: str = "";
     has language: str = "en";
     has trace: dict = {};
@@ -194,20 +155,8 @@ walker EligibilityWalker {
         # covers it (the scoring text underneath stays EN/ES).
         ui_lang = reply_language(self.language);
 
-        cache_key = str(self.person_node.user_id);
-        items: list = list(CATALOG_CACHE.get(cache_key, []));
-        cached = len(items) > 0;
-        sp = span_begin(tr, "graph.traverse resource→rule→form", "INTERNAL", self.parent_span, {"civicmesh.cache_hit": cached});
-        if not cached {
-            for r in [root --> [?:ResourceNode]] {
-                rules = [r ->:governed_by:-> [?:EligibilityRuleNode]];
-                if not rules { continue; }
-                rule: EligibilityRuleNode = rules[0];
-                forms = [rule ->:requires_form:-> [?:FormNode]];
-                items.append({"resource": resource_dict(r), "rule": rule_dict(rule), "form": form_dict(forms[0]) if forms else {}});
-            }
-            if len(items) > 0 { CATALOG_CACHE[cache_key] = items; }
-        }
+        sp = span_begin(tr, "graph.traverse resource→rule→form", "INTERNAL", self.parent_span, {"civicmesh.cache_hit": True});
+        items: list = shared_items() if self.guest else visitor_items(root);
         span_end(tr, sp, {"civicmesh.programs": len(items)});
 
         sp = span_begin(tr, "EligibilityWalker score", "INTERNAL", self.parent_span, {"gen_ai.agent.name": "EligibilityWalker"});
@@ -233,15 +182,12 @@ walker EligibilityWalker {
         # Persist the verdicts: one scored eligible_for edge per top match, so
         # the case's reasoning lives in the graph (the Graph tab queries it).
         sp = span_begin(tr, "graph.write eligible_for", "INTERNAL", self.parent_span);
-        rank_of: dict = {};
-        for (i, s) in enumerate(ranked) { rank_of[str(s["resource_name"])] = i; }
         written = 0;
-        for r in [root --> [?:ResourceNode]] {
-            nm = str(r.agency_name);
-            if nm in rank_of {
-                s = ranked[int(rank_of[nm])];
+        for (i, s) in enumerate(ranked if not self.guest else []) {
+            r = ensure_resource(root, str(s["resource_name"]));
+            if r {
                 here +>: eligible_for(
-                    tier=str(s["tier"]), p_eligible=float(s["p_eligible"]), rank=int(rank_of[nm]),
+                    tier=str(s["tier"]), p_eligible=float(s["p_eligible"]), rank=i,
                     benefit_monthly=int(dict(s.get("benefit", {}) or {}).get("monthly", 0))
                 ) :+> r;
                 written += 1;
@@ -272,8 +218,7 @@ walker EligibilityWalker {
         if not guessed {
             pf = root spawn PathfinderWalker(
                 start_category=str(self.profile.get("category", "")),
-                sources=sources, goals=goals, p_of=p_of, trace=tr, parent_span=self.parent_span,
-                cache_key=str(self.person_node.user_id)
+                sources=sources, goals=goals, p_of=p_of, trace=tr, parent_span=self.parent_span
             );
             routes = list(pf.summary.get("paths", []));
         }

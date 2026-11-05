@@ -30,6 +30,7 @@ import gzip
 import hashlib
 import json
 import os
+import secrets
 import time
 from pathlib import Path
 
@@ -45,6 +46,7 @@ from cmguard.limits import InflightCounter, TokenBuckets
 # spawned by IntakeWalker on the server and is not reachable from outside.
 PUBLIC_WALKERS = {
     "IntakeWalker": "chat",
+    "GuestIntakeWalker": "guest",
     "NarrateWalker": "model",
     "LocalizeWalker": "model",
     "LocalHelpWalker": "external",
@@ -56,7 +58,7 @@ PUBLIC_WALKERS = {
     "PlatformWalker": "light",
     "ReflectionReadWalker": "light",
 }
-API_CLASSES = {"register", "login", "me", "chat", "model", "external", "light", "seed", "forget"}
+API_CLASSES = {"register", "login", "me", "chat", "guest", "model", "external", "light", "seed", "forget"}
 AUTH_CLASSES = {"me", "chat", "model", "external", "light", "seed", "forget"}
 DEDUP_CLASSES = {"chat", "model"}
 BLOCKED_PREFIXES = (
@@ -248,6 +250,13 @@ class Gateway:
                 if rate:
                     self.buckets[(cls, scope)] = TokenBuckets(rate[0], rate[1], mk)
         self.per_ip = InflightCounter(self.cfg.inflight_per_ip, mk)
+        # Slow model replies from one shelter's address must not use up that
+        # address's slots for chat (blind audit F24), and the route for people
+        # with no account must stay open when everything else is full.
+        self.per_ip_model = InflightCounter(self.cfg.inflight_per_ip, mk)
+        self.per_ip_guest = InflightCounter(self.cfg.inflight_per_ip, mk)
+        self.guest_slots = None
+        self._guest_token = ""
         self.global_slots = None
         self.model_slots = None
         self.client = None
@@ -294,6 +303,7 @@ class Gateway:
     async def startup(self):
         self.global_slots = asyncio.Semaphore(self.cfg.inflight_global)
         self.model_slots = asyncio.Semaphore(self.cfg.inflight_model)
+        self.guest_slots = asyncio.Semaphore(self.cfg.inflight_guest)
         self.client = httpx.AsyncClient(
             base_url=self.cfg.upstream,
             limits=httpx.Limits(max_connections=self.cfg.inflight_global + 64, max_keepalive_connections=32),
@@ -546,15 +556,36 @@ class Gateway:
         self._sweep_recent()
         self._recent[key] = (time.monotonic() + self.cfg.dedup_ttl_s.get(cls, 0.0), status, raw, payload)
 
+    async def _guest_login(self) -> str:
+        """The one service login behind GuestIntakeWalker, made on first use.
+
+        It never leaves this process, and that walker connects nothing to its
+        graph, so the account holds nothing. It skips the sign-up limits, which
+        are what a person with no account may have been refused by.
+        """
+        if self._guest_token:
+            return self._guest_token
+        name = "cm-guest-" + secrets.token_hex(8)
+        pw = secrets.token_urlsafe(24)
+        try:
+            await self.client.post("/user/register", json={"identities": [{"type": "username", "value": name}], "credential": {"type": "password", "password": pw}}, timeout=10.0)
+            r = await self.client.post("/user/login", json={"identity": {"type": "username", "value": name}, "credential": {"type": "password", "password": pw}}, timeout=10.0)
+            self._guest_token = str(r.json().get("data", {}).get("token") or "") if r.status_code == 200 else ""
+        except Exception:
+            self._guest_token = ""
+        return self._guest_token
+
     async def _forward_api(self, scope, headers, body, cls, ip):
         busy = (503, [(b"content-type", b"application/json"), (b"retry-after", b"2")],
                 error_body(503, "BUSY", "CivicMesh is busy right now. Please try again in a moment."))
-        if not self.per_ip.acquire(ip):
+        per_ip = self.per_ip_model if cls == "model" else (self.per_ip_guest if cls == "guest" else self.per_ip)
+        if not per_ip.acquire(ip):
             telemetry.count("rejected:inflight_ip:" + cls)
             return busy
+        slots = self.guest_slots if cls == "guest" else self.global_slots
         got_global = got_model = False
         try:
-            got_global = await self._acquire(self.global_slots)
+            got_global = await self._acquire(slots)
             if not got_global:
                 telemetry.count("rejected:inflight_global:" + cls)
                 return busy
@@ -563,6 +594,13 @@ class Gateway:
                 if not got_model:
                     telemetry.count("rejected:inflight_model")
                     return busy
+            if cls == "guest":
+                token = await self._guest_login()
+                if not token:
+                    telemetry.count("guest_login_failed")
+                    return busy
+                headers = dict(headers)
+                headers[b"authorization"] = b"Bearer " + token.encode()
             telemetry.count("allowed:" + cls)
             url = scope["path"] + (("?" + scope["query_string"].decode("latin-1")) if scope.get("query_string") else "")
             try:
@@ -579,6 +617,8 @@ class Gateway:
                 telemetry.count("upstream_error:" + cls)
                 return (502, [(b"content-type", b"application/json")],
                         error_body(502, "UPSTREAM", "The service is busy. Please try again."))
+            if cls == "guest" and r.status_code == 401:
+                self._guest_token = ""
             if r.status_code >= 500:
                 # jac-scale puts a traceback in `details`; it stays on this side.
                 telemetry.count("upstream_5xx:" + cls)
@@ -591,8 +631,8 @@ class Gateway:
             if got_model:
                 self.model_slots.release()
             if got_global:
-                self.global_slots.release()
-            self.per_ip.release(ip)
+                slots.release()
+            per_ip.release(ip)
 
     async def _stream(self, scope, send, headers, body, cls, ip):
         """Static files and pages: streamed through, per-address rate limited."""

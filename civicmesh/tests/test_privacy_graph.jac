@@ -10,9 +10,40 @@
 
 import from graph.nodes { PersonNode, NeedNode, ResourceNode, ApplicationNode, SessionInsight }
 import from graph.edges { has_need, reflected_on }
-import from walkers.intake { IntakeWalker }
+import from walkers.intake { IntakeWalker, GuestIntakeWalker }
 import from walkers.seed { SeedWalker }
 import from walkers.forget { ForgetWalker }
+
+test "a_new_visitor_gets_no_copy_of_the_catalog_and_forget_removes_what_they_matched" {
+    root spawn SeedWalker(user_id="lazy_a");
+    assert len([root --> [?:ResourceNode]]) == 0;
+    w = root spawn IntakeWalker(conversation="I need food, 2 of us in Ohio, we earn $1000 a month", user_id="lazy_a");
+    r = w.reports[-1];
+    assert len(r["matches"]) > 0;
+    made = len([root --> [?:ResourceNode]]);
+    assert made > 0 and made <= 6;
+    assert len(r["routes"]) >= 0;
+    f = root spawn ForgetWalker(user_id="lazy_a");
+    assert f.reports[-1]["ok"];
+    assert len([root --> [?:ResourceNode]]) == 0;
+}
+
+test "the_no_account_route_answers_and_connects_nothing" {
+    before = len([root -->]);
+    w = root spawn GuestIntakeWalker(conversation="I want to kill myself, I need food in Ohio", user_id="someone_elses_id");
+    r = w.reports[-1];
+    assert r["guest"];
+    assert r["escalation"]["lead_phone"] == "988";
+    assert r["privacy"]["private_turn"];
+    assert not r["llm"]["narrate"];
+    w2 = root spawn GuestIntakeWalker(conversation="I need food, 2 of us in Ohio, we earn $1000 a month", user_id="x");
+    r2 = w2.reports[-1];
+    assert len(r2["matches"]) > 0;
+    assert not r2["llm"]["narrate"];
+    assert len(r2["plan"]["steps"]) > 0;
+    assert len([root -->]) == before;
+    assert len([root --> [?:PersonNode]]) == 0;
+}
 
 test "stored_need_is_scrubbed_and_forget_deletes_it" {
     root spawn SeedWalker(user_id="priv_a");
