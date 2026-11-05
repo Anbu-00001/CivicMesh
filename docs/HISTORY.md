@@ -101,6 +101,15 @@ A blind audit scored the project 4.5/10 as a public tool for people in crisis. T
 - **Missed wording.** The audit's 458 missed messages became `engine/danger_words.jac`: typos, spacing tricks, emoji, indirect wording, and phrases in about 45 languages (machine-drafted, unreviewed). Sexual assault, trafficking, child abuse and emergencies now also fire in other languages. This fixed those messages and barely moved outside recall (`docs/EVALUATION.md`).
 - **Still not handled:** one in four at-risk users on the outside set, and most single posts. A classifier was tried and left out, for the reasons in `docs/EVALUATION.md`. On a 360 x 640 phone the thread itself is only about 175 px tall on a crisis turn, though the Call button is always visible.
 
+## Failures made visible after the 2026-11 blind audit
+
+- **`/healthz` said "ok" with a full disk or no catalog.** It now reads the data files, writes to the disk, reads the database and asks the engine, then answers 503 and names the failed check. The change logs one line, so an uptime monitor pointed at it is the alert. There is no paging built in.
+- **A broken catalog file** costs that language its catalog and a log line, where it used to give an HTTP 500. A missing program file logs an error on first use as well as at boot.
+- **"database is locked":** the engine now waits up to 30 seconds for a busy database, where it gave up after 5. Delete my data is retried up to three times, since running it twice is harmless.
+- **Still a limit:** with a truly full disk the engine can't commit, so even the no-account route fails (HTTP 500). The health check says so, and the app's error message and the page's footer still show 911, 988 and the DV hotline. Retention is what stops a disk filling.
+- **Delete under load:** 30 of 30 calls succeeded with chat running, and no lock errors were logged. The audit saw 1 of 30 fail.
+- **Retention:** visitors idle for 30 days are removed, graph and login (`CIVICMESH_RETENTION_DAYS`, 0 turns it off). The gateway checks hourly. `tests/test_retention.py` runs it on temporary databases.
+
 ## Capacity after the 2026-11 blind audit
 
 - **Every visitor had a copy of the catalog.** That was about 400 database records and 410 KB before they typed a word. It's now one shared copy in memory (`graph/catalog.jac`). A program becomes a node in a visitor's graph only when a verdict or an outcome has to point at it, and Delete my data removes those copies too. Measured after one turn: 57 records and 139 KB per visitor, including database overhead.

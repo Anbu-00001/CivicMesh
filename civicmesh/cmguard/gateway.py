@@ -31,6 +31,8 @@ import hashlib
 import json
 import os
 import secrets
+import sqlite3
+import sys
 import time
 from pathlib import Path
 
@@ -40,6 +42,8 @@ from cmguard import telemetry
 from cmguard.clientip import client_ip
 from cmguard.config import GatewayConfig
 from cmguard.limits import InflightCounter, TokenBuckets
+from cmguard.preflight import data_problems
+from cmguard.retention import days_from_env, purge
 
 # The walkers the browser client calls, and the limit class for each. Every
 # other walker (Eligibility, Navigation, Escalation, Pathfinder, Critique) is
@@ -250,6 +254,8 @@ class Gateway:
                 if rate:
                     self.buckets[(cls, scope)] = TokenBuckets(rate[0], rate[1], mk)
         self.per_ip = InflightCounter(self.cfg.inflight_per_ip, mk)
+        self._health_cache = None
+        self._health_bad = False
         # Slow model replies from one shelter's address must not use up that
         # address's slots for chat (blind audit F24), and the route for people
         # with no account must stay open when everything else is full.
@@ -315,6 +321,7 @@ class Gateway:
         self.ready = await self._probe()
         self._tasks.append(asyncio.create_task(self._watch_ready()))
         self._tasks.append(asyncio.create_task(self._telemetry_loop()))
+        self._tasks.append(asyncio.create_task(self._retention_loop()))
 
     async def shutdown(self):
         for t in self._tasks:
@@ -333,7 +340,69 @@ class Gateway:
         while True:
             if not self.ready and await self._probe():
                 self.ready = True
+            # Made ahead of need: on a full disk, when this route matters most,
+            # a new login can't be written.
+            if self.ready and not self._guest_token:
+                await self._guest_login()
             await asyncio.sleep(1.0 if not self.ready else 15.0)
+
+    async def _retention_loop(self):
+        days = days_from_env()
+        while days > 0:
+            await asyncio.sleep(3600)
+            try:
+                done = await asyncio.to_thread(purge, days)
+                if done["visitors"]:
+                    print(f"civicmesh_retention: removed {done['visitors']} idle visitors, {done['records']} records", file=sys.stderr, flush=True)
+            except Exception as ex:
+                print("civicmesh_retention_failed: " + type(ex).__name__, file=sys.stderr, flush=True)
+
+    def _health_checks(self) -> dict:
+        """Slow enough (a file written, 51 catalogs read) to run off the event loop."""
+        checks = {"data": "ok", "disk": "ok", "database": "ok"}
+        if data_problems():
+            checks["data"] = "failed"
+        try:
+            probe = os.path.join(".jac", "data", ".healthz-write")
+            with open(probe, "wb") as f:
+                f.write(b"x" * 65536)
+                f.flush()
+                os.fsync(f.fileno())
+            os.remove(probe)
+        except OSError:
+            checks["disk"] = "failed"
+        try:
+            db = sqlite3.connect(os.path.join(".jac", "data", "anchor_store.db"), timeout=2.0)
+            try:
+                db.execute("select 1 from anchors limit 1").fetchone()
+            finally:
+                db.close()
+        except sqlite3.Error:
+            checks["database"] = "failed"
+        return checks
+
+    async def _health(self) -> tuple:
+        """/healthz: does the app work, and not just is it up (blind audit F26).
+
+        With a full disk or no catalog it said "ok" while every visitor got an
+        error or an empty answer. Now it answers 503 and names the check, so an
+        uptime monitor can raise the alarm. Cached briefly: it writes to disk.
+        """
+        now = time.monotonic()
+        if self._health_cache and self._health_cache[0] > now:
+            return self._health_cache[1], self._health_cache[2]
+        checks = await asyncio.to_thread(self._health_checks)
+        checks["engine"] = "ok" if await self._probe() else "failed"
+        bad = sorted(k for k, v in checks.items() if v != "ok")
+        status = 503 if bad else 200
+        payload = json.dumps({"status": "degraded" if bad else "ok", "checks": checks}).encode()
+        if bad and not self._health_bad:
+            print("civicmesh_health_degraded: " + ",".join(bad), file=sys.stderr, flush=True)
+        if self._health_bad and not bad:
+            print("civicmesh_health_recovered", file=sys.stderr, flush=True)
+        self._health_bad = bool(bad)
+        self._health_cache = (now + 5.0, status, payload)
+        return status, payload
 
     async def _telemetry_loop(self):
         while True:
@@ -436,6 +505,11 @@ class Gateway:
         if wait:
             await self._respond(send, 429, error_body(429, "RATE_LIMITED", "Too many requests. Please wait a moment and try again."),
                                 extra=[(b"retry-after", str(int(wait + 0.999)).encode())])
+            return
+
+        if cls == "health" and path == "/healthz":
+            status, payload = await self._health()
+            await self._respond(send, status, b"" if method == "HEAD" else payload)
             return
 
         if cls in API_CLASSES:
@@ -603,20 +677,28 @@ class Gateway:
                 headers[b"authorization"] = b"Bearer " + token.encode()
             telemetry.count("allowed:" + cls)
             url = scope["path"] + (("?" + scope["query_string"].decode("latin-1")) if scope.get("query_string") else "")
-            try:
-                r = await self.client.request(
-                    scope["method"], url, content=body or None,
-                    headers=self._upstream_headers(headers, body),
-                    timeout=httpx.Timeout(self.cfg.timeout_s.get(cls, 30.0), connect=5.0),
-                )
-            except httpx.TimeoutException:
-                telemetry.count("upstream_timeout:" + cls)
-                return (504, [(b"content-type", b"application/json")],
-                        error_body(504, "TIMEOUT", "That took too long. Please try again."))
-            except httpx.HTTPError:
-                telemetry.count("upstream_error:" + cls)
-                return (502, [(b"content-type", b"application/json")],
-                        error_body(502, "UPSTREAM", "The service is busy. Please try again."))
+            attempts = 3 if cls == "forget" else 1
+            for attempt in range(attempts):
+                try:
+                    r = await self.client.request(
+                        scope["method"], url, content=body or None,
+                        headers=self._upstream_headers(headers, body),
+                        timeout=httpx.Timeout(self.cfg.timeout_s.get(cls, 30.0), connect=5.0),
+                    )
+                except httpx.TimeoutException:
+                    telemetry.count("upstream_timeout:" + cls)
+                    return (504, [(b"content-type", b"application/json")],
+                            error_body(504, "TIMEOUT", "That took too long. Please try again."))
+                except httpx.HTTPError:
+                    telemetry.count("upstream_error:" + cls)
+                    return (502, [(b"content-type", b"application/json")],
+                            error_body(502, "UPSTREAM", "The service is busy. Please try again."))
+                # Delete my data can run twice harmlessly, and it's the one call a
+                # person relies on having worked.
+                if r.status_code < 500 or attempt == attempts - 1:
+                    break
+                telemetry.count("retried:" + cls)
+                await asyncio.sleep(0.5 * (attempt + 1))
             if cls == "guest" and r.status_code == 401:
                 self._guest_token = ""
             if r.status_code >= 500:

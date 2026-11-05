@@ -78,6 +78,8 @@ survive a restart (they otherwise end with the rest of a free Space's state).
 | `CIVICMESH_SIGNING_KEY` | Signs the narration and translation tokens |
 | `SYSTEM_USER_PASSWORD` | jac-scale's internal scheduler account |
 
+**Monitoring.** Point an uptime monitor at `/healthz`. It answers 503 and names the failed check (`data`, `disk`, `database`, `engine`), and the change is logged as `civicmesh_health_degraded`. `CIVICMESH_RETENTION_DAYS` (default 30, 0 turns it off) removes idle visitors, checked hourly.
+
 **Client address.** `CIVICMESH_TRUSTED_PROXY_HOPS` (default `1` on a Hugging Face Space, otherwise `0`): how many
 `X-Forwarded-For` entries the proxy in front appends. Hugging Face appends one
 (verified). Behind your own proxy, set this to the number of proxies. Left at `0`
