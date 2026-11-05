@@ -96,7 +96,7 @@ def main(url: str) -> int:
         if not js("(document.querySelector('.cm-thread')||{}).getAttribute&&document.querySelector('.cm-thread').getAttribute('aria-live')==='polite'"):
             fails.append("the transcript is not a polite live region")
         before = js("document.querySelectorAll('.cm-thread .cm-row').length")
-        js("""(()=>{const i=document.querySelector('.cm-input');const s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
+        js("""(()=>{const i=document.querySelector('.cm-input');const s=Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set;
                s.call(i,"I'm 72, on $1200/month Social Security, my landlord is trying to evict me illegally. I live in Illinois.");
                i.dispatchEvent(new Event('input',{bubbles:true}));i.focus();setTimeout(()=>document.querySelector('.cm-send').click(),200)})()""")
         if not until(f"document.querySelectorAll('.cm-thread .cm-row').length>={before + 2} && !document.querySelector('.cm-typing')"):

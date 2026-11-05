@@ -1008,3 +1008,13 @@ html, body { margin: 0; }
 .cm-near p, .cm-charge p { margin: 6px 0; font-size: 14px; line-height: 1.5; }
 .cm-charge a { display: inline-block; min-height: 28px; color: #FFE500; }
 .cm-charge summary { cursor: pointer; min-height: 28px; }
+
+/* Summary label and saving the list (blind audit F23, F25). */
+.cm-narration-label { display: block; font-size: 11.5px; color: rgba(255,255,255,0.68); margin-bottom: 4px; }
+.cm-save { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12.5px; }
+.cm-save .cm-why { min-height: 36px; }
+textarea.cm-input { resize: none; font-family: inherit; line-height: 1.4; display: block; max-height: 140px; overflow-y: auto; }
+/* Developer views stay on large screens; a person on a phone needs the answer (F30). */
+@media (max-width: 760px) {
+  .cm-dev-only, .cm-tab-graph, .cm-tab-telemetry, .cm-tab-impact, .cm-wf-head { display: none !important; }
+}

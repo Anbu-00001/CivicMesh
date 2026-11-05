@@ -101,6 +101,13 @@ A blind audit scored the project 4.5/10 as a public tool for people in crisis. T
 - **Missed wording.** The audit's 458 missed messages became `engine/danger_words.jac`: typos, spacing tricks, emoji, indirect wording, and phrases in about 45 languages (machine-drafted, unreviewed). Sexual assault, trafficking, child abuse and emergencies now also fire in other languages. This fixed those messages and barely moved outside recall (`docs/EVALUATION.md`).
 - **Still not handled:** one in four at-risk users on the outside set, and most single posts. A classifier was tried and left out, for the reasons in `docs/EVALUATION.md`. On a 360 x 640 phone the thread itself is only about 175 px tall on a crisis turn, though the Call button is always visible.
 
+## The screen after the 2026-11 blind audit
+
+- **The model's summary came first.** A lying fake model's sentences appeared above the engine's answer. The summary now comes after the answer and the programs, labelled "AI summary. It can be wrong." It still comes first in a language with no catalog, because there it's the only text the person can read, but after any crisis box. The length cap and the claim guard were already on both model paths. `tests/browser_model.py` checks the order in a browser, with a fake model.
+- **A reload lost the list.** The list still isn't kept, on purpose, because the phone may be shared. There's now a "Save this list" button: the share sheet on a phone, a text file elsewhere. It holds program names, numbers, links and papers, and none of the person's words, income or household. It isn't offered on a crisis turn or in a private session.
+- **Leaving asks first** when an unsaved list is on screen, except in a private session, for Quick exit, and right after tapping a call link, because some browsers fire that prompt for `tel:` links. A phone that discards a background tab gives no warning at all, so the note beside the button says so.
+- **Phones:** the agent pipeline and the Graph, Telemetry and Impact tabs stay on large screens. The message box is multi-line: Enter sends, Shift+Enter starts a new line, and Enter while composing Chinese or Japanese text no longer sends.
+
 ## First steps and reply language from the 2026-11 blind audit
 
 - **The live plan ignored the need.** `build_plan` had learned to put the named need first, but the walker that calls it never passed the need, so the fix worked only in tests. It's passed now. What the person came for comes before a quicker errand for another need.

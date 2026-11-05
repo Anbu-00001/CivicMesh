@@ -80,6 +80,7 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "", display:
     if is_loading { return; }
     effective = text_override if text_override else input_val;
     if not effective.strip() { return; }
+    window.cm_saved_list = False;
     user_text = effective;
     input_val = "";
     ans = answering if answering else pending_question;
@@ -683,23 +684,34 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
         if prof["citizenship"] { facts = facts + [str(prof["citizenship"]).replace("_", " ")]; }
     }
 
+    # The model's summary can be wrong, so it never comes before the engine's
+    # answer (blind audit F25). In a language with no catalog it is the only
+    # text the person can read; it still follows the crisis box.
+    summary_block: Any = None;
+    if narr and narr["status"] == "ok" {
+        summary_block = <div className={"cm-narration" + (" cm-narration-main" if foreign else "")} lang={lang} dir="auto">
+            <span className="cm-spark" aria-hidden="true">✦</span>
+            <span>
+                {foreign and <span className="cm-lang-tag">{str(lname[1])}</span>}
+                <span className="cm-narration-label">{L(ui, "ui.ai_summary", "AI summary. It can be wrong. The program list is what counts.")}</span>
+                {str(narr["message"])}
+            </span>
+        </div>;
+    } elif narr and narr["status"] == "pending" {
+        summary_block = <div className="cm-narration cm-narration-pending">{("✦ Writing this in " + str(lname[1]) + "…") if foreign else "✦ Writing a personalized summary…"}</div>;
+    }
+    can_save: bool = (not held_back) and (not private_on) and len(shown_matches) > 0;
+
     return
         <div key={"m-" + str(idx)} className="cm-row msg-enter">
             <div className="cm-avatar">CM</div>
             <div className="cm-result">
-                {(narr and narr["status"] == "ok") and <div className={"cm-narration" + (" cm-narration-main" if foreign else "")} lang={lang}>
-                    <span className="cm-spark">✦</span>
-                    <span>
-                        {foreign and <span className="cm-lang-tag">{str(lname[1])}</span>}
-                        {str(narr["message"])}
-                    </span>
-                </div>}
                 {esc["lead_line"] and <div className="cm-crisis">
                     <div className="cm-crisis-lead">{str(esc["lead_line"])}</div>
                     {esc["lead_line_en"] and <div className="cm-crisis-en" lang="en" dir="ltr">{"In English: " + str(esc["lead_line_en"])}</div>}
                     {[<div key={"cr" + str(i)} className="cm-crisis-item">{str(esc["crisis_resources"][i])}</div> for i in range(len(esc["crisis_resources"]) if esc["crisis_resources"] else 0)]}
                 </div>}
-                {(narr and narr["status"] == "pending") and <div className="cm-narration cm-narration-pending">{("✦ Writing this in " + str(lname[1]) + "…") if foreign else "✦ Writing a personalized summary…"}</div>}
+                {foreign and summary_block}
                 {(foreign and narr and narr["status"] == "failed") and <div className="cm-narration cm-narration-pending">{"Couldn't reach the translator just now — here is the answer in English."}</div>}
                 {interp_tier and renderInterpreter(card, True)}
                 {(loc_t and loc_t["status"] == "ok") and <div className="cm-bubble cm-bubble-translated" lang={lang}>
@@ -744,6 +756,11 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                     <p className="cm-muted">{L(ui, "ui.near_ask", "You can still apply. Only the program's office can say no.")}</p>
                 </div>}
                 {(charge_show and not charge_asked) and charge_block}
+                {(not foreign) and summary_block}
+                {can_save and <div className="cm-save" dir="auto">
+                    <button className="cm-why" onClick={lambda _e: MouseEvent { saveList(msg["id"], shown_matches, plan, ui); }}>{("✓ " if saved_list == msg["id"] else "") + L(ui, "ui.save_list", "Save this list")}</button>
+                    <span className="cm-muted">{L(ui, "ui.save_note", "This page forgets the list when you reload or close it.")}</span>
+                </div>}
                 {(held_back and n_held > 0) and <button className="cm-why cm-show-programs" onClick={lambda _e: MouseEvent { open_programs = open_programs + [str(msg["id"])]; }}>{L(ui, "ui.show_programs", "Show programs and next steps") + " (" + str(n_held) + ")"}</button>}
                 {((not held_back) and plan["steps"] and len(plan["steps"]) > 0) and renderPlan(plan, ui)}
                 {(not held_back) and renderLocal(locals[msg["id"]])}
@@ -852,7 +869,7 @@ impl ChatPane.renderPipeline -> JsxElement {
         "EscalationWalker crisis_route": ("Not needed: no crisis signal, and programs matched" if len([s for s in spans if s["name"] == "EligibilityWalker score"]) > 0 else "Not needed: no crisis signal, and no need named yet to score")
     };
     return
-        <div className="cm-panel cm-side-card" style={{"flex": "1"}}>
+        <div className="cm-panel cm-side-card cm-dev-only" style={{"flex": "1"}}>
             <div className="cm-side-title">Agent pipeline · last turn</div>
             {[
                 <div key={"ag" + str(i)} className="cm-agent">
@@ -891,8 +908,49 @@ impl ChatPane.forgetMe -> None {
         for k in ["cm_uid", "cm_pw", "jac_token", "cm_lang"] {
             try { localStorage.removeItem(k); } except Exception as _ex {}
         }
+        window.cm_quiet_leave = True;
         setTimeout(lambda { window.location.reload(); }, 1400);
     }
+}
+
+impl ChatPane.saveList(msg_id: str, matches: list, plan: Any, ui: Any) -> None {
+    # Only what the person chose to keep: program names, numbers, links and
+    # papers. Their own words, income and household stay out of it. On a phone
+    # the share sheet can send it to Notes or a message; elsewhere it downloads.
+    lines: list = [L(ui, "ui.save_head", "Programs to contact"), ""];
+    for m in matches {
+        lines.append(str(m["resource_name"]));
+        if m["contact_phone"] { lines.append(str(m["contact_phone"])); }
+        if m["online_url"] { lines.append(str(m["online_url"])); }
+        lines.append("");
+    }
+    docs: list = list(plan["shared_documents"]) if (plan and plan["shared_documents"]) else [];
+    if len(docs) > 0 {
+        lines.append(L(ui, "ui.bring", "Bring") + ": " + ", ".join([str(x) for x in docs]));
+        lines.append("");
+    }
+    lines.append("911 · 988 · 1-800-799-7233 · 211");
+    text = lines.join(String.fromCharCode(10));
+    saved_list = msg_id;
+    window.cm_saved_list = True;
+    download = lambda {
+        a = document.createElement("a");
+        a.href = "data:text/plain;charset=utf-8," + encodeURIComponent(text);
+        a.download = "programs.txt";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    };
+    try {
+        if navigator.share {
+            navigator.share({"title": lines[0], "text": text}).catch(lambda e: Any {
+                # Closing the share sheet is a choice. Any other failure downloads.
+                if str(e.name) != "AbortError" { download(); }
+            });
+            return;
+        }
+    } except Exception as _ex {}
+    download();
 }
 
 impl ChatPane.footerUi -> Any {

@@ -103,6 +103,24 @@ def:pub ClientApp -> JsxElement {
                     CM_SHIFTS["t"] = [];
                 }
             });
+            # Reloading or closing loses the list on screen, and phones throw
+            # away background tabs (blind audit F23), so ask first when a list is
+            # showing and it wasn't saved. Never in a private session, never for
+            # Quick exit, and never for a call: on some browsers tel: links fire
+            # beforeunload, and the prompt would stand between a person and the dialer.
+            document.addEventListener("click", lambda e: Any {
+                try {
+                    if e.target.closest("a[href^='tel:'],a[href^='sms:'],a[href^='mailto:']") { window.cm_dial_at = Date.now(); }
+                } except Exception as _ex {}
+            }, True);
+            window.addEventListener("beforeunload", lambda e: Any {
+                try {
+                    if window.cm_quiet_leave or window.cm_saved_list { return; }
+                    if Date.now() - Number(window.cm_dial_at or 0) < 2000 { return; }
+                    if sessionStorage.getItem("cm_private") == "1" { return; }
+                    if document.querySelector(".cm-cards") { e.preventDefault(); e.returnValue = ""; }
+                } except Exception as _ex {}
+            });
             # A private session (crisis turns switch it on) leaves nothing in
             # this browser once the page closes: the login lives in
             # sessionStorage and localStorage is wiped on the way out.

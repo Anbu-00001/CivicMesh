@@ -56,7 +56,8 @@ def:pub ChatPane(
         # Bot message id whose English original is expanded.
         en_open: str = "",
         # Private session: nothing stays in this browser after the tab closes.
-        private_on: bool = False;
+        private_on: bool = False,
+        saved_list: str = "";
 
     can with entry {
         seed = [{
@@ -141,6 +142,7 @@ def:pub ChatPane(
     async def forgetMe -> None;
     def setPrivate(on: bool) -> None;
     def renderPrivacy -> JsxElement;
+    def saveList(msg_id: str, matches: list, plan: Any, ui: Any) -> None;
     def footerUi -> Any;
     def spansToEvents(spans: list) -> list;
     def fmtMs(ms: float) -> str;
@@ -186,13 +188,15 @@ def:pub ChatPane(
                     </div>}
                 </div>
                 <div className="cm-composer">
-                    <input
+                    <textarea
                         id="cm-message"
                         aria-label="Your message"
+                        rows={Math.min(5, Math.max(1, len(input_val.split(String.fromCharCode(10))), Math.ceil(len(input_val) / 40)))}
                         value={input_val}
                         onChange={lambda e: ChangeEvent { input_val = e.target.value; }}
                         onKeyDown={lambda e: KeyboardEvent {
-                            if e.key == "Enter" { sendMessage(); }
+                            # Enter sends, as it always did; Shift+Enter starts a new line.
+                            if e.key == "Enter" and not e.shiftKey and not e.nativeEvent.isComposing { e.preventDefault(); sendMessage(); }
                         }}
                         placeholder={("Answer the question above, or describe anything else…" if pending_question else "Describe your situation in any language…")}
                         disabled={is_loading}

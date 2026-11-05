@@ -64,6 +64,7 @@ cd civicmesh && jac run tests/check_prior.jac
   9 checks: the client-held profile is range-checked, and flags and the household count must be supported by the person's own words · PASS
 
 python3 tests/browser_e2e.py http://localhost:7860   # headless Chrome
+python3 tests/browser_model.py http://localhost:7862 # headless Chrome, a fake model: the summary comes after the answer
   16 checks · PASS
 
 cd civicmesh && jac run tests/eval_external.jac   # real posts, downloaded on first run
