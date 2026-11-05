@@ -375,6 +375,8 @@ lu, lt_ = login()
 l1, _ = turn(lu, lt_, "I still have my service weapon and I think about using it every night")
 check("L3 the service weapon message gets the crisis answer, not the quiet reply", l1 is not None and "988" in l1["reply"] and l1["escalation"], (l1 or {}).get("reply"))
 
+hz = json.load(urllib.request.urlopen(H + "/healthz", timeout=20))
+check("H1 the health check tests data, disk, database and engine", hz["status"] == "ok" and sorted(hz["checks"]) == ["data", "database", "disk", "engine"], hz)
 # The route for someone with no account: no token, a real answer, nothing stored (blind audit F24).
 def guest(msg):
     req = urllib.request.Request(H + "/walker/GuestIntakeWalker", json.dumps({"conversation": msg, "user_id": "x", "prior": {}}).encode(), {"Content-Type": "application/json"}, method="POST")
