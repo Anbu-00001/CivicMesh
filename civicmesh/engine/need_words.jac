@@ -20,14 +20,14 @@ glob ROMANIZED: dict = {
 
 glob EXTRA_NEEDS: dict = {
     "healthcare": [
-        ("medicade|medicaide|medicad|medi-caid|medicaid", 3.0), ("lost (?:my |our |his |her )?(?:health )?(?:coverage|insurance)", 2.5),
+        ("medicade|medicaide|medicad", 3.0), ("lost (?:my |our |his |her )?(?:health )?(?:coverage|insurance)", 2.5),
         ("health ?care", 2.5), ("medical(?! school| student| assistant)", 1.5), ("medicare", 2.5), ("atenci[oó]n m[eé]dica", 2.5),
         ("part d", 2.5), ("extra help for (?:medicare|part d|prescriptions)", 2.5), ("(?:std|sti) test(?:ing|s)?", 2.5), ("birth control", 2.5), ("anticonceptiv\\w*", 2.5), ("indian health", 3.0),
         ("(?:in-?)?home care", 2.0), ("eldercare", 2.5), ("elder abuse", 1.5),
         ("pregnant", 1.0), ("embarazada", 1.0), ("dementia", 1.0), ("alzheimer'?s?", 1.0), ("(?:" + MEDICAID_BRANDS + ")", 3.0)
     ],
     "food": [
-        ("(?:" + SNAP_BRANDS + ")", 3.0), ("(?<!postage )(?<!food )stamps", 2.0), ("foodstamps", 3.0), ("food ?stamp", 3.0)
+        ("(?:" + SNAP_BRANDS + ")", 3.0), ("(?<!postage )(?<!food )stamps", 2.0), ("foodstamps", 3.0)
     ],
     "housing": [
         ("evicshun|evicion|evition|evictoin", 3.0), ("[357][- ]day notice", 2.5), ("couch[- ]?surf\\w*", 3.0), ("(?:cant|can'?t|cannot) pay (?:my |the |our )?(?:rent|rnt)", 2.5), ("rnt", 1.5),

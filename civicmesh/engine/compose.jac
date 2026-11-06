@@ -11,6 +11,7 @@
 """
 
 import re;
+glob ACT_AFTER_RE: str = "\\b(?:i (?:just |already |finally )?(?:took|swallowed|ate|drank|downed) (?:them|it|all of them|all of it|the (?:pills|meds|tablets|bottle|whole bottle)|everything)|i (?:just |already )?did it|it'?s done|i (?:just |already )?(?:cut|hurt|shot) myself|(?:ya |ahora )?me (?:las|los) tom[eé]|ya lo hice)\\b";
 import time;
 import uuid;
 import from engine.i18n { yes_no, unspaced_chars, ascii_digits }
@@ -217,6 +218,14 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
     # "Do you have a safe place to sleep tonight?" → "yes": not homeless.
     if answering == "homeless" and "homeless" in flags and "homeless" not in fresh and (re.search(YES_RE, low_t) or yes_no(text) == "yes") and not re.search(NO_RE, low_t) {
         flags.remove("homeless");
+    }
+    # "I've been saving my pills", then "I took them": the act after the thought is an
+    # emergency, with 911 and Poison Control first (audit 2026-11-06, F8, script K20).
+    if [f for f in list(prior.get("flags", [])) if f in ["self_harm", "self_harm_concern"]] and re.search(ACT_AFTER_RE, low_t) {
+        for f in ["self_harm", "emergency"] {
+            if f not in flags { flags.append(f); }
+        }
+        out["act_after"] = True;
     }
     out["flags"] = flags;
     # "My mom is 70" after "I'm 22": the speaker is still 22; she is a

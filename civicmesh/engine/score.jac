@@ -637,7 +637,7 @@ def rank_resources(items: list, profile: dict, message: str, limit: int = 6, lan
         if ("self_harm" in flags or "self_harm_concern" in flags) and "988" in name_low { pinned = True; }
         # An overdose or a swallowed chemical: 911 leads, and this line tells
         # the person what to do while help comes.
-        if "emergency" in flags and "poison control" in name_low and re.search(str(TARGETS["poison"][0]), str(message).lower()) { pinned = True; }
+        if "emergency" in flags and "poison control" in name_low and (re.search(str(TARGETS["poison"][0]), str(message).lower()) or profile.get("act_after")) { pinned = True; }
         # The hotline is the safety line; the legal-advocacy entry shares its
         # number and read as a mislabelled safety line when pinned.
         if "dv" in flags and "domestic violence hotline" in name_low { pinned = True; }

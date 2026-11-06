@@ -22,7 +22,7 @@ What is measured (the engine's own outputs, no model):
                      hotline); false alarms = No posts where it's shown
   housing / health   recall = Yes posts routed to housing / healthcare (as the
                      top or a secondary category); false-positive rate on No
-  immigration        recall = Yes posts where an immigration status was read
+  immigration        recall = Yes posts where an immigration status was read (the speaker's or a relative's)
                      (citizen, green card, visa, refugee, undocumented, …)
 """
 
@@ -67,7 +67,9 @@ def hit(task: str, p: dict) -> bool {
     if task == "health" { return "healthcare" in cats; }
     # Every r/legaladvice post is "legal", so routing is no signal here: count
     # posts where the engine read an immigration status.
-    if task == "immigration" { return bool(p.get("citizenship")); }
+    # A relative's status counts: "my wife is on a work visa" is an immigration
+    # question even though the speaker's own status is not hers (since 2026-11-06).
+    if task == "immigration" { return bool(p.get("citizenship") or p.get("family_status")); }
     return False;
 }
 

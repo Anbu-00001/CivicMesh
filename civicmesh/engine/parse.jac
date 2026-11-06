@@ -1096,7 +1096,10 @@ def parse_citizenship(low: str, evidence: list, text: str) -> str {
             # "My husband is undocumented, I'm a citizen": his status, not the speaker's.
             # A citizen in a mixed-status family still qualifies (audit 2026-11-06, F5).
             # A child's status stays: it is what decides the child's own programs.
-            if status == "non_citizen" and (re.search(STATUS_ADULT_LEFT, left) or re.match(STATUS_OTHER_START, m.group(0))) and not re.search(STATUS_SELF_TOO, left + m.group(0)) and not re.search("\\b(?:i|we)\\s+(?:also |still |just |really )?$", left) { continue; }
+            if status == "non_citizen" and (re.search(STATUS_ADULT_LEFT, left) or re.match(STATUS_OTHER_START, m.group(0))) and not re.search(STATUS_SELF_TOO, left + m.group(0)) and not re.search("\\b(?:i|we)\\s+(?:also |still |just |really )?$", left) {
+                _ev(evidence, "family_status", status, m.start(), m.end(), text);
+                continue;
+            }
             # "I'm not undocumented": a denial, not a status.
             if status == "non_citizen" and re.search("\\b(?:not|n'?t|never been|never was)\\s+(?:an? )?$", left) and m.group(0).startswith(("undocumented", "illegal", "out of status", "indocumentad")) { continue; }
             if status == "eligible_immigrant" and re.search(STATUS_NEG_LEFT, left) { status = "non_citizen"; }
@@ -1420,6 +1423,12 @@ def parse_intake(text: str) -> dict {
     }
     loc = parse_location(raw, low, evidence);
     citizenship = parse_citizenship(low, evidence, raw);
+    # A relative's status, kept apart from the speaker's (audit 2026-11-06, F5).
+    family_status = "";
+    for e in evidence {
+        if e.get("field") == "family_status" { family_status = str(e.get("value", "")); }
+    }
+    if family_status and "member_no_status" not in flags { flags.append("member_no_status"); }
     if "veteran" not in flags and re.search(r"\bveteran|\bvet\b", low) and re.search(r"\bmy (?:husband|wife|spouse)(?:'s| is| was)? (?:a |an )?(?:veteran|vet)\b|\bbut my (?:husband|wife|spouse) (?:is|was)\b", low) {
         flags.append("veteran");
     }
@@ -1545,6 +1554,7 @@ def parse_intake(text: str) -> dict {
         "city": loc["city"],
         "zip": loc["zip"],
         "citizenship": citizenship,
+        "family_status": family_status,
         "flags": flags,
         "evidence": evidence,
         "completeness": round(known / 5.0, 2),

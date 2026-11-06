@@ -942,6 +942,10 @@
     {"text": "my landlord won't let me leave the lease early", "expect": {"flag_absent": "trafficking"}, "_why": "blind audit 2026-11-06 (F2/F4/F18); the phrase was written from this audit message, so it is a false-alarm check"},
     {"text": "My mother-in-law and husband beat me", "expect": {"flag_absent": "child_abuse"}, "_why": "blind audit 2026-11-06 (F2/F4/F18); the phrase was written from this audit message, so it is a false-alarm check"},
     {"text": "He took my phone and won't let me leave the house", "expect": {"flag_absent": "trafficking"}, "_why": "blind audit 2026-11-06 (F2/F4/F18); the phrase was written from this audit message, so it is a false-alarm check"},
-    {"text": "my ex knows my address because of the custody papers", "expect": {"flag_absent": "dv"}, "_why": "blind audit 2026-11-06 (F2/F4/F18); the phrase was written from this audit message, so it is a false-alarm check"}
+    {"text": "my ex knows my address because of the custody papers", "expect": {"flag_absent": "dv"}, "_why": "blind audit 2026-11-06 (F2/F4/F18); the phrase was written from this audit message, so it is a false-alarm check"},
+    {"text": "I'm going to kill my landlord", "expect": {"flag": "self_harm_concern"}, "_why": "blind audit 2026-11-06: harm to others was 0/10; written from the audit's wording"},
+    {"text": "I have a gun and I'm going to shoot him", "expect": {"flag": "emergency"}, "_why": "blind audit 2026-11-06: harm to others was 0/10; written from the audit's wording"},
+    {"text": "I'm gonna kill it at my interview tomorrow", "expect": {"flag_absent": "self_harm_concern"}, "_why": "false-alarm check for the harm-to-others phrase"},
+    {"text": "my landlord is killing me with these fees", "expect": {"flag_absent": "self_harm_concern"}, "_why": "false-alarm check for the harm-to-others phrase"}
 ]
 }
