@@ -225,6 +225,7 @@ def:pub ActionPlan(user_id: str, walker_events: list = []) -> JsxElement {
                     </div>
                 </div>
                 <div
+                    className="cm-dev-only"
                     style={{
                         "padding": "8px 12px",
                         "background": "rgba(255,255,255,0.04)",

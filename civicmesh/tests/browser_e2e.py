@@ -323,8 +323,11 @@ def main(app: str) -> int:
         tab.close()
         tab = new_tab()
         open_chat(tab, app)
+        tab.until("!!(localStorage.getItem('cm_uid') || sessionStorage.getItem('cm_uid'))")
         fresh = tab.js("localStorage.getItem('cm_uid') || sessionStorage.getItem('cm_uid')")
-        check("3f the next visit gets a new identity", fresh and fresh != uid)
+        check("3f the next visit gets a new identity", fresh and fresh != uid, [fresh, uid])
+        secret = str(tab.js("localStorage.getItem('cm_pw') || sessionStorage.getItem('cm_pw')"))
+        check("3g the identity and secret are long and random", len(str(fresh)) == 24 and len(secret) == 64 and len(set(secret)) > 8, [len(str(fresh)), len(secret)])
         tab.close()
 
         # 6. Coming back to the same browser after a conversation.
@@ -506,11 +509,49 @@ def main(app: str) -> int:
         check("9c the next turn keeps the case: the crisis box is still there", tab.js("!!document.querySelector('.cm-crisis-pin')"))
         check("9d and no error message", not tab.js("!!document.querySelector('.cm-retry')"))
         tab.close()
+        check_page_language(app)
     finally:
         proc.terminate()
         if srv:
             srv.shutdown()
     return report()
+
+
+def check_page_language(app):
+    """Section 10 (blind audit F22): the menu works before the first answer."""
+    tab = new_tab()
+    tab.call("Page.enable")
+    tab.call("Emulation.setDeviceMetricsOverride", width=360, height=740, deviceScaleFactor=2, mobile=True)
+    tab.call("Page.navigate", url=app)
+    tab.until("!!document.querySelector('.lp-safety')")
+    check("10a the chat opens", open_chat(tab, ""))
+    # Sign-up turned away, on purpose: the menu must still work.
+    tab.js("""localStorage.clear();sessionStorage.clear();const f=window.fetch;
+        window.fetch=(u,o)=>String(u).includes('/user/')?Promise.resolve(new Response('{"ok":false}',{status:429})):f(u,o)""")
+    en_hold = tab.js("document.querySelector('.cm-input').placeholder")
+    tab.until("!!document.querySelector('.cm-lang-select option[value=ar]')")
+    tab.js("""(()=>{const s=document.querySelector('.cm-lang-select');const set=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set;
+        set.call(s,'ar');s.dispatchEvent(new Event('change',{bubbles:true}))})()""")
+    check("10b the page says it is Arabic and right to left", tab.until("document.documentElement.lang==='ar' && document.documentElement.dir==='rtl'"))
+    check("10c the message box changes", tab.until(f"document.querySelector('.cm-input').placeholder!=={json.dumps(en_hold)}"))
+    check("10d the welcome changes", tab.until("!/Hi, I'm CivicMesh/.test(document.querySelector('.cm-thread').innerText)"))
+    check("10e the safety lines keep their numbers", "988" in str(tab.js("document.body.innerText")))
+    check("10f nothing is wider than the phone", tab.js("document.documentElement.scrollWidth<=window.innerWidth+1"), tab.js("[document.documentElement.scrollWidth,window.innerWidth]"))
+    rows = tab.js("document.querySelectorAll('.cm-thread .cm-row').length")
+    send(tab, "I need food and I live in Ohio")
+    tab.until(f"document.querySelectorAll('.cm-thread .cm-row').length>={rows + 2} && !document.querySelector('.cm-typing')")
+    row = str(tab.js("document.querySelector('.cm-understood')?.innerText || ''"))
+    check("10g the understood row has no raw English", row and "food" not in row and "within" not in row, row[:120])
+    tab.js("""(()=>{const s=document.querySelector('.cm-lang-select');const set=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set;
+        set.call(s,'auto');s.dispatchEvent(new Event('change',{bubbles:true}))})()""")
+    check("10h back to auto, the page is left to right again", tab.until("document.documentElement.dir==='ltr'"))
+    tab.js("try{localStorage.removeItem('cm_lang')}catch(e){}")
+    # Blind audit F30: the phone header, and the page's own margin.
+    gap = tab.js("""(()=>{const t=document.querySelector('.cm-chat-head h2').getBoundingClientRect();const m=document.querySelector('.cm-lang-select').getBoundingClientRect();
+        return !(t.right>m.left+1 && t.left<m.right-1 && t.bottom>m.top+1 && t.top<m.bottom-1)})()""")
+    check("10i the title and the language menu don't overlap on a phone", gap)
+    check("10j the page has no white stripe around it", tab.js("getComputedStyle(document.body).marginLeft==='0px'"), tab.js("getComputedStyle(document.body).marginLeft"))
+    tab.close()
 
 
 def open_chat_in_frame(inner):

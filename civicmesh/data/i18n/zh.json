@@ -1,7 +1,7 @@
 {
   "_meta": {
     "language": "zh",
-    "name": "Chinese (Simplified)",
+    "name": "Chinese (Simplified)", "endonym": "中文",
     "review": "draft — native review welcome"
   },
   "q.need": "您现在最需要哪方面的帮助？",
@@ -93,6 +93,22 @@
   "ui.save_list": "保存此列表",
   "ui.save_note": "重新加载或关闭此页面后,列表会消失。",
   "ui.save_head": "可联系的项目",
+  "ui.fact_urgent": "紧急",
+  "ui.fact_household": "{n} 口之家",
+  "ui.fact_age": "{n} 岁",
+  "ui.fact_year": "每年",
+  "ui.carried": "之前提到",
+  "ui.private_note": "私密模式已开启:关闭此标签页后,此浏览器不会保留这次对话的任何内容。Quick exit 可立即离开。",
+  "ui.plan_sub": "最有用、最快的排在前面 · 约 {n} 分钟文书工作",
+  "ui.est_benefit": "预计福利",
+  "ui.busy": "暂时无法连接服务器。您的消息没有丢失,可以再试一次。",
+  "ui.welcome": "您好,我是 CivicMesh。请用您自己的话告诉我发生了什么,我会帮您找到可用的住房、食品、医疗、法律、现金或托儿项目,并说明原因。",
+  "ui.placeholder": "用任何语言描述您的情况…",
+  "ui.placeholder_answer": "回答上面的问题,或告诉我其他情况…",
+  "ui.new_case": "新案例",
+  "ui.new_case_note": "已开始新案例。之前的对话内容都不会保留。发生了什么?",
+  "ui.send": "发送消息",
+  "ui.assumed": "假设",
   "ui.bring": "请携带",
   "ui.routes": "长期路线",
   "ui.understood": "已了解",
@@ -126,5 +142,8 @@
   "ui.charge_title": "福利与您的移民案件",
   "ui.charge_body": "自 2026 年九月 18 日起，您申请绿卡时，官员可以考虑您本人使用的按收入发放的福利。家人使用的福利通常不计，难民和获庇护者可豁免。做决定前，请咨询经认可的移民代表。",
   "ui.charge_link": "查找免费移民法律帮助",
-  "r.more_lines": "退伍军人：拨打988后按1。失聪或听力困难者：用视频电话拨打988，或用TTY拨711再拨988。"
+  "r.more_lines": "退伍军人：拨打988后按1。失聪或听力困难者：用视频电话拨打988，或用TTY拨711再拨988。",
+  "ui.privacy_title": "隐私优先：您的文字不会被保存，也不会发送给 AI",
+  "ui.private_toggle": "私密会话：关闭标签页后，此浏览器不保留任何内容",
+  "ui.delete_data": "删除我的数据"
 }

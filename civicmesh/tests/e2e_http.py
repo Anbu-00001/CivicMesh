@@ -375,6 +375,20 @@ lu, lt_ = login()
 l1, _ = turn(lu, lt_, "I still have my service weapon and I think about using it every night")
 check("L3 the service weapon message gets the crisis answer, not the quiet reply", l1 is not None and "988" in l1["reply"] and l1["escalation"], (l1 or {}).get("reply"))
 
+ul = json.load(urllib.request.urlopen(H + "/ui-strings/ar", timeout=20))
+check("I1 a picked language's labels need no account", "ui.welcome" in ul and ul["ui.welcome"] != json.load(urllib.request.urlopen(H + "/ui-strings/en", timeout=20))["ui.welcome"], list(ul)[:3])
+ls = json.load(urllib.request.urlopen(H + "/ui-strings/languages", timeout=20))
+check("I3 the language menu needs no account", len(ls) >= 50 and any(l["code"] == "ar" for l in ls), len(ls))
+for bad in ["xx", "..%2f..%2fetc%2fpasswd", "en.json", "ar/../en"]:
+    try:
+        urllib.request.urlopen(H + "/ui-strings/" + bad, timeout=20)
+        code = 200
+    except urllib.error.HTTPError as e:
+        code = e.code
+    check("I2 no labels for " + bad, code in (400, 403, 404), code)
+
+hz = json.load(urllib.request.urlopen(H + "/healthz", timeout=20))
+check("H1 the health check tests data, disk, database and engine", hz["status"] == "ok" and sorted(hz["checks"]) == ["data", "database", "disk", "engine"], hz)
 # The route for someone with no account: no token, a real answer, nothing stored (blind audit F24).
 def guest(msg):
     req = urllib.request.Request(H + "/walker/GuestIntakeWalker", json.dumps({"conversation": msg, "user_id": "x", "prior": {}}).encode(), {"Content-Type": "application/json"}, method="POST")

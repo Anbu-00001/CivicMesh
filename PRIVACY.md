@@ -38,8 +38,9 @@ a law firm or a benefits office, and using it does not apply you for anything.
   direct link, https://anbu-00001-civicmesh.hf.space, for the full exit.
 - **Private session.** If you write about hurting yourself or about abuse, or
   if you switch it on under the chat box, this browser keeps nothing about the
-  conversation once you close the tab. In a private session, Quick exit also
-  erases your case on the server.
+  conversation once you close the tab. The server copy is different: closing
+  the tab does not erase it. **Delete my data**, or Quick exit in a private
+  session, erases it, and otherwise it goes 30 days after your last message.
 - **No ads, no tracking, no selling.** There are no analytics scripts and no
   advertising cookies.
 
@@ -47,19 +48,22 @@ a law firm or a benefits office, and using it does not apply you for anything.
 
 | What | Kept where | For how long |
 |---|---|---|
-| What the engine understood from your messages: the kind of help, urgency, household size, yearly income, your language, and your ZIP code if you gave one. Not your words, your immigration status, or your location beyond ZIP | Our server, in a graph database under your random login | Until you press **Delete my data**, or until the server restarts, whichever comes first |
+| What the engine understood from your messages: the kind of help, urgency, household size, yearly income, your language, and your ZIP code if you gave one. Not your words, your immigration status, or your location beyond ZIP | Our server, in a graph database under your random login | Until you press **Delete my data**, or 30 days after your last message, whichever comes first. A restart does not erase it |
 | The programs in your plan (saved as applications you can mark applied, approved or denied; for a crisis they include the hotline) and an automatic quality score for each answer. The score's label is built from the engine's reading, not your words | Same | Same |
 | The conversation so far (so a follow-up answer can build on it) | Your browser, sent along with each new message and used in memory only | Until you start a new case or close the page |
-| Your random login (username and a hashed password, nothing about you) | Our server's user list, and your browser's local storage (in a private session, only the open tab) | Until the server restarts. Delete my data, Quick exit in a private session, or closing a private tab clears it from your browser |
+| Your random login (username and a hashed password, nothing about you) | Our server's user list, and your browser's local storage (in a private session, only the open tab) | 30 days after your last message. Delete my data clears the case and your browser's copy, but the login itself stays on the server until that 30-day job removes it, and it would still sign in if someone had copied it |
 | Your picked language | Your browser's local storage | Until you clear it or press Delete my data |
 | Anonymous counts: how many chats, which languages, which kinds of help, response times | Our server's memory. Visitor IDs are one-way hashed | Until the server restarts |
 | Abuse-protection counters: your connection's address, and a one-way hash of your random login, each with a request count | Our server's memory only; never written to disk or to the logs | Until the limit's window passes (at most 10 minutes after your last request), or the server restarts |
 | A copy of an answer, so a double-tapped Send doesn't run twice | Our server's memory only | 3 seconds for a chat answer, 60 seconds for a summary |
 | Server logs | Our hosting provider | Which kind of request came in and whether it worked, plus counts of refused requests. Never your address, your login or what you wrote |
 
-The app runs on Hugging Face Spaces' free tier, where storage is not permanent:
-everything above is erased whenever the app restarts. That happens on every
-update, and after 48 hours with no visitors.
+A job runs every hour and removes every visitor, case and login with no new
+message for 30 days. Restarting the app does not erase anything on disk. The
+database writes changes to a side file (a write-ahead log) first, so a deleted
+case can stay readable in that file on the server until the next checkpoint,
+usually minutes later. On Hugging Face's free tier, a rebuild of the Space does
+start with empty storage.
 
 ## What leaves our server
 
@@ -92,6 +96,11 @@ improve NVIDIA products and services, including AI models" (§3.3). The only
 responsible way to use that service with people in crisis is to not send what
 they write.
 
+**Local office lookups.** For housing, health and legal answers where you gave
+a state, the app asks public map services for nearby offices: the city and
+state go to HUD's map service (services.arcgis.com, run by Esri) and HRSA's
+(gisportal.hrsa.gov). Nothing else about you is sent.
+
 **Hugging Face** hosts the app and sees ordinary web traffic, such as your IP
 address. Its privacy policy applies to that.
 
@@ -118,7 +127,8 @@ address. Its privacy policy applies to that.
 
 We keep as little as possible so there's little to hand over. There are no
 names, no messages, no immigration status and no contact details, and cases are
-erased when the server restarts. If we ever received a legal demand for user
+erased 30 days after the last message. A plan that includes a crisis line does
+show, to anyone reading the server's database, that a crisis line was offered. If we ever received a legal demand for user
 data, we would say so here, as far as the law allows.
 
 ## Children

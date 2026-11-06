@@ -213,6 +213,8 @@
     {"name": "a correction to pay period", "turns": [{"text": "I need food, I make $1000 a month in Ohio", "expect": {"income_annual": 12000}}, {"text": "wait that's every two weeks", "expect": {"income_annual": 26000}}]},
     {"name": "household corrected in passing", "turns": [{"text": "We are 5, need food in Ohio", "expect": {"household_size": 5}}, {"text": "my oldest moved out so it's just 4 of us now", "expect": {"household_size": 4}}]},
     {"name": "a child's age isn't the household", "turns": [{"text": "I need food in Ohio", "expect": {"category": "food"}}, {"text": "and my son needs a doctor, he's 6", "answering": "household", "expect": {"household_size": 0}}]},
-    {"name": "maybe 2k to the income question", "turns": [{"text": "I need food in Ohio", "expect": {"category": "food"}}, {"text": "maybe 2k", "answering": "income", "expect": {"income_annual": 24000}}]}
+    {"name": "maybe 2k to the income question", "turns": [{"text": "I need food in Ohio", "expect": {"category": "food"}}, {"text": "maybe 2k", "answering": "income", "expect": {"income_annual": 24000}}]},
+    {"name": "Saving pills, then took them", "why": "blind audit 2026-11-06 (F8, script K20): the act after the thought stayed a concern with no 911", "turns": [{"text": "I feel hopeless", "expect": {"flag_absent": "emergency"}}, {"text": "I've been saving my pills", "expect": {"flag_absent": "emergency"}}, {"text": "I took them", "expect": {"flag": "emergency"}}]},
+    {"name": "Food, then 'I took them to school'", "why": "the escalation needs earlier danger, not just the words", "turns": [{"text": "I need food for my kids", "expect": {"category": "food"}}, {"text": "I took them to school and need a food bank", "expect": {"flag_absent": "emergency"}}]}
 ]
 }

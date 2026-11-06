@@ -11,6 +11,7 @@
 """
 
 import re;
+glob ACT_AFTER_RE: str = "\\b(?:i (?:just |already |finally )?(?:took|swallowed|ate|drank|downed) (?:them|it|all of them|all of it|the (?:pills|meds|tablets|bottle|whole bottle)|everything)|i (?:just |already )?did it|it'?s done|i (?:just |already )?(?:cut|hurt|shot) myself|(?:ya |ahora )?me (?:las|los) tom[eé]|ya lo hice)\\b";
 import time;
 import uuid;
 import from engine.i18n { yes_no, unspaced_chars, ascii_digits }
@@ -218,6 +219,14 @@ def merge_profiles(prior: dict, cur: dict, text: str = "", answering: str = "") 
     if answering == "homeless" and "homeless" in flags and "homeless" not in fresh and (re.search(YES_RE, low_t) or yes_no(text) == "yes") and not re.search(NO_RE, low_t) {
         flags.remove("homeless");
     }
+    # "I've been saving my pills", then "I took them": the act after the thought is an
+    # emergency, with 911 and Poison Control first (audit 2026-11-06, F8, script K20).
+    if [f for f in list(prior.get("flags", [])) if f in ["self_harm", "self_harm_concern"]] and re.search(ACT_AFTER_RE, low_t) {
+        for f in ["self_harm", "emergency"] {
+            if f not in flags { flags.append(f); }
+        }
+        out["act_after"] = True;
+    }
     out["flags"] = flags;
     # "My mom is 70" after "I'm 22": the speaker is still 22; she is a
     # household member, which the senior flag already records.
@@ -317,8 +326,8 @@ def crisis_lines(lang: str, profile: dict, pinned: list) -> list {
     if self_harm {
         # Written by hand in the two languages a person here can check; the
         # catalogs are machine-drafted, and this isn't a line to guess at.
-        if lang == "en" { lines.append("I'm glad you told me. You don't have to go through this alone."); }
-        if lang == "es" { lines.append("Me alegra que me lo haya contado. No tiene que pasar por esto a solas."); }
+        if lang == "en" and "emergency" not in flags { lines.append("I'm glad you told me. You don't have to go through this alone."); }
+        if lang == "es" and "emergency" not in flags { lines.append("Me alegra que me lo haya contado. No tiene que pasar por esto a solas."); }
         lines.append(msg(lang, "r.crisis_net"));
         # Lines someone may need without saying why (988lifeline.org, 2026-11).
         # The text line is in English and Spanish only, so it isn't in the catalogs.
@@ -360,14 +369,12 @@ def compose_catalog(lang: str, profile: dict, ranking: dict, plan: dict, routes:
     if steps {
         lines.append(msg(lang, "r.start", {"agency": steps[0]["agency_name"], "action": steps[0]["action_description"]}));
     }
-    # A one-day route isn't a longer-term route ("in about 1 days").
-    if routes and int(routes[0]["total_days"]) >= 2 {
-        r = routes[0];
-        lines.append(msg(lang, "r.route", {"start": r["start"], "end": r["end"], "days": r["total_days"]}));
-    }
+    # Routes between programs had no source for their timings, so none is stated (audit 2026-11-06, F7).
     if question {
         lines.append(msg(lang, "r.question", {"question": question}));
     }
+    # Danger can come up in any message, not only the first (audit 2026-11-06, F1).
+    if not pinned { lines.append(msg(lang, "r.crisis_net")); }
     return "\n\n".join(lines);
 }
 
@@ -420,17 +427,10 @@ def compose_reply(lang: str, profile: dict, ranking: dict, plan: dict, routes: l
         s0 = steps[0];
         lines.append(("**Empiece aquí:** " if es else "**Start here:** ") + s0["agency_name"] + " — " + s0["action_description"] + ".");
     }
-    if routes and int(routes[0]["total_days"]) >= 2 {
-        r = routes[0];
-        if es {
-            lines.append("**Ruta a largo plazo:** " + r["start"] + " → " + r["end"] + " en ~" + str(r["total_days"]) + " días.");
-        } else {
-            lines.append("**Longer-term route:** " + r["start"] + " → " + r["end"] + " in about " + str(r["total_days"]) + " days.");
-        }
-    }
     if question {
         lines.append(("**Una pregunta para afinar esto:** " if es else "**One question to sharpen this:** ") + question);
     }
+    if not pinned { lines.append(msg(lang, "r.crisis_net")); }
     return "\n\n".join(lines);
 }
 

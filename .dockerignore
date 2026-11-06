@@ -51,3 +51,9 @@ Thumbs.db
 **/anchor_store.db-shm
 **/anchor_store.db-wal
 **/users.db
+
+# Local work, never part of an image
+.scratch/
+scratchpad.md
+graphify-out/
+.codegraph/

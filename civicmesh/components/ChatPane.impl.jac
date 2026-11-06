@@ -49,9 +49,10 @@ impl ChatPane.resetCase -> None {
     pending_question = "";
     # Nothing of the old case stays on screen: the words promise that, and the
     # phone may be handed to someone else next.
+    setPageAttrs(pref_lang);
     messages = [{
         "role": "bot", "kind": "text", "id": "reset-" + str(Math.random()),
-        "text": "New case started — nothing from the previous conversation is carried over. What's going on?",
+        "text": "New case started. Nothing from the earlier conversation is carried over. What's going on?",
         "suggestions": []
     }];
 }
@@ -104,7 +105,7 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "", display:
     setTimeout(lambda {
         if CM_INFLIGHT["id"] == req_id {
             CM_INFLIGHT["id"] = "";
-            messages = new_messages + [{"role": "bot", "kind": "error", "id": "t" + str(Math.random()), "text": "No answer from the server after 30 seconds — the hosting service may be busy. Your message wasn't lost.", "retry": user_text, "retry_answering": ans, "retry_display": shown, "retry_pin": pin}];
+            messages = new_messages + [{"role": "bot", "kind": "error", "id": "t" + str(Math.random()), "text": L(footerUi(), "ui.busy", "No answer from the server after 30 seconds. The hosting service may be busy. Your message wasn't lost.") + " " + errorLines(), "retry": user_text, "retry_answering": ans, "retry_display": shown, "retry_pin": pin}];
             is_loading = False;
         }
     }, 30000);
@@ -141,7 +142,7 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "", display:
     n = len(reps) if reps else 0;
     data: Any = reps[n - 1] if n > 0 else None;
     if res["spawn_error"] or (not data) or (not data["trace"]) {
-        new_messages = new_messages + [{"role": "bot", "kind": "error", "id": "e" + str(Math.random()), "text": "I couldn't reach the server just now. Your message wasn't lost, so you can try again. " + L(footerUi(), "ui.safety_danger", "In danger now:") + " 911 · " + L(footerUi(), "ui.safety_crisis", "Suicide or crisis: call or text") + " 988", "retry": user_text, "retry_answering": ans, "retry_display": shown, "retry_pin": pin}];
+        new_messages = new_messages + [{"role": "bot", "kind": "error", "id": "e" + str(Math.random()), "text": L(footerUi(), "ui.busy", "I couldn't reach the server just now. Your message wasn't lost, so you can try again.") + " " + errorLines(), "retry": user_text, "retry_answering": ans, "retry_display": shown, "retry_pin": pin}];
         messages = new_messages;
         is_loading = False;
         return;
@@ -156,6 +157,7 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "", display:
     profile_ctx = data["profile"];
     ln = data["language_name"];
     lang_label = (str(ln[1]) + (" · " + str(ln[0]) if str(ln[0]) != str(ln[1]) else "")) if (ln and data["narrate_language"] != "auto") else "not identified";
+    if pref_lang == "auto" and data["reply_language"] { setPageAttrs(str(data["reply_language"])); }
     q = data["question"];
     pending_question = str(q["key"]) if (q and q["key"]) else "";
     last_trace = data["trace"];
@@ -253,7 +255,7 @@ impl ChatPane.renderInterpreter(card: Any, open_default: bool) -> JsxElement {
 }
 
 impl ChatPane.renderLangPicker -> JsxElement {
-    langs: list = list(platform["languages"]) if (platform and platform["languages"]) else [];
+    langs: list = list(platform["languages"]) if (platform and platform["languages"]) else lang_fallback;
     # Unmarked: the whole answer is composed in that language (message
     # catalog). Others are translated after the answer arrives.
     tier_mark: dict = {"instant": " · translated", "translate": " · translated", "llm": " · AI-translated", "interpreter": " · interpreter card"};
@@ -266,6 +268,7 @@ impl ChatPane.renderLangPicker -> JsxElement {
             onChange={lambda e: ChangeEvent {
                 pref_lang = e.target.value;
                 try { localStorage.setItem("cm_lang", e.target.value); } except Exception as _ex {}
+                applyPageLang(e.target.value);
             }}
         >
             <option value="auto">🌐 Auto-detect language</option>
@@ -476,7 +479,7 @@ impl ChatPane.renderMatchCard(m: Any, idx: int, j: int, ui: Any) -> JsxElement {
         line_phone = str(m["contact_phone"]) if m["contact_phone"] else "";
         return
             <div key={"card-" + str(idx) + ":" + str(j)} className="cm-card cm-card-line card-enter">
-                <div className="cm-card-name">{str(m["resource_name"])}</div>
+                <div className="cm-card-name" lang="en" dir="auto">{str(m["resource_name"])}</div>
                 <div className="cm-card-actions">
                     {line_phone and <a className="cm-call" href={"tel:" + line_phone}>{L(ui, "ui.call", "Call") + " "}<bdi dir="ltr">{line_phone}</bdi></a>}
                     {m["online_url"] and <a className="cm-link" href={str(m["online_url"])} target="_blank" rel="noreferrer">{L(ui, "ui.website", "Website")}</a>}
@@ -510,22 +513,18 @@ impl ChatPane.renderMatchCard(m: Any, idx: int, j: int, ui: Any) -> JsxElement {
                 <span className="cm-tier" style={{"color": ts["color"], "background": ts["bg"]}}>{ts["label"]}</span>
                 <span className="cm-cap">{(L(ui, "ui.open_now", "Open now") if cap == "open" else (L(ui, "ui.waitlist", "Waitlist") if cap == "waitlist" else cap)) + " · " + (L(ui, cat_key, str(m["category"])) if cat_key else str(m["category"]))}</span>
             </div>
-            <div className="cm-card-name">{str(m["resource_name"])}</div>
+            <div className="cm-card-name" lang="en" dir="auto">{str(m["resource_name"])}</div>
             <div className="cm-meter-row">
                 <span>{L(ui, "ui.eligibility", "Eligibility")}</span>
                 <span style={{"color": ts["color"]}}>{str(pct) + "%"}</span>
             </div>
             <div className="cm-meter"><div style={{"width": str(pct) + "%", "background": ts["color"]}}/></div>
-            {(is_open and not is_line) and <div className="cm-meter-row" title="A starting guess from how open the program is (open, waitlist or closed), not measured from real outcomes. Recording your own result changes only your copy, so it can't learn across people yet.">
-                <span>{L(ui, "ui.approval", "Approval odds")}</span>
-                <span className="cm-muted">{"~" + str(mean) + "% · " + L(ui, "ui.rough_guess", "rough guess")}</span>
-            </div>}
             {ben["label"] and <div className="cm-benefit" title={str(ben["basis"])}>
                 <span className="cm-benefit-amt">{str(ben["label"])}</span>
-                <span className="cm-muted">{"estimated benefit · household of " + str(ben["household"]) + (" (assumed)" if ben["assumed_household"] else "")}</span>
+                <span className="cm-muted">{L(ui, "ui.est_benefit", "estimated benefit") + " · " + L(ui, "ui.fact_household", "household of {n}").replace("{n}", str(ben["household"])) + (" (" + L(ui, "ui.assumed", "assumed") + ")" if ben["assumed_household"] else "")}</span>
             </div>}
-            {len(notes) > 0 and <div className="cm-policy-note">{"⚑ " + notes[0]}</div>}
-            {m["counterfactual"] and <div className="cm-cf">{"↺ " + str(m["counterfactual"])}</div>}
+            {len(notes) > 0 and <div className="cm-policy-note" lang="en" dir="auto">{"⚑ " + notes[0]}</div>}
+            {m["counterfactual"] and <div className="cm-cf" lang="en" dir="auto">{"↺ " + str(m["counterfactual"])}</div>}
             {is_open and <div className="cm-criteria">
                 {[
                     <div key={"cr-" + str(k)} className="cm-crit">
@@ -540,7 +539,7 @@ impl ChatPane.renderMatchCard(m: Any, idx: int, j: int, ui: Any) -> JsxElement {
                     for k in range(len(crits))
                 ]}
                 {ben["basis"] and <div className="cm-crit-foot">{"Benefit estimate: " + str(ben["basis"])}</div>}
-                <div className="cm-crit-foot">{"Criteria confirmed: " + str(Math.round(Number(m["coverage"]) * 100)) + "% · score = hard gates × weighted soft criteria · rules as of Sep 27, 2026"}</div>
+                <div className="cm-crit-foot">{"Checked: " + str(Math.round(Number(m["coverage"]) * 100)) + "% of what this program asks · rules as of Sep 27, 2026"}</div>
             </div>}
             <div className="cm-card-actions">
                 {phone and <a className="cm-call" href={"tel:" + phone}>{L(ui, "ui.call", "Call") + " "}<bdi dir="ltr">{phone}</bdi></a>}
@@ -557,7 +556,7 @@ impl ChatPane.renderPlan(plan: Any, ui: Any) -> JsxElement {
         <div className="cm-block">
             <div className="cm-block-title">
                 <span>{L(ui, "ui.plan", "Your plan")}</span>
-                <span className="cm-muted">{"most useful and quickest first · ~" + str(plan["total_minutes"]) + " min of paperwork"}</span>
+                <span className="cm-muted">{L(ui, "ui.plan_sub", "most useful and quickest first · about {n} min of paperwork").replace("{n}", str(plan["total_minutes"]))}</span>
             </div>
             {[
                 <div key={"st-" + str(i)} className="cm-step">
@@ -683,13 +682,17 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
     # Small talk understood nothing new: no "Understood" row under "hi".
     facts: list = [];
     if not prof["small_talk"] {
-        if prof["category"] { facts = facts + [str(prof["category"]) + " · " + str(prof["urgency"]).replace("_", " ")]; }
-        if prof["secondary"] and len(prof["secondary"]) > 0 { facts = facts + ["also " + ", ".join(list(prof["secondary"]))]; }
-        if Number(prof["income_annual"]) >= 0 { facts = facts + ["$" + Number(prof["income_annual"]).toLocaleString() + "/yr"]; }
-        if Number(prof["household_size"]) > 0 { facts = facts + ["household " + str(prof["household_size"])]; }
-        if Number(prof["age"]) > 0 { facts = facts + ["age " + str(prof["age"])]; }
+        cat_keys: dict = {"food": ("opt.food", "Food"), "housing": ("opt.housing", "Housing"), "healthcare": ("opt.health", "Health care"), "legal": ("opt.legal", "Legal help"), "money": ("opt.money", "Money & child care")};
+        cat_name: Any = lambda c: Any { pair: Any = cat_keys[str(c)]; return L(ui, pair[0], pair[1]) if pair else str(c).replace("_", " "); };
+        if prof["category"] { facts = facts + [cat_name(prof["category"]) + (" · " + L(ui, "ui.fact_urgent", "urgent") if str(prof["urgency"]) == "immediate" else "")]; }
+        if prof["secondary"] and len(prof["secondary"]) > 0 { facts = facts + [str(cat_name(c)) for c in list(prof["secondary"])]; }
+        if Number(prof["income_annual"]) >= 0 { facts = facts + ["$" + Number(prof["income_annual"]).toLocaleString() + " " + L(ui, "ui.fact_year", "a year")]; }
+        if Number(prof["household_size"]) > 0 { facts = facts + [L(ui, "ui.fact_household", "household of {n}").replace("{n}", str(prof["household_size"]))]; }
+        if Number(prof["age"]) > 0 { facts = facts + [L(ui, "ui.fact_age", "age {n}").replace("{n}", str(prof["age"]))]; }
         if prof["city"] or prof["state"] { facts = facts + [(str(prof["city"]) + ", " if prof["city"] else "") + str(prof["state"])]; }
-        if prof["citizenship"] { facts = facts + [str(prof["citizenship"]).replace("_", " ")]; }
+        cz_keys: dict = {"citizen": ("opt.citizen", "U.S. citizen"), "eligible_immigrant": ("opt.green_card", "Green card"), "humanitarian": ("opt.refugee", "Refugee / asylee"), "undocumented": ("opt.no_status", "No status"), "non_citizen": ("opt.no_status", "No status")};
+        cz: Any = cz_keys[str(prof["citizenship"])] if prof["citizenship"] else None;
+        if prof["citizenship"] { facts = facts + [L(ui, cz[0], cz[1]) if cz else str(prof["citizenship"]).replace("_", " ")]; }
     }
 
     # The model's summary can be wrong, so it never comes before the engine's
@@ -751,9 +754,9 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                 {len(facts) > 0 and <div className="cm-understood">
                     <span className="cm-muted">{L(ui, "ui.understood", "Understood")}</span>
                     {[<span key={"f" + str(i)} className="cm-fact">{facts[i]}</span> for i in range(len(facts))]}
-                    {prof["carried_category"] and <span className="cm-fact cm-fact-dim">carried from earlier</span>}
+                    {prof["carried_category"] and <span className="cm-fact cm-fact-dim">{L(ui, "ui.carried", "from earlier")}</span>}
                 </div>}
-                {(d["privacy"] and d["privacy"]["private_turn"] and is_last) and <div className="cm-private-note">{("Sesión privada activada: cuando cierre esta pestaña, este navegador no guardará nada de esta conversación. «Quick exit» (arriba a la derecha, o pulse Mayús tres veces) sale al instante." if lang == "es" else "Private session is on: once you close this tab, this browser keeps nothing about this conversation. Quick exit (top right, or press Shift three times) leaves instantly.")}</div>}
+                {(d["privacy"] and d["privacy"]["private_turn"] and is_last) and <div className="cm-private-note">{L(ui, "ui.private_note", "Private session is on: once you close this tab, this browser keeps nothing about this conversation. Quick exit leaves instantly.")}</div>}
                 {(charge_show and charge_asked) and charge_block}
                 {len(shown_matches) > 0 and <div className="cm-cards">
                     {[renderMatchCard(shown_matches[j], idx, j, ui) for j in range(len(shown_matches) if len(shown_matches) < 4 else 4)]}
@@ -817,7 +820,7 @@ impl ChatPane.renderMessage(msg: dict, idx: int, is_last: bool) -> JsxElement {
             <div className="cm-avatar">CM</div>
             <div className="cm-result">
                 <div className={("cm-bubble cm-bubble-error" if kind == "error" else "cm-bubble")}>
-                    {renderRich(str(msg["text"]))}
+                    {renderRich(L(footerUi(), "ui.welcome", str(msg["text"])) if msg["id"] == "welcome" else (L(footerUi(), "ui.new_case_note", str(msg["text"])) if str(msg["id"]).startsWith("reset-") else str(msg["text"])))}
                     {(kind == "error" and is_last and msg["retry"]) and <div className="cm-retry-row"><button className="cm-why cm-retry" onClick={lambda _e: MouseEvent { sendMessage(str(msg["retry"]), str(msg["retry_answering"] or ""), str(msg["retry_display"] or ""), bool(msg["retry_pin"])); }}>Try again</button></div>}
                 </div>
                 {(is_last and len(sugg) > 0) and <div className="cm-chips cm-chips-col">
@@ -854,7 +857,7 @@ impl ChatPane.renderProfilePanel -> JsxElement {
                     </div>
                     for i in range(len(rows))
                 ]}
-                {pending_question and <div className="cm-next-q">{"Next question: " + pending_question.replace("_", " ") + " — chosen by value of information"}</div>}
+                {pending_question and <div className="cm-next-q cm-dev-only">{"Next question: " + pending_question.replace("_", " ") + " — chosen by value of information"}</div>}
             </div>}
         </div>;
 }
@@ -971,7 +974,36 @@ impl ChatPane.guestTurn(fields: dict) -> Any {
     return out;
 }
 
+# The page says what language it is in: screen readers pick their voice from
+# this, and right-to-left languages lay out from it (blind audit F22).
+impl ChatPane.setPageAttrs(code: str) -> None {
+    c: str = code if (code and code != "auto") else "en";
+    document.documentElement.lang = c;
+    document.documentElement.dir = "rtl" if c in ["ar", "fa", "ur", "ps", "ckb", "he", "yi"] else "ltr";
+}
+
+# A picked language shows at once: labels come from a small file the gateway
+# serves with no account. No catalog for it: labels stay English, as answers do.
+impl ChatPane.applyPageLang(code: str) -> None {
+    setPageAttrs(code);
+    window.cm_page_lang = code;
+    if not code or code == "auto" or code == "en" { page_ui = {}; return; }
+    got: Any = {};
+    try {
+        r = await fetch("/ui-strings/" + encodeURIComponent(code));
+        if r.ok { got = await r.json(); }
+    } except Exception as _ex {}
+    if window.cm_page_lang == code { page_ui = got; }
+}
+
+# The lines a failed turn still shows, since the person may be in danger (audit 2026-11-06, F15).
+impl ChatPane.errorLines -> str {
+    u = footerUi();
+    return L(u, "ui.safety_danger", "In danger now:") + " 911 · " + L(u, "ui.safety_crisis", "Suicide or crisis: call or text") + " 988 · " + L(u, "ui.safety_home", "Not safe at home:") + " 1-800-799-7233";
+}
+
 impl ChatPane.footerUi -> Any {
+    if pref_lang != "auto" and page_ui and page_ui["ui.send"] { return page_ui; }
     for i in range(len(messages) - 1, -1, -1) {
         d: Any = messages[i]["data"];
         if d and d["ui"] { return d["ui"]; }
@@ -984,23 +1016,23 @@ impl ChatPane.renderPrivacy -> JsxElement {
         <details className="cm-privacy">
             <summary>
                 <span className="cm-privacy-lock" aria-hidden="true"><svg width="11" height="12" viewBox="0 0 11 12"><rect x="1" y="5" width="9" height="6.5" rx="1.5" fill="currentColor"/><path d="M 3 5 V 3.6 a 2.5 2.5 0 0 1 5 0 V 5" stroke="currentColor" strokeWidth="1.4" fill="none"/></svg></span>
-                {"Private by design — your words aren't saved or sent to AI"}
+                {L(footerUi(), "ui.privacy_title", "Private by design — your words aren't saved or sent to AI")}
             </summary>
             <ul>
                 <li>You're anonymous: this browser holds a random login, and nobody asks who you are.</li>
                 <li>Your message is read on this server to find programs. It is not saved: we keep only what the engine understood (the kind of help, how urgent, household size, income).</li>
                 <li>Your words are not sent to any AI model. The optional summary and translation are written from the engine's answer (program names, phone numbers, the next step), not from what you typed.</li>
                 <li>Crisis messages (self-harm, abuse) are answered by fixed code.</li>
-                <li>Your case is kept until you delete it or the server restarts. No advertising, no tracking, no selling.</li>
+                <li>Your case is kept until you delete it, or 30 days after your last message. No advertising, no tracking, no selling.</li>
             </ul>
             <label className="cm-private-toggle">
                 <input type="checkbox" checked={private_on} onChange={lambda _e: Any { setPrivate(not private_on); }}/>
-                <span>Private session — keep nothing in this browser after I close the tab</span>
+                <span>{L(footerUi(), "ui.private_toggle", "Private session — keep nothing in this browser after I close the tab")}</span>
             </label>
             <div className="cm-privacy-actions">
                 <a className="cm-link" href="https://github.com/Anbu-00001/CivicMesh/blob/main/PRIVACY.md" target="_blank" rel="noreferrer">Full privacy notice</a>
                 <button className="cm-ghost-btn cm-danger-btn" onClick={lambda _e: MouseEvent { forgetMe(); }} disabled={forget_state == "deleting" or forget_state == "done"}>
-                    {("Deleting…" if forget_state == "deleting" else ("Deleted — starting over" if forget_state == "done" else ("Couldn't delete — try again" if forget_state == "failed" else "Delete my data")))}
+                    {("Deleting…" if forget_state == "deleting" else ("Deleted — starting over" if forget_state == "done" else ("Couldn't delete — try again" if forget_state == "failed" else L(footerUi(), "ui.delete_data", "Delete my data"))))}
                 </button>
             </div>
         </details>;

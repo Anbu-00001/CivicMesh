@@ -25,7 +25,7 @@ so a typo in a table fails the run:
 import os;
 import sys;
 import json;
-import from engine.policy { snap_estimate, snap_year, income_limit, status_rule, fpl_annual }
+import from engine.policy { snap_estimate, snap_year, income_limit, status_rule, fpl_annual, state_coverage, program_gates }
 import from engine.score { score_resource }
 import from engine.parse { parse_intake }
 
@@ -238,6 +238,29 @@ with entry {
     check(status_rule("ui-rule", nostatus)["status"] == "unmet", "unemployment needs work authorization");
     check(status_rule("ui-rule", green)["status"] == "met", "green card can file for unemployment");
     os.environ.pop("CIVICMESH_POLICY_DATE", None);
+
+    # Against official sources, 2026-11-05: HUD notice 6476-N-01, 24 CFR 576.401,
+    # the CMS list of CHIPRA 214 states, Texas Works Handbook A-230, Welfare Rules Databook.
+    check(int(income_limit("hud-vash-rule", {"state": "OH", "household_size": 1})["limit"]) > int(income_limit("section8-hcv-rule", {"state": "OH", "household_size": 1})["limit"]), "HUD-VASH uses 80% of area median, above the voucher's 50%");
+    check(bool(income_limit("rrh-rule", {"state": "OH", "household_size": 3, "income_annual": 90000}).get("none")), "rapid re-housing has no income test to get in");
+    check(bool(income_limit("tanf-rule", {"state": "TX", "household_size": 3, "income_annual": 48000}).get("far_over")), "$4,000 a month is over every state's TANF limit");
+    check(not income_limit("tanf-rule", {"state": "MN", "household_size": 3, "income_annual": 30000}).get("far_over"), "$2,500 a month is not: Minnesota's limit was $2,935");
+    check(bool(income_limit("ccdf-rule", {"state": "OH", "household_size": 3, "income_annual": 144000}).get("far_over")), "$12,000 a month is over any child care limit");
+    check(not income_limit("ccdf-rule", {"state": "MA", "household_size": 3, "income_annual": 90000}).get("far_over"), "$90,000 for three could be under Massachusetts' limit");
+    ch = state_coverage("medicaid-rule", {"state": "TX", "age": 10}, ["child_status"]);
+    check("on the federal list" in str(ch.get("detail", "")) or str(ch.get("status", "")) != "unknown", "Texas covers lawfully present children");
+    ms = state_coverage("medicaid-rule", {"state": "MS", "age": 10}, ["child_status"]);
+    check("isn't on the federal list" in str(ms.get("detail", "")), "Mississippi isn't on the CMS list for children");
+    fl = state_coverage("medicaid-rule", {"state": "FL"}, ["pregnant"]);
+    check("isn't on the federal list" in str(fl.get("detail", "")), "Florida covers children, not pregnant people, on the CMS list");
+    wy = state_coverage("medicaid-rule", {"state": "WY"}, ["pregnant"]);
+    check("is on the federal list" in str(wy.get("detail", "")), "Wyoming covers pregnant people on the CMS list");
+    tx = [str(g["detail"]) for g in program_gates("snap-rule", {"state": "TX", "flags": ["drug_felony"]})];
+    check(len(tx) == 1 and "parole" in tx[0], "Texas SNAP after a drug felony depends on parole or probation terms");
+    ot = [str(g["detail"]) for g in program_gates("snap-rule", {"state": "OH", "flags": ["drug_felony"]})];
+    check(len(ot) == 1 and "almost every state" in ot[0], "elsewhere the note says most states eased the ban");
+    check("drug_felony" in list(parse_intake("I have a drug felony in Texas and need food stamps")["flags"]), "a drug felony is read");
+    check("drug_felony" not in list(parse_intake("my son has a drug problem and I lost my job")["flags"]), "a drug problem isn't a felony");
 
     print("CivicMesh policy-date checks — " + str(total[0]) + " checks");
     for f in fails { print("  FAIL " + f); }

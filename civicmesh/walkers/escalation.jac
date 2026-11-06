@@ -52,7 +52,7 @@ walker EscalationWalker {
         key = danger[0] if danger else (cat if cat in LEADS else "housing");
         lead = LEADS[key];
         es = self.language == "es";
-        lead_line = ("Llame a " if es else "Call ") + lead[0] + ": " + lead[1] + " — " + (lead[3] if es else lead[2]) + ".";
+        lead_line = ("Llame a " if es else "Call ") + ("la Línea 988 de Prevención del Suicidio y Crisis" if (es and key == "self_harm") else lead[0]) + ": " + lead[1] + " — " + (lead[3] if es else lead[2]) + ".";
         lead_line_en = "";
         if self.language == "es" {
             lead_line_en = msg("en", "esc.call", {"name": lead[0], "phone": lead[1], "what": msg("en", "esc." + key)});
