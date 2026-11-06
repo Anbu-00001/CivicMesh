@@ -57,7 +57,11 @@ def:pub ChatPane(
         en_open: str = "",
         # Private session: nothing stays in this browser after the tab closes.
         private_on: bool = False,
-        saved_list: str = "";
+        saved_list: str = "",
+        # Labels for a language picked before any answer has brought its own.
+        page_ui: Any = {},
+        # The language menu when no account could be made (no PlatformWalker).
+        lang_fallback: list = [];
 
     can with entry {
         seed = [{
@@ -78,7 +82,8 @@ def:pub ChatPane(
         messages = seed;
         try {
             saved = localStorage.getItem("cm_lang");
-            if saved { pref_lang = saved; }
+            if saved { pref_lang = saved; applyPageLang(saved); }
+            fetch("/ui-strings/languages").then(lambda r: Any { return r.json(); }).then(lambda j: Any { lang_fallback = j; }).catch(lambda _e: Any {});
             if sessionStorage.getItem("cm_private") == "1" { private_on = True; }
         } except Exception as _ex {}
     }
@@ -145,6 +150,9 @@ def:pub ChatPane(
     def saveList(msg_id: str, matches: list, plan: Any, ui: Any) -> None;
     async def guestTurn(fields: dict) -> Any;
     def footerUi -> Any;
+    def errorLines -> str;
+    def setPageAttrs(code: str) -> None;
+    async def applyPageLang(code: str) -> None;
     def spansToEvents(spans: list) -> list;
     def fmtMs(ms: float) -> str;
     def tierStyle(tier: str, ui: Any) -> dict;
@@ -175,9 +183,9 @@ def:pub ChatPane(
                             Deterministic eligibility engine · 2026 federal rules · 51 machine-drafted languages, 111 selectable · 1 LLM call per turn, off the critical path
                         </div>
                     </div>
-                    {is_loading and <div className="cm-badge badge-glow"><span className="cm-dot-live"/>Scoring 55 programs…</div>}
+                    {is_loading and <div className="cm-badge badge-glow"><span className="cm-dot-live"/>Scoring programs…</div>}
                     {renderLangPicker()}
-                    <button className="cm-ghost-btn" onClick={lambda _e: MouseEvent { resetCase(); }} title="Start a new case">New case</button>
+                    <button className="cm-ghost-btn" onClick={lambda _e: MouseEvent { resetCase(); }} title={L(fui, "ui.new_case", "New case")}>{L(fui, "ui.new_case", "New case")}</button>
                 </div>
                 {renderCrisisPin()}
                 <div className="cm-thread" role="log" aria-live="polite" aria-relevant="additions" aria-label="Conversation" aria-busy={is_loading} tabIndex={0}
@@ -199,7 +207,7 @@ def:pub ChatPane(
                             # Enter sends, as it always did; Shift+Enter starts a new line.
                             if e.key == "Enter" and not e.shiftKey and not e.nativeEvent.isComposing { e.preventDefault(); sendMessage(); }
                         }}
-                        placeholder={("Answer the question above, or describe anything else…" if pending_question else "Describe your situation in any language…")}
+                        placeholder={(L(fui, "ui.placeholder_answer", "Answer the question above, or describe anything else…") if pending_question else L(fui, "ui.placeholder", "Describe your situation in any language…"))}
                         disabled={is_loading}
                         maxLength={4000}
                         className="cm-input"
@@ -208,8 +216,8 @@ def:pub ChatPane(
                         onClick={lambda _e: MouseEvent { sendMessage(); }}
                         disabled={is_loading}
                         className={("cm-send cm-send-on" if (input_val and (not is_loading)) else "cm-send")}
-                        aria-label="Send message"
-                        title="Send"
+                        aria-label={L(fui, "ui.send", "Send message")}
+                        title={L(fui, "ui.send", "Send message")}
                     >
                         →
                     </button>

@@ -88,11 +88,12 @@ glob TARGETS: dict = {
     "job_loss": ("unemploy|laid off|lay ?off|lost (?:my|our|his|her|their) jobs?|out of work|\\bno job\\b|\\bfired\\b|furlough|hours (?:were|got) cut|desemple|sin trabajo|sin empleo|perd[ií] (?:mi|el) (?:trabajo|empleo)|despedid", "", "people who lost a job", "personas que perdieron su trabajo"),
     "child_care": ("child ?care|day ?care|babysit|nanny|preschool|guarder[ií]a|cuidado (?:de ni|infantil)", "", "families who need child care", "familias que necesitan cuidado infantil"),
     "veteran_care": ("", "", "veterans", "veteranos"),
+    "military": ("active[- ]duty|military (?:family|spouse|wife|husband|member|base|housing|pay)|national guard|reservist|deployed|service ?member|(?:husband|wife|spouse|son|daughter|partner) is in the (?:army|navy|marines|air force|coast guard|military)|i'?m in the (?:army|navy|marines|air force|coast guard|military)|militar activo|familia militar", "", "service members and their families", "militares y sus familias"),
     "medicare": ("medicare|\\bpart [abd]\\b|turning 65|extra help|\\bship counsel", "", "people on Medicare or turning 65", "personas con Medicare o que cumplen 65"),
     "native": ("native american|american indian|alaska native|\\btribal\\b|\\btribe\\b|reservation\\b(?! (?:for|at|number))|\\bihs\\b|ind[ií]gena nativ|nativ[oa] american", "", "American Indian and Alaska Native people", "personas indígenas americanas y nativas de Alaska"),
     "family_planning": ("birth control|contracepti|family planning|\\bstd\\b|\\bsti\\b|pregnancy test|pap smear|anticonceptiv|planificaci[oó]n familiar|prueba de embarazo", "", "birth control and sexual health care", "anticonceptivos y salud sexual"),
     "older_help": ("eldercare|elder care|aging parent|my (?:elderly|aging) (?:mom|mother|dad|father|parents?)|caregiver for my|home care|in-home care|adult day|cuidado de (?:mi )?(?:mam[aá]|pap[aá]|ancian)", "", "older adults and their caregivers", "adultos mayores y quienes los cuidan"),
-    "elder_abuse": ("elder abuse|financial exploitation|(?:stealing|taking|took|stole) (?:from )?(?:my|her|his) (?:elderly |aging )?(?:mom|mother|dad|father|grandma|grandmother|grandpa|grandfather)|(?:neglect|neglecting|abus\\w+|hurting|hitting) (?:my |her |his )?(?:elderly |aging )?(?:mom|mother|dad|father|grandma|grandmother|grandpa|grandfather)|nursing home abuse|maltrato (?:a|de) (?:ancian|adulto mayor)", "", "older adults and adults with disabilities being harmed", "adultos mayores y personas con discapacidad que sufren daño"),
+    "elder_abuse": ("elder abuse|(?:aide|caregiver|home health worker|nurse|helper)\\b[^.!?]{0,40}\\b(?:hits?|hurts?|slaps?|beats?|steals?|takes?|took|stole|yells at|pushe[sd]|neglects?)\\b[^.!?]{0,20}\\b(?:her|him|my (?:mom|mother|dad|father|grandma|grandpa))|financial exploitation|(?:stealing|taking|took|stole) (?:from )?(?:my|her|his) (?:elderly |aging )?(?:mom|mother|dad|father|grandma|grandmother|grandpa|grandfather)|(?:neglect|neglecting|abus\\w+|hurting|hitting) (?:my |her |his )?(?:elderly |aging )?(?:mom|mother|dad|father|grandma|grandmother|grandpa|grandfather)|nursing home abuse|maltrato (?:a|de) (?:ancian|adulto mayor)", "", "older adults and adults with disabilities being harmed", "adultos mayores y personas con discapacidad que sufren daño"),
     "phone_service": ("phone bill|internet bill|cell ?phone (?:service|bill|plan)|free phone|lifeline phone|need (?:a )?(?:phone|internet)|can'?t (?:afford|pay) (?:my |the )?(?:phone|internet)|(?:phone|internet) (?:got |was |is )?(?:shut|cut) off|factura (?:de|del) (?:tel[eé]fono|celular|internet)|necesito (?:un )?(?:tel[eé]fono|celular|internet)", "", "help paying for phone or internet", "ayuda para pagar teléfono o internet"),
     "foreclosure": ("foreclos|behind on (?:my |our |the )?(?:mortgage|house payments?)|can'?t (?:pay|afford) (?:my |our |the )?mortgage|housing counsel|ejecuci[oó]n hipotecaria|hipoteca", "", "people facing foreclosure or housing trouble", "personas con riesgo de ejecución hipotecaria"),
     "job_search": ("need (?:a |to find (?:a )?)?(?:job|work)\\b|looking for (?:a )?(?:job|work)\\b|find (?:a )?(?:job|work)\\b|job training|job search|r[eé]sum[eé]\\b|american job center|laid off|lost (?:my|our) jobs?|out of work|busco trabajo|necesito (?:un )?(?:trabajo|empleo)|capacitaci[oó]n laboral", "", "people looking for work", "personas que buscan trabajo"),
@@ -123,7 +124,7 @@ glob FLAG_TARGETS: dict = {"homeless": "homeless", "veteran": "veteran", "disabi
 # topic: a routine health question filled the list with Ryan White, SAMHSA
 # and NeedyMeds at 25% (outside judge, 2026-10-28). Person facts the engine
 # can ask about (homeless, veteran, children) still show as "needs info".
-glob TOPIC_TARGETS: list = ["hiv", "crisis", "poison", "mental_health", "substance", "medication", "dental", "vision",
+glob TOPIC_TARGETS: list = ["military", "hiv", "crisis", "poison", "mental_health", "substance", "medication", "dental", "vision",
                             "criminal", "conviction", "immigration", "consumer", "dv", "wage", "tenant", "disability", "school",
                             "job_loss", "child_care", "taxes", "insurance", "ssi_fit", "tanf_fit",
                             "medicare", "native", "family_planning", "older_help", "elder_abuse", "phone_service", "foreclosure",
@@ -138,7 +139,7 @@ glob POISON_HAZARD: str = "swallow|ingest|drank|overdos|poison|bleach|detergent|
 glob THROWN_OUT_RE: str = "kicked (?:me )?out|threw me out|thrown out|homeless|nowhere to go|somewhere safe|not safe at home";
 # Narrow programs in the money category: not listed on a guess in a language whose
 # topics aren't read, where they'd push the cash programs off the list.
-glob NOT_GUESSED: list = ["phone_service", "job_search", "child_support", "head_start"];
+glob NOT_GUESSED: list = ["military", "phone_service", "job_search", "child_support", "head_start"];
 glob LGBTQ_RE: str = "\\b(?:lgbtq?\\+?|gay|lesbian|bisexual|queer|trans|transgender|nonbinary|non-binary|gender identity|coming out|came out|gay[oa]?|lesbiana|bisexual|transg[eé]nero)\\b";
 # Lines for one danger: shown only when the message shows it, never as clutter.
 glob DANGER_TARGETS: list = ["child_abuse", "trafficking", "sexual_assault"];
@@ -299,13 +300,22 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         cr["source"] = "KFF state Medicaid expansion status (2026)";
         crits.append(cr);
         cfs.append({"key": "coverage_gap", "effort": 6.0, "text": cf_text("coverage_gap", lang)});
+    } elif lim and lim.get("far_over") {
+        crits.append(_crit("income", "Income", "unmet", 0.0, W_INCOME, True, str(lim["far_over"])));
+        cfs.append({"key": "income", "effort": 8.0, "text": str(lim["far_over"])});
     } elif lim and lim.get("varies") {
         # A limit exists but the engine can't state it: no "No income limit",
         # and no question, since the answer wouldn't change anything here.
         crits.append(_crit("income", "Income", "unknown", UNKNOWN_INCOME, W_INCOME, False, str(lim.get("note", ""))));
     } elif (not lim) or lim.get("none") {
         note = str(lim.get("note", "")) if lim else "";
-        crits.append(_crit("income", "Income", "met", 1.0, W_INCOME, False, "No income limit" + (" — " + note if note else "")));
+        if rule_id in ["msp-rule", "extra-help-rule", "fdpir-rule", "head-start-rule", "sun-bucks-rule"] {
+            # These have income rules that the program's office applies (audit 2026-11-06, F7).
+            # Weight 0: the card says so, and the tier stays where the rest puts it.
+            crits.append(_crit("income", "Income", "unknown", 1.0, 0.0, False, "The office checks income against this program's own limit" + (" — " + note if note else "")));
+        } else {
+            crits.append(_crit("income", "Income", "met", 1.0, W_INCOME, False, "No income limit" + (" — " + note if note else "")));
+        }
     } else {
         limit = int(lim["limit"]);
         per = int(lim.get("per_person", 0));
@@ -653,6 +663,9 @@ def rank_resources(items: list, profile: dict, message: str, limit: int = 6, lan
         if danger {
             if not [t for t in danger if t in flags] { continue; }
             pinned = True;
+        } elif "adult protective" in name_low and [f for f in flags if f in ["dv", "dv_concern", "emergency"]] and re.search(str(TARGETS["elder_abuse"][0]), str(message).lower()) {
+            pinned = True;
+            danger = ["elder_abuse"];
         }
         if w <= 0.0 and not pinned { continue; }
         s = score_resource(res, it["rule"], profile, message, lang);

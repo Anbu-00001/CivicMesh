@@ -9,9 +9,9 @@
       "phone_on_page": false,
       "form_url_status": 403,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "Very low income, generally 50% of area median; low income with extra criteria; 75% of admissions under 30%",
+        "source": "https://www.hud.gov/sites/dfiles/PIH/documents/HCV_Guidebook_Eligibility_Determination_and_Denial_of_Assistance.pdf"
       },
       "contact_manual": {
         "checked": "2026-10-28",
@@ -27,8 +27,8 @@
       "phone_on_page": false,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       }
     },
     "rrh-rule": {
@@ -38,9 +38,9 @@
       "url_status": 404,
       "phone_on_page": false,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "No income test at entry; 30% of area median at annual re-evaluation; this check corrected the app",
+        "source": "https://www.ecfr.gov/current/title-24/subtitle-B/chapter-V/subchapter-C/part-576/subpart-E/section-576.401"
       },
       "contact_manual": {
         "checked": "2026-10-27",
@@ -56,9 +56,9 @@
       "phone_on_page": true,
       "form_url_status": 0,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "Higher of 150% of poverty or 60% of state median income",
+        "source": "https://liheapch.acf.gov/delivery/eligibility-houseincome.htm"
       }
     },
     "public-housing-rule": {
@@ -69,9 +69,9 @@
       "phone_on_page": false,
       "form_url_status": 403,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "Low income, generally 80% of area median",
+        "source": "https://www.hud.gov/helping-americans/public-housing"
       },
       "contact_manual": {
         "checked": "2026-10-28",
@@ -88,8 +88,8 @@
       "form_url_status": 200,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       }
     },
     "coc-psh-rule": {
@@ -100,8 +100,8 @@
       "phone_on_page": false,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       }
     },
     "hud-vash-rule": {
@@ -112,9 +112,9 @@
       "phone_on_page": true,
       "form_url_status": 200,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "80% of area median mandatory since 2024; this check corrected the app's 50%",
+        "source": "https://archives.hud.gov/news/2024/6476-N-01-HUD-VASH-Operating-Requirements-Final-Notice-HEADER-8-7-24.pdf"
       }
     },
     "salvation-army-th-rule": {
@@ -125,13 +125,13 @@
       "phone_on_page": false,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
-        "checked": "2026-10-27",
-        "how": "Corrected: 1-800-SAL-ARMY is 1-800-725-2769 (national headquarters, routes to local corps); the catalog had 1-800-728-7825",
-        "source": "https://installations.militaryonesource.mil/military-installation/fort-hamilton/base-essentials/emergency-assistance"
+        "checked": "2026-11-06",
+        "how": "Removed 1-800-725-2769: it is 1-800-SAL-ARMY, the national donation and headquarters line, and the source was a military-base page. 2-1-1 and the site's local-corps finder instead",
+        "source": "https://www.salvationarmyusa.org/usn/provide-shelter/"
       }
     },
     "cc-era-rule": {
@@ -142,8 +142,8 @@
       "phone_on_page": true,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "state_set",
+        "why": "Each state, county or provider sets this. The app labels its figure as typical or says it varies, so there is no one rule to check."
       },
       "contact_manual": {
         "checked": "2026-10-27",
@@ -159,8 +159,8 @@
       "phone_on_page": false,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-10-27",
@@ -212,8 +212,8 @@
       "phone_on_page": true,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       }
     },
     "nslp-rule": {
@@ -242,8 +242,8 @@
       "phone_on_page": false,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-10-27",
@@ -259,8 +259,8 @@
       "phone_on_page": false,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "state_set",
+        "why": "Each state, county or provider sets this. The app labels its figure as typical or says it varies, so there is no one rule to check."
       },
       "contact_manual": {
         "checked": "2026-10-28",
@@ -277,8 +277,8 @@
       "form_url_status": 403,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-10-28",
@@ -293,9 +293,9 @@
       "url_status": 403,
       "phone_on_page": false,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "60 or older, income up to 185% of poverty",
+        "source": "https://www.ecfr.gov/current/title-7/subtitle-B/chapter-II/subchapter-A/part-249/subpart-C/section-249.6"
       },
       "contact_manual": {
         "checked": "2026-10-28",
@@ -312,8 +312,8 @@
       "form_url_status": 200,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-10-27",
@@ -328,9 +328,9 @@
       "url_status": 403,
       "phone_on_page": false,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "60 or older, income up to 150% of poverty",
+        "source": "https://www.fna.usda.gov/csfp/factsheet"
       },
       "contact_manual": {
         "checked": "2026-10-28",
@@ -377,8 +377,8 @@
       "phone_on_page": false,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-10-27",
@@ -395,8 +395,8 @@
       "form_url_status": 403,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-10-28",
@@ -413,8 +413,8 @@
       "form_url_status": 200,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-10-28",
@@ -431,12 +431,12 @@
       "form_url_status": 403,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "state_set",
+        "why": "Each state, county or provider sets this. The app labels its figure as typical or says it varies, so there is no one rule to check."
       },
       "contact_manual": {
         "checked": "2026-10-27",
-        "how": "Corrected: 1-800-448-0440 is NIH's HIVinfo information line, not care; link now HRSA's Ryan White provider locator",
+        "how": "Corrected: 1-800-448-0440 is NIH's HIVinfo information line, not care; link now HRSA's Ryan White provider locator; the form link (ryanwhite.hrsa.gov/grants/eligible-clients) was not found in Chrome in the 2026-11-06 audit, so it points at the locator too",
         "source": "https://findhivcare.hrsa.gov/"
       }
     },
@@ -449,8 +449,8 @@
       "form_url_status": 200,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-10-27",
@@ -466,8 +466,8 @@
       "phone_on_page": false,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "state_set",
+        "why": "Each state, county or provider sets this. The app labels its figure as typical or says it varies, so there is no one rule to check."
       }
     },
     "eyecare-america-rule": {
@@ -478,8 +478,8 @@
       "phone_on_page": true,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-10-27",
@@ -495,8 +495,8 @@
       "phone_on_page": false,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       }
     },
     "lsc-rule": {
@@ -507,9 +507,9 @@
       "phone_on_page": false,
       "form_url_status": 200,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "125% of poverty; up to 200% with exceptions",
+        "source": "https://www.federalregister.gov/documents/2026/01/26/2026-01431/income-level-for-individuals-eligible-for-assistance"
       }
     },
     "imm-legal-rule": {
@@ -520,8 +520,8 @@
       "phone_on_page": false,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       }
     },
     "pd-rule": {
@@ -532,8 +532,8 @@
       "phone_on_page": false,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "state_set",
+        "why": "Each state, county or provider sets this. The app labels its figure as typical or says it varies, so there is no one rule to check."
       }
     },
     "tenant-rights-rule": {
@@ -544,8 +544,8 @@
       "phone_on_page": false,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-10-27",
@@ -561,8 +561,8 @@
       "phone_on_page": true,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       }
     },
     "dr-rule": {
@@ -573,8 +573,13 @@
       "phone_on_page": true,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
+      },
+      "contact_manual": {
+        "checked": "2026-11-06",
+        "how": "Removed 202-408-9514: it is NDRN's Washington office, not a help line. The link lists each state's protection and advocacy agency",
+        "source": "https://www.ndrn.org/about/ndrn-member-agencies/"
       }
     },
     "cfpb-rule": {
@@ -585,8 +590,8 @@
       "phone_on_page": true,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       }
     },
     "expungement-rule": {
@@ -597,8 +602,8 @@
       "phone_on_page": false,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "state_set",
+        "why": "Each state, county or provider sets this. The app labels its figure as typical or says it varies, so there is no one rule to check."
       }
     },
     "aba-fla-rule": {
@@ -609,8 +614,8 @@
       "phone_on_page": false,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "state_set",
+        "why": "Each state, county or provider sets this. The app labels its figure as typical or says it varies, so there is no one rule to check."
       }
     },
     "law-clinic-rule": {
@@ -621,8 +626,8 @@
       "phone_on_page": false,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "state_set",
+        "why": "Each state, county or provider sets this. The app labels its figure as typical or says it varies, so there is no one rule to check."
       }
     },
     "childhelp-rule": {
@@ -633,8 +638,8 @@
       "phone_on_page": null,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-10-28",
@@ -650,8 +655,8 @@
       "phone_on_page": null,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-10-28",
@@ -667,8 +672,8 @@
       "phone_on_page": null,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-10-28",
@@ -684,8 +689,8 @@
       "phone_on_page": null,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-10-29",
@@ -701,8 +706,8 @@
       "phone_on_page": null,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-10-29",
@@ -718,8 +723,8 @@
       "phone_on_page": null,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-11-02",
@@ -734,9 +739,9 @@
       "url_status": null,
       "phone_on_page": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "Highest state $2,935 a month for a family of three, July 2023",
+        "source": "https://acf.gov/opre/report/welfare-rules-databook-state-and-territory-tanf-policies-july-2023"
       },
       "contact_manual": {
         "checked": "2026-11-02",
@@ -751,9 +756,9 @@
       "url_status": null,
       "phone_on_page": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "$994 and $1,491 in 2026",
+        "source": "https://www.ssa.gov/redbook/newfor2026.htm"
       },
       "contact_manual": {
         "checked": "2026-11-02",
@@ -768,9 +773,9 @@
       "url_status": null,
       "phone_on_page": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "$1,690 and $2,830 a month in 2026",
+        "source": "https://www.ssa.gov/redbook/newfor2026.htm"
       },
       "contact_manual": {
         "checked": "2026-11-02",
@@ -785,9 +790,9 @@
       "url_status": null,
       "phone_on_page": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "Up to 85% of state median income",
+        "source": "https://acf.gov/sites/default/files/documents/occ/CCDF-Family-Income-Eligibility-Levels-by-State.pdf"
       },
       "contact_manual": {
         "checked": "2026-11-02",
@@ -803,8 +808,8 @@
       "phone_on_page": null,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "state_set",
+        "why": "Each state, county or provider sets this. The app labels its figure as typical or says it varies, so there is no one rule to check."
       },
       "contact_manual": {
         "checked": "2026-11-02",
@@ -820,8 +825,8 @@
       "phone_on_page": null,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-11-02",
@@ -836,9 +841,9 @@
       "url_status": null,
       "phone_on_page": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "About $70,244 or less; sites set their own limits",
+        "source": "https://www.irs.gov/individuals/free-tax-return-preparation-for-qualifying-taxpayers"
       },
       "contact_manual": {
         "checked": "2026-11-02",
@@ -853,9 +858,9 @@
       "url_status": null,
       "phone_on_page": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "100% to 400% of poverty after the enhanced credits expired",
+        "source": "https://www.irs.gov/affordable-care-act/individuals-and-families/questions-and-answers-on-the-premium-tax-credit"
       },
       "contact_manual": {
         "checked": "2026-11-02",
@@ -871,9 +876,9 @@
       "phone_on_page": true,
       "form_url_status": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "65 or older, or a younger person with a qualifying disability",
+        "source": "https://www.medicare.gov/talk-to-someone"
       }
     },
     "msp-rule": {
@@ -885,8 +890,8 @@
       "form_url_status": null,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       }
     },
     "extra-help-rule": {
@@ -898,8 +903,8 @@
       "form_url_status": null,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       }
     },
     "ship-rule": {
@@ -910,9 +915,9 @@
       "phone_on_page": true,
       "form_url_status": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "Anyone on Medicare or about to join",
+        "source": "https://www.shiphelp.org/"
       }
     },
     "va-health-rule": {
@@ -923,9 +928,9 @@
       "phone_on_page": true,
       "form_url_status": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "Veterans; service length and discharge status can matter",
+        "source": "https://www.va.gov/health-care/how-to-apply/"
       }
     },
     "ihs-rule": {
@@ -937,8 +942,8 @@
       "form_url_status": null,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       }
     },
     "title-x-rule": {
@@ -950,8 +955,8 @@
       "form_url_status": null,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       }
     },
     "eldercare-rule": {
@@ -962,9 +967,9 @@
       "phone_on_page": true,
       "form_url_status": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "Older adults and caregivers",
+        "source": "https://eldercare.acl.gov/"
       }
     },
     "aps-rule": {
@@ -975,9 +980,9 @@
       "phone_on_page": false,
       "form_url_status": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "Older adults and adults with disabilities being harmed",
+        "source": "https://acl.gov/programs/emergency-response-information"
       }
     },
     "stronghearts-rule": {
@@ -988,9 +993,9 @@
       "phone_on_page": true,
       "form_url_status": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "Native Americans and Alaska Natives facing violence",
+        "source": "https://strongheartshelpline.org/"
       }
     },
     "trevor-rule": {
@@ -1001,9 +1006,9 @@
       "phone_on_page": true,
       "form_url_status": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "LGBTQ+ young people in crisis",
+        "source": "https://www.thetrevorproject.org/get-help/"
       }
     },
     "lifeline-rule": {
@@ -1014,9 +1019,9 @@
       "phone_on_page": true,
       "form_url_status": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "Income under 135% of poverty or on a listed program",
+        "source": "https://www.lifelinesupport.org/"
       }
     },
     "hud-counseling-rule": {
@@ -1027,9 +1032,9 @@
       "phone_on_page": false,
       "form_url_status": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "Anyone with a housing problem",
+        "source": "https://www.hud.gov/stat/sfh/housing-counseling"
       },
       "contact_manual": {
         "checked": "2026-11-05",
@@ -1045,9 +1050,9 @@
       "phone_on_page": false,
       "form_url_status": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "Anyone looking for work or training",
+        "source": "https://www.careeronestop.org/LocalHelp/AmericanJobCenters/american-job-centers.aspx"
       },
       "contact_manual": {
         "checked": "2026-11-05",
@@ -1064,8 +1069,8 @@
       "form_url_status": null,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
         "checked": "2026-11-05",
@@ -1081,9 +1086,9 @@
       "phone_on_page": false,
       "form_url_status": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "Income at or below poverty, or on TANF, SSI or SNAP, or in foster care or homeless",
+        "source": "https://headstart.gov/how-apply"
       }
     },
     "sun-bucks-rule": {
@@ -1094,9 +1099,9 @@
       "phone_on_page": false,
       "form_url_status": null,
       "rules": {
-        "checked": null,
-        "how": "",
-        "source": ""
+        "checked": "2026-11-05",
+        "how": "Automatic for school-age children on SNAP, TANF or FDPIR",
+        "source": "https://fns.usda.gov/summer/sunbucks"
       }
     },
     "fdpir-rule": {
@@ -1108,8 +1113,8 @@
       "form_url_status": null,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       }
     },
     "child-support-rule": {
@@ -1121,8 +1126,26 @@
       "form_url_status": null,
       "rules": {
         "checked": null,
-        "how": "",
-        "source": ""
+        "kind": "no_income_test",
+        "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
+      }
+    },
+    "military-onesource-rule": {
+      "program": "Military OneSource",
+      "contact_checked": "2026-11-05",
+      "contact_result": "unconfirmed",
+      "url_status": null,
+      "phone_on_page": false,
+      "form_url_status": null,
+      "contact_manual": {
+        "checked": "2026-11-05",
+        "how": "Military OneSource pages give 800-342-9647, 24/7",
+        "source": "https://www.militaryonesource.mil/confidential-counseling/"
+      },
+      "rules": {
+        "checked": "2026-11-05",
+        "how": "Active duty, Guard and Reserve, immediate family, 365 days after leaving",
+        "source": "https://www.militaryonesource.mil/confidential-help/non-medical-counseling/military-onesource/eligibility-for-confidential-non-medical-support-services/"
       }
     }
   }

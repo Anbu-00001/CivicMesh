@@ -152,6 +152,32 @@ Checked on [988lifeline.org](https://988lifeline.org/help-yourself/for-deaf-hard
 - **Missed message:** "I still have my service weapon and I think about using it every night" got the quiet reply, and now gets the crisis answer. It's one more phrase added to the word lists, so it doesn't change the measured recall.
 - **Stale data:** the 988 entry still offered "press 3" for LGBTQ+ youth, which ended on July 17, 2025.
 
+## Language findings from the 2026-11 blind audit
+
+Audit finding F22. The language menu did nothing until the first answer, the page never said what language it was in, and raw English stayed in translated answers.
+
+- Picking a language now changes the page at once: welcome, message box, footer, `lang` and `dir`. The labels come from a small file the gateway serves with no account, so this works when sign-up or the engine is busy.
+- The "Understood" row, private note, plan line, benefit line, New case text and the error message come from all 51 catalogs. These are machine drafts, like the rest of the catalogs, and unreviewed.
+- English that stays (program names, reasons, near misses) is marked `lang="en"`, so a screen reader doesn't read it in the page's voice.
+- Missed suicide statements in Polish, Tigrinya, Swahili, Lao, Italian, Tagalog, Turkish and Burmese now fire. A teacher reporting what a pupil said reads as child abuse, not the teacher's own danger.
+- Romanized Vietnamese, pinyin and Arabic now route. Household and income now read in 27 test sentences written for this round, one per language, including 13 new fact tables and state names in 12 scripts. These sentences are ours, so they say little about unseen messages.
+- A real bug on the way: "2000 kwa mwezi" read as 2,000 thousand, because the "k" of a word counted as a thousand. External evals did not move: DV 70.5%, at-risk 74.7%, legal false alarms 1.43%.
+
+## Rules, supply chain and small security findings from the 2026-11 blind audit
+
+Audit findings F27, F29 and section 8, checked against official sources on 2026-11-05.
+
+- **Two rules were wrong.** HUD-VASH used 50% of area median, but HUD has required 80% since 2024. Rapid re-housing applied 30% of area median at entry, but [24 CFR 576.401](https://www.ecfr.gov/current/title-24/subtitle-B/chapter-V/subchapter-C/part-576/subpart-E/section-576.401) applies it only at the yearly re-evaluation.
+- **The ledger can't stay silent.** 27 more programs now cite a rule source, and the rest say why there is no one rule to check: 34 have no income test, and 9 are set by each state or provider. A program with neither now fails CI. This is a check of the text against official pages, not a legal review.
+- **State coverage comes from a list.** The app now names each state's place on [CMS's list](https://www.medicaid.gov/medicaid/enrollment-strategies/medicaid-and-chip-coverage-of-lawfully-residing-children-pregnant-women) of states covering lawfully residing children and pregnant people, updated April 2, 2026.
+- **Far over a limit.** $4,000 a month for cash aid and $12,000 a month for child care read as "needs info". They now read as not likely, with the reason. The TANF line is 150% of poverty, above the highest state in the [Welfare Rules Databook](https://acf.gov/opre/report/welfare-rules-databook-state-and-territory-tanf-policies-july-2023) ($2,935 a month for three, Minnesota, July 2023).
+- **Drug felonies.** SNAP and TANF cards now explain the federal ban and Texas's rule ([Texas Works Handbook A-230](https://fhb.hhs.texas.gov/handbooks/texas-works-handbook/a-230-supplemental-nutrition-assistance-program)).
+- **Military families** get Military OneSource.
+- **Supply chain.** Python packages install with `--require-hashes`, the base image is pinned by digest, JavaScript is pinned with `bun.lock`, and build tools are removed from the image.
+- **Security.** `script-src 'self'` in the CSP, and visitor secrets always from `crypto.getRandomValues`. A mistake while making that change gave every visitor the same id, because Jac compiled a helper named `hex` to its built-in. The browser check caught it before anything left this machine, and a check on length and randomness now guards it.
+- **Sign-up refused.** The language menu was empty when sign-up was turned away. It now loads from the gateway.
+- **Docs.** The README went from 47 KB to 26 KB, and a check fails CI if its language or program counts drift.
+
 ## Understanding findings from the 2026-11 blind audit
 
 Everyday messages were misread: 32 of the new checks failed on the old code before the fixes. The rest are controls, which passed before and still do.
@@ -182,3 +208,17 @@ Everyday messages were misread: 32 of the new checks failed on the old code befo
 - **The gate itself.** The eval's floor was 90%, so it exited 0 with seven regressions from this work. Any miss now fails it.
 - **Still not handled** (audit F17, F19): several incomes beyond the two patterns, savings read as income, corrections in later turns, questions like "what's the phone number" or "is this private", and disaster or foreclosure programs missing from the catalog. `tests/golden_routing.json` is a development set.
 
+
+## Findings from the second blind audit (2026-11-06)
+
+A fresh audit with no access to earlier reports scored the app 4/10 for crisis use and 6.5/10 as engineering (report in the maintainer's notes). This round fixed what could be fixed without outside reviewers. The new phrases were written from the audit's own messages, so the audit's numbers can't measure them any more; only new held-out sets can.
+
+- **Danger after the first message** (F1). Every answer with no crisis line pinned now ends with the 911/988 line, not only the first.
+- **Danger not recognised** (F2, F4). Shot, no pulse, vomiting blood, a baby who stopped moving, withdrawal seizures, an overdose now, threats to kill, "if I leave he'll kill me", an ex outside, a gun the person keeps staring at, a child's disclosure at night, shaking a baby, being locked in for unpaid work, a smuggler holding a child, and "I didn't say yes". An adult's in-law is no longer read as a parent abusing a child, a partner who takes the phone and locks the door is DV rather than trafficking, an aide hitting an 80-year-old pins Adult Protective Services, and a third-person overdose no longer gets "I'm glad you told me".
+- **False alarms** (F18). "He beat me at chess", Narcan training, a paper on suicide prevention, a child abuse prevention talk, "choking me with fees" and a drug trafficking charge no longer take over the answer. Each is a probe in `tests/golden_probes.json`, with 16 regression cases for the new phrases and 6 more false-alarm cases.
+- **Made-up figures** (F7, F14). Routes between programs had no source for their timings and are gone; the approval-odds row is gone; Lifeline has its 135% limit (47 CFR 54.409); five programs whose office applies its own limit say so instead of "No income limit". Recording Approved or Denied no longer crashes (`walkers/memory.jac` used an undefined name); the persona test now covers it.
+- **Mixed-status families** (F5). "My husband is undocumented, I'm a citizen" is a citizen; "I'm not undocumented" is a denial. SNAP and Medicaid say only the member without status is left out and a non-applicant gives no status or SSN (7 CFR 273.4; 42 CFR 435.907(e)).
+- **Plain words** (F9). Thirteen unrouted needs, from "3 day notice" to "need hlp w my lectric bil", are routing goldens.
+- **The model's words** (F16). The summary guard voids "no need to reach out", "reported to ICE", "take more of your medication", "text your SSN", a bare domain the engine never gave, and a few turn-away lines in Spanish, Russian and Hindi. Other languages still rely on the number, link and program checks.
+- **Screen, privacy, contacts, docs** (F10, F11, F12, F15, F17, F19). Developer text is hidden on phones. The privacy panel's title, toggle and delete button are in every catalog (machine-drafted), and the Spanish follow-up names them in Spanish. PRIVACY.md now says what happens: 30-day deletion, nothing erased by a restart, the write-ahead log, a closed private tab leaving the server copy, the login row after delete, and the map lookups. Failed turns show 911, 988 and the DV line. The Salvation Army donation line and NDRN's office number are gone and the dead Ryan White link points at HRSA's locator. README counts are checked by `tests/check_docs.py`, and DEPLOY.md names the key litellm reads.
+- **Still not handled:** recognition in most catalog languages (F3), multi-turn escalation such as "I took them" after "I've been saving my pills" (F8), harm to others, the landing page contrast failure (not reproduced here), cards and criteria in English (F11), capacity (F15), mutation-testing gaps (F13), CI actions pinned by tag, and every review that needs native speakers, lawyers or clinicians.

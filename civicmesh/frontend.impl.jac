@@ -10,8 +10,10 @@ impl ClientApp.visitorCreds -> list {
     uid = store.getItem(VISITOR_KEY);
     pw = store.getItem(VISITOR_SECRET_KEY);
     if (not uid) or (not pw) {
-        uid = "visitor_" + crypto.randomUUID().replaceAll("-", "").substring(0, 16) if crypto.randomUUID else "visitor_" + Math.random().toString(36).substring(2, 10);
-        pw = crypto.randomUUID() + crypto.randomUUID() if crypto.randomUUID else Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+        # crypto.getRandomValues works on plain http too; randomUUID doesn't.
+        rand_hex: Any = lambda n: int -> str { return Array.from(crypto.getRandomValues(Uint8Array.from(Array(n).fill(0)))).map(lambda b: int -> str { return b.toString(16).padStart(2, "0"); }).join(""); };
+        uid = "visitor_" + rand_hex(8);
+        pw = rand_hex(32);
         store.setItem(VISITOR_KEY, uid);
         store.setItem(VISITOR_SECRET_KEY, pw);
         # A token from the old shared demo account must not be reused.

@@ -1,6 +1,6 @@
-# Deploying CivicMesh to Render
+# Deploying CivicMesh
 
-Free tier, no credit card. From a clean machine to a live URL in ≈ 15 minutes.
+The live copy runs on a Hugging Face Docker Space: `git push hf main` builds the root `Dockerfile` there, and the app listens on 7860. Set `NVIDIA_NIM_API_KEY` (the name litellm reads) as a Space secret if you want model summaries; everything else works without it. The rest of this page covers Render, the other path that has been tried, on its free tier with no credit card, from a clean machine to a live URL in about 15 minutes.
 
 ## What you get on Render's free plan
 

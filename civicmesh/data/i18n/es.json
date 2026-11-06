@@ -1,7 +1,7 @@
 {
   "_meta": {
     "language": "es",
-    "name": "Spanish",
+    "name": "Spanish", "endonym": "Español",
     "review": "draft — native review welcome"
   },
   "q.need": "¿Con qué necesita ayuda más ahora mismo?",
@@ -93,6 +93,22 @@
   "ui.save_list": "Guardar esta lista",
   "ui.save_note": "Esta página olvida la lista al recargarla o cerrarla.",
   "ui.save_head": "Programas para contactar",
+  "ui.fact_urgent": "urgente",
+  "ui.fact_household": "hogar de {n}",
+  "ui.fact_age": "{n} años",
+  "ui.fact_year": "al año",
+  "ui.carried": "de antes",
+  "ui.private_note": "Sesión privada activada: cuando cierre esta pestaña, este navegador no guardará nada de esta conversación. Quick exit sale al instante.",
+  "ui.plan_sub": "lo más útil y rápido primero · unos {n} min de trámites",
+  "ui.est_benefit": "beneficio estimado",
+  "ui.busy": "No pude conectar con el servidor. Su mensaje no se perdió; puede intentarlo otra vez.",
+  "ui.welcome": "Hola, soy CivicMesh. Cuénteme qué pasa, con sus propias palabras, y buscaré los programas de vivienda, comida, salud, ayuda legal, dinero o cuidado infantil que puede usar, y le mostraré por qué.",
+  "ui.placeholder": "Describa su situación en cualquier idioma…",
+  "ui.placeholder_answer": "Responda la pregunta de arriba o cuente otra cosa…",
+  "ui.new_case": "Caso nuevo",
+  "ui.new_case_note": "Caso nuevo iniciado. No se conserva nada de la conversación anterior. ¿Qué está pasando?",
+  "ui.send": "Enviar mensaje",
+  "ui.assumed": "supuesto",
   "ui.bring": "Traiga",
   "ui.routes": "Rutas a largo plazo",
   "ui.understood": "Entendí",
@@ -126,5 +142,8 @@
   "ui.charge_title": "Los beneficios y su caso de inmigración",
   "ui.charge_body": "Desde el 18 de septiembre de 2026, los funcionarios pueden tener en cuenta los beneficios según ingresos que usted mismo use cuando solicite la residencia (green card). Los que usan sus familiares generalmente no cuentan, y los refugiados y asilados están exentos. Hable con un representante de inmigración acreditado antes de decidir.",
   "ui.charge_link": "Buscar ayuda legal gratuita de inmigración",
-  "r.more_lines": "Veteranos: llame al 988 y oprima 1. Personas sordas o con dificultad auditiva: llame al 988 desde un videoteléfono, o marque 711 y luego 988 por TTY."
+  "r.more_lines": "Veteranos: llame al 988 y oprima 1. Personas sordas o con dificultad auditiva: llame al 988 desde un videoteléfono, o marque 711 y luego 988 por TTY.",
+  "ui.privacy_title": "Privado por diseño: sus palabras no se guardan ni se envían a la IA",
+  "ui.private_toggle": "Sesión privada: no guardar nada en este navegador al cerrar la pestaña",
+  "ui.delete_data": "Borrar mis datos"
 }

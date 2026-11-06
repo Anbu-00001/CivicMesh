@@ -349,6 +349,10 @@ class Gateway(unittest.TestCase):
         csp = content_security_policy("'self' https://huggingface.co").decode()
         self.assertIn("frame-ancestors 'self' https://huggingface.co", csp)
         self.assertIn("object-src 'none'", csp)
+        self.assertIn("script-src 'self'", csp)
+        self.assertEqual(classify("GET", "/ui-strings/ar")[0], "labels")
+        self.assertEqual(classify("POST", "/ui-strings/ar")[0], "blocked")
+        self.assertEqual(classify("GET", "/ui-strings/../x")[0], "blocked")
         self.assertEqual(cors_filter([(b"Content-Security-Policy", b"x")], b"", frozenset()), [])
 
     def test_json_shape_caps(self):

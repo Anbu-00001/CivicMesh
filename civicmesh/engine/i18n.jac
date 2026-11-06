@@ -97,9 +97,9 @@ glob LATIN_MARKERS: dict = {
     "tl": ["ako", "ang", "mga", "ng", "sa", "po", "namin", "kami", "wala", "kailangan", "tulong", "hindi", "akin", "ko", "naman", "lang", "pero", "dahil", "kasi", "ngayon", "trabaho"],
     "ht": ["mwen", "nou", "gen", "pou", "ak", "bezwen", "èd", "ki", "li", "pitit", "travay", "lajan", "kounye", "jodi", "pa gen", "m pa"],
     "pl": ["mąż", "mnie", "bije", "nie", "jestem", "mam", "potrzebuję", "potrzebuje", "pomocy", "się", "moja", "mój", "dzieci", "pracy", "że", "jest", "mamy", "dla", "dzisiaj", "proszę"],
-    "tr": ["ben", "ve", "bir", "bu", "için", "yardım", "ihtiyacım", "yok", "var", "benim", "beni", "bana", "istiyor", "istiyorum", "lazım", "gerek", "çocuk", "çocuklarım", "değil", "çok", "ama", "bugün", "lütfen"],
+    "tr": ["ailem", "ailemiz", "kişi", "ayda", "kazanıyorum", "kazanıyoruz", "yaşıyorum", "yaşıyoruz", "kira", "ben", "ve", "bir", "bu", "için", "yardım", "ihtiyacım", "yok", "var", "benim", "beni", "bana", "istiyor", "istiyorum", "lazım", "gerek", "çocuk", "çocuklarım", "değil", "çok", "ama", "bugün", "lütfen"],
     "id": ["saya", "dan", "tidak", "kami", "untuk", "dengan", "butuh", "perlu", "bantuan", "ada", "anak", "yang", "ini", "itu", "tolong", "bisa", "sudah", "belum", "hari ini"],
-    "sw": ["mimi", "sina", "nina", "kwa", "msaada", "nahitaji", "watoto", "kazi", "hakuna", "sisi", "tafadhali", "leo"],
+    "sw": ["watu", "yetu", "tunapata", "napata", "tunaishi", "naishi", "mwezi", "dola", "kodi", "mimi", "sina", "nina", "kwa", "msaada", "nahitaji", "watoto", "kazi", "hakuna", "sisi", "tafadhali", "leo"],
     "so": ["waxaan", "iyo", "waa", "anigu", "waxaa", "baahan", "caawimaad", "carruur", "shaqo", "maanta",
            "baahanahay", "baahnahay", "qoyskayga", "qoyska", "ayaan", "hadda", "rabaa", "haysto", "lacag", "cunto", "gurigayga", "carruurta", "iga", "igu"],
     "hmn": ["kuv", "koj", "peb", "yog", "tsis", "muaj", "xav", "pab", "thov", "tsev", "noj", "mov"],
@@ -1128,7 +1128,7 @@ def detect_script(text: str) -> tuple {
     } elif top == "am" {
         # Tigrinya and Amharic share Ethiopic script; their pronouns and
         # copulas differ (ኣነ / ኣለኹ / እየ vs እኔ / ነኝ / አለኝ).
-        ti_hits = len(re.findall(r"ኣነ|ኣለኹ|እየ|ኢዩ|የብለይን|ኣሎ|ክንደይ|ብኽብረት|ኣይ", text));
+        ti_hits = len(re.findall(r"ኣነ|ኣብ|እዮም|ስድራ|ሰባት|ወርሒ|ንረክብ|ኣለኹ|እየ|ኢዩ|የብለይን|ኣሎ|ክንደይ|ብኽብረት|ኣይ", text));
         am_hits = len(re.findall(r"እኔ|ነኝ|አለኝ|የለኝም|ነው|እባክ|እፈልጋለሁ", text));
         code = "ti" if ti_hits > am_hits else "am";
     } elif top == "my" {
@@ -1361,8 +1361,15 @@ def routed_languages -> list {
 #   "no necesito comida", "ya tenemos casa", "我不需要食物", "我有住的地方".
 # Lacking something stays a need: "no food", "I have no food", "haven't
 # eaten", "no tengo casa", "我没有食物", "घर में खाना नहीं है".
-glob NEG_LEFT: str = "(?:\\b(?:do not|don'?t|doesn'?t|didn'?t|does not)\\s+(?:really\\s+)?(?:need|want)\\s+(?:a\\s+|an\\s+|any\\s+|the\\s+|more\\s+|help with\\s+|help\\s+)?|\\b(?:not|never|no longer|isn'?t|aren'?t|'m not|'re not)\\s+(?:really\\s+|actually\\s+|looking for\\s+|asking (?:for|about)\\s+|about\\s+)?(?:a\\s+|an\\s+|any\\s+|the\\s+)?|\\b(?:i|we)(?:\\s+already|\\s+do)?\\s+(?:have|'ve got)\\s+(?:a\\s+|an\\s+|some\\s+|enough\\s+|our\\s+|my\\s+|plenty of\\s+)?|\\bno\\s+(?:necesito|necesitamos|quiero|queremos|busco|buscamos|estoy buscando|es|estoy|estamos)\\s+(?:un\\s+|una\\s+|el\\s+|la\\s+|los\\s+|las\\s+|ayuda con\\s+(?:la\\s+|el\\s+)?)?|(?<!no )\\b(?:ya\\s+)?(?:tengo|tenemos)\\s+(?:un\\s+|una\\s+|el\\s+|la\\s+|algo de\\s+|suficiente\\s+)?|不需要|不要|不用|不是要|(?<!没)(?<!沒)我有|(?<!没)(?<!沒)我们有|(?<!没)(?<!沒)我們有|已经有|已經有)$";
-glob NEG_RIGHT: str = "^\\s*(?:(?:isn'?t|is not|aren'?t|are not)\\s+(?:the |a |an |our |my )?(?:problem|issue|concern)|(?:is|are)\\s+(?:fine|ok|okay|covered|taken care of|not (?:a|the) problem)|no es (?:el )?problema|नहीं चाहिए|नही चाहिए|नहीं चाहिये|नको|चाहिँदैन|نہیں چاہیے|வேண்டாம்|వద్దు|ಬೇಡ|വേണ്ട|লাগবে না|দরকার নেই|જોઈતું નથી|ਨਹੀਂ ਚਾਹੀਦਾ|いらない|要らない|は必要ない|は必要ありません|필요 없|필요없|은 필요 없|는 필요 없|istemiyorum|gerek yok|ihtiyacım yok|nahi chahiye|nahin chahiye|venaam|vendaam)";
+glob NEG_LEFT: str = "(?:\\b(?:do not|don'?t|doesn'?t|didn'?t|does not)\\s+(?:really\\s+)?(?:need|want)\\s+(?:a\\s+|an\\s+|any\\s+|the\\s+|more\\s+|help with\\s+|"
+    + "help\\s+)?|\\b(?:not|never|no longer|isn'?t|aren'?t|'m not|'re not)\\s+(?:really\\s+|actually\\s+|looking for\\s+|asking (?:for|about)\\s+|"
+    + "about\\s+)?(?:a\\s+|an\\s+|any\\s+|the\\s+)?|\\b(?:i|we)(?:\\s+already|\\s+do)?\\s+(?:have|'ve got)\\s+(?:a\\s+|an\\s+|some\\s+|enough\\s+|our\\s+|"
+    + "my\\s+|plenty of\\s+)?|\\bno\\s+(?:necesito|necesitamos|quiero|queremos|busco|buscamos|estoy buscando|es|estoy|estamos)\\s+(?:un\\s+|una\\s+|el\\s+|"
+    + "la\\s+|los\\s+|las\\s+|ayuda con\\s+(?:la\\s+|el\\s+)?)?|(?<!no )\\b(?:ya\\s+)?(?:tengo|tenemos)\\s+(?:un\\s+|una\\s+|el\\s+|la\\s+|algo de\\s+|"
+    + "suficiente\\s+)?|不需要|不要|不用|不是要|(?<!没)(?<!沒)我有|(?<!没)(?<!沒)我们有|(?<!没)(?<!沒)我們有|已经有|已經有)$";
+glob NEG_RIGHT: str = "^\\s*(?:(?:isn'?t|is not|aren'?t|are not)\\s+(?:the |a |an |our |my )?(?:problem|issue|concern)|(?:is|are)\\s+(?:fine|ok|okay|covered|taken care of|"
+    + "not (?:a|the) problem)|no es (?:el )?problema|नहीं चाहिए|नही चाहिए|नहीं चाहिये|नको|चाहिँदैन|نہیں چاہیے|வேண்டாம்|వద్దు|ಬೇಡ|വേണ്ട|লাগবে না|দরকার নেই|"
+    + "જોઈતું નથી|ਨਹੀਂ ਚਾਹੀਦਾ|いらない|要らない|は必要ない|は必要ありません|필요 없|필요없|은 필요 없|는 필요 없|istemiyorum|gerek yok|ihtiyacım yok|nahi chahiye|nahin chahiye|venaam|vendaam)";
 glob POSSESSION_UNDONE: str = "\\b(?:but|though|pero)\\b[^.!?]{0,30}(?:ran out|run out|running out|not enough|isn'?t enough|aren'?t enough|don'?t last|doesn'?t last|(?:was|were|got|is|are) (?:cut|stopped|cancell?ed|denied|expired)|stopped|expired|se acab|no alcanza|no es suficiente|no me alcanza)";
 # Verbs of asking. A keyword right after one is what the person wants; for
 # verb-final languages the asking verb follows the keyword.

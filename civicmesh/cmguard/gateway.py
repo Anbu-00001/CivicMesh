@@ -88,9 +88,9 @@ CORS_PREFIX = b"access-control-"
 
 
 def content_security_policy(frame_ancestors: str) -> bytes:
-    """Framing, plugins, <base> and form targets locked down; scripts and
-    styles stay as the client bundle needs them."""
-    return ("frame-ancestors " + frame_ancestors + "; base-uri 'self'; object-src 'none'; form-action 'self'").encode("latin-1")
+    """Framing, plugins, <base> and form targets locked down, and scripts only
+    from this site: the page's one inline tag is JSON, which CSP doesn't run."""
+    return ("frame-ancestors " + frame_ancestors + "; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self'").encode("latin-1")
 
 
 def cors_filter(raw_headers, origin: bytes, allowed: frozenset):
@@ -180,6 +180,8 @@ def classify(method: str, path: str):
         return "blocked", None
     if path in ("/healthz", "/healthz/live", "/healthz/ready"):
         return ("health", None) if method in ("GET", "HEAD") else ("blocked", None)
+    if path.startswith("/ui-strings/"):
+        return ("labels", None) if method in ("GET", "HEAD") else ("blocked", None)
     if path in DOC_PATHS:
         return ("static", None) if method in ("GET", "HEAD") else ("blocked", None)
     for prefix in BLOCKED_PREFIXES:
@@ -188,6 +190,31 @@ def classify(method: str, path: str):
     if method in ("GET", "HEAD"):
         return "static", None
     return "blocked", None
+
+
+_UI_STRINGS: dict = {}
+# The language menu, for someone whose sign-up was turned away: catalogs only.
+_UI_LANGUAGES: list = [b"[]"]
+
+
+def ui_strings(code: str) -> "bytes | None":
+    """Interface labels for a catalog language, or None. Codes come from the
+    file names, so nothing from the request reaches a file path."""
+    if not _UI_STRINGS:
+        folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "i18n")
+        en = json.load(open(os.path.join(folder, "en.json"), encoding="utf-8"))
+        keys = [k for k in en if k.startswith(("ui.", "opt."))]
+        langs: list = []
+        for name in sorted(os.listdir(folder)):
+            if name.endswith(".json"):
+                cat = json.load(open(os.path.join(folder, name), encoding="utf-8"))
+                _UI_STRINGS[name[:-5]] = json.dumps({k: cat.get(k) or en[k] for k in keys}, ensure_ascii=False).encode()
+                meta = cat.get("_meta") or {}
+                langs.append({"code": name[:-5], "name": str(meta.get("name") or name[:-5]), "endonym": str(meta.get("endonym") or meta.get("name") or name[:-5]), "catalog": True})
+        _UI_LANGUAGES[0] = json.dumps(langs, ensure_ascii=False).encode()
+    if code == "languages":
+        return _UI_LANGUAGES[0]
+    return _UI_STRINGS.get(code)
 
 
 def json_shape_problem(obj, max_depth: int, max_nodes: int, max_string: int) -> str:
@@ -505,6 +532,14 @@ class Gateway:
         if wait:
             await self._respond(send, 429, error_body(429, "RATE_LIMITED", "Too many requests. Please wait a moment and try again."),
                                 extra=[(b"retry-after", str(int(wait + 0.999)).encode())])
+            return
+
+        if cls == "labels":
+            payload = ui_strings(path[len("/ui-strings/"):])
+            if payload is None:
+                await self._respond(send, 404, error_body(404, "NOT_FOUND", "No labels for that language."))
+            else:
+                await self._respond(send, 200, b"" if method == "HEAD" else payload, headers_raw=[(b"content-type", b"application/json; charset=utf-8"), (b"cache-control", b"public, max-age=3600")])
             return
 
         if cls == "health" and path == "/healthz":

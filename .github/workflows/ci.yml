@@ -57,6 +57,10 @@ jobs:
         run: jac run tests/check_followup.jac
       - name: Retention removes idle visitors and nothing else
         run: python3 tests/test_retention.py
+      - name: The README's numbers match the code
+        run: python3 tests/check_docs.py
+      - name: Every pinned package has hashes
+        run: python3 tools/hash_requirements.py --check
       - name: Narration guard — invented programs and promises void a summary
         run: jac run tests/check_narration_guard.jac
       - name: Client-held profile — ranges, enums, flags grounded in the person's words

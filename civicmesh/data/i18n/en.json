@@ -1,7 +1,7 @@
 {
   "_meta": {
     "language": "en",
-    "name": "English",
+    "name": "English", "endonym": "English",
     "source": true,
     "review": "source strings"
   },
@@ -94,6 +94,22 @@
   "ui.save_list": "Save this list",
   "ui.save_note": "This page forgets the list when you reload or close it.",
   "ui.save_head": "Programs to contact",
+  "ui.fact_urgent": "urgent",
+  "ui.fact_household": "household of {n}",
+  "ui.fact_age": "age {n}",
+  "ui.fact_year": "a year",
+  "ui.carried": "from earlier",
+  "ui.private_note": "Private session is on: once you close this tab, this browser keeps nothing about this conversation. Quick exit leaves instantly.",
+  "ui.plan_sub": "most useful and quickest first · about {n} min of paperwork",
+  "ui.est_benefit": "estimated benefit",
+  "ui.busy": "I couldn't reach the server just now. Your message wasn't lost, so you can try again.",
+  "ui.welcome": "Hi, I'm CivicMesh. Tell me what's going on, in your own words, and I'll find the housing, food, health care, legal, cash or child care programs you can use and show you why.",
+  "ui.placeholder": "Describe your situation in any language…",
+  "ui.placeholder_answer": "Answer the question above, or describe anything else…",
+  "ui.new_case": "New case",
+  "ui.new_case_note": "New case started. Nothing from the earlier conversation is carried over. What's going on?",
+  "ui.send": "Send message",
+  "ui.assumed": "assumed",
   "ui.bring": "Bring",
   "ui.routes": "Longer-term routes",
   "ui.understood": "Understood",
@@ -127,5 +143,8 @@
   "ui.charge_title": "Benefits and your immigration case",
   "ui.charge_body": "Since September 18, 2026, officers can weigh means-tested benefits you use yourself when you apply for a green card. Benefits your family members use generally aren't counted, and refugees and asylees are exempt. Talk to an accredited immigration representative before you decide.",
   "ui.charge_link": "Find free immigration legal help",
-  "r.more_lines": "Veterans: call 988 and press 1. Deaf or hard of hearing: call 988 from a videophone, or dial 711 then 988 by TTY."
+  "r.more_lines": "Veterans: call 988 and press 1. Deaf or hard of hearing: call 988 from a videophone, or dial 711 then 988 by TTY.",
+  "ui.privacy_title": "Private by design — your words aren't saved or sent to AI",
+  "ui.private_toggle": "Private session — keep nothing in this browser after I close the tab",
+  "ui.delete_data": "Delete my data"
 }

@@ -40,7 +40,7 @@ def main(url: str) -> int:
     try:
         # Chrome can answer /json before its first page exists (seen on a CI
         # runner): wait for a page target, and open one if none appears.
-        for _ in range(100):
+        for _ in range(300):
             try:
                 tabs = [t for t in json.load(urllib.request.urlopen(f"http://127.0.0.1:{PORT}/json")) if t.get("type") == "page"]
                 if tabs:
