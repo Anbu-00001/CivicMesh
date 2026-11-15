@@ -66,9 +66,12 @@ def main() -> None:
     os.environ["CIVICMESH_UPSTREAM"] = f"http://127.0.0.1:{upstream_port}"
     os.environ["CIVICMESH_UPSTREAM_BIND"] = "127.0.0.1"
 
+    child_env = dict(os.environ)
+    sitefix = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sitefix")
+    child_env["PYTHONPATH"] = sitefix + (os.pathsep + child_env["PYTHONPATH"] if child_env.get("PYTHONPATH") else "")
     child = subprocess.Popen(
         ["jac", "start", "app.jac", "--no-dev", "--port", str(upstream_port), "--host", "127.0.0.1"],
-        env=dict(os.environ),
+        env=child_env,
     )
 
     def forward(signum, _frame):

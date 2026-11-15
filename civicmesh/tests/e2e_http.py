@@ -367,7 +367,7 @@ check("F10 a crisis inside an app question keeps its crisis reply", i1 is not No
 # 988 is by phone beyond English and Spanish; veterans and Deaf callers have their own way in.
 ju, jt = login()
 j1, _ = turn(ju, jt, "I want to kill myself")
-check("L1 a crisis reply gives the veterans text line and the videophone", j1 is not None and "838255" in j1["reply"] and "videophone" in j1["reply"] and "711" in j1["reply"], (j1 or {}).get("reply"))
+check("L1 a crisis reply gives the veterans text line and the videophone", j1 is not None and "838255" in j1["reply"] and "press 3" in j1["reply"] and "videophone" in j1["reply"] and "711" in j1["reply"], (j1 or {}).get("reply"))
 ku, kt = login()
 k1, _ = turn(ku, kt, "Tôi muốn tự tử")
 check("L2 Vietnamese: 988 by phone with an interpreter, no text line", k1 is not None and "Vietnamese" in k1["reply"] and "nhắn tin" not in k1["reply"] and "838255" not in k1["reply"], (k1 or {}).get("reply"))
@@ -375,6 +375,20 @@ lu, lt_ = login()
 l1, _ = turn(lu, lt_, "I still have my service weapon and I think about using it every night")
 check("L3 the service weapon message gets the crisis answer, not the quiet reply", l1 is not None and "988" in l1["reply"] and l1["escalation"], (l1 or {}).get("reply"))
 
+ul = json.load(urllib.request.urlopen(H + "/ui-strings/ar", timeout=20))
+check("I1 a picked language's labels need no account", "ui.welcome" in ul and ul["ui.welcome"] != json.load(urllib.request.urlopen(H + "/ui-strings/en", timeout=20))["ui.welcome"], list(ul)[:3])
+ls = json.load(urllib.request.urlopen(H + "/ui-strings/languages", timeout=20))
+check("I3 the language menu needs no account", len(ls) >= 50 and any(l["code"] == "ar" for l in ls), len(ls))
+for bad in ["xx", "..%2f..%2fetc%2fpasswd", "en.json", "ar/../en"]:
+    try:
+        urllib.request.urlopen(H + "/ui-strings/" + bad, timeout=20)
+        code = 200
+    except urllib.error.HTTPError as e:
+        code = e.code
+    check("I2 no labels for " + bad, code in (400, 403, 404), code)
+
+hz = json.load(urllib.request.urlopen(H + "/healthz", timeout=20))
+check("H1 the health check tests data, disk, database and engine", hz["status"] == "ok" and sorted(hz["checks"]) == ["data", "database", "disk", "engine"], hz)
 # The route for someone with no account: no token, a real answer, nothing stored (blind audit F24).
 def guest(msg):
     req = urllib.request.Request(H + "/walker/GuestIntakeWalker", json.dumps({"conversation": msg, "user_id": "x", "prior": {}}).encode(), {"Content-Type": "application/json"}, method="POST")

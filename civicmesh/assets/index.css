@@ -1018,3 +1018,5 @@ textarea.cm-input { resize: none; font-family: inherit; line-height: 1.4; displa
 @media (max-width: 760px) {
   .cm-dev-only, .cm-tab-graph, .cm-tab-telemetry, .cm-tab-impact, .cm-wf-head { display: none !important; }
 }
+/* Developer views stay off phones, where the person needs the answer (audit 2026-11-06, F10). */
+@media (max-width: 760px) { .cm-dev-only { display: none !important; } }

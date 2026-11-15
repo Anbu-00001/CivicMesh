@@ -37,6 +37,10 @@ test "elderly_legal_session_memory" {
         }
     }
 
+    # A decision updates the outcome record without an error (audit 2026-11-06, F14).
+    denied = root spawn MemoryWalker(user_id="test_persona_003", mode="update_status", resource_name=str(steps[0]["agency_name"]), new_status="denied");
+    assert len(denied.reports) > 0 and denied.reports[0]["updated"];
+
     mem = root spawn MemoryWalker(
         user_id="test_persona_003",
         mode="read_session"

@@ -12,7 +12,7 @@ pinned: false
 
 # CivicMesh
 
-### A rules engine on a graph that routes people in crisis to the housing, food, healthcare, legal, cash and child care help they qualify for, and shows why. The engine reads a message and checks it against 55 services (23 with an income figure it can apply, 5 where the state or your work history decides, 27 with no income test) using 2026 federal rules in about a millisecond; language models only translate and summarize, after the answer is on screen.
+### A rules engine on a graph that routes people in crisis to the housing, food, healthcare, legal, cash and child care help they qualify for, and shows why. The engine reads a message and checks it against 75 programs using 2026 federal rules in about a millisecond; language models only translate and summarize, after the answer is on screen.
 
 [![JacHacks Spring 2026 – 1st Place Agentic AI](https://img.shields.io/badge/JacHacks%20Spring%202026-1st%20Place%20Agentic%20AI-FFD700?style=for-the-badge)](https://devpost.com/software/civicmesh-0ctxl5)
 [![JacHacks Spring 2026 – Best Startup Idea](https://img.shields.io/badge/JacHacks%20Spring%202026-Best%20Startup%20Idea-FFD700?style=for-the-badge)](https://devpost.com/software/civicmesh-0ctxl5)
@@ -23,7 +23,7 @@ pinned: false
 [![byllm](https://img.shields.io/badge/byllm-0.6.7-22c55e?style=flat-square)](https://github.com/Jaseci-Labs/byllm)
 [![NVIDIA NIM](https://img.shields.io/badge/NVIDIA%20NIM-translation%20%2B%20narration-76b900?style=flat-square)](https://build.nvidia.com)
 [![Languages](https://img.shields.io/badge/languages-51%20drafted%20%C2%B7%200%20reviewed%20%C2%B7%20111%20selectable-2563eb?style=flat-square)](#languages-and-dialects)
-[![Eval](https://img.shields.io/badge/eval-1454%20cases%20%C2%B7%2041%20conversations%20%C2%B7%202275%20checks-16a34a?style=flat-square)](./docs/EVALUATION.md)
+[![Eval](https://img.shields.io/badge/eval-about%201500%20cases%20%C2%B7%2041%20conversations-16a34a?style=flat-square)](./docs/EVALUATION.md)
 [![CI](https://github.com/Anbu-00001/CivicMesh/actions/workflows/ci.yml/badge.svg)](https://github.com/Anbu-00001/CivicMesh/actions/workflows/ci.yml)
 [![Privacy](https://img.shields.io/badge/privacy-scrubbed%20%C2%B7%20deletable%20%C2%B7%20no%20tracking-0f766e?style=flat-square)](./PRIVACY.md)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](./LICENSE)
@@ -67,7 +67,7 @@ Everything below is computed, cited and tested, but not all of it is measured. T
 | **Approval odds** ("~67% · rough guess") | A Beta posterior from a hand-set prior (open 6:3, waitlist 3:5), updated by that visitor's own marked outcomes | Learning across people: each visitor has a private copy of the rule nodes, so outcomes never pool |
 | **Plan order** | Smith's rule: steps by value ÷ minutes, where value = urgency × score × approval × access × benefit | Checked against how caseworkers sequence applications |
 | **Route cost** | days + 10·difficulty + 30·(−ln P(yes)), best routes by Yen's k-shortest paths | Tuned: 10 and 30 encode "a likely rejection costs more than a slow step", and no ablation shows they beat simpler choices |
-| **100% on the eval** | Regression gates: 1,454 cases and 41 multi-turn conversations, mostly the author's own (the 175-case crisis suite is the outside judge's messages, and the 529-case danger suite is a blind audit's misses with the word lists written from them), run on every push | A benchmark. On real posts labeled by lawyers the held-out recall is domestic violence 70%, housing 81%, health 79%, immigration status 79% ([details and intervals](./docs/EVALUATION.md#external-check-real-peoples-words)) |
+| **100% on the eval** | Regression gates: about 1,500 cases and 41 multi-turn conversations, mostly the author's own (the 175-case crisis suite is the outside judge's messages, and the 529-case danger suite is a blind audit's misses with the word lists written from them), run on every push | A benchmark. On real posts labeled by lawyers the held-out recall is domestic violence 70%, housing 81%, health 79%, immigration status 79% ([details and intervals](./docs/EVALUATION.md#external-check-real-peoples-words)) |
 
 Turning these into measurements needs more than this repository has: an opt-in aggregate with a minimum cohort size for approval odds, and a supervised pilot where a caseworker marks every answer.
 
@@ -77,56 +77,9 @@ Turning these into measurements needs more than this repository has: an opt-in a
 
 ## Where it stands
 
-An outside review in October 2026 scored the judgment well and named what holds the project back. Where each point stands:
+**A working prototype, not a proven crisis tool.** The latest independent blind audit (November 2026) gave it 4.5 out of 10 for unsupervised crisis use and about 7.5 as engineering. Most of what it found has since been fixed, but that re-audit, a supervised pilot, a clinician's review and native review of the translations are still to come.
 
-| Point | Status |
-|---|---|
-| Input understanding is keyword rules, and every new phrasing is a new bug | Still rules, by design: deterministic, private and fast. What changed is how they compose. A hardship frame ("can't", "struggling to", "no money for", "no alcanza para") combined with what it governs ("feed", "rent", "insulin") replaces a pattern per phrasing. Household members are counted one by one ("with my mom and 2 brothers" = 4). A stated current amount beats a job loss. The reviewer's three failing messages are golden cases now. New phrasings will still be missed |
-| Recall on real posts is mediocre | Housing held-out recall rose from 74% to 81% (false positives 11.4% → 12.0%) after "tenant", "lease" and "lose our house" joined the lexicon, tuned on the dev half only. Domestic violence is 68% (30/44): every miss hides a hotline, so a 911/988/DV line is always shown under the answer |
-| Policy data is unvalidated | PolicyEngine US now checks five income tests, not one: SNAP (98.2%, 384 households), Medicaid for adults and parents, children's Medicaid/CHIP, school meals and WIC (660/660). The check found three wrong rules: Tennessee's parent limit, one national CHIP figure, and states with universal school meals. The CHIP agreement is not independent, because the table comes from the same CMS figures. No lawyer has reviewed the immigrant-eligibility rules |
-| No last-verified dates | Every program has one ([data/verification.json](./civicmesh/data/verification.json)). The first check found three phone numbers that belonged to someone else (Texas WIC's complaints line, an HRSA grants desk, an NIH information line), one number that appears nowhere, and two dead links. All are fixed. CI fails when any record is a year old. Pages that block scripted checks are checked by hand; 41 of 44 contacts are confirmed or checked by hand, the other three are 2-1-1 |
-| Translations are unreviewed machine drafts | Still true: 51 drafted, 0 reviewed. Document names and route notes are still English-only |
-| "Outcome learning" doesn't learn | Renamed. It is per-visitor outcome tracking: each visitor's own marks move their own cards, and nothing pools |
-| One maintainer, pre-1.0 stack | Still true. The engine is transpiled to plain Python on every push and passes the same eval with no Jac installed ([docs/MAINTENANCE.md](./docs/MAINTENANCE.md)) |
-| No outside validation | Still true. The next step is a supervised pilot with a legal-aid clinic or 211 partner, where a caseworker reads every answer |
-
-A second, blind review on October 28, 2026 hard-tested the running engine with 330 messages and scored it **4/10**. Its main finding was crisis recall: 24 of 67 self-harm messages were caught (11 of 40 in English, "i wanna die" among the misses), and a third of the violence disclosures were missed. It also found no route for child abuse, trafficking or a medical emergency. What changed, and what is still open:
-
-| Finding | Status |
-|---|---|
-| Self-harm and violence missed in ordinary words | Fixed on the reviewer's set. Self-harm patterns are now intent + act ("wanna", "kms", methods, third person); every language's crisis words run on every message, so a short message with no detected language is still read; "I'm not sure yet" replies always carry 911 and 988. The reviewer's 123 crisis messages, figurative traps included, are a CI suite that fails on a single miss: 123/123. The parser was fixed toward these messages, so this is a development set. On held-out real posts domestic-violence recall moved only from 66% to 68% (30/44) |
-| No route for child abuse, trafficking, sexual assault or a medical emergency | Childhelp (1-800-422-4453), the National Human Trafficking Hotline (1-888-373-7888, text 233733) and RAINN (1-800-656-4673) are in the catalog, each checked on its own site and shown only when the message shows that danger. "Not breathing", "won't wake up" or "overdosing" puts "call 911" first |
-| Citizenship flips | "Not a citizen but I have a green card", "my son was born here", "a Guatemalan citizen" and a typed yes/no to the status question now come out right. Cuban/Haitian entrants and COFA citizens keep SNAP and Medicaid (P.L. 119-21); a green card held under 5 years is a wait for adults; citizen children qualify for CHIP whatever the parent's status |
-| Pregnant women tested as one adult | The expected child counts (Medicaid and WIC), and each state's pregnancy limit applies (KFF, January 2026) |
-| Seniors told they're over a gross test that doesn't apply | Skipped for 60+ and disabled households, as SNAP rules say; PolicyEngine agrees on the reviewer's case |
-| Far over a limit still "possible" | A known income over the Medicaid, CHIP or legal-aid limit (200% with expenses) is now "unlikely" |
-| Headquarters lines as the number to call | TEFAP, school meals, SFMNP, CSFP and Medicaid now point to 2-1-1, the child's school or HealthCare.gov; the untraceable legal-aid lead is 2-1-1. CI fails when a number shown to a person has neither been confirmed nor checked by hand |
-| Shift ×3 quick exit fired while typing capitals | Any other key resets the count (GOV.UK's pattern); a browser test types a capitalised sentence |
-| Household, income and location parsing | "Una familia de 4", pay every two weeks, "twenty five thousand", "Hi, OK", West Virginia and DC, "2 adults 1 baby", "just me and the three kids" (a deported partner isn't counted), a grandson as a child, "She is 84" in a letter written for a grandmother, and "me quiero matar" read as Spanish are golden cases now |
-| A conversation couldn't be corrected | "Sorry, we are 4 not 5" replaces the count; "I have a place to sleep", "no kids" or "not a veteran" takes a flag back, and a "yes" to "Do you have a safe place to sleep tonight?" clears homeless. Crisis flags are never taken back. "My mom is 70" after "I'm 22" keeps 22 (she adds the senior flag), and "also" keeps the first need as a second one |
-| Live-Space testing, 29 October | Gibberish ("Ching ching mi hwa") is no longer read as Spanish from short words like "mi". A rambling story that only mentions food or medicine, or "I don't know where to start", gets asked what's going on instead of re-running the last answer. A school-enrolment question for an undocumented child routes to the National Center for Homeless Education helpline (1-800-308-2145; Plyler v. Doe and McKinney-Vento). Yoruba household counts parse with or without tone marks. A city and state are kept together, so one turn's city never pairs with another turn's state. Scrolling up is no longer undone when a summary arrives. Summaries and translations stopped arriving because Gemma timed out at 25 s on NVIDIA's free tier and every timeout counted toward the circuit breaker, which then refused gpt-oss too: Gemma now gets 10 s as a lead, a lead that keeps timing out is skipped for 5 minutes, and a timeout with a fallback behind it never trips the breaker |
-| Blind audit, November: 4.5/10 for crisis use | On a phone the crisis box was 1,100 px off screen and the last thing visible after "I want to kill myself" was a Medicaid document list. Now a Call button stays pinned, the answer opens at the crisis box, and programs wait behind one tap. The safety lines are on the landing page and in the page HTML before any script runs. A danger flag can't be dropped by editing the client's stored profile. Hundreds of phrases were added, in about 45 languages (machine-drafted, unreviewed). **They caught the audit's own misses and barely moved outside recall: held-out 74.0% → 74.7%, false alarms 1.13% → 1.43%.** A small classifier was tried and dropped because it couldn't tell at-risk users from others on the same forum ([details](./docs/EVALUATION.md#suicide-risk-on-wording-nobody-here-wrote)) |
-| Blind audit, November: wrong answers for immigrant families, and wrong yeses | Citizen children of undocumented or TPS parents now see SNAP and prorated housing help. Refugee children and pregnant refugees see Medicaid and CHIP as "ask your state", not hidden. California, Oregon, Texas and New York state-funded coverage is named; other states say the state office decides. Programs left out are listed with the reason and "you can still apply". Immigration cases get a public charge paragraph. Declining the status question no longer means "not a citizen". A program that depends on what an office decides can't read "likely" or become the first step. New rules: 5-year bar, 65+ Medicaid, students, under-22s, EITC age and SSN, TANF needs a child, two housing bars, Puerto Rico NAP, two incomes added up. **None of it has been reviewed by an immigration lawyer, and the paragraph's translations are machine drafts** |
-| Blind audit, November: "Start here" sent people to the wrong place | The live plan never received the person's need, so an earlier fix only worked in tests. Now a court date starts at legal help, and a program asked for by name comes first. A teacher reporting abuse gets Childhelp, not the domestic violence line, and "Me van a desalojar", French and Italian eviction messages are answered in their own language. [More](./docs/HISTORY.md) |
-| Blind audit, November: programs people asked for and couldn't find | Added 19: Medicare, Medicare Savings Programs, Extra Help, SHIP, VA Health Care, Indian Health Service, Title X, Eldercare Locator, Adult Protective Services, StrongHearts, The Trevor Project, Lifeline, HUD counselors, American Job Centers, FEMA, Head Start, SUN Bucks, FDPIR and child support. Each stays hidden unless the message shows its topic. Nobody has checked their rules against an independent source. [More](./docs/HISTORY.md) |
-| Blind audit, November: crisis instructions wrong beyond English and Spanish | 988's text and chat are in English and Spanish only, so 49 catalogs no longer say "call or text": they say to call and name the language for a free interpreter. Crisis replies now give the veterans line and the Deaf and TTY routes. "Press 3" for LGBTQ+ youth, which ended in July 2025, is gone from the data. [More](./docs/HISTORY.md) |
-| Blind audit, November: everyday messages misread, and follow-up questions ignored | "4 of us", "3 grand a month", "$50,000 in savings", a ZIP or "Cook County" with no state, someone typing for a parent, and "sorry I meant 2500" now read correctly. "What's the phone number", "how do I apply", "is this private" and "how do I delete this" get an answer in English and Spanish, with the cards kept. [More](./docs/HISTORY.md) |
-| Blind audit, November: common needs with no route | "Health care", "money", "I need a job", state Medicaid and SNAP brand names and common Spanish phrasings now route, and each of the app's own need replies, typed by hand in English and Spanish, routes to itself. A program named in the message goes first, and the named need outranks a program's monthly value: an eviction with a court date no longer starts at SNAP. "I need help" alone still asks what kind. One miss anywhere in the eval now fails the run; at the old 90% floor, seven regressions exited clean during this work |
-| Second outside review, November: crisis handling thinner than claimed | Reproduced, then measured on 500 psychiatrist-graded Reddit users nobody here chose (see below): held-out recall 63% → 74%, indirect wording alone 16% → 31.5%, false alarms on legal posts 1.00% → 1.13%. **Still one in four missed.** Phones' curly apostrophes used to break every pattern: "I don’t want to live" raised no flag and "I’m 72" no age. Every "what do you need?" reply now carries 911 and 988. A message that says only the danger gets the safety lines, not a program count. Overdose and poisoning pin 911, then Poison Control. "He hit me up about a job" no longer pins the DV hotline, and "k1ll myself" is read |
-| Second outside review: smaller findings | A model's summary is now also voided if it names a program the engine didn't or promises an outcome ("you will be approved"), in any language for programs and English and Spanish for promises. It still can't catch every wrong sentence, so the engine's answer always shows first. The privacy scrubber catches its five documented misses (spoken phone numbers, "the Nguyen family", a street with no number), and a bare name in a sentence is still missed. A weekly job checks every link and phone against the program's page and opens an issue on a real change; a contact check now expires after six months. The image runs as a non-root user with a healthcheck, and bun comes from a pinned release with its checksum |
-| Second outside review: "46 programs" overstated it, and common needs had nowhere to go | Added a fifth need, money and child care, with TANF, SSI, SSDI, child care assistance, unemployment, the EITC and free tax help, plus Marketplace savings under health care. Figures are the 2026 ones from the IRS, SSA and HealthCare.gov. Where a state or a work history decides, the program says so and stays at "needs info" rather than "likely". The status rules aren't checked against an independent calculator yet, the amounts for these programs aren't estimated, and outside English and Spanish the engine can route to this need in 48 languages but can't yet tell a tax question from a job loss |
-| Flags given to the wrong person | An ex-husband's army service no longer makes a survivor a veteran; "I'm not a veteran but my husband is" counts the household's veteran |
-| Ranking clutter | A program built for one topic (HIV care, substance use, prescriptions, dental, a criminal case, immigration, DV, tenants) is left out when the message never mentions it, instead of filling the list as "needs info". A program a hard rule rules out is a near miss, not a card. A crisis box lists only the lines pinned for that danger. Wage theft now leads with the Labor Department's Wage and Hour Division (1-866-487-9243, checked on its complaints page); the DV safety line is the Hotline's own entry; no approval odds on a 24/7 line; no "in about 1 days" |
-| Engine internals in front of people in crisis | Timings, routes and the trace sit behind one "Details" button; approval odds behind "Why?". The safety footer (911, 988, the DV Hotline) is 14px and in the reply's language for all 51 catalogs. At phone width the header no longer wraps into a column |
-| Headers and the client-held profile | The gateway drops CORS headers unless the origin is allow-listed, never sends credentials with them, and sets a CSP with `frame-ancestors 'self' https://huggingface.co` (the Space page frames the app from there). The profile the browser sends back is range-checked, unknown keys are dropped, and a flag or household count is kept only when the person's own words still support it |
-| Narration guard and long messages | Spoken digits ("one eight hundred…") and any link or email not in the engine's facts void a narration. Narration errors are a generic line. The dropped middle of an API message over 4,000 characters is scanned for danger (up to 8,000 more characters) |
-| Narration waits 25 s per model when a provider hangs | Kept on purpose: the free-tier models need it (they missed the earlier 8 s), and the full answer is already on screen while the summary is written |
-| A side effect, measured | Held-out immigration recall on real posts fell from 82.4% to 79.4% (27/34): a relative's green card or citizenship no longer counts as the speaker's status. The reviewer counted that reading as a wrong answer; the external check counts any status as a hit |
-| A crisis set written by someone else | Still open: the reviewer's messages are now a development set, so recall on unseen crisis messages is not yet measured |
-
-The full record of earlier reviews and fixes is in [docs/HISTORY.md](./docs/HISTORY.md).
-
----
+On unseen messages it recognizes 74.7% of people at risk, with 1.43% false alarms on legal posts. Treat it as a way to find programs, not as a safety net. The point-by-point status is in [docs/STATUS.md](docs/STATUS.md), and what changed and why is in [docs/HISTORY.md](docs/HISTORY.md).
 
 ## Architecture
 
@@ -191,7 +144,7 @@ flowchart LR
 
 **How to read it:**
 - **Blue** is the deterministic critical path: the answer is computed, written in the user's language from the message catalog, and on screen before any model runs.
-- **Purple and magenta** are the model calls, made in the background: the summary, and translation for the 34 languages without a catalog yet.
+- **Purple and magenta** are the model calls, made in the background: the summary, and translation for the 60 menu languages without a catalog yet.
 - **Amber** is live federal open data.
 - **Green** is what gets persisted: every verdict and plan step is a node or typed edge under the visitor's own root.
 
@@ -320,43 +273,16 @@ Full details, retention and limits: [PRIVACY.md](./PRIVACY.md).
 
 ---
 
-## Recorded outcomes (per visitor, not pooled)
-
-```mermaid
-flowchart LR
-    MARK[Person marks an application<br/>Approved or Denied]:::ui --> MW[MemoryWalker]:::det
-    MW --> RULE[EligibilityRuleNode<br/>prior_approvals / prior_attempts]:::data
-    RULE --> BETA["Beta(a, b) posterior<br/>prior from capacity: open 6:3 · waitlist 3:5"]:::det
-    BETA --> CI[Approval odds, shown as a rough guess<br/>per-visitor copy · no cross-person learning yet]:::ok
-    BETA --> UCB[UCB₈₀ exploration bonus<br/>in the ranking]:::ok
-    UCB -.next turn.-> MARK
-
-    classDef ui fill:#e0f2fe,stroke:#0284c7,color:#082f49
-    classDef det fill:#dbeafe,stroke:#2563eb,color:#0b2545
-    classDef data fill:#dcfce7,stroke:#16a34a,color:#052e16
-    classDef ok fill:#d1fae5,stroke:#059669,color:#022c22
-```
-
-Recorded outcomes update the rule node, so that visitor's future cards move ("38% → 44%, 1 real outcome"), and wide posteriors earn an exploration bonus in the ranking. Be clear about what this is. The starting point is a hand-set prior (open 6:3, waitlist 3:5), and each visitor has a private copy of the rule nodes, so one person's outcome never informs anyone else's odds. The card therefore shows "~67% · rough guess" with no interval. Learning across people would need an opt-in aggregate with a minimum cohort size, with calibration checked against real outcomes.
-
-**Escape routes.** `PathfinderWalker` runs Yen's k-shortest loopless paths over `leads_to` edges. Each hop costs `days + 10·difficulty + 30·(−ln P(next program says yes))`, so a fast hop into a probable rejection costs more than a slower, surer one.
-
----
-
-## Graph schema
-
-People, needs, applications, programs, rules and forms are typed nodes, and each verdict is a scored `eligible_for` edge. The Graph tab draws the visitor's real case subgraph as a decision flow. Schema and diagrams: [docs/ENGINE.md](./docs/ENGINE.md#graph-schema).
-
 ## Evaluation
 
 | Suite | Result |
 |---|---|
-| Engine eval (1,454 cases, 41 multi-turn conversations, 12 suites, gated in CI; one miss anywhere fails the run) | 2275/2275 field checks, top-3 hit rate 100%, 0 exclusion errors, 296/296 metamorphic checks |
-| Latency, parse + score 74 services + plan + routes | p50 1.2 ms (CI fails above 15 ms) |
+| Engine eval (about 1,500 cases, 41 multi-turn conversations, 12 suites, gated in CI; one miss anywhere fails the run) | 2275/2275 field checks, top-3 hit rate 100%, 0 exclusion errors, 296/296 metamorphic checks |
+| Latency, parse + score every program + plan + routes | p50 1.2 ms (CI fails above 15 ms) |
 | Same eval, engine transpiled to plain Python | passes, no Jac installed |
 | Policy checks against published figures | 100/100 |
 | PolicyEngine US oracle | SNAP 98.2% (384 households); Medicaid, CHIP, school meals, WIC 660/660 |
-| HTTP end-to-end on the Docker image, accessibility, real browser, attack simulations | 77/77, 0 axe violations, pass, 64/64 |
+| HTTP end-to-end on the Docker image, accessibility, real browser, attack simulations | 99/99, 0 axe violations, pass, 66/66 |
 | Real posts labeled by lawyers (held-out, measured, not gated) | DV 70.5%, housing 81.5%, health 78.9%, immigration 79.4% recall |
 
 The suites are written by the author, so 100% on them shows only that the engine handles what the author thought of. The external check is the number to quote. Every suite and how it's built: [docs/EVALUATION.md](./docs/EVALUATION.md).
@@ -402,48 +328,7 @@ cd civicmesh && jac run tests/eval_engine.jac     # regression gate
 
 ## Project structure
 
-```
-civicmesh/
-├── app.jac · app.sv.jac        entry point; server-side walker registration
-├── frontend.{cl,impl}.jac       app shell, per-browser anonymous accounts
-├── engine/                      pure, deterministic
-│   ├── i18n.jac                 language ID, 75 routing lexicons, 111-language registry, interpreter card, negation
-│   ├── parse.jac                profile extraction with evidence spans
-│   ├── facts_i18n.jac           income · household · age · status · place in 21 languages
-│   ├── messages.jac             message catalog: compose answers, questions, chips in 51 languages
-│   ├── policy.jac               effective-dated 2026 rules, SNAP estimate
-│   ├── score.jac · plan.jac     tiers, Beta odds, counterfactuals, value-selected plan
-│   ├── paths.jac                Dijkstra + Yen k-shortest routes
-│   ├── compose.jac · stats.jac  multi-turn merge, reply text, spans; platform counters
-│   └── privacy.jac              identifier scrubbing, crisis-turn rule
-├── walkers/                     intake · eligibility · navigation · pathfinder · escalation · critique ·
-│                                memory · narrate · localize · local_help · graph_snapshot · platform · impact · seed ·
-│                                forget (Delete my data) · log_privacy (no user text in logs)
-├── llm/
-│   ├── stubs.jac                byllm typed stubs + model pools (no SDK retries)
-│   └── translate.jac            runtime translation for languages without a catalog + numbers guard
-├── graph/                       nodes.jac · edges.jac (typed, with sem strings)
-├── cmguard/                     abuse protection (plain Python): gateway · limits · tokens · model budget · client address · redaction · serve
-├── components/                  ChatPane · GraphViz · ActionPlan · ImpactReport · TelemetryPanel · LandingPage
-├── data/                        resources.json (74 services) · verification.json (what was checked, when) · transitions.json (leads_to edges)
-│   └── i18n/                    <code>.json message catalogs (English source + 50 languages)
-├── tools/review_sheet.py        side-by-side translation review sheets (stdlib Python)
-├── tools/eject_engine.sh        engine → plain Python with jac2py, then run its eval without Jac
-├── tools/build_hud_limits.py    HUD FY2026 Section 8 limits → data/hud_income_limits.json (106 cities)
-├── tools/oracle_policyengine.py  SNAP differential against PolicyEngine US (384 households; not in CI)
-├── tools/oracle_programs.py     Medicaid · CHIP · school meals · WIC income tests against PolicyEngine US (660 households; not in CI)
-├── tools/check_contacts.py      each program's page and phone number, checked and dated → data/verification.json
-└── tests/                       eval_engine.jac + seven suites (incl. golden_probes, golden_conversations) · eval_external.jac (real posts) ·
-                                 check_messages.jac · check_privacy.jac · check_policy.jac · check_verification.py ·
-                                 test_schema · persona_* · test_privacy_graph (jac test) · e2e_http.py · browser_e2e.py
-.github/workflows/ci.yml         engine · portable (plain Python) · e2e (Docker, logs)
-docs/                            ENGINE.md · EVALUATION.md · HISTORY.md · SECURITY_NOTES.md · MAINTENANCE.md · TRANSLATION_REVIEW.md · DEPLOY.md
-PRIVACY.md                       what is kept, what leaves, how to delete
-```
-
-### Adding or correcting a language
-
-Copy `civicmesh/data/i18n/en.json` to `<code>.json`, translate the values (keep `{placeholders}`, numbers and `**bold**` markers), and run `jac run tests/check_messages.jac`. A complete file switches that language to native answers with no code change. Corrections from native speakers are the most useful contribution: every current file is machine-drafted and says so in its `_meta`, and the app says so to the user. `python3 civicmesh/tools/review_sheet.py <code>` prints a side-by-side sheet with safety-critical strings first. Setting `_meta.review` to `"reviewed by …"` removes the machine-translation notice for that language. The process and priority order are in [docs/TRANSLATION_REVIEW.md](./docs/TRANSLATION_REVIEW.md).
+The code layout, graph schema and recorded outcomes are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Security
 

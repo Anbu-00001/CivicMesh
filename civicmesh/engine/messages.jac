@@ -16,6 +16,7 @@ machine-drafted and marked for native-speaker review in their _meta.
 
 import json;
 import os;
+import sys;
 
 glob MESSAGES: dict = {};
 # Right-to-left languages: a phone number after an Arabic-script word would
@@ -38,7 +39,13 @@ def load_messages -> dict {
     if not d { return MESSAGES; }
     for f in sorted(os.listdir(d)) {
         if f.endswith(".json") {
-            MESSAGES[f[:-5]] = json.load(open(os.path.join(d, f), encoding="utf-8"));
+            # One broken file costs that language its catalog (English answers, and
+            # a line in the log), never the whole answer: it used to be an HTTP 500.
+            try {
+                with open(os.path.join(d, f), encoding="utf-8") as fh { MESSAGES[f[:-5]] = json.load(fh); }
+            } except Exception as ex {
+                print("CIVICMESH ERROR: message catalog " + f + " not loaded: " + type(ex).__name__, file=sys.stderr, flush=True);
+            }
         }
     }
     return MESSAGES;

@@ -132,7 +132,7 @@ walker MemoryWalker {
                         # on the first few datapoints — gives every rule a
                         # graceful warm-up before its prior moves significantly.
                         new_rate = (float(new_approvals) + 1.0) / (float(new_attempts) + 2.0);
-                        cap = str(res_matches[0].capacity);
+                        cap = str(res_node.capacity);
                         posterior_out = beta_posterior(new_approvals, new_attempts, cap);
                         posterior_out["before"] = beta_posterior(old_approvals, old_attempts, cap)["mean"];
                         setattr(rule_node, "prior_attempts", new_attempts);

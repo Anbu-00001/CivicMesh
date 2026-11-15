@@ -501,6 +501,27 @@
 {"text": "a hurricane destroyed my house", "expect": {"tier_of": {"FEMA": ["possible"]}}},
 {"text": "I'm a veteran and need a doctor", "expect": {"tier_of": {"VA Health Care": ["possible"]}}},
 {"text": "my phone bill got cut off, I make $900 a month, 1 person", "expect": {"tier_of": {"Lifeline": ["possible"]}}},
-{"text": "I'm 16, my parents threw me out for being gay, where can I go", "top3_any": ["The Trevor Project"], "expect": {"tier_of": {"National Runaway Safeline": ["likely"]}}}
+{"text": "I'm 16, my parents threw me out for being gay, where can I go", "top3_any": ["The Trevor Project"], "expect": {"tier_of": {"National Runaway Safeline": ["likely"]}}},
+{"text": "I'm a military spouse in Texas and need help with money", "top3_any": ["Military OneSource"]},
+{"text": "I'm active duty, my family needs food and we are in Virginia", "expect": {"tier_of": {"Military OneSource": ["possible", "likely", "needs_info"]}}},
+{"text": "I have 2 kids, I make $4,000 a month in Texas and need cash assistance", "expect": {"tier_of": {"TANF (Temporary Assistance for Needy Families)": ["hidden", "unlikely"]}}},
+{"text": "I have 2 kids, I make $12,000 a month in Ohio and need child care help", "expect": {"tier_of": {"Child Care Assistance (CCDF subsidy)": ["hidden", "unlikely"]}}},
+{"text": "I lost my job and need help paying rent in Ohio, I make $1,000 a month", "expect": {"tier_of": {"Military OneSource": ["hidden"]}}},
+    {"text": "3 day notice on my door", "expect": {"category": "housing"}, "_why": "blind audit 2026-11-06 (F9): unrouted before; the words were added from these messages"},
+    {"text": "been couch surfing for weeks", "expect": {"category": "housing"}, "_why": "blind audit 2026-11-06 (F9): unrouted before; the words were added from these messages"},
+    {"text": "lost my coverage", "expect": {"category": "healthcare"}, "_why": "blind audit 2026-11-06 (F9): unrouted before; the words were added from these messages"},
+    {"text": "CPS took my kids", "expect": {"category": "legal"}, "_why": "blind audit 2026-11-06 (F9): unrouted before; the words were added from these messages"},
+    {"text": "my boss isn't paying me", "expect": {"category": "legal"}, "_why": "blind audit 2026-11-06 (F9): unrouted before; the words were added from these messages"},
+    {"text": "how do I get a U visa", "expect": {"category": "legal"}, "_why": "blind audit 2026-11-06 (F9): unrouted before; the words were added from these messages"},
+    {"text": "who can watch my baby while I go to work", "expect": {"category": "money"}, "_why": "blind audit 2026-11-06 (F9): unrouted before; the words were added from these messages"},
+    {"text": "evicshun", "expect": {"category": "housing"}, "_why": "blind audit 2026-11-06 (F9): unrouted before; the words were added from these messages"},
+    {"text": "foodstamps", "expect": {"category": "food"}, "_why": "blind audit 2026-11-06 (F9): unrouted before; the words were added from these messages"},
+    {"text": "medicade", "expect": {"category": "healthcare"}, "_why": "blind audit 2026-11-06 (F9): unrouted before; the words were added from these messages"},
+    {"text": "sec 8", "expect": {"category": "housing"}, "_why": "blind audit 2026-11-06 (F9): unrouted before; the words were added from these messages"},
+    {"text": "cant pay rnt", "expect": {"category": "housing"}, "_why": "blind audit 2026-11-06 (F9): unrouted before; the words were added from these messages"},
+    {"text": "need hlp w my lectric bil", "expect": {"category": "housing"}, "_why": "blind audit 2026-11-06 (F9): unrouted before; the words were added from these messages"},
+    {"text": "My husband is undocumented, I'm a citizen, we have 2 kids and need food in Ohio, we make $1,500 a month", "expect": {"tier_of": {"SNAP (Supplemental Nutrition Assistance Program)": ["likely", "possible", "needs_info"]}, "flag": "member_no_status"}, "_why": "blind audit 2026-11-06 (F5): a citizen in a mixed-status family was told SNAP was unlikely"},
+    {"text": "I am a US citizen and my wife is on a work visa, we need food stamps, $1,200 a month, Texas", "expect": {"tier_of": {"SNAP (Supplemental Nutrition Assistance Program)": ["likely", "possible", "needs_info"]}}, "_why": "blind audit 2026-11-06 (F5): a citizen in a mixed-status family was told SNAP was unlikely"},
+    {"text": "I'm not undocumented, I'm a citizen and I need food stamps, I make $900 a month", "expect": {"tier_of": {"SNAP (Supplemental Nutrition Assistance Program)": ["likely"]}}, "_why": "blind audit 2026-11-06 (F5): a denial (\"I'm not undocumented\") was told SNAP was unlikely"}
 ]
 }

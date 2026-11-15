@@ -31,6 +31,8 @@ import hashlib
 import json
 import os
 import secrets
+import sqlite3
+import sys
 import time
 from pathlib import Path
 
@@ -40,6 +42,8 @@ from cmguard import telemetry
 from cmguard.clientip import client_ip
 from cmguard.config import GatewayConfig
 from cmguard.limits import InflightCounter, TokenBuckets
+from cmguard.preflight import data_problems
+from cmguard.retention import days_from_env, purge
 
 # The walkers the browser client calls, and the limit class for each. Every
 # other walker (Eligibility, Navigation, Escalation, Pathfinder, Critique) is
@@ -84,9 +88,9 @@ CORS_PREFIX = b"access-control-"
 
 
 def content_security_policy(frame_ancestors: str) -> bytes:
-    """Framing, plugins, <base> and form targets locked down; scripts and
-    styles stay as the client bundle needs them."""
-    return ("frame-ancestors " + frame_ancestors + "; base-uri 'self'; object-src 'none'; form-action 'self'").encode("latin-1")
+    """Framing, plugins, <base> and form targets locked down, and scripts only
+    from this site: the page's one inline tag is JSON, which CSP doesn't run."""
+    return ("frame-ancestors " + frame_ancestors + "; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self'").encode("latin-1")
 
 
 def cors_filter(raw_headers, origin: bytes, allowed: frozenset):
@@ -176,6 +180,8 @@ def classify(method: str, path: str):
         return "blocked", None
     if path in ("/healthz", "/healthz/live", "/healthz/ready"):
         return ("health", None) if method in ("GET", "HEAD") else ("blocked", None)
+    if path.startswith("/ui-strings/"):
+        return ("labels", None) if method in ("GET", "HEAD") else ("blocked", None)
     if path in DOC_PATHS:
         return ("static", None) if method in ("GET", "HEAD") else ("blocked", None)
     for prefix in BLOCKED_PREFIXES:
@@ -184,6 +190,31 @@ def classify(method: str, path: str):
     if method in ("GET", "HEAD"):
         return "static", None
     return "blocked", None
+
+
+_UI_STRINGS: dict = {}
+# The language menu, for someone whose sign-up was turned away: catalogs only.
+_UI_LANGUAGES: list = [b"[]"]
+
+
+def ui_strings(code: str) -> "bytes | None":
+    """Interface labels for a catalog language, or None. Codes come from the
+    file names, so nothing from the request reaches a file path."""
+    if not _UI_STRINGS:
+        folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "i18n")
+        en = json.load(open(os.path.join(folder, "en.json"), encoding="utf-8"))
+        keys = [k for k in en if k.startswith(("ui.", "opt."))]
+        langs: list = []
+        for name in sorted(os.listdir(folder)):
+            if name.endswith(".json"):
+                cat = json.load(open(os.path.join(folder, name), encoding="utf-8"))
+                _UI_STRINGS[name[:-5]] = json.dumps({k: cat.get(k) or en[k] for k in keys}, ensure_ascii=False).encode()
+                meta = cat.get("_meta") or {}
+                langs.append({"code": name[:-5], "name": str(meta.get("name") or name[:-5]), "endonym": str(meta.get("endonym") or meta.get("name") or name[:-5]), "catalog": True})
+        _UI_LANGUAGES[0] = json.dumps(langs, ensure_ascii=False).encode()
+    if code == "languages":
+        return _UI_LANGUAGES[0]
+    return _UI_STRINGS.get(code)
 
 
 def json_shape_problem(obj, max_depth: int, max_nodes: int, max_string: int) -> str:
@@ -250,6 +281,8 @@ class Gateway:
                 if rate:
                     self.buckets[(cls, scope)] = TokenBuckets(rate[0], rate[1], mk)
         self.per_ip = InflightCounter(self.cfg.inflight_per_ip, mk)
+        self._health_cache = None
+        self._health_bad = False
         # Slow model replies from one shelter's address must not use up that
         # address's slots for chat (blind audit F24), and the route for people
         # with no account must stay open when everything else is full.
@@ -315,6 +348,7 @@ class Gateway:
         self.ready = await self._probe()
         self._tasks.append(asyncio.create_task(self._watch_ready()))
         self._tasks.append(asyncio.create_task(self._telemetry_loop()))
+        self._tasks.append(asyncio.create_task(self._retention_loop()))
 
     async def shutdown(self):
         for t in self._tasks:
@@ -333,7 +367,69 @@ class Gateway:
         while True:
             if not self.ready and await self._probe():
                 self.ready = True
+            # Made ahead of need: on a full disk, when this route matters most,
+            # a new login can't be written.
+            if self.ready and not self._guest_token:
+                await self._guest_login()
             await asyncio.sleep(1.0 if not self.ready else 15.0)
+
+    async def _retention_loop(self):
+        days = days_from_env()
+        while days > 0:
+            await asyncio.sleep(3600)
+            try:
+                done = await asyncio.to_thread(purge, days)
+                if done["visitors"]:
+                    print(f"civicmesh_retention: removed {done['visitors']} idle visitors, {done['records']} records", file=sys.stderr, flush=True)
+            except Exception as ex:
+                print("civicmesh_retention_failed: " + type(ex).__name__, file=sys.stderr, flush=True)
+
+    def _health_checks(self) -> dict:
+        """Slow enough (a file written, 51 catalogs read) to run off the event loop."""
+        checks = {"data": "ok", "disk": "ok", "database": "ok"}
+        if data_problems():
+            checks["data"] = "failed"
+        try:
+            probe = os.path.join(".jac", "data", ".healthz-write")
+            with open(probe, "wb") as f:
+                f.write(b"x" * 65536)
+                f.flush()
+                os.fsync(f.fileno())
+            os.remove(probe)
+        except OSError:
+            checks["disk"] = "failed"
+        try:
+            db = sqlite3.connect(os.path.join(".jac", "data", "anchor_store.db"), timeout=2.0)
+            try:
+                db.execute("select 1 from anchors limit 1").fetchone()
+            finally:
+                db.close()
+        except sqlite3.Error:
+            checks["database"] = "failed"
+        return checks
+
+    async def _health(self) -> tuple:
+        """/healthz: does the app work, and not just is it up (blind audit F26).
+
+        With a full disk or no catalog it said "ok" while every visitor got an
+        error or an empty answer. Now it answers 503 and names the check, so an
+        uptime monitor can raise the alarm. Cached briefly: it writes to disk.
+        """
+        now = time.monotonic()
+        if self._health_cache and self._health_cache[0] > now:
+            return self._health_cache[1], self._health_cache[2]
+        checks = await asyncio.to_thread(self._health_checks)
+        checks["engine"] = "ok" if await self._probe() else "failed"
+        bad = sorted(k for k, v in checks.items() if v != "ok")
+        status = 503 if bad else 200
+        payload = json.dumps({"status": "degraded" if bad else "ok", "checks": checks}).encode()
+        if bad and not self._health_bad:
+            print("civicmesh_health_degraded: " + ",".join(bad), file=sys.stderr, flush=True)
+        if self._health_bad and not bad:
+            print("civicmesh_health_recovered", file=sys.stderr, flush=True)
+        self._health_bad = bool(bad)
+        self._health_cache = (now + 5.0, status, payload)
+        return status, payload
 
     async def _telemetry_loop(self):
         while True:
@@ -436,6 +532,19 @@ class Gateway:
         if wait:
             await self._respond(send, 429, error_body(429, "RATE_LIMITED", "Too many requests. Please wait a moment and try again."),
                                 extra=[(b"retry-after", str(int(wait + 0.999)).encode())])
+            return
+
+        if cls == "labels":
+            payload = ui_strings(path[len("/ui-strings/"):])
+            if payload is None:
+                await self._respond(send, 404, error_body(404, "NOT_FOUND", "No labels for that language."))
+            else:
+                await self._respond(send, 200, b"" if method == "HEAD" else payload, headers_raw=[(b"content-type", b"application/json; charset=utf-8"), (b"cache-control", b"public, max-age=3600")])
+            return
+
+        if cls == "health" and path == "/healthz":
+            status, payload = await self._health()
+            await self._respond(send, status, b"" if method == "HEAD" else payload)
             return
 
         if cls in API_CLASSES:
@@ -603,20 +712,28 @@ class Gateway:
                 headers[b"authorization"] = b"Bearer " + token.encode()
             telemetry.count("allowed:" + cls)
             url = scope["path"] + (("?" + scope["query_string"].decode("latin-1")) if scope.get("query_string") else "")
-            try:
-                r = await self.client.request(
-                    scope["method"], url, content=body or None,
-                    headers=self._upstream_headers(headers, body),
-                    timeout=httpx.Timeout(self.cfg.timeout_s.get(cls, 30.0), connect=5.0),
-                )
-            except httpx.TimeoutException:
-                telemetry.count("upstream_timeout:" + cls)
-                return (504, [(b"content-type", b"application/json")],
-                        error_body(504, "TIMEOUT", "That took too long. Please try again."))
-            except httpx.HTTPError:
-                telemetry.count("upstream_error:" + cls)
-                return (502, [(b"content-type", b"application/json")],
-                        error_body(502, "UPSTREAM", "The service is busy. Please try again."))
+            attempts = 3 if cls == "forget" else 1
+            for attempt in range(attempts):
+                try:
+                    r = await self.client.request(
+                        scope["method"], url, content=body or None,
+                        headers=self._upstream_headers(headers, body),
+                        timeout=httpx.Timeout(self.cfg.timeout_s.get(cls, 30.0), connect=5.0),
+                    )
+                except httpx.TimeoutException:
+                    telemetry.count("upstream_timeout:" + cls)
+                    return (504, [(b"content-type", b"application/json")],
+                            error_body(504, "TIMEOUT", "That took too long. Please try again."))
+                except httpx.HTTPError:
+                    telemetry.count("upstream_error:" + cls)
+                    return (502, [(b"content-type", b"application/json")],
+                            error_body(502, "UPSTREAM", "The service is busy. Please try again."))
+                # Delete my data can run twice harmlessly, and it's the one call a
+                # person relies on having worked.
+                if r.status_code < 500 or attempt == attempts - 1:
+                    break
+                telemetry.count("retried:" + cls)
+                await asyncio.sleep(0.5 * (attempt + 1))
             if cls == "guest" and r.status_code == 401:
                 self._guest_token = ""
             if r.status_code >= 500:

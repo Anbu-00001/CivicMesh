@@ -206,12 +206,12 @@ glob MEDICAID_WORK_DATE: str = "2027-01-01";
 glob PROGRAMS: dict = {
     "section8-hcv-rule":     {"income": {"basis": "ami", "pct": 50, "note": "75% of new vouchers go to households under 30% of area median"}, "status": "hud"},
     "esg-shelter-rule":      {"income": {"basis": "none"}, "status": ""},
-    "rrh-rule":              {"income": {"basis": "ami", "pct": 30, "note": "ESG-funded rapid re-housing re-checks income against 30% of area median"}, "status": ""},
+    "rrh-rule":              {"income": {"basis": "none", "note": "no income test to get in; ESG-funded programs recheck income against 30% of area median after a year"}, "status": ""},
     "liheap-rule":           {"income": {"basis": "fpl", "pct": 150, "note": "states may use 60% of state median income instead, if higher"}, "status": "liheap"},
     "public-housing-rule":   {"income": {"basis": "ami", "pct": 80}, "status": "hud"},
     "ndv-shelter-rule":      {"income": {"basis": "none"}, "status": ""},
     "coc-psh-rule":          {"income": {"basis": "none"}, "status": ""},
-    "hud-vash-rule":         {"income": {"basis": "ami", "pct": 50, "note": "PHAs may admit HUD-VASH families up to 80% of area median"}, "status": "hud"},
+    "hud-vash-rule":         {"income": {"basis": "ami", "pct": 80, "note": "HUD has required the 80% limit for new HUD-VASH families since 2024; VA disability pay doesn't count"}, "status": "hud"},
     "salvation-army-th-rule": {"income": {"basis": "none", "note": "income rules vary by site"}, "status": ""},
     "cc-era-rule":           {"income": {"basis": "ami", "pct": 80, "typical": True, "note": "typical for emergency rental assistance; varies by diocese"}, "status": ""},
     "snap-rule":             {"income": {"basis": "fpl", "pct": 130, "note": "gross test; the state's limit replaces 130% (snap_gross_pct)"}, "status": "snap"},
@@ -224,6 +224,8 @@ glob PROGRAMS: dict = {
     "sfmnp-rule":            {"income": {"basis": "fpl", "pct": 185}, "status": ""},
     "fridge-rule":           {"income": {"basis": "none"}, "status": ""},
     "csfp-rule":             {"income": {"basis": "fpl", "pct": 150}, "status": ""},
+    # 47 CFR 54.409: 135% of poverty, or on SNAP, Medicaid, SSI, federal housing aid or the Veterans Pension.
+    "lifeline-rule":         {"income": {"basis": "fpl", "pct": 135, "note": "or you qualify by being on SNAP, Medicaid, SSI, federal housing aid or the Veterans Pension"}, "status": ""},
     "medicaid-rule":         {"income": {"basis": "medicaid", "pct": 138}, "status": "medicaid"},
     "chip-rule":             {"income": {"basis": "fpl", "pct": 255, "typical": True, "note": "state-set, from about 170% to 400%; 255% is the national median"}, "status": "medicaid"},
     "fqhc-rule":             {"income": {"basis": "none", "note": "sliding-scale discounts below 200% of poverty; no one is turned away for inability to pay"}, "status": ""},
@@ -248,10 +250,10 @@ glob PROGRAMS: dict = {
     "whd-rule":              {"income": {"basis": "none"}, "status": ""},
     "nche-rule":             {"income": {"basis": "none"}, "status": ""},
     "poison-rule":           {"income": {"basis": "none"}, "status": ""},
-    "tanf-rule":             {"income": {"basis": "none", "varies": True, "note": "Each state sets its own limit and amount"}, "status": "tanf"},
+    "tanf-rule":             {"income": {"basis": "none", "varies": True, "far_over_pct": 150, "far_over_text": "In the latest federal survey (July 2023), no state let a family of three earn more than about 130% of poverty and still get cash aid", "note": "Each state sets its own limit and amount"}, "status": "tanf"},
     "ssi-rule":              {"income": {"basis": "none", "varies": True, "note": "The 2026 payment is up to $994 a month for one person or $1,491 for a couple, and some income isn't counted; savings must be under $2,000 or $3,000"}, "status": "ssi"},
     "ssdi-rule":             {"income": {"basis": "none", "varies": True, "note": "It depends on your work history, and earning over $1,690 a month in 2026 ($2,830 if blind) usually rules it out"}, "status": ""},
-    "ccdf-rule":             {"income": {"basis": "none", "varies": True, "note": "Each state sets its limit, up to 85% of state median income, and many have waiting lists"}, "status": "childcare"},
+    "ccdf-rule":             {"income": {"basis": "none", "varies": True, "far_over_pct": 500, "far_over_text": "Federal child care aid stops at 85% of state median income, well under this income in every state", "note": "Each state sets its limit, up to 85% of state median income, and many have waiting lists"}, "status": "childcare"},
     "ui-rule":               {"income": {"basis": "none", "varies": True, "note": "It depends on your past wages and your state's rules"}, "status": "ui"},
     "eitc-rule":             {"income": {"basis": "eitc"}, "status": "ssn"},
     "vita-rule":             {"income": {"basis": "none", "note": "generally for people making about $70,244 or less; sites can set their own limit"}, "status": ""},
@@ -334,6 +336,14 @@ def income_limit(rule_id: str, profile: dict, flat_fallback: int = 0) -> dict {
         return {"none": True, "note": str(STATE_NAMES.get(state, state)) + " gives every public-school student free breakfast and lunch, at any income"};
     }
     if basis == "none" {
+        income = int(profile.get("income_annual", -1) or 0) if profile.get("income_annual", -1) != -1 else -1;
+        if inc.get("far_over_pct") and income > 0 {
+            hh_far = int(profile.get("household_size", 0) or 0);
+            if hh_far <= 0 { hh_far = 3 if "children" in list(profile.get("flags", [])) else 1; }
+            if income > fpl_annual(hh_far, state) * float(inc["far_over_pct"]) / 100.0 {
+                return {"none": True, "varies": True, "note": str(inc.get("note", "")), "far_over": str(inc["far_over_text"])};
+            }
+        }
         return {"none": True, "note": str(inc.get("note", "")), "varies": bool(inc.get("varies", False))};
     }
     if basis == "eitc" {
@@ -519,7 +529,9 @@ glob STATE_COVERAGE: dict = {
     "NY": {"name": "Child Health Plus", "children": "unknown", "pregnant": "", "adults": "", "source": "NYC Health + Hospitals", "adult_note": ""},
     "TX": {"name": "CHIP Perinatal", "children": "", "pregnant": "met", "adults": "", "source": "Texas Works Handbook D-110", "adult_note": "", "only": "chip-rule"}
 };
-glob CHIPRA_SOURCE: str = "CMS SHO #26-001 (CHIPRA 214 option); KFF";
+glob CHIPRA_SOURCE: str = "CMS, Medicaid and CHIP Coverage of Lawfully Residing Children & Pregnant Women (updated April 2, 2026); CMS SHO #26-001";
+glob CHIPRA_CHILDREN: list = ["AS", "AR", "CA", "CO", "CT", "MP", "DC", "DE", "FL", "GA", "HI", "IL", "IA", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MT", "NE", "NH", "NJ", "NM", "NY", "NV", "NC", "OH", "OR", "PA", "RI", "SC", "TX", "VI", "UT", "VT", "VA", "WA", "WV", "WI"];
+glob CHIPRA_PREGNANT: list = ["AS", "AR", "CA", "CO", "CT", "MP", "DC", "DE", "GA", "HI", "KY", "ME", "MD", "MA", "MI", "MN", "NE", "NH", "NJ", "NM", "NY", "NV", "NC", "ND", "OH", "PA", "RI", "SC", "VI", "VT", "VA", "WA", "WV", "WI", "WY"];
 glob STATE_COVERS_NOTE: str = "Some states cover children and pregnant people with their own funds, or under the federal CHIPRA option, whatever the federal list says. Your state's Medicaid office decides, so it's worth applying";
 
 """Coverage for a child or pregnant person whose status is outside the federal list."""
@@ -541,7 +553,17 @@ def state_coverage(rule_id: str, profile: dict, flags: list) -> dict {
         }
     }
     if child or pregnant {
-        return {"status": "unknown", "detail": STATE_COVERS_NOTE, "change_note": "", "source": CHIPRA_SOURCE};
+        detail = STATE_COVERS_NOTE;
+        if state and state in STATE_NAMES {
+            who_l = "pregnant people" if pregnant else "children";
+            sname = str(STATE_NAMES[state]);
+            if state in (CHIPRA_PREGNANT if pregnant else CHIPRA_CHILDREN) {
+                detail = sname + " is on the federal list of states that cover lawfully present " + who_l + " with no 5-year wait. With no legal status, ask the Medicaid office about state-funded coverage";
+            } else {
+                detail = sname + " isn't on the federal list of states that cover lawfully present " + who_l + " with no 5-year wait. It may still have state-funded coverage, so it's worth applying";
+            }
+        }
+        return {"status": "unknown", "detail": detail, "change_note": "", "source": CHIPRA_SOURCE};
     }
     return {};
 }
@@ -563,6 +585,24 @@ def program_gates(rule_id: str, profile: dict) -> list {
         }
         if "with_parents" in flags and age > 0 and age < 22 and not has_kids {
             out.append({"status": "unknown", "detail": "Under 22 and living with a parent, you usually have to apply together with them", "source": "7 CFR 273.1"});
+        }
+    }
+    # Mixed-status households (USDA SNAP guidance on non-citizen eligibility; NILC).
+    if rule_id in ["snap-rule", "medicaid-rule"] and "member_no_status" in flags {
+        out.append({"status": "unknown", "detail": "Only the person without an eligible status is left out. Everyone else who qualifies, citizens and children included, can still get it, and someone who isn't applying doesn't have to give an immigration status or Social Security number", "source": ("USDA FNS, SNAP guidance on non-citizen eligibility; 7 CFR 273.4" if rule_id == "snap-rule" else "42 CFR 435.907(e): non-applicants need not give a Social Security number")});
+    }
+    if rule_id == "snap-rule" and "drug_felony" in flags {
+        if state == "TX" {
+            out.append({"status": "unknown", "detail": "Texas allows SNAP after a felony drug conviction if you keep to your parole or probation terms. A violation means a 2-year ban, and a new felony drug conviction while on SNAP means a lifetime ban", "source": "Texas Hum. Res. Code 33.018; Texas Works Handbook A-230"});
+        } else {
+            out.append({"status": "unknown", "detail": "Federal law bars SNAP after a felony drug conviction, but almost every state has lifted or eased that ban. The office can tell you how it applies, and others in your home can still apply", "source": "21 U.S.C. 862a; Collateral Consequences Resource Center survey"});
+        }
+    }
+    if rule_id == "tanf-rule" and "drug_felony" in flags {
+        if state == "TX" {
+            out.append({"status": "unknown", "detail": "Texas keeps the federal ban on TANF after a felony drug conviction. Your children can still qualify", "source": "21 U.S.C. 862a; Collateral Consequences Resource Center survey"});
+        } else {
+            out.append({"status": "unknown", "detail": "Federal law bars TANF after a felony drug conviction, and many states have lifted or eased that ban. Your children can still qualify", "source": "21 U.S.C. 862a; Collateral Consequences Resource Center survey"});
         }
     }
     if rule_id == "eitc-rule" {

@@ -40,6 +40,8 @@ def main():
         if rec.get("contact_result") == "confirmed" or rec.get("contact_manual"):
             confirmed += 1
         rule_date = (rec.get("rules") or {}).get("checked")
+        if not rule_date and (rec.get("rules") or {}).get("kind") not in ("no_income_test", "state_set"):
+            fails.append(f"{rid}: rules neither checked nor marked as having no rule to check")
         if rule_date:
             rules += 1
             if (today - datetime.date.fromisoformat(rule_date)).days > MAX_AGE_DAYS:

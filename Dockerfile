@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 # CivicMesh — single-stage image. Jac builds the React client itself
 # (via bun) during `jac build`, so we don't need a separate Node stage.
-FROM python:3.12-slim AS runtime
+FROM python:3.12-slim@sha256:e695ab189fa2d082b1c61c69a6b888a5adeca61ceeccad107b1ed2a125721a9e AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -41,8 +41,9 @@ RUN set -e; \
 WORKDIR /app
 
 # Python deps first for layer-cache wins.
-COPY requirements.txt ./
-RUN pip install -r requirements.txt
+# Every package and its sha256 (civicmesh/tools/hash_requirements.py).
+COPY requirements.hashes.txt ./
+RUN pip install --require-hashes -r requirements.hashes.txt
 
 # Project source. .dockerignore strips venv, node_modules, .jac cache, .git.
 COPY . .
@@ -51,8 +52,13 @@ COPY . .
 # civicmesh/.jac/client; the runtime CMD then serves that bundle along
 # with the REST/WS API on a single port. Done at image-build time so
 # cold start is fast and the deploy doesn't need npm/bun network access.
+# bun.lock pins the whole JavaScript tree, not only the direct packages in jac.toml.
 WORKDIR /app/civicmesh
-RUN jac build app.jac --client web
+RUN mkdir -p .jac/client && cp bun.lock .jac/client/bun.lock && jac build app.jac --client web
+
+# Build tools were only for building: a smaller image with less to attack.
+RUN apt-get purge -y --auto-remove git build-essential unzip \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 # Graph state lives in .jac/data/anchor_store.db (Jaseci's SQLite anchor
 # store). On Render's free tier there is no persistent disk, so this
