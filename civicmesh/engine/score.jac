@@ -642,8 +642,9 @@ def rank_resources(items: list, profile: dict, message: str, limit: int = 6, lan
         # number and read as a mislabelled safety line when pinned.
         if "dv" in flags and "domestic violence hotline" in name_low { pinned = True; }
         if "dv_concern" in flags and "domestic violence hotline" in name_low { pinned = True; }
-        # Lines for one group in one danger: named only when both show (988lifeline.org
-        # sent LGBTQ+ youth to its own option until July 2025; these are the lines left).
+        # Lines for one group in one danger: named only when both show. 988's own
+        # LGBTQ+ youth option ("press 3") ended July 2025 and was restored September 30,
+        # 2026 (988lifeline.org/get-help; APA, 2026-10-05); it is in r.more_lines.
         # Needing a medicine isn't a poisoning: "need help with medicine" started at
         # Poison Control (blind audit, 2026-11).
         if "poison control" in name_low and "emergency" not in flags and not re.search(POISON_HAZARD, str(message).lower()) { continue; }

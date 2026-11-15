@@ -399,9 +399,9 @@
         "why": "The app computes no income test for this program. Its text says who it serves and the program decides."
       },
       "contact_manual": {
-        "checked": "2026-10-28",
-        "how": "988 Suicide and Crisis Lifeline: call or text 988, chat at 988lifeline.org, 24/7",
-        "source": "https://988lifeline.org/"
+        "checked": "2026-11-15",
+        "how": "988lifeline.org/get-help says the LGBTQ+ youth specialized service, the 'Press 3 option', has been restored; APA dates it to September 30, 2026. No text keyword or age limit is stated on either page, so the app says only: call 988 and press 3.",
+        "source": "https://988lifeline.org/get-help/"
       }
     },
     "samhsa-rule": {

@@ -224,3 +224,8 @@ A fresh audit with no access to earlier reports scored the app 4/10 for crisis u
 - **After the first message, and toward others** (F8, F2). "I took them" or "I did it" after an earlier self-harm turn now raises an emergency: 911 first, then 988 and Poison Control. The same words with no earlier danger ("I took them to school") don't. Saying you will kill or hurt someone pins 988, and a weapon with that intent adds 911. Idioms ("kill it at my interview", "killing me with fees") stay quiet.
 - **CI** (F19). Every action is pinned to a commit SHA (tag in a comment for Dependabot), and the CI jobs install `requirements.hashes.txt` with `--require-hashes`, as the image does. The external job stays non-gating on purpose: it measures, it doesn't decide.
 - **Still not handled:** recognition in most catalog languages (F3), other multi-turn corrections (F8), the landing page contrast failure (not reproduced here), cards and criteria in English (F11), capacity (F15), mutation-testing gaps (F13), and every review that needs native speakers, lawyers or clinicians.
+
+## 988's LGBTQ+ youth line is back (2026-11-15)
+
+The "press 3" option for LGBTQ+ young people, which ended on July 17, 2025 and was removed from the app then, was restored on September 30, 2026 (988lifeline.org/get-help: "has been restored pursuant to funding and congressional direction"; APA, 2026-10-05). A research pass found the app still treating it as ended. Crisis answers in all 51 catalogs now say to call 988 and press 3 (machine-drafted outside English and Spanish), the 988 card says so, and the HTTP e2e checks the English reply. Neither source says whether that option offers interpreters, or gives a text keyword or an age limit, so none is stated.
+
