@@ -471,7 +471,9 @@ glob REQUEST_RE: str = "\\?|¿|\\b(?:i need|we need|need help|help me|help us|ca
 # The speaker is under 18 without saying an age.
 glob DV_OWN_RE: str = "\\b(?:hits|hit|beats|beat|hurts|hurt|choked|chokes|abuses|abused|threatens|threatened) me\\b|\\bmy (?:abusive )?(?:husband|wife|partner|spouse|boyfriend|girlfriend|fianc[eé]e?|ex)\\b|\\babusive (?:husband|wife|partner|spouse|boyfriend|girlfriend|ex)\\b";
 glob THIRD_CHILD_RE: str = "\\breport(?:ing)? (?:child )?abuse\\b|\\b(?:students?|pupils?) (?:told|tells|said|says|disclosed)\\b|\\bmandated reporter\\b|\\b(?:one of my|my) students?\\b|\\bneighbor'?s (?:kid|child|son|daughter)\\b|\\b(?:son|daughter)'?s friend\\b";
-glob MINOR_RE: str = "\\b(?:i'?m|i am) (?:only |just )?(?:a )?(?:\\w+ )?(?:minor|under 18|under eighteen|teenager|teen|high school(?:er| student))\\b|\\bsoy menor de edad\\b";
+# "I'm 13" / "im 12": parse_age reads 14 and up, so a younger child writing
+# about themselves is caught here (audit 2026-11-06, B11). Not "I'm 12 weeks".
+glob MINOR_RE: str = "\\b(?:i'?m|i am) (?:only |just )?(?:a )?(?:\\w+ )?(?:minor|under 18|under eighteen|teenager|teen|high school(?:er| student))\\b|\\bsoy menor de edad\\b|\\b(?:i'?m|i am) (?:only |just )?1[0-3]\\b(?! ?(?:min|mins|minutes|hours?|hrs?|days?|weeks?|wks?|months?|mo\\b|years? (?!old)|yrs? (?!old)|dollars|cents|%|k\\b|miles|blocks|feet|ft\\b|inches|lbs|pounds|kg|am\\b|pm\\b|o'?clock|[:.,]\\d|th\\b|behind|late|short))";
 # Before an amount: it was earned in the past, not lived on now.
 # Danger with its own line (outside judge, 2026-10-28: a 12-year-old touched by
 # a stepdad, a worker whose employer holds her passport, a baby who won't wake
@@ -1132,6 +1134,9 @@ glob FACT_FLAGS: list = [
     ("college_student", "\\b(?:full[- ]?time|part[- ]?time|college|university) (?:college |university )?student\\b|\\b(?:i'?m|i am) (?:in college|at college|at university)\\b"),
     ("with_parents", "\\b(?:live|living|stay|staying) with my (?:parents?|mom|dad|mother|father)\\b"),
     ("itin", "\\bitin\\b"),
+    # The speaker grew up in foster care: Medicaid to 26 with no income test
+    # (42 CFR 435.150; audit 2026-11-06, D7). Not "my kids are in foster care".
+    ("former_foster", "\\b(?:i|i'?ve|i have|i was|i'?m|i am)\\b[^.!?]{0,25}\\b(?:aged out of|aging out of|age out of|grew up in|left|was in|been in|in) (?:the )?foster (?:care|system|homes?)\\b|\\b(?:i'?m|i am) (?:a )?(?:former )?foster (?:care )?(?:youth|kid|child|alum(?:ni|na|nus)?)\\b|\\bformer foster (?:youth|kid|child)\\b|\\bcrec[ií] en (?:un )?hogar(?:es)? de crianza|\\bsal[ií] del sistema de crianza"),
     ("no_children", "\\b(?:no|without|don'?t have(?: any)?|do not have(?: any)?) (?:kids|children|child|dependents)\\b|\\bchildless\\b"),
     ("sex_offender", "\\b(?:i'?m|i am|i was|i have to register as|i must register as)\\b[^.!?]{0,25}\\bsex offender\\b"),
     ("hud_meth_bar", "\\bconvicted\\b[^.!?]{0,30}\\b(?:making|cooking|manufactur\\w+|producing)\\s+(?:meth|methamphetamine)\\b[^.!?]{0,30}\\b(?:public housing|section 8|assisted housing|housing project)\\b"),

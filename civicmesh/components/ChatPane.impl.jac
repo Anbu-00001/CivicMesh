@@ -97,18 +97,20 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "", display:
 
     # A request the hosting proxy never answers used to leave the typing dots
     # up forever, and `if is_loading { return; }` then ignored every new
-    # message. After 30 s the turn is released with a retry; a late answer is
-    # dropped. (CM_INFLIGHT is a plain object: React state read inside a
-    # timer would be stale.)
+    # message. After 15 s the turn is released with a retry and the crisis
+    # lines; a late answer is dropped. A turn takes about 0.2 s, 3 s at the
+    # audit's load peak, so 30 s only kept someone in danger waiting (audit
+    # 2026-11-06, F15). (CM_INFLIGHT is a plain object: React state read
+    # inside a timer would be stale.)
     req_id = "r" + str(Math.random());
     CM_INFLIGHT["id"] = req_id;
     setTimeout(lambda {
         if CM_INFLIGHT["id"] == req_id {
             CM_INFLIGHT["id"] = "";
-            messages = new_messages + [{"role": "bot", "kind": "error", "id": "t" + str(Math.random()), "text": L(footerUi(), "ui.busy", "No answer from the server after 30 seconds. The hosting service may be busy. Your message wasn't lost.") + " " + errorLines(), "retry": user_text, "retry_answering": ans, "retry_display": shown, "retry_pin": pin}];
+            messages = new_messages + [{"role": "bot", "kind": "error", "id": "t" + str(Math.random()), "text": L(footerUi(), "ui.busy", "No answer from the server after 15 seconds. The hosting service may be busy. Your message wasn't lost.") + " " + errorLines(), "retry": user_text, "retry_answering": ans, "retry_display": shown, "retry_pin": pin}];
             is_loading = False;
         }
-    }, 30000);
+    }, 15000);
 
     # The anonymous login can still be running when the first message goes
     # out (a suggestion tapped as the chat opens). A request without a token
@@ -756,7 +758,7 @@ impl ChatPane.renderResult(msg: dict, idx: int, is_last: bool) -> JsxElement {
                     {[<span key={"f" + str(i)} className="cm-fact">{facts[i]}</span> for i in range(len(facts))]}
                     {prof["carried_category"] and <span className="cm-fact cm-fact-dim">{L(ui, "ui.carried", "from earlier")}</span>}
                 </div>}
-                {(d["privacy"] and d["privacy"]["private_turn"] and is_last) and <div className="cm-private-note">{L(ui, "ui.private_note", "Private session is on: once you close this tab, this browser keeps nothing about this conversation. Quick exit leaves instantly.")}</div>}
+                {(d["privacy"] and d["privacy"]["private_turn"] and is_last) and <div className="cm-private-note">{L(ui, "ui.private_note", "Private session is on: once you close this tab, this browser keeps nothing about this conversation. Quick exit leaves instantly. The server keeps what the app understood for up to 30 days; Delete my data or Quick exit erases it now.")}</div>}
                 {(charge_show and charge_asked) and charge_block}
                 {len(shown_matches) > 0 and <div className="cm-cards">
                     {[renderMatchCard(shown_matches[j], idx, j, ui) for j in range(len(shown_matches) if len(shown_matches) < 4 else 4)]}

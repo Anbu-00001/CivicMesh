@@ -19,7 +19,6 @@ import urllib.error
 import urllib.request
 
 H = sys.argv[1].rstrip("/") if len(sys.argv) > 1 else "http://localhost:7860"
-CATALOG_SIZE = len(json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "resources.json"), encoding="utf-8"))["resources"])
 RESULTS = []
 
 
@@ -234,9 +233,18 @@ fw, _ = walker("ForgetWalker", {"user_id": pu}, pt)
 # (it used to store a guessed housing need).
 check("P8 Delete my data removes the person, needs, applications and insights",
       fw is not None and fw["ok"] and fw["removed"]["PersonNode"] == 1 and fw["removed"]["NeedNode"] >= 6, fw)
-gs2, _ = walker("GraphSnapshotWalker", {"user_id": pu}, pt)
-check("P9 after deletion the graph is empty", gs2 is not None and gs2.get("empty") is True and gs2["counts"]["ResourceNode"] == CATALOG_SIZE,
-      {k: gs2["counts"][k] for k in ["PersonNode", "NeedNode", "ResourceNode"]} if gs2 else "")
+# The login goes too, and its token is turned away from then on (audit
+# 2026-11-06, F2/F3): jac-scale alone would accept it until it expired.
+gs2, _ = post("/walker/GraphSnapshotWalker", {"user_id": pu}, pt)
+try:
+    with urllib.request.urlopen(urllib.request.Request(H + "/user/me", headers={"Authorization": "Bearer " + pt}), timeout=30) as r:
+        me_status = r.status
+except urllib.error.HTTPError as e:
+    me_status = e.code
+except Exception:  # noqa: BLE001
+    me_status = -1
+check("P9 after deletion the old login is refused (graph and /user/me)",
+      gs2.get("http") == 401 and me_status == 401, (gs2.get("http"), me_status))
 dn, _ = turn(uid, tok, "I need food")
 check("P10 another visitor's case is untouched by the deletion", dn is not None and dn["profile"]["category"] == "food")
 

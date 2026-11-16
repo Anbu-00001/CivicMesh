@@ -11,7 +11,7 @@ import sys
 import tempfile
 
 sys.path.insert(0, os.getcwd())
-from cmguard.retention import purge  # noqa: E402
+from cmguard.retention import forget_login, purge  # noqa: E402
 
 NOW = datetime.datetime(2026, 11, 5, tzinfo=datetime.timezone.utc)
 
@@ -61,6 +61,31 @@ with tempfile.TemporaryDirectory() as d:
         ("no lookup is left", u.execute("select count(*) from identity_lookups where user_id = 'old'").fetchone()[0] == 0),
         ("0 days means off", purge(0, d, NOW) == {"visitors": 0, "records": 0}),
         ("no database, no error", purge(30, os.path.join(d, "missing"), NOW) == {"visitors": 0, "records": 0}),
+    ]
+    a.close()
+    u.close()
+
+    # Delete my data: the login and the graph's root go at once, whatever the date.
+    a = sqlite3.connect(os.path.join(d, "anchor_store.db"))
+    u = sqlite3.connect(os.path.join(d, "users.db"))
+    visitor(5, "leaving", "user", 0)
+    a.commit()
+    u.commit()
+    a.close()
+    u.close()
+    gone = forget_login("leaving", d)
+    kept_guest = forget_login("cm-guest-abc", d)
+    kept_admin = forget_login("boss", d)
+    a = sqlite3.connect(os.path.join(d, "anchor_store.db"))
+    u = sqlite3.connect(os.path.join(d, "users.db"))
+    names = sorted(r[0] for r in u.execute("select user_id from identity_users"))
+    results += [
+        ("Delete my data removes the login and every record under its root", gone == {"login": 1, "records": 4}),
+        ("no record or lookup of that visitor is left",
+         a.execute("select count(*) from anchors where id like '00000005-%' or data like '%00000005-%'").fetchone()[0] == 0
+         and u.execute("select count(*) from identity_lookups where user_id = 'leaving'").fetchone()[0] == 0),
+        ("the service login and the admin are never removed", kept_guest["login"] == 0 and kept_admin["login"] == 0 and names == ["boss", "cm-guest-abc", "recent"]),
+        ("an unknown login is a no-op", forget_login("nobody", d) == {"login": 0, "records": 0}),
     ]
     a.close()
     u.close()

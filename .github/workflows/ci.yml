@@ -178,7 +178,7 @@ jobs:
         run: python3 civicmesh/tests/e2e_http.py http://localhost:7860
       - name: Accessibility — axe-core on the chat, replies announced, focus returned
         run: |
-          pip install websocket-client
+          pip install --require-hashes -r requirements.browser.txt
           python3 civicmesh/tests/a11y_axe.py http://localhost:7860
       - name: Browser — quick exit (own tab, Shift ×3, private session, sandboxed frame), first message during sign-in, return visit
         run: python3 civicmesh/tests/browser_e2e.py http://localhost:7860

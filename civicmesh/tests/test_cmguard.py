@@ -331,6 +331,27 @@ class Gateway(unittest.TestCase):
         users = [g._limited("chat", "10.0.%d.%d" % (i // 250, i % 250), "u:same") for i in range(cap + 5)]
         self.assertEqual(sum(1 for w in users if w == 0.0), cap)  # per-visitor limit across addresses
 
+    def test_delete_my_data_ends_the_login(self):
+        # jac-scale accepts a token it signed until it expires, even after the
+        # login is deleted, so the gateway turns it away (audit 2026-11-06, F2).
+        from cmguard.config import GatewayConfig
+        from cmguard.gateway import Gateway as G, forgot_everything
+
+        g = G(GatewayConfig(), jwt_secret="")
+        g._revoked = {}
+        key = g._visitor("Bearer abc.def.ghi")
+        self.assertTrue(key.startswith("t:"))
+        g._revoked[key] = time.time() + 60
+        self.assertEqual(g._visitor("Bearer abc.def.ghi"), "")
+        self.assertTrue(g._visitor("Bearer other.token.here"))
+        g._revoked[key] = time.time() - 1  # an expired entry no longer matters
+        self.assertEqual(g._visitor("Bearer abc.def.ghi"), key)
+        ok = json.dumps({"ok": True, "data": {"reports": [{"ok": True, "removed": {}}]}}).encode()
+        self.assertTrue(forgot_everything(ok))
+        self.assertFalse(forgot_everything(ok.replace(b'"ok": true, "removed"', b'"ok": false, "removed"')))
+        self.assertFalse(forgot_everything(b'{"ok": true, "data": {"reports": []}}'))
+        self.assertFalse(forgot_everything(b"not json"))
+
     def test_favicon_is_a_png(self):
         from cmguard.gateway import FAVICON
         self.assertTrue(FAVICON.startswith(b"\x89PNG"))

@@ -18,7 +18,7 @@ def main(app: str) -> int:
     if not chrome:
         print("  FAIL no Chrome or Chromium on PATH")
         return 1
-    proc = subprocess.Popen([chrome, "--headless=new", "--disable-gpu", "--no-sandbox", f"--remote-debugging-port={b.PORT}",
+    proc = subprocess.Popen([chrome, "--headless=new", "--disable-gpu", "--no-sandbox", "--password-store=basic", f"--remote-debugging-port={b.PORT}",
                              f"--remote-allow-origins=http://127.0.0.1:{b.PORT}", "--window-size=1400,900",
                              f"--user-data-dir={tempfile.mkdtemp()}", "about:blank"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:

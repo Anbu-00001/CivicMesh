@@ -32,7 +32,7 @@ def main(url: str) -> int:
         print("  FAIL no Chrome or Chromium on PATH")
         return 1
     profile = tempfile.mkdtemp()
-    proc = subprocess.Popen([chrome, "--headless=new", "--disable-gpu", "--no-sandbox", f"--remote-debugging-port={PORT}",
+    proc = subprocess.Popen([chrome, "--headless=new", "--disable-gpu", "--no-sandbox", "--password-store=basic", f"--remote-debugging-port={PORT}",
                              f"--remote-allow-origins=http://127.0.0.1:{PORT}", "--window-size=1400,900",
                              f"--user-data-dir={profile}", "about:blank"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     fails = []

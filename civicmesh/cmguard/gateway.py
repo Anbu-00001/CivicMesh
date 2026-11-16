@@ -43,7 +43,7 @@ from cmguard.clientip import client_ip
 from cmguard.config import GatewayConfig
 from cmguard.limits import InflightCounter, TokenBuckets
 from cmguard.preflight import data_problems
-from cmguard.retention import days_from_env, purge
+from cmguard.retention import DATA_DIR, days_from_env, forget_login, purge
 
 # The walkers the browser client calls, and the limit class for each. Every
 # other walker (Eligibility, Navigation, Escalation, Pathfinder, Critique) is
@@ -262,6 +262,15 @@ class Disconnected(Exception):
     pass
 
 
+def forgot_everything(payload: bytes) -> bool:
+    """True when ForgetWalker's last report says nothing of the person is left."""
+    try:
+        reports = json.loads(payload)["data"]["reports"]
+        return bool(reports) and reports[-1].get("ok") is True
+    except Exception:
+        return False
+
+
 def error_body(status: int, code: str, message: str) -> bytes:
     return json.dumps({
         "ok": False, "type": "error", "data": None,
@@ -297,6 +306,11 @@ class Gateway:
         self._inflight = {}
         self._recent = {}
         self._tasks = []
+        # Logins ended by Delete my data. jac-scale accepts any token it signed
+        # until it expires, even once the login is gone, so the gateway turns
+        # these away itself. Only hashes are kept, with each token's expiry.
+        self._revoked_path = os.path.join(DATA_DIR, "revoked.json")
+        self._revoked = self._load_revoked()
 
     # -- ASGI entry --------------------------------------------------------
     async def __call__(self, scope, receive, send):
@@ -552,8 +566,60 @@ class Gateway:
         else:
             await self._stream(scope, send, headers, body, cls, ip)
 
+    def _load_revoked(self) -> dict:
+        try:
+            with open(self._revoked_path, encoding="utf-8") as f:
+                data = json.load(f)
+            now = time.time()
+            return {str(k): float(v) for k, v in data.items() if float(v) > now}
+        except (OSError, ValueError, AttributeError, TypeError):
+            return {}
+
+    def _save_revoked(self):
+        now = time.time()
+        self._revoked = {k: v for k, v in self._revoked.items() if v > now}
+        tmp = self._revoked_path + ".tmp"
+        try:
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(self._revoked, f)
+            os.replace(tmp, self._revoked_path)
+        except OSError as ex:
+            print("civicmesh_revoke_save_failed: " + type(ex).__name__, file=sys.stderr, flush=True)
+
+    async def _end_login(self, auth: str):
+        """Delete my data succeeded with this token: jac-scale has already
+        verified it, so its claims can be read here even when the gateway
+        doesn't share the signing secret. Removes the login and turns the
+        token away from now on."""
+        token = auth[7:].strip() if auth.lower().startswith("bearer ") else ""
+        if not token:
+            return
+        key = self._visitor_key(auth)
+        try:
+            import jwt as pyjwt
+
+            claims = pyjwt.decode(token, options={"verify_signature": False})
+        except Exception:
+            claims = {}
+        exp = claims.get("exp")
+        until = float(exp) if isinstance(exp, (int, float)) else time.time() + 400 * 86400
+        if key:
+            self._revoked[key] = until
+            self._save_revoked()
+        uid = str(claims.get("user_id") or "")
+        if uid:
+            try:
+                done = await asyncio.to_thread(forget_login, uid)
+                telemetry.count("forget_login:" + str(done["login"]))
+            except Exception as ex:
+                print("civicmesh_forget_login_failed: " + type(ex).__name__, file=sys.stderr, flush=True)
+
     def _visitor(self, auth: str) -> str:
         """Verified visitor id from the bearer token, or ''."""
+        key = self._visitor_key(auth)
+        return "" if key and self._revoked.get(key, 0) > time.time() else key
+
+    def _visitor_key(self, auth: str) -> str:
         if not auth.lower().startswith("bearer "):
             return ""
         token = auth[7:].strip()
@@ -650,6 +716,8 @@ class Gateway:
             self._inflight.pop(key, None)
             if status == 200:
                 self._remember(key, cls, status, raw, payload)
+        if cls == "forget" and status == 200 and forgot_everything(payload):
+            await self._end_login(headers.get(b"authorization", b"").decode("latin-1"))
         await self._respond(send, status, payload, headers_raw=raw)
 
     def _sweep_recent(self):

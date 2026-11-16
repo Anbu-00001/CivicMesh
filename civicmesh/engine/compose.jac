@@ -421,7 +421,7 @@ def compose_reply(lang: str, profile: dict, ranking: dict, plan: dict, routes: l
             lines.append("Nothing is a sure match yet, but **" + str(len(maybe)) + " programs** could work once I know a bit more.");
         }
     } else {
-        lines.append("Todavía no encuentro un programa que encaje directamente." if es else "I couldn't find a direct match yet.");
+        lines.append("Todavía no encuentro un programa que encaje directamente. Llame al **211** para ayuda local, 24/7." if es else "I couldn't find a direct match yet. Call **211** for local help, 24/7.");
     }
     if steps {
         s0 = steps[0];

@@ -136,6 +136,11 @@ glob TOPIC_ALSO: dict = {"crisis": ["mental_health"]};
 # limits set by a state, a Tribe or an office, a disaster declaration, service history.
 glob OFFICE_CHECKS: list = ["medicare-rule", "msp-rule", "extra-help-rule", "va-health-rule", "ihs-rule", "fdpir-rule", "lifeline-rule", "fema-rule", "head-start-rule", "sun-bucks-rule"];
 glob POISON_HAZARD: str = "swallow|ingest|drank|overdos|poison|bleach|detergent|laundry pod|antifreeze|drain cleaner|button batter|too many|took (?:a lot|a bunch|all|some)|ate (?:some|the|my|a )|got into";
+# A young person who ran away or isn't safe at home, or a parent whose child
+# ran away: the National Runaway Safeline serves both, alongside Childhelp
+# ("I'm 14 and I ran away last night" got nothing at all; audit 2026-11-06, B11).
+glob RUNAWAY_RE: str = "\\b(?:ran|run|running|runs) away\\b|\\brunaway\\b|\\bran off\\b|kicked (?:me )?out|threw me out|thrown out|can'?t go (?:back )?home|not safe at home|(?:scared|afraid) to go home|me escap[eé] de (?:mi )?casa|me fui de (?:mi )?casa|me corrieron de (?:mi )?casa";
+glob CHILD_GONE_RE: str = "\\bmy (?:\\d{1,2}[- ]?(?:year|yr)[- ]?old|teen(?:ager)?|son|daughter|kid|child|grandson|granddaughter)\\b[^.!?]{0,30}\\b(?:ran away|run away|left home|is missing|went missing|has(?:n'?t| not) come home|did(?:n'?t| not) come home)";
 glob THROWN_OUT_RE: str = "kicked (?:me )?out|threw me out|thrown out|homeless|nowhere to go|somewhere safe|not safe at home";
 # Narrow programs in the money category: not listed on a guess in a language whose
 # topics aren't read, where they'd push the cash programs off the list.
@@ -309,7 +314,7 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         crits.append(_crit("income", "Income", "unknown", UNKNOWN_INCOME, W_INCOME, False, str(lim.get("note", ""))));
     } elif (not lim) or lim.get("none") {
         note = str(lim.get("note", "")) if lim else "";
-        if rule_id in ["msp-rule", "extra-help-rule", "fdpir-rule", "head-start-rule", "sun-bucks-rule"] {
+        if rule_id in ["fdpir-rule", "head-start-rule", "sun-bucks-rule"] {
             # These have income rules that the program's office applies (audit 2026-11-06, F7).
             # Weight 0: the card says so, and the tier stays where the rest puts it.
             crits.append(_crit("income", "Income", "unknown", 1.0, 0.0, False, "The office checks income against this program's own limit" + (" — " + note if note else "")));
@@ -321,11 +326,15 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
         per = int(lim.get("per_person", 0));
         basis = str(lim["label"]) + " (" + usd(limit) + "/yr)";
         if lim.get("assumed_household") and per > 0 {
-            basis = basis + ", +" + usd(per) + " per extra person";
-            if "household" not in asks { asks.append("household"); }
+            basis = basis + (", " + usd(limit + per) + "/yr for a couple" if int(lim.get("max_household", 0) or 0) == 2 else ", +" + usd(per) + " per extra person");
+            if "household" not in asks and not (income < 0 and rule_id in ["msp-rule", "extra-help-rule"]) { asks.append("household"); }
         }
         cr: dict = {};
-        if income < 0 {
+        if income < 0 and rule_id in ["msp-rule", "extra-help-rule"] {
+            # The limit is stated, but until income is known the card stays
+            # where the rest puts it, as before the limits were added (D9).
+            cr = _crit("income", "Income", "unknown", 1.0, 0.0, False, "Limit: " + basis + " — income not mentioned yet");
+        } elif income < 0 {
             cr = _crit("income", "Income", "unknown", UNKNOWN_INCOME, W_INCOME, False, "Limit: " + basis + " — income not mentioned yet");
             asks.append("income");
         } elif income <= limit {
@@ -341,7 +350,7 @@ def score_resource(resource: dict, rule: dict, profile: dict, message: str, lang
             } else {
                 cr = _crit("income", "Income", "unknown", 0.45, W_INCOME, False, "Someone 60+ or disabled: no gross-income test; the net test after rent and medical costs decides");
             }
-        } elif lim.get("assumed_household") and per > 0 and income <= limit + 7 * per {
+        } elif lim.get("assumed_household") and per > 0 and income <= limit + (int(lim.get("max_household", 0) or 0) - 1 if lim.get("max_household") else 7) * per {
             # Over the 1-person line, but household size is unknown and the
             # limit grows with every person: ask before ruling it out.
             need_n = 1 + int(math.ceil((income - limit) / float(per)));
@@ -651,6 +660,11 @@ def rank_resources(items: list, profile: dict, message: str, limit: int = 6, lan
         if "stronghearts" in name_low {
             if not ([f for f in flags if f in ["dv", "dv_concern", "sexual_assault"]] and re.search(str(TARGETS["native"][0]), str(message).lower())) { continue; }
             pinned = True;
+        }
+        if "runaway safeline" in name_low {
+            low_r = str(message).lower();
+            young = "minor" in flags or 0 < int(profile.get("age", 0) or 0) < 18;
+            if (young and re.search(RUNAWAY_RE, low_r)) or re.search(CHILD_GONE_RE, low_r) { pinned = True; }
         }
         if "trevor project" in name_low {
             low_m = str(message).lower();
