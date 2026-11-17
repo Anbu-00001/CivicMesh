@@ -141,5 +141,11 @@
   "r.more_lines": "Veterāni: zvaniet 988 un nospiediet 1. Nedzirdīgie un vājdzirdīgie: zvaniet 988 no videotālruņa vai ar TTY izsauciet 711 un pēc tam 988. Jauni LGBTQ+ cilvēki: zvaniet uz 988 un nospiediet 3.",
   "ui.privacy_title": "Privāts pēc būtības: jūsu vārdi netiek saglabāti vai sūtīti MI",
   "ui.private_toggle": "Privāta sesija: aizverot cilni, šajā pārlūkā neko nesaglabāt",
-  "ui.delete_data": "Dzēst manus datus"
+  "ui.delete_data": "Dzēst manus datus",
+  "q.safety": "Vai jūs tagad esat drošībā?",
+  "opt.s_danger": "Es tagad esmu briesmās",
+  "opt.s_hurt": "Kāds man nodara pāri",
+  "opt.s_suicide": "Es domāju par pašnāvību",
+  "opt.s_child": "Bērnam tiek nodarīts pāri",
+  "opt.s_safe": "Esmu drošībā — man vajag citu palīdzību"
 }

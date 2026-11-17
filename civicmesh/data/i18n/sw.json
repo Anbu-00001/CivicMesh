@@ -141,5 +141,11 @@
   "r.more_lines": "Maveterani: piga 988 kisha bonyeza 1. Viziwi na wenye shida ya kusikia: piga 988 kwa simu ya video, au kwa TTY piga 711 kisha 988. Vijana wa LGBTQ+: piga 988 na ubonyeze 3.",
   "ui.privacy_title": "Faragha tangu mwanzo: maneno yako hayahifadhiwi wala kutumwa kwa AI",
   "ui.private_toggle": "Kipindi cha faragha: usihifadhi chochote kwenye kivinjari hiki nikifunga kichupo",
-  "ui.delete_data": "Futa data yangu"
+  "ui.delete_data": "Futa data yangu",
+  "q.safety": "Je, uko salama sasa hivi?",
+  "opt.s_danger": "Niko hatarini sasa hivi",
+  "opt.s_hurt": "Kuna mtu ananiumiza",
+  "opt.s_suicide": "Ninafikiria kujiua",
+  "opt.s_child": "Mtoto anaumizwa",
+  "opt.s_safe": "Niko salama — nahitaji msaada mwingine"
 }

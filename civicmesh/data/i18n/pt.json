@@ -141,5 +141,11 @@
   "r.more_lines": "Veteranos: liguem para o 988 e apertem 1. Pessoas surdas ou com deficiência auditiva: liguem para o 988 por videofone, ou por TTY disquem 711 e depois 988. Jovens LGBTQ+: liguem para o 988 e apertem 3.",
   "ui.privacy_title": "Privado desde a concepção: suas palavras não são guardadas nem enviadas a uma IA",
   "ui.private_toggle": "Sessão privada: não guardar nada neste navegador quando eu fechar a aba",
-  "ui.delete_data": "Apagar meus dados"
+  "ui.delete_data": "Apagar meus dados",
+  "q.safety": "Você está em segurança agora?",
+  "opt.s_danger": "Estou em perigo agora",
+  "opt.s_hurt": "Alguém está me machucando",
+  "opt.s_suicide": "Estou pensando em suicídio",
+  "opt.s_child": "Uma criança está sendo machucada",
+  "opt.s_safe": "Estou em segurança — preciso de outra ajuda"
 }

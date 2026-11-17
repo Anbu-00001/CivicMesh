@@ -141,5 +141,11 @@
   "r.more_lines": "Veteran: telepon 988 lalu tekan 1. Tuli atau sulit mendengar: telepon 988 dari telepon video, atau dengan TTY tekan 711 lalu 988. Anak muda LGBTQ+: telepon 988 lalu tekan 3.",
   "ui.privacy_title": "Privat sejak awal: kata-kata Anda tidak disimpan atau dikirim ke AI",
   "ui.private_toggle": "Sesi pribadi: jangan simpan apa pun di browser ini setelah tab ditutup",
-  "ui.delete_data": "Hapus data saya"
+  "ui.delete_data": "Hapus data saya",
+  "q.safety": "Apakah Anda aman sekarang?",
+  "opt.s_danger": "Saya dalam bahaya sekarang",
+  "opt.s_hurt": "Seseorang menyakiti saya",
+  "opt.s_suicide": "Saya sedang berpikir untuk bunuh diri",
+  "opt.s_child": "Seorang anak sedang disakiti",
+  "opt.s_safe": "Saya aman — saya butuh bantuan lain"
 }

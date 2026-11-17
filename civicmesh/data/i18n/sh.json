@@ -141,5 +141,11 @@
   "r.more_lines": "Veterani: zovite 988 i pritisnite 1. Gluve i nagluve osobe: zovite 988 s videotelefona, ili preko TTY-a birajte 711, pa 988. Mladi LGBTQ+: nazovite 988 i pritisnite 3.",
   "ui.privacy_title": "Privatno po dizajnu: vaše riječi se ne čuvaju i ne šalju AI-ju",
   "ui.private_toggle": "Privatna sesija: ništa ne čuvati u ovom pregledniku kad zatvorim karticu",
-  "ui.delete_data": "Obriši moje podatke"
+  "ui.delete_data": "Obriši moje podatke",
+  "q.safety": "Jeste li sada na sigurnom?",
+  "opt.s_danger": "Sada sam u opasnosti",
+  "opt.s_hurt": "Netko me povređuje",
+  "opt.s_suicide": "Razmišljam o samoubistvu",
+  "opt.s_child": "Netko povređuje dijete",
+  "opt.s_safe": "Na sigurnom sam — trebam drugu pomoć"
 }

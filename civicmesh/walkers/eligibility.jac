@@ -102,10 +102,16 @@ def quiet_summary(profile: dict, lang: str, pending: str) -> dict {
     ui_lang = reply_language(lang);
     small_talk = bool(profile.get("small_talk"));
     key = pending if (small_talk and profile.get("category") and pending and pending != "need") else "need";
+    if profile.get("safety_check") and not profile.get("category") { key = "safety"; }
     replies: dict = {};
     for l in ([ui_lang] if ui_lang == "en" else [ui_lang, "en"]) {
         q = question_for(key, l);
-        replies[l] = msg(l, "r.question", {"question": q}) if key != "need" else (q if small_talk else msg(l, "r.unsure") + "\n\n" + msg(l, "r.crisis_net"));
+        if key == "safety" {
+            # Worry with nothing named: safety first, then the need (B1/B2).
+            replies[l] = "**" + q + "**\n\n" + msg(l, "r.crisis_net");
+        } else {
+            replies[l] = msg(l, "r.question", {"question": q}) if key != "need" else (q if small_talk else msg(l, "r.unsure") + "\n\n" + msg(l, "r.crisis_net"));
+        }
     }
     return {
         "reply": replies[ui_lang], "reply_language": ui_lang, "reply_en": replies.get("en", "") if ui_lang != "en" else "",

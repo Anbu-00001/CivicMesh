@@ -141,5 +141,11 @@
   "r.more_lines": "Veterani: chiama il 988 e premi 1. Persone sorde o con problemi di udito: chiama il 988 da un videotelefono, oppure con TTY componi il 711 e poi il 988. Giovani LGBTQ+: chiamate il 988 e premete 3.",
   "ui.privacy_title": "Riservato per progetto: le sue parole non vengono salvate né inviate a un'IA",
   "ui.private_toggle": "Sessione privata: non conservare nulla in questo browser quando chiudo la scheda",
-  "ui.delete_data": "Elimina i miei dati"
+  "ui.delete_data": "Elimina i miei dati",
+  "q.safety": "È al sicuro in questo momento?",
+  "opt.s_danger": "Sono in pericolo adesso",
+  "opt.s_hurt": "Qualcuno mi sta facendo del male",
+  "opt.s_suicide": "Sto pensando al suicidio",
+  "opt.s_child": "Qualcuno sta facendo del male a un bambino",
+  "opt.s_safe": "Sono al sicuro — mi serve un altro aiuto"
 }

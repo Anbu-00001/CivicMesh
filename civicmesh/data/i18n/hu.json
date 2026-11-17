@@ -141,5 +141,11 @@
   "r.more_lines": "Veteránok: hívják a 988-at, és nyomják meg az 1-est. Siketek és nagyothallók: hívják a 988-at videotelefonról, vagy TTY-n a 711-et, majd a 988-at. LMBTQ+ fiatalok: hívják a 988-at, és nyomják meg a 3-ast.",
   "ui.privacy_title": "Alapból privát: a szavait nem tároljuk és nem küldjük MI-nek",
   "ui.private_toggle": "Privát munkamenet: a lap bezárása után semmi ne maradjon ebben a böngészőben",
-  "ui.delete_data": "Adataim törlése"
+  "ui.delete_data": "Adataim törlése",
+  "q.safety": "Most biztonságban van?",
+  "opt.s_danger": "Most veszélyben vagyok",
+  "opt.s_hurt": "Valaki bánt engem",
+  "opt.s_suicide": "Öngyilkosságra gondolok",
+  "opt.s_child": "Egy gyereket bántanak",
+  "opt.s_safe": "Biztonságban vagyok — más segítség kell"
 }

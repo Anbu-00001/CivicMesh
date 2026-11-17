@@ -141,5 +141,11 @@
   "r.more_lines": "Mga beterano: tumawag sa 988 at pindutin ang 1. Mga bingi o hirap makarinig: tumawag sa 988 mula sa videophone, o sa TTY i-dial ang 711 at saka 988. Mga kabataang LGBTQ+: tumawag sa 988 at pindutin ang 3.",
   "ui.privacy_title": "Pribado mula sa disenyo: hindi itinatago o ipinapadala sa AI ang mga salita mo",
   "ui.private_toggle": "Pribadong session: walang itatago sa browser na ito pagsara ko ng tab",
-  "ui.delete_data": "Burahin ang data ko"
+  "ui.delete_data": "Burahin ang data ko",
+  "q.safety": "Ligtas ka ba ngayon?",
+  "opt.s_danger": "Nasa panganib ako ngayon",
+  "opt.s_hurt": "May nananakit sa akin",
+  "opt.s_suicide": "Iniisip kong magpakamatay",
+  "opt.s_child": "May batang sinasaktan",
+  "opt.s_safe": "Ligtas ako — kailangan ko ng ibang tulong"
 }

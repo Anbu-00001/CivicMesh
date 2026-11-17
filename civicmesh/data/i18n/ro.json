@@ -141,5 +141,11 @@
   "r.more_lines": "Veterani: sunați la 988 și apăsați 1. Persoane surde sau cu deficiențe de auz: sunați la 988 de pe un videotelefon, sau prin TTY formați 711, apoi 988. Tineri LGBTQ+: sunați la 988 și apăsați 3.",
   "ui.privacy_title": "Privat din construcție: cuvintele dvs. nu sunt păstrate și nici trimise unei IA",
   "ui.private_toggle": "Sesiune privată: nu păstra nimic în acest browser după ce închid fila",
-  "ui.delete_data": "Șterge datele mele"
+  "ui.delete_data": "Șterge datele mele",
+  "q.safety": "Sunteți în siguranță acum?",
+  "opt.s_danger": "Sunt în pericol acum",
+  "opt.s_hurt": "Cineva îmi face rău",
+  "opt.s_suicide": "Mă gândesc la sinucidere",
+  "opt.s_child": "Un copil este rănit",
+  "opt.s_safe": "Sunt în siguranță — am nevoie de alt ajutor"
 }

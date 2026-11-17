@@ -146,5 +146,11 @@
   "r.more_lines": "Veterans: call 988 and press 1. LGBTQ+ young people: call 988 and press 3. Deaf or hard of hearing: call 988 from a videophone, or dial 711 then 988 by TTY.",
   "ui.privacy_title": "Private by design — your words aren't saved or sent to AI",
   "ui.private_toggle": "Private session — keep nothing in this browser after I close the tab",
-  "ui.delete_data": "Delete my data"
+  "ui.delete_data": "Delete my data",
+  "q.safety": "Are you safe right now?",
+  "opt.s_danger": "I'm in danger right now",
+  "opt.s_hurt": "Someone is hurting me",
+  "opt.s_suicide": "I'm thinking about suicide",
+  "opt.s_child": "A child is being hurt",
+  "opt.s_safe": "I'm safe — I need other help"
 }

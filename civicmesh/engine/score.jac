@@ -175,6 +175,7 @@ def target_hit(t: str, low_msg: str, flags: list) -> bool {
 glob QUESTIONS: dict = {
     "en": {
         "need": "What do you need help with most right now?",
+        "safety": "Are you safe right now?",
         "income": "About how much does your household earn per month (before taxes)?",
         "household": "How many people live in your household, including you?",
         "age": "How old are you?",
@@ -190,6 +191,7 @@ glob QUESTIONS: dict = {
     },
     "es": {
         "need": "¿Con qué necesita ayuda más ahora mismo?",
+        "safety": "¿Está a salvo ahora mismo?",
         "income": "¿Cuánto gana su hogar al mes, más o menos (antes de impuestos)?",
         "household": "¿Cuántas personas viven en su hogar, contándose usted?",
         "age": "¿Cuántos años tiene?",

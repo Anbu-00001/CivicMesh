@@ -1148,6 +1148,11 @@ glob FACT_FLAGS: list = [
 
 glob MAX_MESSAGE_CHARS: int = 4000;
 
+# Worry with no need named and no danger words: "things are bad at home",
+# "I need to get out", "I'm not okay". These used to get Food and Housing
+# buttons; they now get "Are you safe right now?" with safety buttons (B1/B2).
+glob UNCLEAR_DANGER_RE: str = "\\b(?:i'?m|i am|i feel|feeling) (?:so |really |very |kind of )?(?:scared|afraid|terrified|frightened|unsafe)\\b|(?:don'?t|do not|doesn'?t|does not) feel safe\\b|\\bnot safe\\b|\\bunsafe\\b|(?:things are|it'?s|its) (?:really |so |very )?(?:bad|scary|getting worse) at home|(?:need|have|want) to get out\\b(?! of (?:my |this |the |a )?(?:lease|contract|job|debt|loan|car|timeshare|bed))|\\b(?:i'?m|i am) not (?:ok|okay|alright|all right)\\b|(?:please )?help me,? please|^\\s*(?:please )?help(?: me)?\\s*[.!]*\\s*$|(?:he|she)'?s (?:really |so )?(?:angry|mad|drunk|violent) again|tengo miedo|no estoy bien|no me siento segur[ao]|ay[uú]dame";
+
 """Curly and modifier apostrophes as a plain one, same length: phones type "don’t",
 and every pattern expected "don't". "I don’t want to live" raised no flag and
 "I’m 72" no age (found 2026-11)."""
@@ -1571,6 +1576,7 @@ def parse_intake(text: str) -> dict {
         "completeness": round(known / 5.0, 2),
         "needs_llm": needs_llm,
         "llm_reason": llm_reason,
-        "small_talk": small_talk
+        "small_talk": small_talk,
+        "safety_check": (not top_cat) and (not flags) and bool(re.search(UNCLEAR_DANGER_RE, low))
     };
 }

@@ -145,5 +145,11 @@
   "r.more_lines": "Veteranos: llame al 988 y oprima 1. Jóvenes LGBTQ+: llame al 988 y oprima 3. Personas sordas o con dificultad auditiva: llame al 988 desde un videoteléfono, o marque 711 y luego 988 por TTY.",
   "ui.privacy_title": "Privado por diseño: sus palabras no se guardan ni se envían a la IA",
   "ui.private_toggle": "Sesión privada: no guardar nada en este navegador al cerrar la pestaña",
-  "ui.delete_data": "Borrar mis datos"
+  "ui.delete_data": "Borrar mis datos",
+  "q.safety": "¿Está a salvo ahora mismo?",
+  "opt.s_danger": "Estoy en peligro ahora",
+  "opt.s_hurt": "Alguien me está haciendo daño",
+  "opt.s_suicide": "Estoy pensando en el suicidio",
+  "opt.s_child": "Están lastimando a un niño",
+  "opt.s_safe": "Estoy a salvo — necesito otra ayuda"
 }

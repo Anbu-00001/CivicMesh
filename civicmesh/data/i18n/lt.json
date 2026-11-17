@@ -141,5 +141,11 @@
   "r.more_lines": "Veteranai: skambinkite 988 ir paspauskite 1. Kurtieji ir neprigirdintieji: skambinkite 988 vaizdo telefonu arba per TTY surinkite 711, tada 988. Jauni LGBTQ+ žmonės: skambinkite 988 ir spauskite 3.",
   "ui.privacy_title": "Privatu iš esmės: jūsų žodžiai nesaugomi ir nesiunčiami DI",
   "ui.private_toggle": "Privati sesija: uždarius skirtuką šioje naršyklėje nieko nelikti",
-  "ui.delete_data": "Ištrinti mano duomenis"
+  "ui.delete_data": "Ištrinti mano duomenis",
+  "q.safety": "Ar dabar esate saugūs?",
+  "opt.s_danger": "Dabar man gresia pavojus",
+  "opt.s_hurt": "Kažkas mane skriaudžia",
+  "opt.s_suicide": "Galvoju apie savižudybę",
+  "opt.s_child": "Skriaudžiamas vaikas",
+  "opt.s_safe": "Esu saugus — man reikia kitos pagalbos"
 }

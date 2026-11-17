@@ -17,7 +17,7 @@ import from engine.compose { ANSWER_EVIDENCE, ANSWER_FLAGS, COUNT_WORDS }
 glob CATEGORIES: list = ["housing", "food", "healthcare", "legal", "money"];
 glob CITIZENSHIP: list = ["citizen", "citizen_or_lpr", "eligible_immigrant", "humanitarian", "non_citizen", "cuban_haitian_entrant", "cofa"];
 glob URGENCY: list = ["immediate", "within_days", "within_weeks"];
-glob ANSWER_KEYS: list = ["need", "income", "household", "age", "location", "citizenship", "homeless", "dv", "veteran", "disability", "children", "young_child", "eviction", "minor"];
+glob ANSWER_KEYS: list = ["need", "income", "household", "age", "location", "citizenship", "homeless", "dv", "veteran", "disability", "children", "young_child", "eviction", "minor", "safety"];
 
 def _int_in(v: any, lo: int, hi: int, fallback: int) -> int {
     try {

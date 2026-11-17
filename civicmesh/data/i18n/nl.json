@@ -141,5 +141,11 @@
   "r.more_lines": "Veteranen: bel 988 en druk op 1. Doven en slechthorenden: bel 988 met een videotelefoon, of kies met TTY 711 en dan 988. Jonge LHBTQ+-mensen: bel 988 en druk op 3.",
   "ui.privacy_title": "Privé vanaf het ontwerp: uw woorden worden niet bewaard of naar AI gestuurd",
   "ui.private_toggle": "Privésessie: niets in deze browser bewaren als ik het tabblad sluit",
-  "ui.delete_data": "Mijn gegevens wissen"
+  "ui.delete_data": "Mijn gegevens wissen",
+  "q.safety": "Bent u nu veilig?",
+  "opt.s_danger": "Ik ben nu in gevaar",
+  "opt.s_hurt": "Iemand doet me pijn",
+  "opt.s_suicide": "Ik denk aan zelfdoding",
+  "opt.s_child": "Een kind wordt pijn gedaan",
+  "opt.s_safe": "Ik ben veilig — ik heb andere hulp nodig"
 }

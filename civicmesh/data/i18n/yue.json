@@ -141,5 +141,11 @@
   "r.more_lines": "退伍軍人：打988再撳1。失聰或者聽力有困難嘅人：用視像電話打988，或者用TTY撳711再撳988。 LGBTQ+ 年輕人：打 988，然後撳 3。",
   "ui.privacy_title": "設計上保障私隱：你寫嘅字唔會儲存，亦唔會傳俾 AI",
   "ui.private_toggle": "私密模式：我閂咗分頁之後，呢個瀏覽器乜都唔留",
-  "ui.delete_data": "刪除我嘅資料"
+  "ui.delete_data": "刪除我嘅資料",
+  "q.safety": "你而家安唔安全？",
+  "opt.s_danger": "我而家有危險",
+  "opt.s_hurt": "有人傷害緊我",
+  "opt.s_suicide": "我諗緊自殺",
+  "opt.s_child": "有個細路被人傷害緊",
+  "opt.s_safe": "我安全 — 我要其他幫助"
 }

@@ -141,5 +141,11 @@
   "r.more_lines": "Cựu chiến binh: gọi 988 rồi bấm 1. Người khiếm thính hoặc lãng tai: gọi 988 từ điện thoại video, hoặc dùng TTY bấm 711 rồi 988. Người trẻ LGBTQ+: gọi 988 và bấm phím 3.",
   "ui.privacy_title": "Riêng tư ngay từ thiết kế: lời bạn viết không được lưu hay gửi cho AI",
   "ui.private_toggle": "Phiên riêng tư: không giữ gì trong trình duyệt này khi tôi đóng thẻ",
-  "ui.delete_data": "Xóa dữ liệu của tôi"
+  "ui.delete_data": "Xóa dữ liệu của tôi",
+  "q.safety": "Bạn có đang an toàn không?",
+  "opt.s_danger": "Tôi đang gặp nguy hiểm",
+  "opt.s_hurt": "Có người đang làm hại tôi",
+  "opt.s_suicide": "Tôi đang nghĩ đến chuyện tự tử",
+  "opt.s_child": "Một đứa trẻ đang bị làm hại",
+  "opt.s_safe": "Tôi an toàn — tôi cần sự giúp đỡ khác"
 }

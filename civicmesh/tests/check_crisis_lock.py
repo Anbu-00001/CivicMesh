@@ -18,7 +18,8 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 CATALOGS = os.path.join(HERE, "..", "data", "i18n")
 LOCK = os.path.join(HERE, "crisis_sentences.lock.json")
-KEYS = ["r.emergency", "r.crisis_net", "r.more_lines", "r.safety", "ui.safety_danger"]
+KEYS = ["r.emergency", "r.crisis_net", "r.more_lines", "r.safety", "ui.safety_danger",
+        "q.safety", "opt.s_danger", "opt.s_hurt", "opt.s_suicide", "opt.s_child", "opt.s_safe"]
 
 
 def current() -> dict:

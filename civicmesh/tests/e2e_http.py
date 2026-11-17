@@ -405,6 +405,16 @@ g1 = guest("I want to kill myself")
 check("G1 a crisis message gets 988 with no account", g1["guest"] and g1["escalation"]["lead_phone"] == "988" and g1["privacy"]["private_turn"], g1["escalation"].get("lead_phone"))
 g2 = guest("I need food, 3 of us in Ohio, we earn $1500 a month")
 check("G2 a need gets programs and a plan with no account", len(g2["matches"]) > 0 and len(g2["plan"]["steps"]) > 0 and not g2["llm"]["narrate"], len(g2["matches"]))
+# Worry with nothing named gets a safety question, and each button routes (B1/B2, 2026-11-17).
+g3 = guest("things are bad at home")
+opts = [o[1] for o in (g3.get("question") or {}).get("options", [])]
+check("B1 \"things are bad at home\" asks \"Are you safe right now?\" with safety buttons and 911/988",
+      (g3.get("question") or {}).get("key") == "safety" and len(opts) == 5 and "911" in g3["reply"] and "988" in g3["reply"], [(g3.get("question") or {}).get("key"), g3["reply"][:60]])
+want = {"I'm in danger right now": "emergency", "Someone is hurting me": "dv", "I'm thinking about suicide": "self_harm", "A child is being hurt": "child_abuse"}
+routed = {o: want[o] in guest(o)["profile"]["flags"] for o in opts if o in want}
+check("B2 each danger button raises its own flag", len(routed) == 4 and all(routed.values()), routed)
+g4 = guest(opts[-1]) if opts else {}
+check("B3 \"I'm safe\" goes on to the need question", (g4.get("question") or {}).get("key") == "need", (g4.get("question") or {}).get("key"))
 
 lat.sort()
 p50 = lat[len(lat) // 2] if lat else 0

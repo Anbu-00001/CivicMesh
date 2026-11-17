@@ -141,5 +141,11 @@
   "r.more_lines": "Anciens combattants : appelez le 988 et appuyez sur 1. Personnes sourdes ou malentendantes : appelez le 988 depuis un visiophone, ou composez le 711 puis le 988 par ATS. Jeunes LGBTQ+ : appelez le 988 et appuyez sur 3.",
   "ui.privacy_title": "Confidentiel par conception : vos mots ne sont ni gardés ni envoyés à une IA",
   "ui.private_toggle": "Session privée : ne rien garder dans ce navigateur quand je ferme l'onglet",
-  "ui.delete_data": "Supprimer mes données"
+  "ui.delete_data": "Supprimer mes données",
+  "q.safety": "Êtes-vous en sécurité en ce moment ?",
+  "opt.s_danger": "Je suis en danger en ce moment",
+  "opt.s_hurt": "Quelqu'un me fait du mal",
+  "opt.s_suicide": "Je pense au suicide",
+  "opt.s_child": "On fait du mal à un enfant",
+  "opt.s_safe": "Je suis en sécurité — j'ai besoin d'une autre aide"
 }

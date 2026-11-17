@@ -141,5 +141,11 @@
   "r.more_lines": "Veteráni: volejte 988 a stiskněte 1. Neslyšící a nedoslýchaví: volejte 988 z videotelefonu, nebo přes TTY vytočte 711 a pak 988. Mladí LGBTQ+ lidé: zavolejte na 988 a stiskněte 3.",
   "ui.privacy_title": "Soukromí už v návrhu: vaše slova se neukládají ani neposílají AI",
   "ui.private_toggle": "Soukromá relace: po zavření karty v tomto prohlížeči nic nezůstane",
-  "ui.delete_data": "Smazat moje data"
+  "ui.delete_data": "Smazat moje data",
+  "q.safety": "Jste teď v bezpečí?",
+  "opt.s_danger": "Jsem teď v nebezpečí",
+  "opt.s_hurt": "Někdo mi ubližuje",
+  "opt.s_suicide": "Myslím na sebevraždu",
+  "opt.s_child": "Někdo ubližuje dítěti",
+  "opt.s_safe": "Jsem v bezpečí — potřebuji jinou pomoc"
 }

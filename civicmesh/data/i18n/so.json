@@ -141,5 +141,11 @@
   "r.more_lines": "Askartii hore: wac 988 oo riix 1. Dadka dhegoolaha ah ama maqalka ku adag: 988 ka wac taleefan fiidiyow, ama TTY ku garaac 711 ka dibna 988. Dhallinyarada LGBTQ+: wac 988 oo riix 3.",
   "ui.privacy_title": "Qarsoodi naqshad ahaan: erayadaada lama kaydiyo lamana u diro AI",
   "ui.private_toggle": "Fadhi gaar ah: wax ha ku hayn browser-kan marka aan xiro tab-ka",
-  "ui.delete_data": "Tirtir xogtayda"
+  "ui.delete_data": "Tirtir xogtayda",
+  "q.safety": "Hadda ma ammaan baad tahay?",
+  "opt.s_danger": "Hadda khatar baan ku jiraa",
+  "opt.s_hurt": "Qof ayaa i dhibaya",
+  "opt.s_suicide": "Waxaan ka fikirayaa is-dil",
+  "opt.s_child": "Ilmo ayaa la dhibayaa",
+  "opt.s_safe": "Ammaan baan ahay — caawimo kale ayaan u baahanahay"
 }
