@@ -1,0 +1,359 @@
+{
+ "am": {
+  "r.crisis_net": "6232000ef44e7670",
+  "r.emergency": "570e7c1c341407ab",
+  "r.more_lines": "499af5ec67d6086c",
+  "r.safety": "5796a601e30c8275",
+  "ui.safety_danger": "893bbdfef75ac196"
+ },
+ "ar": {
+  "r.crisis_net": "890c641359f43fc6",
+  "r.emergency": "112f0b8d3f570bed",
+  "r.more_lines": "b0be3402b42e1040",
+  "r.safety": "84b8ef8baf871868",
+  "ui.safety_danger": "72ddd1d784268892"
+ },
+ "bg": {
+  "r.crisis_net": "0aaa6e84fe0f9ffe",
+  "r.emergency": "485dd764a594b775",
+  "r.more_lines": "98db14da3a04954d",
+  "r.safety": "1d26222a52579c13",
+  "ui.safety_danger": "8b962631e59bfbff"
+ },
+ "bn": {
+  "r.crisis_net": "9ec675dab61e682b",
+  "r.emergency": "cf3f95fda84cc60f",
+  "r.more_lines": "2c4d3abed8382dbf",
+  "r.safety": "2607dc027a1dfa74",
+  "ui.safety_danger": "bff1a98755890f7d"
+ },
+ "cs": {
+  "r.crisis_net": "d2c8e1e6b99f717e",
+  "r.emergency": "029715ca83934c64",
+  "r.more_lines": "e0259bda9b05531a",
+  "r.safety": "bcc0109d99efc004",
+  "ui.safety_danger": "e5d4f2deb4afda6f"
+ },
+ "de": {
+  "r.crisis_net": "603017554b42beb0",
+  "r.emergency": "6be94e95d7f0a3ee",
+  "r.more_lines": "84ac971571c78e98",
+  "r.safety": "0aa33ad3a6a3423a",
+  "ui.safety_danger": "83cc1062f8734519"
+ },
+ "el": {
+  "r.crisis_net": "77e2b416f612e691",
+  "r.emergency": "b6c7300f26dc2b8b",
+  "r.more_lines": "35b0d248ce9a0bc7",
+  "r.safety": "59cd41e392298426",
+  "ui.safety_danger": "17faed4934e77891"
+ },
+ "en": {
+  "r.crisis_net": "3f012b4af5ee9828",
+  "r.emergency": "9ac86afb6039b4c5",
+  "r.more_lines": "37924be069e85dd4",
+  "r.safety": "1ab8b46a436df966",
+  "ui.safety_danger": "9f312f53a5859bf8"
+ },
+ "es": {
+  "r.crisis_net": "3dc2677dd1e4d627",
+  "r.emergency": "8f211ed8ee3e9628",
+  "r.more_lines": "a2a0a2a9ffdb8fdc",
+  "r.safety": "6c3ca9fa84370df1",
+  "ui.safety_danger": "765f40b252a6c261"
+ },
+ "fa": {
+  "r.crisis_net": "72f8f27de8a7398d",
+  "r.emergency": "3baa520c4a71572e",
+  "r.more_lines": "8c15c389098c0367",
+  "r.safety": "df7429460c7820f2",
+  "ui.safety_danger": "d855ea9b9f6e660d"
+ },
+ "fr": {
+  "r.crisis_net": "e515a30ac5739c0a",
+  "r.emergency": "f78268c72b214225",
+  "r.more_lines": "b9325d451814f5b7",
+  "r.safety": "26a69b7743ee74dd",
+  "ui.safety_danger": "9311cb9e9f02bbf5"
+ },
+ "gu": {
+  "r.crisis_net": "8c4afe99ec193e5c",
+  "r.emergency": "a9d2bd940151b39e",
+  "r.more_lines": "5d038f1293651321",
+  "r.safety": "8caf8482b34e3bf1",
+  "ui.safety_danger": "1e5547744c577309"
+ },
+ "hi": {
+  "r.crisis_net": "c53d78b322b06b05",
+  "r.emergency": "be27eecf7c07dfe8",
+  "r.more_lines": "ab804a4628b04fc5",
+  "r.safety": "3fba86255ed5978f",
+  "ui.safety_danger": "a65710d0211cac6d"
+ },
+ "hmn": {
+  "r.crisis_net": "d13b08379717f879",
+  "r.emergency": "f5010f96862e217d",
+  "r.more_lines": "76e9dd200497e7e6",
+  "r.safety": "6095f8947c051555",
+  "ui.safety_danger": "31281518cc55ce6c"
+ },
+ "ht": {
+  "r.crisis_net": "c907d91e1fd3c249",
+  "r.emergency": "eb68e9763d08610f",
+  "r.more_lines": "032ee0e0bb8ed9e4",
+  "r.safety": "8c76845f43adf9b0",
+  "ui.safety_danger": "823e904c64c48952"
+ },
+ "hu": {
+  "r.crisis_net": "0ceb1a09a7cdb098",
+  "r.emergency": "0d3adebb8004ed68",
+  "r.more_lines": "0cee00f54ea582fb",
+  "r.safety": "341b6a038504e9ee",
+  "ui.safety_danger": "ec1ed9c1cd591c0b"
+ },
+ "hy": {
+  "r.crisis_net": "f5472201a645e609",
+  "r.emergency": "eb2ea17d770033cf",
+  "r.more_lines": "2773ac61034a5182",
+  "r.safety": "eeed6a2eb0adb93c",
+  "ui.safety_danger": "5487c9f65c3bbb32"
+ },
+ "id": {
+  "r.crisis_net": "8a826f99bb2c3b43",
+  "r.emergency": "1e5e5fec82a0b325",
+  "r.more_lines": "124f6e0a895953eb",
+  "r.safety": "139b03f1bae28d7e",
+  "ui.safety_danger": "e7f58f39bbd2b2b7"
+ },
+ "it": {
+  "r.crisis_net": "5828d2f9bdfda07f",
+  "r.emergency": "4f5037412c154402",
+  "r.more_lines": "72a5c9ff748238ec",
+  "r.safety": "25b1ae1e6cd067f0",
+  "ui.safety_danger": "7befe3409cf6df26"
+ },
+ "ja": {
+  "r.crisis_net": "1346229266f0ff72",
+  "r.emergency": "1f89339d5fb7de7b",
+  "r.more_lines": "2e2381f138ae01e4",
+  "r.safety": "2251abbff05b39c5",
+  "ui.safety_danger": "3ee2e7c008b386c5"
+ },
+ "km": {
+  "r.crisis_net": "5bf3fd2e2343d7b8",
+  "r.emergency": "ed01812dd402f34b",
+  "r.more_lines": "3e7dbc185201b259",
+  "r.safety": "4ec36b403290f8eb",
+  "ui.safety_danger": "b9adbd79fb146036"
+ },
+ "ko": {
+  "r.crisis_net": "cfe22f7ec6101df7",
+  "r.emergency": "8c4d9b665d68d232",
+  "r.more_lines": "ed44c8d59c20861d",
+  "r.safety": "cddda7027f75d044",
+  "ui.safety_danger": "560c8b5b923d6437"
+ },
+ "lo": {
+  "r.crisis_net": "3c2a0ce3758c638d",
+  "r.emergency": "a5d4dd19025af327",
+  "r.more_lines": "5159dd7d85f53c1b",
+  "r.safety": "9ca9959c6361a073",
+  "ui.safety_danger": "e4bbd10cb5bec42e"
+ },
+ "lt": {
+  "r.crisis_net": "a3092d7da7f022cd",
+  "r.emergency": "1007102c56f309c6",
+  "r.more_lines": "6da870fe5ef28f53",
+  "r.safety": "bad476dd55bae971",
+  "ui.safety_danger": "bb923c701174fa3f"
+ },
+ "lv": {
+  "r.crisis_net": "3e2a9e94b4729fc1",
+  "r.emergency": "6a1412ec43132598",
+  "r.more_lines": "8c200485db5c169b",
+  "r.safety": "671195934aca51e4",
+  "ui.safety_danger": "c2e482e11bfbd676"
+ },
+ "ml": {
+  "r.crisis_net": "d266fd3fae348e5a",
+  "r.emergency": "f71d35aa779047f2",
+  "r.more_lines": "66aa75663313e580",
+  "r.safety": "2539473b1b34bded",
+  "ui.safety_danger": "74bc54cecf40b694"
+ },
+ "my": {
+  "r.crisis_net": "44c797e336ed02bf",
+  "r.emergency": "190284a7515bb040",
+  "r.more_lines": "5cbad100d00c6cee",
+  "r.safety": "312cfc675189e68a",
+  "ui.safety_danger": "91846e6b238cb54d"
+ },
+ "ne": {
+  "r.crisis_net": "851257b587e3fa86",
+  "r.emergency": "b6660eede4a149d1",
+  "r.more_lines": "a298d3f7a4a5aa83",
+  "r.safety": "229a59c4c3426286",
+  "ui.safety_danger": "8ae3fae4cb799c0d"
+ },
+ "nl": {
+  "r.crisis_net": "a1d35afd44d66043",
+  "r.emergency": "aadbb984a8162934",
+  "r.more_lines": "d9e3602971a7a98c",
+  "r.safety": "77de814d223db259",
+  "ui.safety_danger": "7cbece0612bc2e06"
+ },
+ "pa": {
+  "r.crisis_net": "4d20eeb30134b0b5",
+  "r.emergency": "c9ad0ace08aa766f",
+  "r.more_lines": "de1991f92d9e83fc",
+  "r.safety": "60c0e3b0c6b78fdf",
+  "ui.safety_danger": "642e574c6b616100"
+ },
+ "pl": {
+  "r.crisis_net": "19e5631b00a2ddee",
+  "r.emergency": "39dac9bf7b8af8ac",
+  "r.more_lines": "f7cb0a6c0d9579d3",
+  "r.safety": "0cfb7ec55828e72d",
+  "ui.safety_danger": "6f635d4006bec83f"
+ },
+ "ps": {
+  "r.crisis_net": "fcb59ef848cda10b",
+  "r.emergency": "beb137bb13651f37",
+  "r.more_lines": "c1b276bfeaed42f9",
+  "r.safety": "20c705f26f14791a",
+  "ui.safety_danger": "021465adedbfb319"
+ },
+ "pt": {
+  "r.crisis_net": "23402e8f1f3a4135",
+  "r.emergency": "6c5e3d710b4b8499",
+  "r.more_lines": "a0fed316d96bd119",
+  "r.safety": "72ebc1b1f71578f2",
+  "ui.safety_danger": "1bdd017fb8a1cb5e"
+ },
+ "ro": {
+  "r.crisis_net": "da8bbc310f89dbe3",
+  "r.emergency": "beec7821dcef09fa",
+  "r.more_lines": "c4f32e46ff0cd970",
+  "r.safety": "5fdd12130b2df35d",
+  "ui.safety_danger": "20b7e5a794eb5b66"
+ },
+ "ru": {
+  "r.crisis_net": "3285649c23214979",
+  "r.emergency": "9a1991d6a1971ffa",
+  "r.more_lines": "cf5e2ca7bd7ab975",
+  "r.safety": "a1dc1edd3afb0760",
+  "ui.safety_danger": "3455a78174d5c0bf"
+ },
+ "sh": {
+  "r.crisis_net": "3bfd033bd2f672bf",
+  "r.emergency": "8c460631bfae993e",
+  "r.more_lines": "4b834b65609a14ed",
+  "r.safety": "ce86e17734aa12f5",
+  "ui.safety_danger": "83c5ed1ef52acf18"
+ },
+ "sk": {
+  "r.crisis_net": "f0c7c304ebb6dbd2",
+  "r.emergency": "ef7294f7499c2f16",
+  "r.more_lines": "47ddb6639a9df03b",
+  "r.safety": "400dfaf51f9fb039",
+  "ui.safety_danger": "d2dec9ad26d520c1"
+ },
+ "so": {
+  "r.crisis_net": "a5920504fef9fdf7",
+  "r.emergency": "997e2d0f7cf1aa8d",
+  "r.more_lines": "3a1f2eae1ead4b71",
+  "r.safety": "4d70de7fa3419015",
+  "ui.safety_danger": "1654edb26265a782"
+ },
+ "sq": {
+  "r.crisis_net": "6d69e2a452dad357",
+  "r.emergency": "c05f24b6770124d2",
+  "r.more_lines": "78a7aa8f428573f2",
+  "r.safety": "e38ababeb5471d54",
+  "ui.safety_danger": "30373aa49f65538c"
+ },
+ "sw": {
+  "r.crisis_net": "b4c87772d1afbbc5",
+  "r.emergency": "4113a880dcab46b9",
+  "r.more_lines": "4485304975ec1e98",
+  "r.safety": "5dff2ceb86a6b846",
+  "ui.safety_danger": "31da67b4ae36ea85"
+ },
+ "ta": {
+  "r.crisis_net": "6592dbec7e10c1fb",
+  "r.emergency": "0e0d480a6957433a",
+  "r.more_lines": "3aebeb180351b1a8",
+  "r.safety": "c50846e9000e89ce",
+  "ui.safety_danger": "ee473e83137e3b81"
+ },
+ "te": {
+  "r.crisis_net": "7bc667bd5189bcc6",
+  "r.emergency": "2f95158e3ff10ec8",
+  "r.more_lines": "5c102b68cca5d545",
+  "r.safety": "89272e6ddc674944",
+  "ui.safety_danger": "479d3fae62f42dc4"
+ },
+ "th": {
+  "r.crisis_net": "54851cf04c5911e6",
+  "r.emergency": "0a3da9cdfc2e00ad",
+  "r.more_lines": "6f93099fa7289f73",
+  "r.safety": "fff43c51bff659d0",
+  "ui.safety_danger": "5b15b6b52df59bf1"
+ },
+ "ti": {
+  "r.crisis_net": "13e2b04b59308fdb",
+  "r.emergency": "bd0ef37793b9788b",
+  "r.more_lines": "3d6d35751471b260",
+  "r.safety": "f84a7412ad3589ba",
+  "ui.safety_danger": "aaffb122d20f6932"
+ },
+ "tl": {
+  "r.crisis_net": "04200111c49a6256",
+  "r.emergency": "586c0f44996d2744",
+  "r.more_lines": "f6294e3010a7abfc",
+  "r.safety": "7c8098ee898c8443",
+  "ui.safety_danger": "9933c31c2e8c04bb"
+ },
+ "tr": {
+  "r.crisis_net": "4d656a2bdc939a1b",
+  "r.emergency": "18b22b97f39092de",
+  "r.more_lines": "3d91a2695030f5e7",
+  "r.safety": "e51dbea10230841d",
+  "ui.safety_danger": "f9099ad722ae2f48"
+ },
+ "uk": {
+  "r.crisis_net": "26fce370c690d397",
+  "r.emergency": "bdee05f30c8d930e",
+  "r.more_lines": "74d881f1683897c6",
+  "r.safety": "e648cc094a4e7cba",
+  "ui.safety_danger": "c54ab3302736922e"
+ },
+ "ur": {
+  "r.crisis_net": "c3043cd0559f3ed7",
+  "r.emergency": "9bec8d3652618411",
+  "r.more_lines": "17f88d7b41d60db3",
+  "r.safety": "407af2849608309f",
+  "ui.safety_danger": "9ed35d4cfc05fb7f"
+ },
+ "vi": {
+  "r.crisis_net": "a03bb72d9331d7e5",
+  "r.emergency": "f90a9a6573312bf3",
+  "r.more_lines": "091231acd0453f74",
+  "r.safety": "d412c6a170fb6303",
+  "ui.safety_danger": "4b8177aa4e30d0a7"
+ },
+ "yue": {
+  "r.crisis_net": "3bd6c24d070a337b",
+  "r.emergency": "f3926c0f0fa177c8",
+  "r.more_lines": "c693ea61b1e8018f",
+  "r.safety": "d28fec013d0b9b42",
+  "ui.safety_danger": "c5d1ad20dbe11ee5"
+ },
+ "zh": {
+  "r.crisis_net": "39657350e5519cea",
+  "r.emergency": "2e2df7254d3e0bdb",
+  "r.more_lines": "111762dd0f3d9b3e",
+  "r.safety": "5851228dd51849fd",
+  "ui.safety_danger": "b6d63bca54738a44"
+ }
+}

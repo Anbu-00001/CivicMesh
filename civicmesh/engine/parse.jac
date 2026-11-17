@@ -25,7 +25,7 @@ Output contract (plain dict so it serialises straight into walker reports):
 import re;
 import from engine.need_words { EXTRA_NEEDS, EXTRA_HOMELESS, ROMANIZED }
 import from engine.places { state_from_zip, state_from_county }
-import from engine.danger_words { EXTRA_SELF_HARM, EXTRA_CONCERN, EXTRA_DV, EXTRA_ASSAULT, EXTRA_TRAFFICKING, EXTRA_CHILD, EXTRA_EMERGENCY, THREAT_BY_OTHER, danger_normalize, distress_emoji, DYE_SENSE }
+import from engine.danger_words { PERINATAL_HARM, EXTRA_SELF_HARM, EXTRA_CONCERN, EXTRA_DV, EXTRA_ASSAULT, EXTRA_TRAFFICKING, EXTRA_CHILD, EXTRA_EMERGENCY, THREAT_BY_OTHER, danger_normalize, distress_emoji, DYE_SENSE }
 import from engine.i18n { detect_script, detect_latin_other, route_i18n, crisis_any_language, negated, need_focus, LATIN_MARKERS, NEG_RIGHT, is_small_talk }
 import from engine.facts_i18n { facts_i18n, place_i18n }
 
@@ -693,8 +693,9 @@ def _two_incomes(low: str) -> tuple {
 # month" is still what someone lives on.
 glob GONE_INCOME_LEFT: str = "\\b(?:used to (?:make|earn|get|bring in)|was (?:making|earning|getting)|were (?:making|earning)|(?:my|our) (?:old|last|previous) job|ganaba|gan[aá]bamos|me pagaban)\\b[^,.;!?]*$";
 glob NOW_NOTHING_RE: str = "\\bnow (?:nothing|zero|no income|i (?:make|get|earn|have) nothing|we (?:make|get|earn|have) nothing)\\b|\\b(?:making|earning) nothing now\\b|\\bahora nada\\b";
-# Money someone has isn't money coming in: "$50,000 in savings and no income".
-glob SAVED_RIGHT: str = "^\\s*(?:dollars?\\s*)?(?:in (?:my |our |the )?(?:savings?|bank|checking|account|assets|retirement|401k|ira)\\b|saved\\b|of savings\\b|savings\\b|en (?:el banco|ahorros)\\b|ahorrados\\b)";
+# Money someone has isn't money coming in: "$50,000 in savings and no income",
+# "I only have $20 left" (audit list D8/D14).
+glob SAVED_RIGHT: str = "^\\s*(?:dollars?\\s*)?(?:in (?:my |our |the )?(?:savings?|bank|checking|account|assets|retirement|401k|ira)\\b|saved\\b|of savings\\b|savings\\b|en (?:el banco|ahorros)\\b|ahorrados\\b|(?:left|remaining|to my name|in cash|on hand|in my (?:wallet|pocket))\\b|en efectivo\\b)";
 # Self-employed pay is counted after the costs of the work: "$3000 before gas, $1800 after".
 glob BEFORE_COSTS_RIGHT: str = "^\\s*(?:(?:a|per) (?:month|week)\\s*)?before (?:gas|expenses?|costs?|fees?|car|maintenance|repairs)\\b";
 # Amounts each named with where they come from add up: "$900 in child support and $1200 from my job".
@@ -1412,6 +1413,11 @@ def parse_intake(text: str) -> dict {
         }
     }
     if "minor" in flags and ("dv" in flags or "sexual_assault" in flags) and "child_abuse" not in flags { flags.append("child_abuse"); }
+    # A parent's own thoughts of harming a baby: 988 leads (B9).
+    if re.search(PERINATAL_HARM, low) {
+        if "perinatal_harm" not in flags { flags.append("perinatal_harm"); }
+        if "self_harm_concern" not in flags and "self_harm" not in flags { flags.append("self_harm_concern"); }
+    }
     # Someone worried about another person's child: Childhelp's call, not the DV
     # hotline's (blind audit, 2026-11: a teacher reporting abuse got the DV line).
     if "dv" in flags and re.search(THIRD_CHILD_RE, low) and not re.search(DV_OWN_RE, low) {

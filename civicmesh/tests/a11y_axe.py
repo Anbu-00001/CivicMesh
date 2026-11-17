@@ -107,7 +107,12 @@ def main(url: str) -> int:
             fails.append("focus did not return to the message box after the answer")
         audit("after an answer")
     finally:
+        # A Chrome stuck on a system prompt can ignore SIGTERM and outlive the test.
         proc.terminate()
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            proc.kill()
     return report(fails)
 
 

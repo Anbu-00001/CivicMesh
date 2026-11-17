@@ -522,6 +522,14 @@
     {"text": "need hlp w my lectric bil", "expect": {"category": "housing"}, "_why": "blind audit 2026-11-06 (F9): unrouted before; the words were added from these messages"},
     {"text": "My husband is undocumented, I'm a citizen, we have 2 kids and need food in Ohio, we make $1,500 a month", "expect": {"tier_of": {"SNAP (Supplemental Nutrition Assistance Program)": ["likely", "possible", "needs_info"]}, "flag": "member_no_status"}, "_why": "blind audit 2026-11-06 (F5): a citizen in a mixed-status family was told SNAP was unlikely"},
     {"text": "I am a US citizen and my wife is on a work visa, we need food stamps, $1,200 a month, Texas", "expect": {"tier_of": {"SNAP (Supplemental Nutrition Assistance Program)": ["likely", "possible", "needs_info"]}}, "_why": "blind audit 2026-11-06 (F5): a citizen in a mixed-status family was told SNAP was unlikely"},
-    {"text": "I'm not undocumented, I'm a citizen and I need food stamps, I make $900 a month", "expect": {"tier_of": {"SNAP (Supplemental Nutrition Assistance Program)": ["likely"]}}, "_why": "blind audit 2026-11-06 (F5): a denial (\"I'm not undocumented\") was told SNAP was unlikely"}
+    {"text": "I'm not undocumented, I'm a citizen and I need food stamps, I make $900 a month", "expect": {"tier_of": {"SNAP (Supplemental Nutrition Assistance Program)": ["likely"]}}, "_why": "blind audit 2026-11-06 (F5): a denial (\"I'm not undocumented\") was told SNAP was unlikely"},
+    {"text": "I'm 14 and I ran away last night", "top3_any": ["National Runaway Safeline"], "_why": "B11 (2026-11-16): a runaway minor got nothing at all"},
+    {"text": "my 16 year old ran away", "top3_any": ["National Runaway Safeline"], "_why": "B11: a parent whose child ran away"},
+    {"text": "I'm 13 and not safe at home", "top3_any": ["National Runaway Safeline"], "_why": "B11: Childhelp alone before; \"I'm 13\" now counts as a minor"},
+    {"text": "I just had a baby and I keep having thoughts of hurting her", "top3_any": ["National Maternal Mental Health Hotline"], "_why": "B9 (2026-11-17): got nothing at all; 988 leads, the maternal hotline follows"},
+    {"text": "my wife had a baby and she says she hears voices telling her to hurt it", "top3_any": ["988 Suicide and Crisis Lifeline"], "_why": "B9: postpartum psychosis got nothing; now the 911 line, 988 and the maternal hotline"},
+    {"text": "I'm so depressed since my baby was born, I can't stop crying", "top3_any": ["National Maternal Mental Health Hotline"], "_why": "B9"},
+    {"text": "my 82 year old mom's aide is stealing from her", "top3_any": ["Adult Protective Services (state directory)", "Eldercare Locator"], "_why": "B10: elder financial abuse got nothing"},
+    {"text": "my elderly father is being neglected at his nursing home", "top3_any": ["Eldercare Locator"], "_why": "B10: APS lists offices only, so the Eldercare Locator line comes with it"}
 ]
 }

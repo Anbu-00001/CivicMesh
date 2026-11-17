@@ -37,7 +37,12 @@ def main(app: str) -> int:
             return !!(a.compareDocumentPosition(n)&4)&&!!(c.compareDocumentPosition(n)&4)})()"""))
         tab.close()
     finally:
+        # A Chrome stuck on a system prompt can ignore SIGTERM and outlive the test.
         proc.terminate()
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            proc.kill()
     return b.report()
 
 

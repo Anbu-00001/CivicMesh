@@ -141,6 +141,12 @@ glob POISON_HAZARD: str = "swallow|ingest|drank|overdos|poison|bleach|detergent|
 # ("I'm 14 and I ran away last night" got nothing at all; audit 2026-11-06, B11).
 glob RUNAWAY_RE: str = "\\b(?:ran|run|running|runs) away\\b|\\brunaway\\b|\\bran off\\b|kicked (?:me )?out|threw me out|thrown out|can'?t go (?:back )?home|not safe at home|(?:scared|afraid) to go home|me escap[eé] de (?:mi )?casa|me fui de (?:mi )?casa|me corrieron de (?:mi )?casa";
 glob CHILD_GONE_RE: str = "\\bmy (?:\\d{1,2}[- ]?(?:year|yr)[- ]?old|teen(?:ager)?|son|daughter|kid|child|grandson|granddaughter)\\b[^.!?]{0,30}\\b(?:ran away|run away|left home|is missing|went missing|has(?:n'?t| not) come home|did(?:n'?t| not) come home)";
+# Pregnancy or a new baby, with distress: the maternal hotline (B9). Not on its own.
+glob PERINATAL_RE: str = "postpartum|post-partum|postnatal|perinatal|baby blues|since (?:the|my|our) baby|(?:just )?had (?:a|the|my|our) baby|gave birth|gave bith|after (?:the |giving )?birth|new(?:born| baby)|(?:i'?m|i am|she'?s|she is|my wife is|my partner is) pregnant|my pregnancy|while pregnant|embarazada|despu[eé]s del parto|posparto";
+glob PERINATAL_MOOD_RE: str = "depress|anxi|panic|can'?t stop crying|crying all the time|overwhelm|not bonding|don'?t feel (?:anything|connected)|numb|hopeless|scared|afraid|intrusive|voices|not myself|can'?t cope|can'?t sleep even when|deprim|ansiedad|triste";
+# An older adult hit, robbed or neglected (B10): APS, with the Eldercare Locator
+# as the line to call, since APS lists offices but no national number.
+glob ELDER_HARM_RE: str = "(?:hits?|beats?|hurts?|slaps?|push(?:es)?|shoves?|abuses?|neglects?|is (?:hitting|hurting|abusing|neglecting|stealing from)) (?:my |her |his |our )?(?:(?:[6-9]\\d|1[01]\\d)[- ]?(?:year|yr)[- ]?old |elderly |aging |old )(?:mom|mother|dad|father|parents?|grandma|grandmother|grandpa|grandfather|aunt|uncle)|(?:hits?|beats?|hurts?|slaps?|abuses?|neglects?|is (?:hitting|hurting|abusing|neglecting|stealing from)) (?:my |her |his |our )?(?:grandma|grandmother|grandpa|grandfather)|(?:aide|caregiver|home health worker|helper|nurse)\\b[^.!?]{0,30}\\b(?:is )?(?:stealing|taking money|took money|hitting|hurting|yelling at|neglecting)|(?:neglected|abused|mistreated|left alone for days) (?:at|in) (?:his|her|the|a|their|my \\w+'?s) (?:nursing home|care home|assisted living|group home|facility)";
 glob THROWN_OUT_RE: str = "kicked (?:me )?out|threw me out|thrown out|homeless|nowhere to go|somewhere safe|not safe at home";
 # Narrow programs in the money category: not listed on a guess in a language whose
 # topics aren't read, where they'd push the cash programs off the list.
@@ -661,6 +667,12 @@ def rank_resources(items: list, profile: dict, message: str, limit: int = 6, lan
             if not ([f for f in flags if f in ["dv", "dv_concern", "sexual_assault"]] and re.search(str(TARGETS["native"][0]), str(message).lower())) { continue; }
             pinned = True;
         }
+        if "maternal mental health" in name_low {
+            low_p = str(message).lower();
+            if not re.search(PERINATAL_RE, low_p) and "perinatal_harm" not in flags { continue; }
+            if "perinatal_harm" in flags or [f for f in flags if f in ["self_harm", "self_harm_concern", "emergency"]] or re.search(PERINATAL_MOOD_RE, low_p) { pinned = True; }
+            else { continue; }
+        }
         if "runaway safeline" in name_low {
             low_r = str(message).lower();
             young = "minor" in flags or 0 < int(profile.get("age", 0) or 0) < 18;
@@ -678,17 +690,20 @@ def rank_resources(items: list, profile: dict, message: str, limit: int = 6, lan
         if danger {
             if not [t for t in danger if t in flags] { continue; }
             pinned = True;
-        } elif "adult protective" in name_low and [f for f in flags if f in ["dv", "dv_concern", "emergency"]] and re.search(str(TARGETS["elder_abuse"][0]), str(message).lower()) {
+        } elif "adult protective" in name_low and (([f for f in flags if f in ["dv", "dv_concern", "emergency"]] and re.search(str(TARGETS["elder_abuse"][0]), str(message).lower())) or (re.search(ELDER_HARM_RE, str(message).lower()) and not re.search("by accident|accidentally|on accident|by mistake", str(message).lower()))) {
             pinned = True;
             danger = ["elder_abuse"];
         }
+        elder_harm = re.search(ELDER_HARM_RE, str(message).lower()) and not re.search("by accident|accidentally|on accident|by mistake", str(message).lower());
+        if "eldercare locator" in name_low and elder_harm { pinned = True; }
         if w <= 0.0 and not pinned { continue; }
         s = score_resource(res, it["rule"], profile, message, lang);
         s["form"] = it.get("form", {});
         s["pinned"] = pinned;
         if s["off_topic"] and not pinned { continue; }
         # The line for the specific danger comes before the general ones.
-        s["rank_score"] = round(float(s["rank_score"]) * (w if w > 0 else 1.0) + ((12.0 if danger else 10.0) if pinned else 0.0), 4);
+        lead = 13.0 if (pinned and "perinatal_harm" in flags and "988" in name_low) else ((12.0 if danger else 10.0) if pinned else 0.0);
+        s["rank_score"] = round(float(s["rank_score"]) * (w if w > 0 else 1.0) + lead, 4);
         scored.append(s);
     }
     scored.sort(key=lambda s: dict : -float(s["rank_score"]));

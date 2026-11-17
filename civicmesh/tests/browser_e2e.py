@@ -524,7 +524,12 @@ def main(app: str) -> int:
         tab.close()
         check_page_language(app)
     finally:
+        # A Chrome stuck on a system prompt can ignore SIGTERM and outlive the test.
         proc.terminate()
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            proc.kill()
         if srv:
             srv.shutdown()
     return report()
