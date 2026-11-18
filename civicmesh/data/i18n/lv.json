@@ -57,7 +57,7 @@
   "r.found": "Programmas, kurām jūs, visticamāk, atbilstat: **{n}**.",
   "r.found_more": "Programmas, kurām jūs, visticamāk, atbilstat: **{n}**; citas, kas varētu derēt: {m}.",
   "r.maybe": "Pagaidām nekas nav droši, bet, uzzinot nedaudz vairāk, varētu derēt programmas: **{m}**.",
-  "r.none": "Pagaidām nav tiešas atbilstības.",
+  "r.none": "Pagaidām nav tiešas atbilstības. Vietējai palīdzībai zvaniet **211**, 24/7.",
   "r.start": "**Sāciet šeit:** {agency} — {action}.",
   "r.route": "**Ilgtermiņa ceļš:** {start} → {end}, aptuveni {days} d.",
   "r.question": "**Viens jautājums precizēšanai:** {question}",
@@ -94,7 +94,7 @@
   "ui.fact_age": "vecums {n}",
   "ui.fact_year": "gadā",
   "ui.carried": "no iepriekš",
-  "ui.private_note": "Privātā sesija ir ieslēgta: aizverot šo cilni, pārlūks neko nesaglabās par šo sarunu. Quick exit iziet uzreiz.",
+  "ui.private_note": "Privātā sesija ir ieslēgta: aizverot šo cilni, pārlūks neko nesaglabās par šo sarunu. Quick exit iziet uzreiz. Serveris glabā to, ko lietotne saprata, līdz 30 dienām; “Dzēst manus datus” vai Quick exit to izdzēš uzreiz.",
   "ui.plan_sub": "vispirms noderīgākais un ātrākais · apmēram {n} min dokumentu",
   "ui.est_benefit": "aptuvenais pabalsts",
   "ui.busy": "Pašlaik nevaru sasniegt serveri. Jūsu ziņa nav zudusi, mēģiniet vēlreiz.",
@@ -141,5 +141,11 @@
   "r.more_lines": "Veterāni: zvaniet 988 un nospiediet 1. Nedzirdīgie un vājdzirdīgie: zvaniet 988 no videotālruņa vai ar TTY izsauciet 711 un pēc tam 988. Jauni LGBTQ+ cilvēki: zvaniet uz 988 un nospiediet 3.",
   "ui.privacy_title": "Privāts pēc būtības: jūsu vārdi netiek saglabāti vai sūtīti MI",
   "ui.private_toggle": "Privāta sesija: aizverot cilni, šajā pārlūkā neko nesaglabāt",
-  "ui.delete_data": "Dzēst manus datus"
+  "ui.delete_data": "Dzēst manus datus",
+  "q.safety": "Vai jūs tagad esat drošībā?",
+  "opt.s_danger": "Es tagad esmu briesmās",
+  "opt.s_hurt": "Kāds man nodara pāri",
+  "opt.s_suicide": "Es domāju par pašnāvību",
+  "opt.s_child": "Bērnam tiek nodarīts pāri",
+  "opt.s_safe": "Esmu drošībā — man vajag citu palīdzību"
 }

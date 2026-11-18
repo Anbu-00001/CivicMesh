@@ -57,7 +57,7 @@
   "r.found": "Nimepata programu **{n}** ambazo huenda unastahili.",
   "r.found_more": "Nimepata programu **{n}** ambazo huenda unastahili, na nyingine {m} zinazoweza kufaa.",
   "r.maybe": "Bado hakuna inayofaa kwa uhakika, lakini programu **{m}** zinaweza kufaa nikijua zaidi kidogo.",
-  "r.none": "Bado sijapata programu inayofaa moja kwa moja.",
+  "r.none": "Bado sijapata programu inayofaa moja kwa moja. Piga **211** kupata msaada wa karibu, 24/7.",
   "r.start": "**Anza hapa:** {agency} — {action}.",
   "r.route": "**Njia ya muda mrefu:** {start} → {end} kwa takriban siku {days}.",
   "r.question": "**Swali moja ili kuwa sahihi zaidi:** {question}",
@@ -94,7 +94,7 @@
   "ui.fact_age": "umri {n}",
   "ui.fact_year": "kwa mwaka",
   "ui.carried": "kutoka awali",
-  "ui.private_note": "Kipindi cha faragha kimewashwa: ukifunga kichupo hiki, kivinjari hakitahifadhi chochote kuhusu mazungumzo haya. Quick exit hutoka mara moja.",
+  "ui.private_note": "Kipindi cha faragha kimewashwa: ukifunga kichupo hiki, kivinjari hakitahifadhi chochote kuhusu mazungumzo haya. Quick exit hutoka mara moja. Seva huhifadhi kile programu ilichoelewa hadi siku 30; «Futa data yangu» au Quick exit hufuta sasa hivi.",
   "ui.plan_sub": "yenye manufaa na ya haraka kwanza · takriban dakika {n} za makaratasi",
   "ui.est_benefit": "manufaa yanayokadiriwa",
   "ui.busy": "Siwezi kufikia seva sasa. Ujumbe wako haujapotea, unaweza kujaribu tena.",
@@ -141,5 +141,11 @@
   "r.more_lines": "Maveterani: piga 988 kisha bonyeza 1. Viziwi na wenye shida ya kusikia: piga 988 kwa simu ya video, au kwa TTY piga 711 kisha 988. Vijana wa LGBTQ+: piga 988 na ubonyeze 3.",
   "ui.privacy_title": "Faragha tangu mwanzo: maneno yako hayahifadhiwi wala kutumwa kwa AI",
   "ui.private_toggle": "Kipindi cha faragha: usihifadhi chochote kwenye kivinjari hiki nikifunga kichupo",
-  "ui.delete_data": "Futa data yangu"
+  "ui.delete_data": "Futa data yangu",
+  "q.safety": "Je, uko salama sasa hivi?",
+  "opt.s_danger": "Niko hatarini sasa hivi",
+  "opt.s_hurt": "Kuna mtu ananiumiza",
+  "opt.s_suicide": "Ninafikiria kujiua",
+  "opt.s_child": "Mtoto anaumizwa",
+  "opt.s_safe": "Niko salama — nahitaji msaada mwingine"
 }

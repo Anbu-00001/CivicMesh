@@ -57,7 +57,7 @@
   "r.found": "Nakakita ako ng **{n}** programa na malamang ay kwalipikado ka.",
   "r.found_more": "Nakakita ako ng **{n}** programa na malamang ay kwalipikado ka at {m} pa na puwedeng bagay sa iyo.",
   "r.maybe": "Wala pang siguradong tugma, pero **{m}** programa ang puwedeng bagay kapag may alam pa ako nang kaunti.",
-  "r.none": "Wala pa akong nakitang direktang tugma.",
+  "r.none": "Wala pa akong nakitang direktang tugma. Tumawag sa **211** para sa lokal na tulong, 24/7.",
   "r.start": "**Magsimula rito:** {agency} — {action}.",
   "r.route": "**Pangmatagalang daan:** {start} → {end} sa loob ng mga {days} araw.",
   "r.question": "**Isang tanong para mas tumpak:** {question}",
@@ -94,7 +94,7 @@
   "ui.fact_age": "edad {n}",
   "ui.fact_year": "bawat taon",
   "ui.carried": "mula kanina",
-  "ui.private_note": "Naka-on ang pribadong session: kapag isinara ang tab na ito, walang itatago ang browser tungkol sa usapang ito. Agad na lalabas ang Quick exit.",
+  "ui.private_note": "Naka-on ang pribadong session: kapag isinara ang tab na ito, walang itatago ang browser tungkol sa usapang ito. Agad na lalabas ang Quick exit. Iniingatan ng server ang naunawaan ng app nang hanggang 30 araw; binubura ito agad ng «Burahin ang data ko» o Quick exit.",
   "ui.plan_sub": "pinakakapaki-pakinabang at pinakamabilis muna · mga {n} minutong papeles",
   "ui.est_benefit": "tinatayang benepisyo",
   "ui.busy": "Hindi ko maabot ang server ngayon. Hindi nawala ang mensahe mo, kaya maaari kang sumubok ulit.",
@@ -141,5 +141,11 @@
   "r.more_lines": "Mga beterano: tumawag sa 988 at pindutin ang 1. Mga bingi o hirap makarinig: tumawag sa 988 mula sa videophone, o sa TTY i-dial ang 711 at saka 988. Mga kabataang LGBTQ+: tumawag sa 988 at pindutin ang 3.",
   "ui.privacy_title": "Pribado mula sa disenyo: hindi itinatago o ipinapadala sa AI ang mga salita mo",
   "ui.private_toggle": "Pribadong session: walang itatago sa browser na ito pagsara ko ng tab",
-  "ui.delete_data": "Burahin ang data ko"
+  "ui.delete_data": "Burahin ang data ko",
+  "q.safety": "Ligtas ka ba ngayon?",
+  "opt.s_danger": "Nasa panganib ako ngayon",
+  "opt.s_hurt": "May nananakit sa akin",
+  "opt.s_suicide": "Iniisip kong magpakamatay",
+  "opt.s_child": "May batang sinasaktan",
+  "opt.s_safe": "Ligtas ako — kailangan ko ng ibang tulong"
 }

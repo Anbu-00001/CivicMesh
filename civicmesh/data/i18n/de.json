@@ -57,7 +57,7 @@
   "r.found": "Ich habe **{n}** Programme gefunden, für die Sie wahrscheinlich berechtigt sind.",
   "r.found_more": "Ich habe **{n}** Programme gefunden, für die Sie wahrscheinlich berechtigt sind, und {m} weitere, die passen könnten.",
   "r.maybe": "Noch passt nichts sicher, aber **{m}** Programme könnten passen, sobald ich etwas mehr weiß.",
-  "r.none": "Ich habe noch keinen direkten Treffer gefunden.",
+  "r.none": "Ich habe noch keinen direkten Treffer gefunden. Für Hilfe vor Ort rufen Sie **211** an, 24/7.",
   "r.start": "**Hier anfangen:** {agency} — {action}.",
   "r.route": "**Längerfristiger Weg:** {start} → {end} in etwa {days} Tagen.",
   "r.question": "**Eine Frage zur Präzisierung:** {question}",
@@ -94,7 +94,7 @@
   "ui.fact_age": "Alter {n}",
   "ui.fact_year": "pro Jahr",
   "ui.carried": "von vorhin",
-  "ui.private_note": "Privatsitzung ist an: Wenn Sie diesen Tab schließen, behält dieser Browser nichts von diesem Gespräch. Quick exit verlässt die Seite sofort.",
+  "ui.private_note": "Privatsitzung ist an: Wenn Sie diesen Tab schließen, behält dieser Browser nichts von diesem Gespräch. Quick exit verlässt die Seite sofort. Der Server bewahrt, was die App verstanden hat, bis zu 30 Tage auf; „Meine Daten löschen“ oder Quick exit löscht es sofort.",
   "ui.plan_sub": "das Nützlichste und Schnellste zuerst · etwa {n} Min. Papierkram",
   "ui.est_benefit": "geschätzte Leistung",
   "ui.busy": "Ich erreiche den Server gerade nicht. Ihre Nachricht ist nicht verloren, versuchen Sie es noch einmal.",
@@ -141,5 +141,11 @@
   "r.more_lines": "Veteranen: 988 anrufen und 1 drücken. Gehörlose und Schwerhörige: 988 per Bildtelefon anrufen oder per TTY 711 und dann 988 wählen. Junge LGBTQ+-Menschen: 988 anrufen und die 3 drücken.",
   "ui.privacy_title": "Privat von Grund auf: Ihre Worte werden weder gespeichert noch an eine KI gesendet",
   "ui.private_toggle": "Private Sitzung: nach dem Schließen des Tabs nichts in diesem Browser behalten",
-  "ui.delete_data": "Meine Daten löschen"
+  "ui.delete_data": "Meine Daten löschen",
+  "q.safety": "Sind Sie gerade in Sicherheit?",
+  "opt.s_danger": "Ich bin gerade in Gefahr",
+  "opt.s_hurt": "Jemand tut mir weh",
+  "opt.s_suicide": "Ich denke an Suizid",
+  "opt.s_child": "Einem Kind wird wehgetan",
+  "opt.s_safe": "Ich bin sicher — ich brauche andere Hilfe"
 }

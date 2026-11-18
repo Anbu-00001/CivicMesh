@@ -946,6 +946,11 @@
     {"text": "I'm going to kill my landlord", "expect": {"flag": "self_harm_concern"}, "_why": "blind audit 2026-11-06: harm to others was 0/10; written from the audit's wording"},
     {"text": "I have a gun and I'm going to shoot him", "expect": {"flag": "emergency"}, "_why": "blind audit 2026-11-06: harm to others was 0/10; written from the audit's wording"},
     {"text": "I'm gonna kill it at my interview tomorrow", "expect": {"flag_absent": "self_harm_concern"}, "_why": "false-alarm check for the harm-to-others phrase"},
-    {"text": "my landlord is killing me with these fees", "expect": {"flag_absent": "self_harm_concern"}, "_why": "false-alarm check for the harm-to-others phrase"}
+    {"text": "my landlord is killing me with these fees", "expect": {"flag_absent": "self_harm_concern"}, "_why": "false-alarm check for the harm-to-others phrase"},
+    {"text": "I'm in danger right now", "expect": {"flag": "emergency"}, "_why": "B1 safety button (2026-11-17); also what people type"},
+    {"text": "Someone is hurting me", "expect": {"flag": "dv"}, "_why": "B1 safety button (2026-11-17)"},
+    {"text": "I'm thinking about suicide", "expect": {"flag": "self_harm"}, "_why": "B1 safety button"},
+    {"text": "A child is being hurt", "expect": {"flag": "child_abuse"}, "_why": "B1 safety button"},
+    {"text": "I'm safe, I need other help", "expect": {"flags_absent": ["emergency", "dv", "dv_concern", "self_harm", "self_harm_concern", "child_abuse"]}, "_why": "B1: the safe button raises nothing"}
 ]
 }

@@ -19,7 +19,6 @@ import urllib.error
 import urllib.request
 
 H = sys.argv[1].rstrip("/") if len(sys.argv) > 1 else "http://localhost:7860"
-CATALOG_SIZE = len(json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "resources.json"), encoding="utf-8"))["resources"])
 RESULTS = []
 
 
@@ -234,9 +233,18 @@ fw, _ = walker("ForgetWalker", {"user_id": pu}, pt)
 # (it used to store a guessed housing need).
 check("P8 Delete my data removes the person, needs, applications and insights",
       fw is not None and fw["ok"] and fw["removed"]["PersonNode"] == 1 and fw["removed"]["NeedNode"] >= 6, fw)
-gs2, _ = walker("GraphSnapshotWalker", {"user_id": pu}, pt)
-check("P9 after deletion the graph is empty", gs2 is not None and gs2.get("empty") is True and gs2["counts"]["ResourceNode"] == CATALOG_SIZE,
-      {k: gs2["counts"][k] for k in ["PersonNode", "NeedNode", "ResourceNode"]} if gs2 else "")
+# The login goes too, and its token is turned away from then on (audit
+# 2026-11-06, F2/F3): jac-scale alone would accept it until it expired.
+gs2, _ = post("/walker/GraphSnapshotWalker", {"user_id": pu}, pt)
+try:
+    with urllib.request.urlopen(urllib.request.Request(H + "/user/me", headers={"Authorization": "Bearer " + pt}), timeout=30) as r:
+        me_status = r.status
+except urllib.error.HTTPError as e:
+    me_status = e.code
+except Exception:  # noqa: BLE001
+    me_status = -1
+check("P9 after deletion the old login is refused (graph and /user/me)",
+      gs2.get("http") == 401 and me_status == 401, (gs2.get("http"), me_status))
 dn, _ = turn(uid, tok, "I need food")
 check("P10 another visitor's case is untouched by the deletion", dn is not None and dn["profile"]["category"] == "food")
 
@@ -397,6 +405,16 @@ g1 = guest("I want to kill myself")
 check("G1 a crisis message gets 988 with no account", g1["guest"] and g1["escalation"]["lead_phone"] == "988" and g1["privacy"]["private_turn"], g1["escalation"].get("lead_phone"))
 g2 = guest("I need food, 3 of us in Ohio, we earn $1500 a month")
 check("G2 a need gets programs and a plan with no account", len(g2["matches"]) > 0 and len(g2["plan"]["steps"]) > 0 and not g2["llm"]["narrate"], len(g2["matches"]))
+# Worry with nothing named gets a safety question, and each button routes (B1/B2, 2026-11-17).
+g3 = guest("things are bad at home")
+opts = [o[1] for o in (g3.get("question") or {}).get("options", [])]
+check("B1 \"things are bad at home\" asks \"Are you safe right now?\" with safety buttons and 911/988",
+      (g3.get("question") or {}).get("key") == "safety" and len(opts) == 5 and "911" in g3["reply"] and "988" in g3["reply"], [(g3.get("question") or {}).get("key"), g3["reply"][:60]])
+want = {"I'm in danger right now": "emergency", "Someone is hurting me": "dv", "I'm thinking about suicide": "self_harm", "A child is being hurt": "child_abuse"}
+routed = {o: want[o] in guest(o)["profile"]["flags"] for o in opts if o in want}
+check("B2 each danger button raises its own flag", len(routed) == 4 and all(routed.values()), routed)
+g4 = guest(opts[-1]) if opts else {}
+check("B3 \"I'm safe\" goes on to the need question", (g4.get("question") or {}).get("key") == "need", (g4.get("question") or {}).get("key"))
 
 lat.sort()
 p50 = lat[len(lat) // 2] if lat else 0

@@ -57,7 +57,7 @@
   "r.found": "J'ai trouvé **{n}** programme(s) auxquels vous avez probablement droit.",
   "r.found_more": "J'ai trouvé **{n}** programme(s) auxquels vous avez probablement droit, et {m} autre(s) qui pourraient convenir.",
   "r.maybe": "Rien de certain pour l'instant, mais **{m}** programme(s) pourraient convenir quand j'en saurai un peu plus.",
-  "r.none": "Je n'ai pas encore trouvé de correspondance directe.",
+  "r.none": "Je n'ai pas encore trouvé de correspondance directe. Appelez le **211** pour de l'aide locale, 24/7.",
   "r.start": "**Commencez ici :** {agency} — {action}.",
   "r.route": "**Parcours à plus long terme :** {start} → {end} en environ {days} jours.",
   "r.question": "**Une question pour affiner :** {question}",
@@ -94,7 +94,7 @@
   "ui.fact_age": "{n} ans",
   "ui.fact_year": "par an",
   "ui.carried": "plus tôt",
-  "ui.private_note": "Session privée activée : quand vous fermerez cet onglet, ce navigateur ne gardera rien de cette conversation. Quick exit quitte immédiatement.",
+  "ui.private_note": "Session privée activée : quand vous fermerez cet onglet, ce navigateur ne gardera rien de cette conversation. Quick exit quitte immédiatement. Le serveur garde ce que l'application a compris jusqu'à 30 jours ; « Supprimer mes données » ou Quick exit l'efface tout de suite.",
   "ui.plan_sub": "le plus utile et le plus rapide d'abord · environ {n} min de démarches",
   "ui.est_benefit": "aide estimée",
   "ui.busy": "Je n'arrive pas à joindre le serveur. Votre message n'est pas perdu, vous pouvez réessayer.",
@@ -141,5 +141,11 @@
   "r.more_lines": "Anciens combattants : appelez le 988 et appuyez sur 1. Personnes sourdes ou malentendantes : appelez le 988 depuis un visiophone, ou composez le 711 puis le 988 par ATS. Jeunes LGBTQ+ : appelez le 988 et appuyez sur 3.",
   "ui.privacy_title": "Confidentiel par conception : vos mots ne sont ni gardés ni envoyés à une IA",
   "ui.private_toggle": "Session privée : ne rien garder dans ce navigateur quand je ferme l'onglet",
-  "ui.delete_data": "Supprimer mes données"
+  "ui.delete_data": "Supprimer mes données",
+  "q.safety": "Êtes-vous en sécurité en ce moment ?",
+  "opt.s_danger": "Je suis en danger en ce moment",
+  "opt.s_hurt": "Quelqu'un me fait du mal",
+  "opt.s_suicide": "Je pense au suicide",
+  "opt.s_child": "On fait du mal à un enfant",
+  "opt.s_safe": "Je suis en sécurité — j'ai besoin d'une autre aide"
 }

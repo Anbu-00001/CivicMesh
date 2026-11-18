@@ -57,7 +57,7 @@
   "r.found": "Kuv nrhiav tau **{n}** qhov kev pab uas koj zoo li tsim nyog tau.",
   "r.found_more": "Kuv nrhiav tau **{n}** qhov kev pab uas koj zoo li tsim nyog tau thiab {m} qhov ntxiv uas yuav siv tau.",
   "r.maybe": "Tseem tsis tau muaj qhov twg paub tseeb, tab sis **{m}** qhov kev pab yuav siv tau thaum kuv paub ntxiv me ntsis.",
-  "r.none": "Kuv tseem tsis tau nrhiav tau qhov haum ncaj qha.",
+  "r.none": "Kuv tseem tsis tau nrhiav tau qhov haum ncaj qha. Hu **211** kom tau kev pab hauv zos, 24/7.",
   "r.start": "**Pib ntawm no:** {agency} — {action}.",
   "r.route": "**Txoj kev ntev:** {start} → {end} li ntawm {days} hnub.",
   "r.question": "**Ib lo lus nug kom meej dua:** {question}",
@@ -94,7 +94,7 @@
   "ui.fact_age": "hnub nyoog {n}",
   "ui.fact_year": "ib xyoos",
   "ui.carried": "los ntawm yav dhau los",
-  "ui.private_note": "Kev tham ntiag tug qhib lawm: thaum koj kaw lub tab no, lub browser yuav tsis khaws dab tsi txog qhov kev sib tham no. Quick exit tawm tam sim ntawd.",
+  "ui.private_note": "Kev tham ntiag tug qhib lawm: thaum koj kaw lub tab no, lub browser yuav tsis khaws dab tsi txog qhov kev sib tham no. Quick exit tawm tam sim ntawd. Lub server khaws qhov uas lub app nkag siab tau txog li 30 hnub; «Rho kuv cov ntaub ntawv tawm» los yog Quick exit rho tawm tam sim no.",
   "ui.plan_sub": "qhov pab tau tshaj thiab sai tshaj ua ntej · kwv yees li {n} feeb ua ntawv",
   "ui.est_benefit": "kev pab kwv yees",
   "ui.busy": "Tam sim no kuv mus tsis txog lub server. Koj cov lus tsis ploj, koj rov sim tau.",
@@ -141,5 +141,11 @@
   "r.more_lines": "Cov qub tub rog: hu 988 thiab nias 1. Cov neeg lag ntseg los yog hnov lus tsis zoo: hu 988 ntawm lub xov tooj video, los yog siv TTY nias 711 ces 988. Cov hluas LGBTQ+: hu 988 thiab nias 3.",
   "ui.privacy_title": "Tsim los kom ceev ntiag tug: koj cov lus tsis raug khaws los yog xa mus rau AI",
   "ui.private_toggle": "Kev siv ntiag tug: thaum kuv kaw lub tab, tsis txhob khaws dab tsi hauv lub browser no",
-  "ui.delete_data": "Rho kuv cov ntaub ntawv tawm"
+  "ui.delete_data": "Rho kuv cov ntaub ntawv tawm",
+  "q.safety": "Koj puas nyab xeeb tam sim no?",
+  "opt.s_danger": "Kuv tab tom muaj kev phom sij tam sim no",
+  "opt.s_hurt": "Muaj ib tug neeg tab tom ua mob rau kuv",
+  "opt.s_suicide": "Kuv tab tom xav txog kev tua tus kheej",
+  "opt.s_child": "Muaj ib tug me nyuam raug ua mob",
+  "opt.s_safe": "Kuv nyab xeeb — kuv xav tau lwm yam kev pab"
 }

@@ -998,6 +998,20 @@
         "source": "https://strongheartshelpline.org/"
       }
     },
+    "maternal-mh-rule": {
+      "program": "National Maternal Mental Health Hotline",
+      "contact_checked": "2026-11-17",
+      "contact_result": "confirmed",
+      "url_status": null,
+      "phone_on_page": true,
+      "form_url_status": null,
+      "contact_manual": {"checked": "2026-11-17", "how": "1-833-TLC-MAMA (1-833-852-6262), call or text, 24/7, English and Spanish with interpreters, per HRSA's FAQ and HHS's 2023-05-12 release; the hotline page refused automated fetches", "source": "https://mchb.hrsa.gov/national-maternal-mental-health-hotline/faq"},
+      "rules": {
+            "checked": "2026-11-17",
+            "how": "Anyone pregnant or after a birth, and their families; not an emergency line (988 for a suicidal crisis)",
+            "source": "https://mchb.hrsa.gov/national-maternal-mental-health-hotline/faq"
+      }
+    },
     "trevor-rule": {
       "program": "The Trevor Project",
       "contact_checked": "2026-11-05",

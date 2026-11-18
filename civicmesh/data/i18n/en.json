@@ -62,7 +62,7 @@
   "r.found": "I found **{n}** programs you likely qualify for.",
   "r.found_more": "I found **{n}** programs you likely qualify for and {m} more that could work.",
   "r.maybe": "Nothing is a sure match yet, but **{m}** programs could work once I know a bit more.",
-  "r.none": "I couldn't find a direct match yet.",
+  "r.none": "I couldn't find a direct match yet. Call **211** for local help, 24/7.",
   "r.start": "**Start here:** {agency} — {action}.",
   "r.route": "**Longer-term route:** {start} → {end} in about {days} days.",
   "r.question": "**One question to sharpen this:** {question}",
@@ -99,7 +99,7 @@
   "ui.fact_age": "age {n}",
   "ui.fact_year": "a year",
   "ui.carried": "from earlier",
-  "ui.private_note": "Private session is on: once you close this tab, this browser keeps nothing about this conversation. Quick exit leaves instantly.",
+  "ui.private_note": "Private session is on: once you close this tab, this browser keeps nothing about this conversation. Quick exit leaves instantly. The server keeps what the app understood for up to 30 days; Delete my data or Quick exit erases it now.",
   "ui.plan_sub": "most useful and quickest first · about {n} min of paperwork",
   "ui.est_benefit": "estimated benefit",
   "ui.busy": "I couldn't reach the server just now. Your message wasn't lost, so you can try again.",
@@ -146,5 +146,11 @@
   "r.more_lines": "Veterans: call 988 and press 1. LGBTQ+ young people: call 988 and press 3. Deaf or hard of hearing: call 988 from a videophone, or dial 711 then 988 by TTY.",
   "ui.privacy_title": "Private by design — your words aren't saved or sent to AI",
   "ui.private_toggle": "Private session — keep nothing in this browser after I close the tab",
-  "ui.delete_data": "Delete my data"
+  "ui.delete_data": "Delete my data",
+  "q.safety": "Are you safe right now?",
+  "opt.s_danger": "I'm in danger right now",
+  "opt.s_hurt": "Someone is hurting me",
+  "opt.s_suicide": "I'm thinking about suicide",
+  "opt.s_child": "A child is being hurt",
+  "opt.s_safe": "I'm safe — I need other help"
 }

@@ -57,7 +57,7 @@
   "r.found": "Muhtemelen uygun olduğunuz **{n}** program buldum.",
   "r.found_more": "Muhtemelen uygun olduğunuz **{n}** program ve işinize yarayabilecek {m} program daha buldum.",
   "r.maybe": "Henüz kesin bir eşleşme yok, ama biraz daha bilgi alınca **{m}** program uygun olabilir.",
-  "r.none": "Henüz doğrudan bir eşleşme bulamadım.",
+  "r.none": "Henüz doğrudan bir eşleşme bulamadım. Yerel yardım için **211**'i arayın, 24/7.",
   "r.start": "**Buradan başlayın:** {agency} — {action}.",
   "r.route": "**Uzun vadeli yol:** {start} → {end}, yaklaşık {days} gün.",
   "r.question": "**Daha iyi sonuç için bir soru:** {question}",
@@ -94,7 +94,7 @@
   "ui.fact_age": "yaş {n}",
   "ui.fact_year": "yılda",
   "ui.carried": "önceden",
-  "ui.private_note": "Özel oturum açık: bu sekmeyi kapattığınızda tarayıcı bu konuşmadan hiçbir şey saklamaz. Quick exit hemen çıkar.",
+  "ui.private_note": "Özel oturum açık: bu sekmeyi kapattığınızda tarayıcı bu konuşmadan hiçbir şey saklamaz. Quick exit hemen çıkar. Sunucu, uygulamanın anladıklarını 30 güne kadar saklar; «Verilerimi sil» ya da Quick exit bunu hemen siler.",
   "ui.plan_sub": "en yararlı ve en hızlı önce · yaklaşık {n} dk evrak işi",
   "ui.est_benefit": "tahmini yardım",
   "ui.busy": "Şu anda sunucuya ulaşamıyorum. Mesajınız kaybolmadı, tekrar deneyebilirsiniz.",
@@ -141,5 +141,11 @@
   "r.more_lines": "Gaziler: 988'i arayın ve 1'e basın. Duymayan veya az duyanlar: görüntülü telefondan 988'i arayın ya da TTY ile 711'i, ardından 988'i tuşlayın. LGBTİ+ gençler: 988'i arayıp 3'e basın.",
   "ui.privacy_title": "Tasarımdan gizli: sözleriniz saklanmaz ve yapay zekâya gönderilmez",
   "ui.private_toggle": "Gizli oturum: sekmeyi kapattığımda bu tarayıcıda hiçbir şey kalmasın",
-  "ui.delete_data": "Verilerimi sil"
+  "ui.delete_data": "Verilerimi sil",
+  "q.safety": "Şu anda güvende misiniz?",
+  "opt.s_danger": "Şu anda tehlikedeyim",
+  "opt.s_hurt": "Biri bana zarar veriyor",
+  "opt.s_suicide": "İntiharı düşünüyorum",
+  "opt.s_child": "Bir çocuğa zarar veriliyor",
+  "opt.s_safe": "Güvendeyim — başka bir yardıma ihtiyacım var"
 }

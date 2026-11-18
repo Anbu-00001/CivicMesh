@@ -57,7 +57,7 @@
   "r.found": "Programy, na ktoré máte pravdepodobne nárok: **{n}**.",
   "r.found_more": "Programy, na ktoré máte pravdepodobne nárok: **{n}**; ďalšie, ktoré by mohli sedieť: {m}.",
   "r.maybe": "Zatiaľ nič isté, ale keď budem vedieť trochu viac, mohli by sedieť programy: **{m}**.",
-  "r.none": "Zatiaľ nie je priama zhoda.",
+  "r.none": "Zatiaľ nie je priama zhoda. Pre miestnu pomoc volajte **211**, 24/7.",
   "r.start": "**Začnite tu:** {agency} — {action}.",
   "r.route": "**Dlhodobá cesta:** {start} → {end}, približne za {days} dní.",
   "r.question": "**Jedna otázka na spresnenie:** {question}",
@@ -94,7 +94,7 @@
   "ui.fact_age": "vek {n}",
   "ui.fact_year": "ročne",
   "ui.carried": "zo skoršia",
-  "ui.private_note": "Súkromná relácia je zapnutá: po zatvorení tejto karty prehliadač z rozhovoru nič neuchová. Quick exit odíde okamžite.",
+  "ui.private_note": "Súkromná relácia je zapnutá: po zatvorení tejto karty prehliadač z rozhovoru nič neuchová. Quick exit odíde okamžite. Server uchováva, čomu aplikácia porozumela, až 30 dní; „Vymazať moje údaje“ alebo Quick exit to vymaže hneď.",
   "ui.plan_sub": "najužitočnejšie a najrýchlejšie najprv · asi {n} min papierovania",
   "ui.est_benefit": "odhadovaná dávka",
   "ui.busy": "Teraz sa neviem spojiť so serverom. Vaša správa sa nestratila, skúste to znova.",
@@ -141,5 +141,11 @@
   "r.more_lines": "Veteráni: volajte 988 a stlačte 1. Nepočujúci a nedoslýchaví: volajte 988 z videotelefónu, alebo cez TTY vytočte 711 a potom 988. Mladí LGBTQ+ ľudia: zavolajte na 988 a stlačte 3.",
   "ui.privacy_title": "Súkromie už v návrhu: vaše slová sa neukladajú ani neposielajú AI",
   "ui.private_toggle": "Súkromná relácia: po zatvorení karty v tomto prehliadači nič nezostane",
-  "ui.delete_data": "Vymazať moje údaje"
+  "ui.delete_data": "Vymazať moje údaje",
+  "q.safety": "Ste teraz v bezpečí?",
+  "opt.s_danger": "Som teraz v nebezpečenstve",
+  "opt.s_hurt": "Niekto mi ubližuje",
+  "opt.s_suicide": "Myslím na samovraždu",
+  "opt.s_child": "Niekto ubližuje dieťaťu",
+  "opt.s_safe": "Som v bezpečí — potrebujem inú pomoc"
 }

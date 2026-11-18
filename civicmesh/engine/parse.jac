@@ -25,7 +25,7 @@ Output contract (plain dict so it serialises straight into walker reports):
 import re;
 import from engine.need_words { EXTRA_NEEDS, EXTRA_HOMELESS, ROMANIZED }
 import from engine.places { state_from_zip, state_from_county }
-import from engine.danger_words { EXTRA_SELF_HARM, EXTRA_CONCERN, EXTRA_DV, EXTRA_ASSAULT, EXTRA_TRAFFICKING, EXTRA_CHILD, EXTRA_EMERGENCY, THREAT_BY_OTHER, danger_normalize, distress_emoji, DYE_SENSE }
+import from engine.danger_words { PERINATAL_HARM, EXTRA_SELF_HARM, EXTRA_CONCERN, EXTRA_DV, EXTRA_ASSAULT, EXTRA_TRAFFICKING, EXTRA_CHILD, EXTRA_EMERGENCY, THREAT_BY_OTHER, danger_normalize, distress_emoji, DYE_SENSE }
 import from engine.i18n { detect_script, detect_latin_other, route_i18n, crisis_any_language, negated, need_focus, LATIN_MARKERS, NEG_RIGHT, is_small_talk }
 import from engine.facts_i18n { facts_i18n, place_i18n }
 
@@ -471,7 +471,9 @@ glob REQUEST_RE: str = "\\?|¿|\\b(?:i need|we need|need help|help me|help us|ca
 # The speaker is under 18 without saying an age.
 glob DV_OWN_RE: str = "\\b(?:hits|hit|beats|beat|hurts|hurt|choked|chokes|abuses|abused|threatens|threatened) me\\b|\\bmy (?:abusive )?(?:husband|wife|partner|spouse|boyfriend|girlfriend|fianc[eé]e?|ex)\\b|\\babusive (?:husband|wife|partner|spouse|boyfriend|girlfriend|ex)\\b";
 glob THIRD_CHILD_RE: str = "\\breport(?:ing)? (?:child )?abuse\\b|\\b(?:students?|pupils?) (?:told|tells|said|says|disclosed)\\b|\\bmandated reporter\\b|\\b(?:one of my|my) students?\\b|\\bneighbor'?s (?:kid|child|son|daughter)\\b|\\b(?:son|daughter)'?s friend\\b";
-glob MINOR_RE: str = "\\b(?:i'?m|i am) (?:only |just )?(?:a )?(?:\\w+ )?(?:minor|under 18|under eighteen|teenager|teen|high school(?:er| student))\\b|\\bsoy menor de edad\\b";
+# "I'm 13" / "im 12": parse_age reads 14 and up, so a younger child writing
+# about themselves is caught here (audit 2026-11-06, B11). Not "I'm 12 weeks".
+glob MINOR_RE: str = "\\b(?:i'?m|i am) (?:only |just )?(?:a )?(?:\\w+ )?(?:minor|under 18|under eighteen|teenager|teen|high school(?:er| student))\\b|\\bsoy menor de edad\\b|\\b(?:i'?m|i am) (?:only |just )?1[0-3]\\b(?! ?(?:min|mins|minutes|hours?|hrs?|days?|weeks?|wks?|months?|mo\\b|years? (?!old)|yrs? (?!old)|dollars|cents|%|k\\b|miles|blocks|feet|ft\\b|inches|lbs|pounds|kg|am\\b|pm\\b|o'?clock|[:.,]\\d|th\\b|behind|late|short))";
 # Before an amount: it was earned in the past, not lived on now.
 # Danger with its own line (outside judge, 2026-10-28: a 12-year-old touched by
 # a stepdad, a worker whose employer holds her passport, a baby who won't wake
@@ -691,8 +693,9 @@ def _two_incomes(low: str) -> tuple {
 # month" is still what someone lives on.
 glob GONE_INCOME_LEFT: str = "\\b(?:used to (?:make|earn|get|bring in)|was (?:making|earning|getting)|were (?:making|earning)|(?:my|our) (?:old|last|previous) job|ganaba|gan[aá]bamos|me pagaban)\\b[^,.;!?]*$";
 glob NOW_NOTHING_RE: str = "\\bnow (?:nothing|zero|no income|i (?:make|get|earn|have) nothing|we (?:make|get|earn|have) nothing)\\b|\\b(?:making|earning) nothing now\\b|\\bahora nada\\b";
-# Money someone has isn't money coming in: "$50,000 in savings and no income".
-glob SAVED_RIGHT: str = "^\\s*(?:dollars?\\s*)?(?:in (?:my |our |the )?(?:savings?|bank|checking|account|assets|retirement|401k|ira)\\b|saved\\b|of savings\\b|savings\\b|en (?:el banco|ahorros)\\b|ahorrados\\b)";
+# Money someone has isn't money coming in: "$50,000 in savings and no income",
+# "I only have $20 left" (audit list D8/D14).
+glob SAVED_RIGHT: str = "^\\s*(?:dollars?\\s*)?(?:in (?:my |our |the )?(?:savings?|bank|checking|account|assets|retirement|401k|ira)\\b|saved\\b|of savings\\b|savings\\b|en (?:el banco|ahorros)\\b|ahorrados\\b|(?:left|remaining|to my name|in cash|on hand|in my (?:wallet|pocket))\\b|en efectivo\\b)";
 # Self-employed pay is counted after the costs of the work: "$3000 before gas, $1800 after".
 glob BEFORE_COSTS_RIGHT: str = "^\\s*(?:(?:a|per) (?:month|week)\\s*)?before (?:gas|expenses?|costs?|fees?|car|maintenance|repairs)\\b";
 # Amounts each named with where they come from add up: "$900 in child support and $1200 from my job".
@@ -1132,6 +1135,9 @@ glob FACT_FLAGS: list = [
     ("college_student", "\\b(?:full[- ]?time|part[- ]?time|college|university) (?:college |university )?student\\b|\\b(?:i'?m|i am) (?:in college|at college|at university)\\b"),
     ("with_parents", "\\b(?:live|living|stay|staying) with my (?:parents?|mom|dad|mother|father)\\b"),
     ("itin", "\\bitin\\b"),
+    # The speaker grew up in foster care: Medicaid to 26 with no income test
+    # (42 CFR 435.150; audit 2026-11-06, D7). Not "my kids are in foster care".
+    ("former_foster", "\\b(?:i|i'?ve|i have|i was|i'?m|i am)\\b[^.!?]{0,25}\\b(?:aged out of|aging out of|age out of|grew up in|left|was in|been in|in) (?:the )?foster (?:care|system|homes?)\\b|\\b(?:i'?m|i am) (?:a )?(?:former )?foster (?:care )?(?:youth|kid|child|alum(?:ni|na|nus)?)\\b|\\bformer foster (?:youth|kid|child)\\b|\\bcrec[ií] en (?:un )?hogar(?:es)? de crianza|\\bsal[ií] del sistema de crianza"),
     ("no_children", "\\b(?:no|without|don'?t have(?: any)?|do not have(?: any)?) (?:kids|children|child|dependents)\\b|\\bchildless\\b"),
     ("sex_offender", "\\b(?:i'?m|i am|i was|i have to register as|i must register as)\\b[^.!?]{0,25}\\bsex offender\\b"),
     ("hud_meth_bar", "\\bconvicted\\b[^.!?]{0,30}\\b(?:making|cooking|manufactur\\w+|producing)\\s+(?:meth|methamphetamine)\\b[^.!?]{0,30}\\b(?:public housing|section 8|assisted housing|housing project)\\b"),
@@ -1141,6 +1147,11 @@ glob FACT_FLAGS: list = [
 # ---------- entry point ----------
 
 glob MAX_MESSAGE_CHARS: int = 4000;
+
+# Worry with no need named and no danger words: "things are bad at home",
+# "I need to get out", "I'm not okay". These used to get Food and Housing
+# buttons; they now get "Are you safe right now?" with safety buttons (B1/B2).
+glob UNCLEAR_DANGER_RE: str = "\\b(?:i'?m|i am|i feel|feeling) (?:so |really |very |kind of )?(?:scared|afraid|terrified|frightened|unsafe)\\b|(?:don'?t|do not|doesn'?t|does not) feel safe\\b|\\bnot safe\\b|\\bunsafe\\b|(?:things are|it'?s|its) (?:really |so |very )?(?:bad|scary|getting worse) at home|(?:need|have|want) to get out\\b(?! of (?:my |this |the |a )?(?:lease|contract|job|debt|loan|car|timeshare|bed))|\\b(?:i'?m|i am) not (?:ok|okay|alright|all right)\\b|(?:please )?help me,? please|^\\s*(?:please )?help(?: me)?\\s*[.!]*\\s*$|(?:he|she)'?s (?:really |so )?(?:angry|mad|drunk|violent) again|tengo miedo|no estoy bien|no me siento segur[ao]|ay[uú]dame";
 
 """Curly and modifier apostrophes as a plain one, same length: phones type "don’t",
 and every pattern expected "don't". "I don’t want to live" raised no flag and
@@ -1407,6 +1418,11 @@ def parse_intake(text: str) -> dict {
         }
     }
     if "minor" in flags and ("dv" in flags or "sexual_assault" in flags) and "child_abuse" not in flags { flags.append("child_abuse"); }
+    # A parent's own thoughts of harming a baby: 988 leads (B9).
+    if re.search(PERINATAL_HARM, low) {
+        if "perinatal_harm" not in flags { flags.append("perinatal_harm"); }
+        if "self_harm_concern" not in flags and "self_harm" not in flags { flags.append("self_harm_concern"); }
+    }
     # Someone worried about another person's child: Childhelp's call, not the DV
     # hotline's (blind audit, 2026-11: a teacher reporting abuse got the DV line).
     if "dv" in flags and re.search(THIRD_CHILD_RE, low) and not re.search(DV_OWN_RE, low) {
@@ -1560,6 +1576,7 @@ def parse_intake(text: str) -> dict {
         "completeness": round(known / 5.0, 2),
         "needs_llm": needs_llm,
         "llm_reason": llm_reason,
-        "small_talk": small_talk
+        "small_talk": small_talk,
+        "safety_check": (not top_cat) and (not flags) and bool(re.search(UNCLEAR_DANGER_RE, low))
     };
 }

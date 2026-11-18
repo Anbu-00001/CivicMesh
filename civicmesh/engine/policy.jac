@@ -224,6 +224,12 @@ glob PROGRAMS: dict = {
     "sfmnp-rule":            {"income": {"basis": "fpl", "pct": 185}, "status": ""},
     "fridge-rule":           {"income": {"basis": "none"}, "status": ""},
     "csfp-rule":             {"income": {"basis": "fpl", "pct": 150}, "status": ""},
+    # Medicare Savings Programs: QMB to 100% of poverty, SLMB to 120%, QI to
+    # 135%, each plus a $20 disregard, for one person or a couple (medicare.gov,
+    # 2026 table: $1,350 / $1,616 / $1,816 a month for one; savings $9,950 / $14,910).
+    # Extra Help: under 150% of poverty, family size counted (SSA). Audit 2026-11-06, D9.
+    "msp-rule":              {"income": {"basis": "fpl", "pct": 135, "max_household": 2, "note": "QMB covers up to 100% of poverty, SLMB up to 120% and QI up to 135%: in 2026 about $1,350, $1,616 and $1,816 a month for one person, with a savings limit of $9,950 ($14,910 for a couple). Some states go higher or don't count savings"}, "status": ""},
+    "extra-help-rule":       {"income": {"basis": "fpl", "pct": 150, "note": "under 150% of poverty, with a savings limit too; people on Medicaid, SSI or a Medicare Savings Program get it automatically"}, "status": ""},
     # 47 CFR 54.409: 135% of poverty, or on SNAP, Medicaid, SSI, federal housing aid or the Veterans Pension.
     "lifeline-rule":         {"income": {"basis": "fpl", "pct": 135, "note": "or you qualify by being on SNAP, Medicaid, SSI, federal housing aid or the Veterans Pension"}, "status": ""},
     "medicaid-rule":         {"income": {"basis": "medicaid", "pct": 138}, "status": "medicaid"},
@@ -332,6 +338,11 @@ def income_limit(rule_id: str, profile: dict, flat_fallback: int = 0) -> dict {
     inc = pol["income"];
     basis = str(inc.get("basis", "none"));
     state = str(profile.get("state", "") or "").upper();
+    # Former foster youth: Medicaid to 26 at any income, from the state that
+    # had them in foster care at 18 (42 CFR 435.150; audit 2026-11-06, D7).
+    if str(rule_id) == "medicaid-rule" and "former_foster" in list(profile.get("flags", [])) and int(profile.get("age", 0) or 0) < 26 {
+        return {"none": True, "note": "if you were in foster care at 18 and on Medicaid then, you can keep Medicaid until 26 at any income. Apply in the state that had you in foster care; if you've moved, ask your new state too", "source": "42 CFR 435.150"};
+    }
     if str(rule_id) == "nslp-rule" and state in UNIVERSAL_SCHOOL_MEALS {
         return {"none": True, "note": str(STATE_NAMES.get(state, state)) + " gives every public-school student free breakfast and lunch, at any income"};
     }
@@ -359,6 +370,9 @@ def income_limit(rule_id: str, profile: dict, flat_fallback: int = 0) -> dict {
     hh = int(profile.get("household_size", 0) or 0);
     assumed = hh <= 0;
     n = 1 if assumed else hh;
+    # Limits set for one person or a couple only (Medicare Savings Programs).
+    mh = int(inc.get("max_household", 0) or 0);
+    if mh > 0 and n > mh { n = mh; }
     pct = float(inc.get("pct", 100));
     note = str(inc.get("note", ""));
     typical = bool(inc.get("typical", False));
@@ -436,7 +450,8 @@ def income_limit(rule_id: str, profile: dict, flat_fallback: int = 0) -> dict {
     }
     return {
         "limit": limit, "label": label, "per_person": per, "assumed_household": assumed,
-        "source": source, "note": note, "typical": typical, "blocked": blocked
+        "source": source, "note": note, "typical": typical, "blocked": blocked,
+        "max_household": int(inc.get("max_household", 0) or 0)
     };
 }
 

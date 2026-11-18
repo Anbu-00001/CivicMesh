@@ -57,7 +57,7 @@
   "r.found": "Waxaan helay **{n}** barnaamij oo ay u badan tahay inaad u qalanto.",
   "r.found_more": "Waxaan helay **{n}** barnaamij oo ay u badan tahay inaad u qalanto iyo {m} kale oo shaqeyn kara.",
   "r.maybe": "Weli wax la hubo ma jiraan, laakiin **{m}** barnaamij ayaa shaqeyn kara marka aan wax yar oo dheeraad ah ogaado.",
-  "r.none": "Weli ma helin barnaamij si toos ah ugu habboon.",
+  "r.none": "Weli ma helin barnaamij si toos ah ugu habboon. Wac **211** si aad u hesho caawimo deegaan, 24/7.",
   "r.start": "**Halkan ka bilow:** {agency} — {action}.",
   "r.route": "**Waddada muddada dheer:** {start} → {end} qiyaastii {days} maalmood.",
   "r.question": "**Hal su'aal oo lagu hagaajinayo:** {question}",
@@ -94,7 +94,7 @@
   "ui.fact_age": "da'da {n}",
   "ui.fact_year": "sannadkii",
   "ui.carried": "hore",
-  "ui.private_note": "Fadhiga gaarka ah waa shidan yahay: marka aad xirto tab-kan, biraawsarku waxba kama hayo wadahadalkan. Quick exit isla markiiba wuu baxaa.",
+  "ui.private_note": "Fadhiga gaarka ah waa shidan yahay: marka aad xirto tab-kan, biraawsarku waxba kama hayo wadahadalkan. Quick exit isla markiiba wuu baxaa. Server-ku wuxuu hayaa waxa app-ku fahmay ilaa 30 maalmood; «Tirtir xogtayda» ama Quick exit hadda ayuu tirtiraa.",
   "ui.plan_sub": "kuwa ugu faa'iidada badan oo ugu dhakhsaha badan marka hore · qiyaastii {n} daqiiqo oo waraaqo ah",
   "ui.est_benefit": "faa'iido la qiyaasay",
   "ui.busy": "Hadda ma gaari karo seerfarka. Fariintaadu ma lumin, mar kale isku day.",
@@ -141,5 +141,11 @@
   "r.more_lines": "Askartii hore: wac 988 oo riix 1. Dadka dhegoolaha ah ama maqalka ku adag: 988 ka wac taleefan fiidiyow, ama TTY ku garaac 711 ka dibna 988. Dhallinyarada LGBTQ+: wac 988 oo riix 3.",
   "ui.privacy_title": "Qarsoodi naqshad ahaan: erayadaada lama kaydiyo lamana u diro AI",
   "ui.private_toggle": "Fadhi gaar ah: wax ha ku hayn browser-kan marka aan xiro tab-ka",
-  "ui.delete_data": "Tirtir xogtayda"
+  "ui.delete_data": "Tirtir xogtayda",
+  "q.safety": "Hadda ma ammaan baad tahay?",
+  "opt.s_danger": "Hadda khatar baan ku jiraa",
+  "opt.s_hurt": "Qof ayaa i dhibaya",
+  "opt.s_suicide": "Waxaan ka fikirayaa is-dil",
+  "opt.s_child": "Ilmo ayaa la dhibayaa",
+  "opt.s_safe": "Ammaan baan ahay — caawimo kale ayaan u baahanahay"
 }

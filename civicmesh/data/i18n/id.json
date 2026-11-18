@@ -57,7 +57,7 @@
   "r.found": "Saya menemukan **{n}** program yang kemungkinan besar bisa Anda dapatkan.",
   "r.found_more": "Saya menemukan **{n}** program yang kemungkinan besar bisa Anda dapatkan dan {m} lagi yang mungkin cocok.",
   "r.maybe": "Belum ada yang pasti cocok, tetapi **{m}** program mungkin cocok setelah saya tahu sedikit lagi.",
-  "r.none": "Saya belum menemukan program yang langsung cocok.",
+  "r.none": "Saya belum menemukan program yang langsung cocok. Telepon **211** untuk bantuan setempat, 24/7.",
   "r.start": "**Mulai dari sini:** {agency} — {action}.",
   "r.route": "**Jalur jangka panjang:** {start} → {end} dalam sekitar {days} hari.",
   "r.question": "**Satu pertanyaan agar lebih tepat:** {question}",
@@ -94,7 +94,7 @@
   "ui.fact_age": "usia {n}",
   "ui.fact_year": "per tahun",
   "ui.carried": "dari sebelumnya",
-  "ui.private_note": "Sesi pribadi aktif: setelah tab ini ditutup, peramban tidak menyimpan apa pun tentang percakapan ini. Quick exit langsung keluar.",
+  "ui.private_note": "Sesi pribadi aktif: setelah tab ini ditutup, peramban tidak menyimpan apa pun tentang percakapan ini. Quick exit langsung keluar. Server menyimpan apa yang dipahami aplikasi hingga 30 hari; «Hapus data saya» atau Quick exit menghapusnya sekarang.",
   "ui.plan_sub": "paling berguna dan tercepat lebih dulu · sekitar {n} menit urusan dokumen",
   "ui.est_benefit": "perkiraan manfaat",
   "ui.busy": "Saya tidak bisa menghubungi server sekarang. Pesan Anda tidak hilang, silakan coba lagi.",
@@ -141,5 +141,11 @@
   "r.more_lines": "Veteran: telepon 988 lalu tekan 1. Tuli atau sulit mendengar: telepon 988 dari telepon video, atau dengan TTY tekan 711 lalu 988. Anak muda LGBTQ+: telepon 988 lalu tekan 3.",
   "ui.privacy_title": "Privat sejak awal: kata-kata Anda tidak disimpan atau dikirim ke AI",
   "ui.private_toggle": "Sesi pribadi: jangan simpan apa pun di browser ini setelah tab ditutup",
-  "ui.delete_data": "Hapus data saya"
+  "ui.delete_data": "Hapus data saya",
+  "q.safety": "Apakah Anda aman sekarang?",
+  "opt.s_danger": "Saya dalam bahaya sekarang",
+  "opt.s_hurt": "Seseorang menyakiti saya",
+  "opt.s_suicide": "Saya sedang berpikir untuk bunuh diri",
+  "opt.s_child": "Seorang anak sedang disakiti",
+  "opt.s_safe": "Saya aman — saya butuh bantuan lain"
 }

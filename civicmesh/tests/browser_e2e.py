@@ -36,6 +36,7 @@ import sys
 import tempfile
 import threading
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -226,7 +227,7 @@ def main(app: str) -> int:
     if not chrome:
         print("  FAIL no Chrome or Chromium on PATH")
         return 1
-    proc = subprocess.Popen([chrome, "--headless=new", "--disable-gpu", "--no-sandbox", f"--remote-debugging-port={PORT}",
+    proc = subprocess.Popen([chrome, "--headless=new", "--disable-gpu", "--no-sandbox", "--password-store=basic", f"--remote-debugging-port={PORT}",
                              f"--remote-allow-origins=http://127.0.0.1:{PORT}", "--window-size=1400,900",
                              f"--user-data-dir={tempfile.mkdtemp()}", "about:blank"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     srv = None
@@ -317,9 +318,21 @@ def main(app: str) -> int:
         check("3d it asked the server to erase the case", len(sent) == 1)
 
         def erased():
-            after = post(app, "/walker/GraphSnapshotWalker", {"user_id": uid}, tok)["data"]["reports"][-1]
-            return after.get("empty") is True and after.get("counts", {}).get("PersonNode") == 0
-        check("3e the server erased the case", tok and wait_for(erased, 15))
+            # The case and the login are gone, and the old token is turned
+            # away (audit 2026-11-06, F2/F3).
+            try:
+                post(app, "/walker/GraphSnapshotWalker", {"user_id": uid}, tok)
+                return False
+            except urllib.error.HTTPError as e:
+                return e.code == 401
+        check("3e the server erased the case and ended the login", tok and wait_for(erased, 15))
+        try:
+            again = post(app, "/user/login", {"identity": {"type": "username", "value": uid},
+                                              "credential": {"type": "password", "password": pw}})
+            relogin = bool((again.get("data") or {}).get("token"))
+        except urllib.error.HTTPError:
+            relogin = False
+        check("3e2 the old identity can't sign in again", uid and not relogin)
         tab.close()
         tab = new_tab()
         open_chat(tab, app)
@@ -511,7 +524,12 @@ def main(app: str) -> int:
         tab.close()
         check_page_language(app)
     finally:
+        # A Chrome stuck on a system prompt can ignore SIGTERM and outlive the test.
         proc.terminate()
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            proc.kill()
         if srv:
             srv.shutdown()
     return report()

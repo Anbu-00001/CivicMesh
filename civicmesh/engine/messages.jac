@@ -113,6 +113,8 @@ def quick_options(key: str, lang: str) -> list {
     rows: list = [];
     if key in yes_no {
         rows = [["opt.yes", "yes"], ["opt.no", "no"]];
+    } elif key == "safety" {
+        rows = [["opt.s_danger", "I'm in danger right now"], ["opt.s_hurt", "Someone is hurting me"], ["opt.s_suicide", "I'm thinking about suicide"], ["opt.s_child", "A child is being hurt"], ["opt.s_safe", "I'm safe, I need other help"]];
     } elif key == "need" {
         rows = [["opt.food", "I need food"], ["opt.housing", "I need help with housing"], ["opt.health", "I need a doctor"], ["opt.legal", "I need a lawyer"], ["opt.money", "I need help with money or child care"]];
     } elif key == "income" {

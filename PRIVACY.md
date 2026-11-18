@@ -51,7 +51,7 @@ a law firm or a benefits office, and using it does not apply you for anything.
 | What the engine understood from your messages: the kind of help, urgency, household size, yearly income, your language, and your ZIP code if you gave one. Not your words, your immigration status, or your location beyond ZIP | Our server, in a graph database under your random login | Until you press **Delete my data**, or 30 days after your last message, whichever comes first. A restart does not erase it |
 | The programs in your plan (saved as applications you can mark applied, approved or denied; for a crisis they include the hotline) and an automatic quality score for each answer. The score's label is built from the engine's reading, not your words | Same | Same |
 | The conversation so far (so a follow-up answer can build on it) | Your browser, sent along with each new message and used in memory only | Until you start a new case or close the page |
-| Your random login (username and a hashed password, nothing about you) | Our server's user list, and your browser's local storage (in a private session, only the open tab) | 30 days after your last message. Delete my data clears the case and your browser's copy, but the login itself stays on the server until that 30-day job removes it, and it would still sign in if someone had copied it |
+| Your random login (username and a hashed password, nothing about you) | Our server's user list, and your browser's local storage (in a private session, only the open tab) | Until you press **Delete my data**, or 30 days after your last message. Delete my data removes the login from the server along with the case, and the server turns its token away from then on, so a copied login no longer signs in. The server keeps only a one-way hash of that token, with its expiry date, until it expires |
 | Your picked language | Your browser's local storage | Until you clear it or press Delete my data |
 | Anonymous counts: how many chats, which languages, which kinds of help, response times | Our server's memory. Visitor IDs are one-way hashed | Until the server restarts |
 | Abuse-protection counters: your connection's address, and a one-way hash of your random login, each with a request count | Our server's memory only; never written to disk or to the logs | Until the limit's window passes (at most 10 minutes after your last request), or the server restarts |
@@ -60,10 +60,12 @@ a law firm or a benefits office, and using it does not apply you for anything.
 
 A job runs every hour and removes every visitor, case and login with no new
 message for 30 days. Restarting the app does not erase anything on disk. The
-database writes changes to a side file (a write-ahead log) first, so a deleted
-case can stay readable in that file on the server until the next checkpoint,
-usually minutes later. On Hugging Face's free tier, a rebuild of the Space does
-start with empty storage.
+database writes changes to a side file (a write-ahead log) first. Delete my
+data folds that file back into the database straight away, unless a request
+is reading the database at that moment, in which case the next checkpoint does
+it, usually minutes later. Space freed inside the database file can keep
+fragments of a deleted case until the database reuses it. On Hugging Face's
+free tier, a rebuild of the Space does start with empty storage.
 
 ## What leaves our server
 
@@ -156,6 +158,7 @@ repository.
 | Summary facts carry no income, household, location or status | `facts_for` in `walkers/eligibility.jac` |
 | Opening the page again shows the welcome and its examples, nothing about an earlier case | `tests/browser_e2e.py` check 6 (headless Chrome, a real reload) |
 | Delete my data removes the case, and only yours | E2E P8–P10, `tests/test_privacy_graph.jac` |
+| Delete my data removes the login, and its token is refused afterwards | E2E P9, browser 3e, `tests/test_retention.py`, `tests/test_cmguard.py` `test_delete_my_data_ends_the_login` |
 | Server logs hold no user text | CI "Server logs hold no user text" step (`walkers/log_privacy.jac`) |
 | Client-error reports are never logged; security logs are aggregate counts with no addresses or ids | `tests/security_e2e.py` S14–S15 (`cmguard/gateway.py`, `cmguard/telemetry.py`) |
 | Counters forget an address or login once its window passes | `tests/test_cmguard.py` `test_idle_keys_are_forgotten` |

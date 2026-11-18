@@ -9,7 +9,7 @@
 """
 
 import from graph.nodes { PersonNode, NeedNode, ResourceNode, ApplicationNode, SessionInsight }
-import from graph.edges { has_need, reflected_on }
+import from graph.edges { has_need, reflected_on, applied_to }
 import from walkers.intake { IntakeWalker, GuestIntakeWalker }
 import from walkers.seed { SeedWalker }
 import from walkers.forget { ForgetWalker }
@@ -71,11 +71,18 @@ test "stored_need_is_scrubbed_and_forget_deletes_it" {
 
     root spawn IntakeWalker(conversation="I need a doctor", user_id="priv_b");
     before = len([root --> [?:ResourceNode]]);
+    # Count what Delete my data must remove (audit 2026-11-06, I2: this test
+    # used to say it covered applications and self-critiques without counting them).
+    apps = len([p ->:applied_to:-> [?:ApplicationNode]]);
+    insights = len([p ->:reflected_on:-> [?:SessionInsight]]);
+    assert apps > 0;
     f = root spawn ForgetWalker(user_id="priv_a");
     out = f.reports[-1];
     assert out["ok"];
     assert out["removed"]["PersonNode"] == 1;
     assert out["removed"]["NeedNode"] == 2;
+    assert out["removed"]["ApplicationNode"] == apps;
+    assert out["removed"]["SessionInsight"] == insights;
     assert len([root --> [?:PersonNode, user_id == "priv_a"]]) == 0;
     assert len([root --> [?:ResourceNode]]) == before;
     assert len([root --> [?:PersonNode, user_id == "priv_b"]]) == 1;

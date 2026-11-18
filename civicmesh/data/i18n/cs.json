@@ -57,7 +57,7 @@
   "r.found": "Programy, na které máte pravděpodobně nárok: **{n}**.",
   "r.found_more": "Programy, na které máte pravděpodobně nárok: **{n}**; další, které by mohly sedět: {m}.",
   "r.maybe": "Zatím nic jistého, ale až budu vědět trochu víc, mohly by sedět programy: **{m}**.",
-  "r.none": "Zatím není přímá shoda.",
+  "r.none": "Zatím není přímá shoda. Pro místní pomoc volejte **211**, 24/7.",
   "r.start": "**Začněte tady:** {agency} — {action}.",
   "r.route": "**Dlouhodobá cesta:** {start} → {end}, přibližně za {days} dní.",
   "r.question": "**Jedna otázka pro upřesnění:** {question}",
@@ -94,7 +94,7 @@
   "ui.fact_age": "věk {n}",
   "ui.fact_year": "ročně",
   "ui.carried": "z dřívějška",
-  "ui.private_note": "Soukromá relace je zapnutá: po zavření této karty prohlížeč z rozhovoru nic neuchová. Quick exit odejde okamžitě.",
+  "ui.private_note": "Soukromá relace je zapnutá: po zavření této karty prohlížeč z rozhovoru nic neuchová. Quick exit odejde okamžitě. Server uchovává, čemu aplikace porozuměla, až 30 dní; „Smazat moje data“ nebo Quick exit to smaže hned.",
   "ui.plan_sub": "nejužitečnější a nejrychlejší nejdřív · asi {n} min papírování",
   "ui.est_benefit": "odhadovaná dávka",
   "ui.busy": "Teď se nemohu spojit se serverem. Vaše zpráva se neztratila, zkuste to znovu.",
@@ -141,5 +141,11 @@
   "r.more_lines": "Veteráni: volejte 988 a stiskněte 1. Neslyšící a nedoslýchaví: volejte 988 z videotelefonu, nebo přes TTY vytočte 711 a pak 988. Mladí LGBTQ+ lidé: zavolejte na 988 a stiskněte 3.",
   "ui.privacy_title": "Soukromí už v návrhu: vaše slova se neukládají ani neposílají AI",
   "ui.private_toggle": "Soukromá relace: po zavření karty v tomto prohlížeči nic nezůstane",
-  "ui.delete_data": "Smazat moje data"
+  "ui.delete_data": "Smazat moje data",
+  "q.safety": "Jste teď v bezpečí?",
+  "opt.s_danger": "Jsem teď v nebezpečí",
+  "opt.s_hurt": "Někdo mi ubližuje",
+  "opt.s_suicide": "Myslím na sebevraždu",
+  "opt.s_child": "Někdo ubližuje dítěti",
+  "opt.s_safe": "Jsem v bezpečí — potřebuji jinou pomoc"
 }

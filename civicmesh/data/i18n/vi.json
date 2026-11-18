@@ -57,7 +57,7 @@
   "r.found": "Tôi tìm thấy **{n}** chương trình mà bạn nhiều khả năng đủ điều kiện.",
   "r.found_more": "Tôi tìm thấy **{n}** chương trình mà bạn nhiều khả năng đủ điều kiện và thêm {m} chương trình có thể phù hợp.",
   "r.maybe": "Chưa có chương trình nào chắc chắn phù hợp, nhưng **{m}** chương trình có thể phù hợp khi tôi biết thêm một chút.",
-  "r.none": "Tôi chưa tìm thấy chương trình nào phù hợp trực tiếp.",
+  "r.none": "Tôi chưa tìm thấy chương trình nào phù hợp trực tiếp. Gọi **211** để được giúp đỡ tại địa phương, 24/7.",
   "r.start": "**Bắt đầu từ đây:** {agency} — {action}.",
   "r.route": "**Hướng lâu dài:** {start} → {end} trong khoảng {days} ngày.",
   "r.question": "**Một câu hỏi để chính xác hơn:** {question}",
@@ -94,7 +94,7 @@
   "ui.fact_age": "{n} tuổi",
   "ui.fact_year": "mỗi năm",
   "ui.carried": "từ trước",
-  "ui.private_note": "Phiên riêng tư đang bật: khi đóng thẻ này, trình duyệt sẽ không giữ gì về cuộc trò chuyện. Quick exit thoát ngay lập tức.",
+  "ui.private_note": "Phiên riêng tư đang bật: khi đóng thẻ này, trình duyệt sẽ không giữ gì về cuộc trò chuyện. Quick exit thoát ngay lập tức. Máy chủ giữ những gì ứng dụng hiểu được tối đa 30 ngày; «Xóa dữ liệu của tôi» hoặc Quick exit xóa ngay.",
   "ui.plan_sub": "hữu ích và nhanh nhất trước · khoảng {n} phút giấy tờ",
   "ui.est_benefit": "trợ cấp ước tính",
   "ui.busy": "Hiện không kết nối được với máy chủ. Tin nhắn của bạn không bị mất, bạn có thể thử lại.",
@@ -141,5 +141,11 @@
   "r.more_lines": "Cựu chiến binh: gọi 988 rồi bấm 1. Người khiếm thính hoặc lãng tai: gọi 988 từ điện thoại video, hoặc dùng TTY bấm 711 rồi 988. Người trẻ LGBTQ+: gọi 988 và bấm phím 3.",
   "ui.privacy_title": "Riêng tư ngay từ thiết kế: lời bạn viết không được lưu hay gửi cho AI",
   "ui.private_toggle": "Phiên riêng tư: không giữ gì trong trình duyệt này khi tôi đóng thẻ",
-  "ui.delete_data": "Xóa dữ liệu của tôi"
+  "ui.delete_data": "Xóa dữ liệu của tôi",
+  "q.safety": "Bạn có đang an toàn không?",
+  "opt.s_danger": "Tôi đang gặp nguy hiểm",
+  "opt.s_hurt": "Có người đang làm hại tôi",
+  "opt.s_suicide": "Tôi đang nghĩ đến chuyện tự tử",
+  "opt.s_child": "Một đứa trẻ đang bị làm hại",
+  "opt.s_safe": "Tôi an toàn — tôi cần sự giúp đỡ khác"
 }

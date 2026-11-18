@@ -12,7 +12,7 @@ pinned: false
 
 # CivicMesh
 
-### A rules engine on a graph that routes people in crisis to the housing, food, healthcare, legal, cash and child care help they qualify for, and shows why. The engine reads a message and checks it against 75 programs using 2026 federal rules in about a millisecond; language models only translate and summarize, after the answer is on screen.
+### A rules engine on a graph that routes people in crisis to the housing, food, healthcare, legal, cash and child care help they qualify for, and shows why. The engine reads a message and checks it against 76 programs using 2026 federal rules in about a millisecond; language models only translate and summarize, after the answer is on screen.
 
 [![JacHacks Spring 2026 – 1st Place Agentic AI](https://img.shields.io/badge/JacHacks%20Spring%202026-1st%20Place%20Agentic%20AI-FFD700?style=for-the-badge)](https://devpost.com/software/civicmesh-0ctxl5)
 [![JacHacks Spring 2026 – Best Startup Idea](https://img.shields.io/badge/JacHacks%20Spring%202026-Best%20Startup%20Idea-FFD700?style=for-the-badge)](https://devpost.com/software/civicmesh-0ctxl5)

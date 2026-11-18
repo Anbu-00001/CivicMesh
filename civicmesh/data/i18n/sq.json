@@ -57,7 +57,7 @@
   "r.found": "Gjeta **{n}** programe për të cilat ka shumë të ngjarë të kualifikoheni.",
   "r.found_more": "Gjeta **{n}** programe për të cilat ka shumë të ngjarë të kualifikoheni dhe {m} të tjera që mund të shkojnë.",
   "r.maybe": "Ende asgjë e sigurt, por **{m}** programe mund të shkojnë kur të di pak më shumë.",
-  "r.none": "Ende nuk gjeta një përputhje të drejtpërdrejtë.",
+  "r.none": "Ende nuk gjeta një përputhje të drejtpërdrejtë. Telefononi **211** për ndihmë vendore, 24/7.",
   "r.start": "**Filloni këtu:** {agency} — {action}.",
   "r.route": "**Rrugë afatgjatë:** {start} → {end} për rreth {days} ditë.",
   "r.question": "**Një pyetje për më shumë saktësi:** {question}",
@@ -94,7 +94,7 @@
   "ui.fact_age": "mosha {n}",
   "ui.fact_year": "në vit",
   "ui.carried": "nga më parë",
-  "ui.private_note": "Seanca private është aktive: kur ta mbyllni këtë skedë, shfletuesi nuk ruan asgjë nga kjo bisedë. Quick exit del menjëherë.",
+  "ui.private_note": "Seanca private është aktive: kur ta mbyllni këtë skedë, shfletuesi nuk ruan asgjë nga kjo bisedë. Quick exit del menjëherë. Serveri ruan atë që kuptoi aplikacioni deri në 30 ditë; «Fshi të dhënat e mia» ose Quick exit e fshin tani.",
   "ui.plan_sub": "më të dobishmet dhe më të shpejtat së pari · rreth {n} min dokumente",
   "ui.est_benefit": "përfitim i vlerësuar",
   "ui.busy": "Tani nuk arrij te serveri. Mesazhi juaj nuk humbi, provoni përsëri.",
@@ -141,5 +141,11 @@
   "r.more_lines": "Veteranët: telefononi 988 dhe shtypni 1. Personat e shurdhër ose me dëgjim të dobët: telefononi 988 nga një videotelefon, ose me TTY formoni 711 dhe pastaj 988. Të rinjtë LGBTQ+: telefononi 988 dhe shtypni 3.",
   "ui.privacy_title": "Privat që nga projektimi: fjalët tuaja nuk ruhen dhe nuk dërgohen te AI",
   "ui.private_toggle": "Seancë private: mos ruaj asgjë në këtë shfletues pasi të mbyll skedën",
-  "ui.delete_data": "Fshi të dhënat e mia"
+  "ui.delete_data": "Fshi të dhënat e mia",
+  "q.safety": "A jeni të sigurt tani?",
+  "opt.s_danger": "Jam në rrezik tani",
+  "opt.s_hurt": "Dikush po më lëndon",
+  "opt.s_suicide": "Po mendoj për vetëvrasje",
+  "opt.s_child": "Një fëmijë po lëndohet",
+  "opt.s_safe": "Jam i sigurt — më duhet ndihmë tjetër"
 }

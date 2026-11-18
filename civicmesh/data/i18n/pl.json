@@ -57,7 +57,7 @@
   "r.found": "Programy, do których najpewniej się kwalifikujesz: **{n}**.",
   "r.found_more": "Programy, do których najpewniej się kwalifikujesz: **{n}**; inne, które mogą pasować: {m}.",
   "r.maybe": "Nic jeszcze nie jest pewne, ale gdy dowiem się trochę więcej, mogą pasować programy: **{m}**.",
-  "r.none": "Nie ma jeszcze bezpośredniego dopasowania.",
+  "r.none": "Nie ma jeszcze bezpośredniego dopasowania. Po pomoc na miejscu zadzwoń pod **211**, 24/7.",
   "r.start": "**Zacznij tutaj:** {agency} — {action}.",
   "r.route": "**Droga długoterminowa:** {start} → {end}, około {days} dni.",
   "r.question": "**Jedno pytanie, żeby doprecyzować:** {question}",
@@ -94,7 +94,7 @@
   "ui.fact_age": "wiek {n}",
   "ui.fact_year": "rocznie",
   "ui.carried": "z wcześniej",
-  "ui.private_note": "Sesja prywatna włączona: po zamknięciu tej karty przeglądarka nie zachowa nic z tej rozmowy. Quick exit wychodzi natychmiast.",
+  "ui.private_note": "Sesja prywatna włączona: po zamknięciu tej karty przeglądarka nie zachowa nic z tej rozmowy. Quick exit wychodzi natychmiast. Serwer przechowuje to, co aplikacja zrozumiała, do 30 dni; „Usuń moje dane” lub Quick exit usuwa to od razu.",
   "ui.plan_sub": "najpierw najbardziej przydatne i najszybsze · około {n} min formalności",
   "ui.est_benefit": "szacowana pomoc",
   "ui.busy": "Nie mogę teraz połączyć się z serwerem. Wiadomość nie przepadła, możesz spróbować ponownie.",
@@ -141,5 +141,11 @@
   "r.more_lines": "Weterani: zadzwońcie pod 988 i naciśnijcie 1. Osoby głuche i niedosłyszące: zadzwońcie pod 988 z wideotelefonu albo przez TTY wybierzcie 711, a potem 988. Młode osoby LGBTQ+: zadzwoń pod 988 i naciśnij 3.",
   "ui.privacy_title": "Prywatność od podstaw: Twoje słowa nie są zapisywane ani wysyłane do AI",
   "ui.private_toggle": "Sesja prywatna: po zamknięciu karty nic nie zostaje w tej przeglądarce",
-  "ui.delete_data": "Usuń moje dane"
+  "ui.delete_data": "Usuń moje dane",
+  "q.safety": "Czy jesteś teraz bezpieczny/bezpieczna?",
+  "opt.s_danger": "Jestem teraz w niebezpieczeństwie",
+  "opt.s_hurt": "Ktoś mnie krzywdzi",
+  "opt.s_suicide": "Myślę o samobójstwie",
+  "opt.s_child": "Ktoś krzywdzi dziecko",
+  "opt.s_safe": "Jestem bezpieczny/bezpieczna — potrzebuję innej pomocy"
 }
