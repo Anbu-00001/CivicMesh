@@ -543,7 +543,13 @@ def detect_language(text: str) -> tuple {
     # Spanish evidence either.
     pt_words = set(LATIN_MARKERS.get("pt", []));
     accented = [w for w in words if re.search(r"[áéíóú]", w) and w not in pt_words];
-    accent_es = (bool(re.search(r"[ñ¿¡]", low)) or len(accented) > 0) and not re.search(r"[ãõçêôâèàùîûëïœ]", low);
+    # Navajo, Lakota, Yoruba, Igbo and Polish carry letters Spanish never uses
+    # too (ł ą ę į ǫ ų ŋ ɛ ɔ ẹ ọ ṣ ụ ị): "Yá'át'ééh, shí éí ..." was read
+    # as Spanish at full confidence and switched the page (blind audit C4).
+    # Navajo also doubles accented vowels (éé, áá) and puts an apostrophe
+    # inside an accented word (ch'iyáán); Spanish does neither.
+    not_es = bool(re.search(r"[ãõçêôâèàùîûëïœłąęįǫųŋɛɔẹọṣụịʼ]", low)) or bool(re.search(r"([áéíóú])\1|\w'\w*[áéíóú]", low));
+    accent_es = (bool(re.search(r"[ñ¿¡]", low)) or len(accented) > 0) and not not_es;
     if accent_es { es += 2; }
     (other, other_hits) = detect_latin_other(low);
     # Other languages are scored on distinct marker words, so compare them
@@ -579,6 +585,11 @@ def detect_language(text: str) -> tuple {
     }
     if en >= es {
         return ("en", round(min(1.0, 0.5 + (en - es) / (2.0 * total) + min(en, 4) * 0.1), 2));
+    }
+    # Accents with no Spanish word at all are weak evidence: answer in Spanish,
+    # but not with the confidence that switches the page or a conversation.
+    if en == 0 and not es_words and not re.search(r"[ñ¿¡]", low) {
+        return ("es", 0.6);
     }
     return ("es", round(min(1.0, 0.5 + (es - en) / (2.0 * total) + min(es, 4) * 0.1), 2));
 }

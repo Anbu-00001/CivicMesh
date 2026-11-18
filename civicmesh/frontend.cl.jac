@@ -205,19 +205,6 @@ def:pub ClientApp -> JsxElement {
                     >
                         CivicMesh
                     </h1>
-                    <span
-                        className="cm-appbar-badge"
-                        style={{
-                            "fontSize": "11px",
-                            "padding": "2px 8px",
-                            "borderRadius": "20px",
-                            "background": "rgba(255,229,0,0.1)",
-                            "color": "#FFE500",
-                            "border": "0.5px solid rgba(255,229,0,0.25)"
-                        }}
-                    >
-                        Agentic AI Navigator
-                    </span>
                 </div>
                 <nav
                     className="cm-appnav"
@@ -239,6 +226,7 @@ def:pub ClientApp -> JsxElement {
                 <div style={{"display": "flex", "alignItems": "center", "gap": "10px"}}>
                     <button className="cm-quick-exit" onClick={lambda _e: MouseEvent { quickExit(); }} title="Leave this site right now (or press Shift three times)">Quick exit</button>
                     <button
+                        className="cm-palette-btn"
                         onClick={lambda _e: MouseEvent { togglePalette(); }}
                         title="Open command palette (⌘K)"
                         aria-label="Open command palette"
@@ -263,6 +251,7 @@ def:pub ClientApp -> JsxElement {
                         <span style={{"letterSpacing": "0.04em"}}>⌘K</span>
                     </button>
                     <span
+                        className="cm-conn"
                         style={{
                             "width": "6px",
                             "height": "6px",
@@ -271,7 +260,7 @@ def:pub ClientApp -> JsxElement {
                             "display": "inline-block"
                         }}
                     />
-                    <span style={{"fontSize": "12px", "color": "rgba(255,255,255,0.62)"}}>
+                    <span className="cm-conn" style={{"fontSize": "12px", "color": "rgba(255,255,255,0.62)"}}>
                         {("engine ready" if is_authed else "connecting...")}
                     </span>
                 </div>
@@ -316,7 +305,7 @@ def:pub ClientApp -> JsxElement {
                 }}
             >
                 <div style={{"display": "flex", "alignItems": "center", "gap": "10px"}}>
-                    <span>CivicMesh · Agentic AI Navigator</span>
+                    <span>CivicMesh</span>
                     <span style={{"opacity": "0.5"}}>·</span>
                     <span>{"Jac walkers · " + str(len(walker_events)) + " events this session"}</span>
                 </div>

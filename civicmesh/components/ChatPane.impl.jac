@@ -159,7 +159,11 @@ impl ChatPane.sendMessage(text_override: str = "", answering: str = "", display:
     profile_ctx = data["profile"];
     ln = data["language_name"];
     lang_label = (str(ln[1]) + (" · " + str(ln[0]) if str(ln[0]) != str(ln[1]) else "")) if (ln and data["narrate_language"] != "auto") else "not identified";
-    if pref_lang == "auto" and data["reply_language"] { setPageAttrs(str(data["reply_language"])); }
+    # Only strong evidence switches the page: a Navajo message once flipped it
+    # to Spanish on accents alone (blind audit C4). The reply bubble carries
+    # its own lang either way.
+    lang_conf = Number(data["profile"]["language_conf"]) if (data["profile"] and data["profile"]["language_conf"]) else 0.0;
+    if pref_lang == "auto" and data["reply_language"] and lang_conf >= 0.85 { setPageAttrs(str(data["reply_language"])); }
     q = data["question"];
     pending_question = str(q["key"]) if (q and q["key"]) else "";
     last_trace = data["trace"];
@@ -261,6 +265,11 @@ impl ChatPane.renderLangPicker -> JsxElement {
     # Unmarked: the whole answer is composed in that language (message
     # catalog). Others are translated after the answer arrives.
     tier_mark: dict = {"instant": " · translated", "translate": " · translated", "llm": " · AI-translated", "interpreter": " · interpreter card"};
+    # No translation key on this server: say so in the menu, before anyone
+    # picks Marathi and gets English (blind audit C5).
+    if platform and platform["translator"] == False {
+        tier_mark = {"instant": " · answers in English for now", "translate": " · answers in English for now", "llm": " · answers in English for now", "interpreter": " · interpreter card"};
+    }
     return
         <select
             className="cm-lang-select"

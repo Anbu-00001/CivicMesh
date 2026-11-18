@@ -963,6 +963,9 @@
   {"text": "We have no food at home and the kids are hungry, my husband lost his job last month and we have two kids, I don't know what to do anymore honestly", "expect": {"category": "food"}, "_why": "a hardship story still routes after the need-frame rule"},
   {"text": "I need medicine for my diabetes but I can't afford it, my insulin costs so much and the pharmacy won't help me without insurance at all", "expect": {"category": "healthcare"}, "_why": "a framed topic word still routes"},
     {"text": "Mo nilo ounje fun ebi mi, a je eniyan merin", "expect": {"language": "yo", "category": "food", "household_size": 4}, "_why": "live Space 2026-10-29: Yoruba typed without tone marks; \"a je eniyan merin\" (we are four people) gave no household"},
-    {"text": "Mo nílò oúnjẹ fún ẹbí mi, a jẹ́ ènìyàn mẹ́rin", "expect": {"language": "yo", "category": "food", "household_size": 4}, "_why": "the same message with tone marks"}
+    {"text": "Mo nílò oúnjẹ fún ẹbí mi, a jẹ́ ènìyàn mẹ́rin", "expect": {"language": "yo", "category": "food", "household_size": 4}, "_why": "the same message with tone marks"},
+    {"text": "Yá'át'ééh, shí éí nihá'áłchíní ch'iyáán bá ánísht'ée", "expect": {"language": ""}, "_why": "blind audit C4 (2026-11): Navajo accents were read as Spanish at full confidence and switched the page to Spanish"},
+    {"text": "Shí éí ch'iyáán nisin", "expect": {"language": ""}, "_why": "Navajo without ł: doubled accented vowels and ch'iyáán are not Spanish"},
+    {"text": "Ayúdenme, nos van a desalojar mañana", "expect": {"language": "es"}, "_why": "real Spanish with accents still reads as Spanish"}
   ]
 }
