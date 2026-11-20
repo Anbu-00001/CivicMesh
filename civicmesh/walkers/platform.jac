@@ -66,6 +66,10 @@ walker PlatformWalker {
             "languages_routed": len(routed_languages()),
             "languages_native": len(message_languages()),
             "languages": language_catalog(),
+            # Languages without a catalog are translated by NVIDIA NIM models
+            # (llm/translate.jac); with no key their answers stay English, and
+            # the language menu says so up front (blind audit C5).
+            "translator": bool(str(os.environ.get("NVIDIA_NIM_API_KEY", "")).strip()),
             "policy_version": POLICY_VERSION,
             "policy_sources": policy_sources()
         };

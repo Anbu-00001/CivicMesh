@@ -491,6 +491,26 @@ input:focus {
 }
 .lp-cta:hover::after { left: 130%; }
 .lp-cta:active { transform: translateY(0); }
+/* The way to the project pitch: quiet, so the help button stays the one to press. */
+.lp-about-btn {
+  min-height: 44px;
+  padding: 10px 18px;
+  font-size: 14px;
+  background: transparent;
+  color: rgba(255,255,255,0.8);
+  border: 0.5px solid rgba(255,255,255,0.3);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.lp-about-btn:hover { color: #FFFFFF; border-color: rgba(255,255,255,0.55); }
+/* On a 360 x 640 phone the help button sat at 681 px, below the first screen
+   (blind audit G1). Smaller hero type puts it at about 520 px. */
+@media (max-width: 600px) {
+  .lp-hero { padding-top: 12px !important; }
+  .lp-hero-title { font-size: 30px !important; margin-bottom: 12px !important; }
+  .lp-hero-sub { font-size: 16px !important; line-height: 1.5 !important; margin-bottom: 18px !important; }
+}
+.lp-about-btn:focus-visible, .lp-cta:focus-visible { outline: 2px solid #FFE500; outline-offset: 3px; }
 
 /* The walker pipeline blocks tilt slightly when at rest, then snap level
    on hover and rise. Looks like a stacked deck of cards the user can fan
@@ -982,7 +1002,18 @@ html, body { margin: 0; }
   .cm-quick-exit { position: fixed; top: 8px; right: 8px; z-index: 1000; min-height: 44px; padding: 8px 14px; font-size: 14px; background: #5c1f24; color: #fff; }
   .cm-appbar { padding-right: 124px !important; }
 }
-@media (max-width: 420px) { .cm-chat-head > :first-child { flex: 1 1 100% !important; } }
+/* The chat header took about 210 px of a 740 px phone (blind audit G3). On a
+   phone the app bar keeps the brand and the tabs, and the chat title stays a
+   heading for screen readers while the language picker and New case share
+   one row. The palette shortcut and the connection dot are desktop extras. */
+@media (max-width: 760px) {
+  .cm-palette-btn, .cm-conn { display: none !important; }
+}
+@media (max-width: 600px) {
+  .cm-chat-head { flex-wrap: nowrap; justify-content: flex-end; padding: 6px 12px; }
+  .cm-chat-head > :first-child { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+  .cm-chat-head .cm-badge { margin-right: auto; }
+}
 
 /* Blind audit, 2026-11: the crisis line stays in view, and numbers come first. */
 .cm-crisis-pin { padding: 8px 14px; background: #3a1216; border-bottom: 1px solid rgba(255,107,107,0.5); }

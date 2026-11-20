@@ -138,7 +138,7 @@ def open_chat(tab, url):
         tab.call("Page.enable")
         tab.call("Page.navigate", url=url)
     tab.until("!!document.querySelector('button')")
-    tab.js("(()=>{const b=[...document.querySelectorAll('button,a')].find(e=>/Enter the Navigator/i.test(e.textContent)); b&&b.click()})()")
+    tab.js("(()=>{const b=document.querySelector('.lp-cta'); b&&b.click()})()")
     return tab.until("!!document.querySelector('.cm-quick-exit') && !!document.querySelector('.cm-input')")
 
 
@@ -430,10 +430,22 @@ def main(app: str) -> int:
         tab.until("!!document.querySelector('.lp-safety')")
         check("6b the landing page shows 988 and Quick exit on the first screen", tab.js("""(()=>{const a=document.querySelector('.lp-safety a[href="tel:988"]');const q=document.querySelector('.lp-safety .cm-quick-exit');
             return a&&q&&a.getBoundingClientRect().bottom<640&&q.getBoundingClientRect().bottom<640})()"""))
+        # Help first, pitch on request (blind audit G1/N2: the landing page was
+        # 4,323 px of hackathon pitch on a phone).
+        short = tab.js("document.documentElement.scrollHeight")
+        check("6b2 the landing page is short on a phone and its help button is on the first screen", short < 1700 and tab.js("""(()=>{const b=document.querySelector('.lp-cta');return !!b&&b.getBoundingClientRect().bottom<=640})()""") and not tab.js("/Agentic AI|JacHacks/.test(document.body.innerText)"), short)
+        tab.js("document.querySelector('.lp-about-btn').click()")
+        time.sleep(0.5)
+        check("6b3 the project pitch is one tap away", tab.js("document.documentElement.scrollHeight") > short + 1000 and tab.js("/JacHacks/.test(document.body.innerText)"))
+        tab.js("document.querySelector('.lp-about-btn').click()")
+        time.sleep(0.3)
         tab.js("window.scrollTo(0,800)")
         check("6c the chat opens", open_chat(tab, ""))
         time.sleep(0.5)
         check("6d the chat opens at the top of the page", tab.js("window.scrollY") == 0, tab.js("window.scrollY"))
+        # Blind audit G3: the bars above the conversation took about 210 px.
+        head_px = tab.js("Math.round(document.querySelector('.cm-thread').getBoundingClientRect().top)")
+        check("6d2 the bars above the conversation stay compact on a phone", head_px <= 150 and not tab.js("/Agentic AI/.test(document.body.innerText)"), head_px)
         rows = tab.js("document.querySelectorAll('.cm-thread .cm-row').length")
         send(tab, "I want to kill myself")
         tab.until(f"document.querySelectorAll('.cm-thread .cm-row').length>={rows + 2} && !document.querySelector('.cm-typing')")
@@ -574,7 +586,7 @@ def check_page_language(app):
 
 def open_chat_in_frame(inner):
     inner.until("!!document.querySelector('button')")
-    inner.js("(()=>{const b=[...document.querySelectorAll('button,a')].find(e=>/Enter the Navigator/i.test(e.textContent)); b&&b.click()})()")
+    inner.js("(()=>{const b=document.querySelector('.lp-cta'); b&&b.click()})()")
     # Not .cm-quick-exit: the landing page has that button too.
     return inner.until("!!document.querySelector('.cm-input')")
 

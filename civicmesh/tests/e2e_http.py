@@ -173,6 +173,7 @@ check("J1 Spanish: native reply, Spanish chip labels over English payloads",
 # ---- K. Platform + translator fallback plumbing ----
 pf, _ = walker("PlatformWalker", {}, tok)
 check("K1 platform reports native-answer languages", pf and pf.get("languages_native", 0) >= 50, pf.get("languages_native") if pf else "")
+check("K1b platform says whether answers can be translated (the menu warns when not)", pf and isinstance(pf.get("translator"), bool), pf.get("translator") if pf else "")
 cat = {l["code"]: l for l in pf.get("languages", [])} if pf else {}
 check("K2 picker marks catalog languages (zh yes, ceb no, mam interpreter)",
       cat.get("zh", {}).get("catalog") is True and cat.get("ceb", {}).get("catalog") is False and cat.get("mam", {}).get("catalog") is False)

@@ -1,9 +1,10 @@
 """CivicMesh landing page.
 
-First thing visitors see. Designed for the JacHacks demo screenshot:
-glassmorphism + 3D-tilt walker pipeline + animated mesh background.
-The "Enter Navigator" CTA flips ClientApp.show_landing=False and routes
-to the chat tab — no walker spawns happen from this page.
+First thing visitors see, so it leads with the way in: one plain sentence
+and the "Tell us what you need" button, which flips ClientApp.show_landing
+and opens the chat. The JacHacks pitch (glass preview card, stat tiles,
+walker pipeline, personas, tracks) shows only after "About this project"
+(blind audit G1/N2). No walker spawns happen from this page.
 
 Sections:
   - Glass nav strip with live status pill
@@ -27,6 +28,10 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
     # 4 = all four bubbles visible. Cycles back to 1 every ~9s so a judge
     # watching the page idle still sees motion.
     has preview_step: int = 0;
+    # The pitch (pipeline, stats, hackathon tracks) is for people curious about
+    # the project; a person who came for help sees the way in first (blind
+    # audit G1/N2: 4,323 px of pitch on a phone).
+    has show_about: bool = False;
 
     can with entry {
         def advance(n: int) -> None {
@@ -98,7 +103,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     <span style={{"fontSize": "16px", "fontWeight": "700", "letterSpacing": "-0.02em"}}>
                         CivicMesh
                     </span>
-                    <span style={{
+                    {show_about and <span style={{
                         "fontSize": "11px",
                         "padding": "3px 10px",
                         "borderRadius": "20px",
@@ -108,27 +113,27 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                         "letterSpacing": "0.01em"
                     }}>
                         Agentic AI Navigator
-                    </span>
+                    </span>}
                 </div>
                 <div style={{"display": "flex", "alignItems": "center", "gap": "10px"}}>
                     <div className="lp-pulse-dot"/>
                     <span style={{"fontSize": "12px", "color": "rgba(255,255,255,0.55)"}}>
                         {("engine live · " + str(platform["programs"]) + " programs") if platform else "engine starting…"}
                     </span>
-                    <div style={{"width": "1px", "height": "16px", "background": "rgba(255,255,255,0.1)", "margin": "0 6px"}}/>
+                    {show_about and <div style={{"display": "contents"}}><div style={{"width": "1px", "height": "16px", "background": "rgba(255,255,255,0.1)", "margin": "0 6px"}}/>
                     <span style={{"fontSize": "11px", "color": "rgba(255,255,255,0.62)"}}>
                         JacHacks Spring 2026
-                    </span>
+                    </span></div>}
                 </div>
             </header>
 
             <section
-                className="lp-reveal"
+                className="lp-reveal lp-hero"
                 role="main"
                 style={{
                     "position": "relative",
                     "zIndex": "1",
-                    "padding": "70px 40px 50px",
+                    "padding": "clamp(24px, 7vw, 70px) clamp(16px, 4vw, 40px) 50px",
                     "maxWidth": "1180px",
                     "margin": "0 auto",
                     "width": "100%",
@@ -138,7 +143,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                 <div className="lp-orb" style={{"width": "320px", "height": "320px", "background": "#FFE500", "top": "-40px", "left": "12%"}}/>
                 <div className="lp-orb" style={{"width": "260px", "height": "260px", "background": "#FF88AA", "top": "40px", "right": "10%", "opacity": "0.35"}}/>
 
-                <div style={{
+                {show_about and <div style={{
                     "display": "inline-flex",
                     "alignItems": "center",
                     "gap": "8px",
@@ -154,9 +159,9 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                 }}>
                     <span style={{"width": "5px", "height": "5px", "borderRadius": "50%", "background": "#00FF88", "display": "inline-block", "boxShadow": "0 0 6px #00FF88"}}/>
                     Jac walkers · deterministic eligibility engine · one LLM call, off the critical path
-                </div>
+                </div>}
 
-                <h1 style={{
+                <h1 className="lp-hero-title" style={{
                     "fontSize": "clamp(34px, 10vw, 78px)",
                     "overflowWrap": "break-word",
                     "fontWeight": "800",
@@ -172,7 +177,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     <span className="lp-gradient-text">CivicMesh finds it.</span>
                 </h1>
 
-                <p style={{
+                <p className="lp-hero-sub" style={{
                     "fontSize": "18px",
                     "lineHeight": "1.6",
                     "color": "rgba(255,255,255,0.62)",
@@ -180,12 +185,15 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     "margin": "0 auto 38px",
                     "fontWeight": "400"
                 }}>
-                    A rules engine on a graph that routes people in crisis — single mothers, immigrant families, elderly tenants — to the housing, food, healthcare, legal aid, cash and child care help they qualify for, and shows exactly why. Seven Jac walkers run it; AI only translates and summarizes after the answer is on screen. Answers in 51 languages from machine-drafted text (not yet checked by native speakers), machine translation for 34 more, and an interpreter card for 26 that machines can't translate yet.
+                    {("A rules engine on a graph that routes people in crisis — single mothers, immigrant families, elderly tenants — to the housing, food, healthcare, legal aid, cash and child care help they qualify for, and shows exactly why. Seven Jac walkers run it; AI only translates and summarizes after the answer is on screen. Answers in 51 languages from machine-drafted text (not yet checked by native speakers), machine translation for 34 more, and an interpreter card for 26 that machines can't translate yet." if show_about else "Tell us what's going on, in your own words and your own language. You'll see the help you may qualify for (food, housing, health care, legal aid, cash, child care) and the first step for each. It's free, and you don't need to give your name.")}
                 </p>
 
                 <div style={{"display": "flex", "justifyContent": "center", "alignItems": "center", "gap": "16px", "marginBottom": "56px", "flexWrap": "wrap"}}>
                     <button className="lp-cta" onClick={lambda _e: MouseEvent { on_start(); }}>
-                        Enter the Navigator  →
+                        Tell us what you need  →
+                    </button>
+                    <button className="lp-about-btn" aria-expanded={show_about} onClick={lambda _e: MouseEvent { show_about = not show_about; }}>
+                        {"Hide project details" if show_about else "About this project"}
                     </button>
                     <div style={{"fontSize": "12px", "color": "rgba(255,255,255,0.62)", "textAlign": "left", "lineHeight": "1.5"}}>
                         <div style={{"color": "rgba(255,255,255,0.65)"}}>No signup — an anonymous account lives in this browser</div>
@@ -193,7 +201,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     </div>
                 </div>
 
-                <div
+                {show_about and <div
                     className="lp-glass-strong lp-float"
                     style={{
                         "position": "relative",
@@ -238,8 +246,10 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                             <span className="lp-typing-dot"/>
                         </div>}
                     </div>
-                </div>
+                </div>}
             </section>
+
+            {show_about and <div>
 
             <section
                 style={{
@@ -415,6 +425,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     </div>
                 </div>
             </section>
+            </div>}
 
             <footer
                 style={{
@@ -436,9 +447,9 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     · Powered by <span style={{"color": "rgba(0,255,136,0.7)", "fontWeight": "500"}}>NVIDIA NIM</span>
                     · narration only
                 </span>
-                <span>
+                {show_about and <span>
                     JacHacks Spring 2026
-                </span>
+                </span>}
             </footer>
         </div>;
 }

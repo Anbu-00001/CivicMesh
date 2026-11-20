@@ -67,9 +67,14 @@ RUN apt-get purge -y --auto-remove git build-essential unzip \
 # and repopulates the graph on first request after each redeploy.
 RUN mkdir -p /app/civicmesh/.jac/data
 
-# Not root. Hugging Face Spaces runs containers as uid 1000 anyway, and the app
-# writes only its graph under .jac/ and its runtime config.
-RUN useradd --create-home --uid 1000 app && chown -R app:app /app /opt/bun
+# Not root. Hugging Face Spaces runs containers as uid 1000 anyway. The app
+# writes only under .jac/ (its graph, the revocation list, Jac's caches), so
+# that is all it owns: the code and bun stay root's (COPY and the build ran as
+# root) and read-only, and a compromised process can't rewrite them (blind
+# audit F9).
+RUN useradd --create-home --uid 1000 app \
+    && find /app /opt/bun -perm /022 -exec chmod go-w {} + \
+    && chown -R app:app /app/civicmesh/.jac
 USER 1000
 ENV HOME=/home/app
 

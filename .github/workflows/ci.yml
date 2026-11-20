@@ -176,7 +176,9 @@ jobs:
           docker run -d --name cm -p 7860:7860 -e CIVICMESH_FRAME_ANCESTORS="'self' https://huggingface.co http://127.0.0.1:*" civicmesh:ci
           for _ in $(seq 1 90); do curl -sf -o /dev/null http://localhost:7860/ && exit 0; sleep 2; done
           docker logs cm; exit 1
-      - name: HTTP end-to-end (102 checks, no LLM key)
+      - name: The code is read-only for the app user, its data folder writable
+        run: docker exec cm sh -c 'test ! -w /app/civicmesh/engine/parse.jac && test ! -w /app/civicmesh && test ! -w /opt/bun/bin/bun && test -w /app/civicmesh/.jac/data && echo ok'
+      - name: HTTP end-to-end (103 checks, no LLM key)
         run: python3 civicmesh/tests/e2e_http.py http://localhost:7860
       - name: Accessibility — axe-core on the chat, replies announced, focus returned
         run: |

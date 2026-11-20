@@ -87,8 +87,12 @@ def main(url: str) -> int:
 
         seq[0] += 1
         ws.send(json.dumps({"id": seq[0], "method": "Page.navigate", "params": {"url": url}}))
-        until("!!document.querySelector('button')")
-        js("(()=>{const b=[...document.querySelectorAll('button,a')].find(e=>/Enter the Navigator/i.test(e.textContent)); b&&b.click()})()")
+        until("!!document.querySelector('.lp-cta')")
+        audit("landing page")
+        js("document.querySelector('.lp-about-btn').click()")
+        time.sleep(0.5)
+        audit("landing page, project details")
+        js("(()=>{const b=document.querySelector('.lp-cta'); b&&b.click()})()")
         if not until("!!document.querySelector('.cm-input')"):
             fails.append("chat never appeared")
             return report(fails)
