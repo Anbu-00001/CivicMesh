@@ -1005,6 +1005,8 @@ impl ChatPane.applyPageLang(code: str) -> None {
         if r.ok { got = await r.json(); }
     } except Exception as _ex {}
     if window.cm_page_lang == code { page_ui = got; }
+    # The app bar (Quick exit, tabs) follows a picked language too.
+    try { if window.cm_on_lang { window.cm_on_lang(code); } } except Exception as _ex {}
 }
 
 # The lines a failed turn still shows, since the person may be in danger (audit 2026-11-06, F15).
@@ -1019,6 +1021,7 @@ impl ChatPane.footerUi -> Any {
         d: Any = messages[i]["data"];
         if d and d["ui"] { return d["ui"]; }
     }
+    if pref_lang == "auto" and browser_ui and browser_ui["ui.send"] { return browser_ui; }
     return {};
 }
 
@@ -1029,12 +1032,12 @@ impl ChatPane.renderPrivacy -> JsxElement {
                 <span className="cm-privacy-lock" aria-hidden="true"><svg width="11" height="12" viewBox="0 0 11 12"><rect x="1" y="5" width="9" height="6.5" rx="1.5" fill="currentColor"/><path d="M 3 5 V 3.6 a 2.5 2.5 0 0 1 5 0 V 5" stroke="currentColor" strokeWidth="1.4" fill="none"/></svg></span>
                 {L(footerUi(), "ui.privacy_title", "Private by design — your words aren't saved or sent to AI")}
             </summary>
-            <ul>
-                <li>You're anonymous: this browser holds a random login, and nobody asks who you are.</li>
-                <li>Your message is read on this server to find programs. It is not saved: we keep only what the engine understood (the kind of help, how urgent, household size, income).</li>
-                <li>Your words are not sent to any AI model. The optional summary and translation are written from the engine's answer (program names, phone numbers, the next step), not from what you typed.</li>
-                <li>Crisis messages (self-harm, abuse) are answered by fixed code.</li>
-                <li>Your case is kept until you delete it, or 30 days after your last message. No advertising, no tracking, no selling.</li>
+            <ul dir="auto">
+                <li>{L(footerUi(), "ui.privacy_1", "You're anonymous: this browser holds a random login, and nobody asks who you are.")}</li>
+                <li>{L(footerUi(), "ui.privacy_2", "Your message is read on this server to find programs. It is not saved: we keep only what the engine understood (the kind of help, how urgent, household size, income).")}</li>
+                <li>{L(footerUi(), "ui.privacy_3", "Your words are not sent to any AI model. The optional summary and translation are written from the engine's answer (program names, phone numbers, the next step), not from what you typed.")}</li>
+                <li>{L(footerUi(), "ui.privacy_4", "Crisis messages (self-harm, abuse) are answered by fixed code.")}</li>
+                <li>{L(footerUi(), "ui.privacy_5", "Your case is kept until you delete it, or 30 days after your last message. No advertising, no tracking, no selling.")}</li>
             </ul>
             <label className="cm-private-toggle">
                 <input type="checkbox" checked={private_on} onChange={lambda _e: Any { setPrivate(not private_on); }}/>

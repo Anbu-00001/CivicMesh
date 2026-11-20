@@ -147,5 +147,14 @@
   "opt.s_hurt": "Kāds man nodara pāri",
   "opt.s_suicide": "Es domāju par pašnāvību",
   "opt.s_child": "Bērnam tiek nodarīts pāri",
-  "opt.s_safe": "Esmu drošībā — man vajag citu palīdzību"
+  "opt.s_safe": "Esmu drošībā — man vajag citu palīdzību",
+  "ui.quick_exit": "Ātrā iziešana",
+  "ui.tab_chat": "Tērzēšana",
+  "ui.tab_plan": "Rīcības plāns",
+  "ui.get_help": "Saņemt palīdzību tagad",
+  "ui.privacy_1": "Jūs esat anonīms: šī pārlūkprogramma glabā nejaušu pieteikšanos, un neviens nejautā, kas jūs esat.",
+  "ui.privacy_2": "Jūsu ziņa tiek lasīta šajā serverī, lai atrastu programmas. Tā netiek saglabāta: mēs glabājam tikai to, ko sistēma saprata (palīdzības veidu, steidzamību, mājsaimniecības lielumu, ienākumus).",
+  "ui.privacy_3": "Jūsu vārdi netiek sūtīti nevienam MI modelim. Izvēles kopsavilkums un tulkojums tiek rakstīti no sistēmas atbildes (programmu nosaukumi, tālruņi, nākamais solis), nevis no tā, ko jūs uzrakstījāt.",
+  "ui.privacy_4": "Uz krīzes ziņām (paškaitējums, vardarbība) atbild fiksēts kods.",
+  "ui.privacy_5": "Jūsu lieta tiek glabāta, līdz to izdzēšat, vai 30 dienas pēc jūsu pēdējās ziņas. Bez reklāmām, bez izsekošanas, bez pārdošanas."
 }

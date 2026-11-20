@@ -71,14 +71,16 @@ def main(url: str) -> int:
                 time.sleep(0.5)
             return False
 
-        def audit(label):
+        def audit(label, strict=False):
             # Measure the settled page: an element caught mid-fade reads as
             # low contrast.
             until("document.getAnimations().every(a => a.playState !== 'running')", 8.0)
             time.sleep(0.3)
             js(axe)
             out = json.loads(js("axe.run(document,{resultTypes:['violations']}).then(r=>JSON.stringify(r.violations.map(v=>({id:v.id,impact:v.impact,n:v.nodes.length}))))", True))
-            bad = [v for v in out if v["impact"] in ("serious", "critical")]
+            # The landing page is held to zero violations of any impact: the
+            # README says so (blind audit G6).
+            bad = out if strict else [v for v in out if v["impact"] in ("serious", "critical")]
             print(f"  {label}: {len(out)} violations, {len(bad)} serious or critical")
             for v in out:
                 print(f"    {v['impact']:<9} {v['id']} ({v['n']})")
@@ -88,10 +90,10 @@ def main(url: str) -> int:
         seq[0] += 1
         ws.send(json.dumps({"id": seq[0], "method": "Page.navigate", "params": {"url": url}}))
         until("!!document.querySelector('.lp-cta')")
-        audit("landing page")
+        audit("landing page", strict=True)
         js("document.querySelector('.lp-about-btn').click()")
         time.sleep(0.5)
-        audit("landing page, project details")
+        audit("landing page, project details", strict=True)
         js("(()=>{const b=document.querySelector('.lp-cta'); b&&b.click()})()")
         if not until("!!document.querySelector('.cm-input')"):
             fails.append("chat never appeared")

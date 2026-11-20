@@ -147,5 +147,14 @@
   "opt.s_hurt": "Valaki bánt engem",
   "opt.s_suicide": "Öngyilkosságra gondolok",
   "opt.s_child": "Egy gyereket bántanak",
-  "opt.s_safe": "Biztonságban vagyok — más segítség kell"
+  "opt.s_safe": "Biztonságban vagyok — más segítség kell",
+  "ui.quick_exit": "Gyors kilépés",
+  "ui.tab_chat": "Csevegés",
+  "ui.tab_plan": "Cselekvési terv",
+  "ui.get_help": "Segítség most",
+  "ui.privacy_1": "Ön névtelen: ez a böngésző egy véletlenszerű belépést tárol, és senki sem kérdezi, ki Ön.",
+  "ui.privacy_2": "Üzenetét ezen a szerveren olvassuk el, hogy programokat találjunk. Nem mentjük: csak azt őrizzük meg, amit a rendszer megértett (a segítség fajtája, sürgőssége, a háztartás mérete, a jövedelem).",
+  "ui.privacy_3": "Szavait nem küldjük el semmilyen MI-modellnek. A választható összefoglaló és fordítás a rendszer válaszából készül (programnevek, telefonszámok, a következő lépés), nem abból, amit Ön írt.",
+  "ui.privacy_4": "A krízisüzenetekre (önsértés, bántalmazás) rögzített kód válaszol.",
+  "ui.privacy_5": "Az ügyét addig őrizzük, amíg nem törli, vagy 30 napig az utolsó üzenete után. Nincs reklám, nincs követés, nincs eladás."
 }

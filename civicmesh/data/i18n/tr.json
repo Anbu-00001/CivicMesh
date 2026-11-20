@@ -147,5 +147,14 @@
   "opt.s_hurt": "Biri bana zarar veriyor",
   "opt.s_suicide": "İntiharı düşünüyorum",
   "opt.s_child": "Bir çocuğa zarar veriliyor",
-  "opt.s_safe": "Güvendeyim — başka bir yardıma ihtiyacım var"
+  "opt.s_safe": "Güvendeyim — başka bir yardıma ihtiyacım var",
+  "ui.quick_exit": "Hızlı çıkış",
+  "ui.tab_chat": "Sohbet",
+  "ui.tab_plan": "Eylem planı",
+  "ui.get_help": "Şimdi yardım alın",
+  "ui.privacy_1": "Anonimsiniz: bu tarayıcı rastgele bir giriş tutar ve kimse kim olduğunuzu sormaz.",
+  "ui.privacy_2": "Mesajınız program bulmak için bu sunucuda okunur. Kaydedilmez: yalnızca sistemin anladığını saklarız (yardım türü, aciliyet, hane büyüklüğü, gelir).",
+  "ui.privacy_3": "Sözleriniz hiçbir yapay zekâ modeline gönderilmez. İsteğe bağlı özet ve çeviri, yazdıklarınızdan değil sistemin cevabından (program adları, telefon numaraları, sonraki adım) yazılır.",
+  "ui.privacy_4": "Kriz mesajlarına (kendine zarar, istismar) sabit kod cevap verir.",
+  "ui.privacy_5": "Davanız siz silene kadar veya son mesajınızdan 30 gün sonrasına kadar saklanır. Reklam yok, takip yok, satış yok."
 }

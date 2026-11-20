@@ -240,12 +240,14 @@ walker IntakeWalker {
                     # The engine's reading, not the words: SessionInsight is stored.
                     user_prompt=need_summary(profile),
                     eligible_count=int(result.get("tiers", {}).get("likely", 0)),
-                    escalated=bool(result.get("escalation")),
+                    # Stored, so it says nothing a crisis turn would reveal: no
+                    # "escalated" for danger, no crisis line as the top match (F5).
+                    escalated=bool(result.get("escalation")) and not [f for f in list(profile.get("flags", [])) if f in DANGER_FLAGS],
                     pathfinder_used=len(list(result.get("routes", []))) > 0,
                     navigation_used=len(list(result.get("plan", {}).get("steps", []))) > 0,
                     need_category=str(profile["category"]),
                     need_urgency=str(profile["urgency"]),
-                    top_resource=str(ranked[0]["resource_name"]) if ranked else ""
+                    top_resource=next((str(x["resource_name"]) for x in ranked if not x.get("pinned", False)), "")
                 );
                 span_end(tr, sp);
             } except Exception as ex {

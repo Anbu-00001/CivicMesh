@@ -60,6 +60,10 @@ def:pub ChatPane(
         saved_list: str = "",
         # Labels for a language picked before any answer has brought its own.
         page_ui: Any = {},
+        # Labels in the browser's language when it has a catalog and nothing
+        # is picked yet: the welcome and the crisis line read in it from the
+        # first screen (blind audit G4).
+        browser_ui: Any = {},
         # The language menu when no account could be made (no PlatformWalker).
         lang_fallback: list = [];
 
@@ -68,7 +72,7 @@ def:pub ChatPane(
             "role": "bot",
             "kind": "text",
             "id": "welcome",
-            "text": "Hi, I'm CivicMesh. Tell me what's going on, in your own words and in your own language, and I'll find the housing, food, health care, legal, cash or child care programs you can use and show exactly why. In 51 languages the whole answer — programs, next steps and my follow-up questions — comes back in yours right away; in 60 more a translation can follow a few seconds later when a translation model is connected, and for languages machines can't translate yet I give you an interpreter card. Pick yours at the top if I get it wrong.",
+            "text": "Hi, I'm CivicMesh. Tell me what's going on, in your own words, and I'll find the housing, food, health care, legal, cash or child care programs you can use and show you why.",
             "suggestions": [
                 "I'm 72, on $1200/month Social Security, my landlord is trying to evict me illegally.",
                 "Mi familia y yo no hemos comido en 2 días. Estamos en Texas.",
@@ -83,6 +87,14 @@ def:pub ChatPane(
         try {
             saved = localStorage.getItem("cm_lang");
             if saved { pref_lang = saved; applyPageLang(saved); }
+            if not saved or saved == "auto" {
+                bl = str(navigator.language or "").toLowerCase();
+                alias: dict = {"fil": "tl", "hr": "sh", "sr": "sh", "bs": "sh", "zh-hk": "yue", "zh-mo": "yue"};
+                code = alias[bl] if bl in alias else (alias[bl.split("-")[0]] if bl.split("-")[0] in alias else bl.split("-")[0]);
+                if code and code != "en" {
+                    fetch("/ui-strings/" + encodeURIComponent(code)).then(lambda r: Any { return r.json() if r.ok else {}; }).then(lambda j: Any { browser_ui = j; }).catch(lambda _e: Any {});
+                }
+            }
             fetch("/ui-strings/languages").then(lambda r: Any { return r.json(); }).then(lambda j: Any { lang_fallback = j; }).catch(lambda _e: Any {});
             if sessionStorage.getItem("cm_private") == "1" { private_on = True; }
         } except Exception as _ex {}

@@ -42,7 +42,10 @@ def:pub ClientApp -> JsxElement {
         platform: Any = None,
         # initAuth's promise (resolves to the visitor id): the chat awaits it
         # before its first request.
-        auth_ready: Any = None;
+        auth_ready: Any = None,
+        # Quick exit, the tabs and the landing crisis bar in the picked or the
+        # browser's language when it has a catalog (blind audit C10).
+        shell_ui: Any = {};
 
     # Master action list for the Cmd+K command palette. Each entry is a
     # (label, kind, payload) triple so navigate actions and side effects
@@ -59,6 +62,8 @@ def:pub ClientApp -> JsxElement {
     ];
 
     def startApp -> None;
+    def loadShellUi(code: str) -> None;
+    def SL(key: str, fallback: str) -> str;
     def togglePalette -> None;
     def runPaletteAction(action: Any) -> None;
     def renderPaletteItem(action: Any, idx: int, sel: int) -> JsxElement;
@@ -73,6 +78,10 @@ def:pub ClientApp -> JsxElement {
         # Always run initAuth: it also migrates browsers still holding the
         # old shared demo token onto their own visitor account.
         auth_ready = initAuth();
+        try {
+            window.cm_on_lang = lambda code: Any { loadShellUi(code); };
+            loadShellUi(str(localStorage.getItem("cm_lang") or "auto"));
+        } except Exception as _ex {}
         # Global Cmd/Ctrl+K listener wired at the document level so the
         # palette is reachable from any tab without per-component plumbing.
         try {
@@ -148,13 +157,13 @@ def:pub ClientApp -> JsxElement {
     if show_landing {
         return
             <div>
-                <div className="lp-safety" role="note">
-                    <span dir="auto">{"In danger now: "}<a href="tel:911"><bdi dir="ltr">911</bdi></a>{" · Suicide or crisis: "}<a href="tel:988"><bdi dir="ltr">988</bdi></a>{" · Not safe at home: "}<a href="tel:18007997233"><bdi dir="ltr">1-800-799-7233</bdi></a></span>
+                <aside className="lp-safety" aria-label="Emergency numbers">
+                    <span dir="auto">{SL("ui.safety_danger", "In danger now:") + " "}<a href="tel:911"><bdi dir="ltr">911</bdi></a>{" · " + SL("ui.safety_crisis", "Suicide or crisis: call or text") + " "}<a href="tel:988"><bdi dir="ltr">988</bdi></a>{" · " + SL("ui.safety_home", "Not safe at home:") + " "}<a href="tel:18007997233"><bdi dir="ltr">1-800-799-7233</bdi></a></span>
                     <span className="lp-safety-actions">
-                        <button className="lp-safety-start" onClick={lambda _e: MouseEvent { startApp(); }}>Get help now</button>
-                        <button className="cm-quick-exit" onClick={lambda _e: MouseEvent { quickExit(); }} title="Leave this site right now (or press Shift three times)">Quick exit</button>
+                        <button className="lp-safety-start" onClick={lambda _e: MouseEvent { startApp(); }}>{SL("ui.get_help", "Get help now")}</button>
+                        <button className="cm-quick-exit" onClick={lambda _e: MouseEvent { quickExit(); }} title="Leave this site right now (or press Shift three times)">{SL("ui.quick_exit", "Quick exit")}</button>
                     </span>
-                </div>
+                </aside>
                 <LandingPage on_start={startApp} platform={platform}/>
             </div>;
     }
@@ -217,14 +226,14 @@ def:pub ClientApp -> JsxElement {
                         "border": "0.5px solid rgba(255,255,255,0.07)"
                     }}
                 >
-                    {navTab("chat", "Chat")}
+                    {navTab("chat", SL("ui.tab_chat", "Chat"))}
                     {navTab("graph", "Graph")}
-                    {navTab("plan", "Action Plan")}
+                    {navTab("plan", SL("ui.tab_plan", "Action Plan"))}
                     {navTab("telemetry", "Telemetry")}
                     {navTab("impact", "Impact")}
                 </nav>
                 <div style={{"display": "flex", "alignItems": "center", "gap": "10px"}}>
-                    <button className="cm-quick-exit" onClick={lambda _e: MouseEvent { quickExit(); }} title="Leave this site right now (or press Shift three times)">Quick exit</button>
+                    <button className="cm-quick-exit" onClick={lambda _e: MouseEvent { quickExit(); }} title="Leave this site right now (or press Shift three times)">{SL("ui.quick_exit", "Quick exit")}</button>
                     <button
                         className="cm-palette-btn"
                         onClick={lambda _e: MouseEvent { togglePalette(); }}

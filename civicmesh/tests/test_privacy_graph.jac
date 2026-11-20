@@ -4,12 +4,13 @@
 
   · a stored NeedNode holds the engine's reading, never the words typed;
   · a crisis turn asks for no narration and makes no model call;
+  · a crisis turn stores no crisis line, application or "escalated" note;
   · ForgetWalker deletes the person, needs, applications and self-critiques
     and leaves the public program data (and other visitors) alone.
 """
 
 import from graph.nodes { PersonNode, NeedNode, ResourceNode, ApplicationNode, SessionInsight }
-import from graph.edges { has_need, reflected_on, applied_to }
+import from graph.edges { has_need, reflected_on, applied_to, eligible_for }
 import from walkers.intake { IntakeWalker, GuestIntakeWalker }
 import from walkers.seed { SeedWalker }
 import from walkers.forget { ForgetWalker }
@@ -86,4 +87,30 @@ test "stored_need_is_scrubbed_and_forget_deletes_it" {
     assert len([root --> [?:PersonNode, user_id == "priv_a"]]) == 0;
     assert len([root --> [?:ResourceNode]]) == before;
     assert len([root --> [?:PersonNode, user_id == "priv_b"]]) == 1;
+}
+
+# Blind audit F5: what is stored must not say that someone disclosed a crisis.
+# The crisis line is on screen; the graph keeps only the ordinary programs.
+test "crisis_turn_stores_no_crisis_line_and_no_escalation" {
+    root spawn SeedWalker(user_id="priv_c");
+    w = root spawn IntakeWalker(conversation="I want to kill myself, I need food, 2 of us in Ohio, we earn $1000 a month", user_id="priv_c");
+    r = w.reports[-1];
+    assert [m for m in r["matches"] if m.get("pinned", False)];
+    assert [m for m in r["matches"] if not m.get("pinned", False)];
+    p = [root --> [?:PersonNode, user_id == "priv_c"]][0];
+    crisis = ["988", "Lifeline", "Hotline", "Childhelp", "RAINN", "Trevor", "Safeline", "Poison"];
+    names: list = [];
+    for nd in [p ->:has_need:-> [?:NeedNode]] {
+        names = names + [str(n.agency_name) for n in [nd ->:eligible_for:-> [?:ResourceNode]]];
+    }
+    assert len(names) > 0;
+    apps = [str(a.resource_name) for a in [p ->:applied_to:-> [?:ApplicationNode]]];
+    assert len(apps) > 0;
+    for n in names + apps {
+        for c in crisis { assert c not in n; }
+    }
+    for ins in [p ->:reflected_on:-> [?:SessionInsight]] {
+        assert not ins.escalated;
+        for c in crisis + ["Escalated", "self_harm", "suicide"] { assert c not in str(ins.headline); }
+    }
 }

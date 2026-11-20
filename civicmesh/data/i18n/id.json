@@ -147,5 +147,14 @@
   "opt.s_hurt": "Seseorang menyakiti saya",
   "opt.s_suicide": "Saya sedang berpikir untuk bunuh diri",
   "opt.s_child": "Seorang anak sedang disakiti",
-  "opt.s_safe": "Saya aman — saya butuh bantuan lain"
+  "opt.s_safe": "Saya aman — saya butuh bantuan lain",
+  "ui.quick_exit": "Keluar cepat",
+  "ui.tab_chat": "Obrolan",
+  "ui.tab_plan": "Rencana tindakan",
+  "ui.get_help": "Dapatkan bantuan sekarang",
+  "ui.privacy_1": "Anda anonim: browser ini menyimpan login acak, dan tidak ada yang menanyakan siapa Anda.",
+  "ui.privacy_2": "Pesan Anda dibaca di server ini untuk mencari program. Pesan tidak disimpan: kami hanya menyimpan apa yang dipahami sistem (jenis bantuan, seberapa mendesak, jumlah anggota rumah tangga, penghasilan).",
+  "ui.privacy_3": "Kata-kata Anda tidak dikirim ke model AI mana pun. Ringkasan dan terjemahan opsional ditulis dari jawaban sistem (nama program, nomor telepon, langkah berikutnya), bukan dari yang Anda ketik.",
+  "ui.privacy_4": "Pesan krisis (melukai diri, kekerasan) dijawab oleh kode tetap.",
+  "ui.privacy_5": "Kasus Anda disimpan sampai Anda menghapusnya, atau 30 hari setelah pesan terakhir Anda. Tanpa iklan, tanpa pelacakan, tanpa penjualan."
 }

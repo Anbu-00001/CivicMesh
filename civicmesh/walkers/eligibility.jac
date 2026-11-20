@@ -189,7 +189,10 @@ walker EligibilityWalker {
         # the case's reasoning lives in the graph (the Graph tab queries it).
         sp = span_begin(tr, "graph.write eligible_for", "INTERNAL", self.parent_span);
         written = 0;
-        for (i, s) in enumerate(ranked if not self.guest else []) {
+        # Crisis lines are not stored: an edge to 988 or the DV hotline would
+        # tell anyone who reads the graph what this person disclosed (blind
+        # audit F5). They are on screen every turn anyway.
+        for (i, s) in enumerate([x for x in ranked if not x.get("pinned", False)] if not self.guest else []) {
             r = ensure_resource(root, str(s["resource_name"]));
             if r {
                 here +>: eligible_for(

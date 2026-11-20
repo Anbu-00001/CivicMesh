@@ -147,5 +147,14 @@
   "opt.s_hurt": "Muaj ib tug neeg tab tom ua mob rau kuv",
   "opt.s_suicide": "Kuv tab tom xav txog kev tua tus kheej",
   "opt.s_child": "Muaj ib tug me nyuam raug ua mob",
-  "opt.s_safe": "Kuv nyab xeeb — kuv xav tau lwm yam kev pab"
+  "opt.s_safe": "Kuv nyab xeeb — kuv xav tau lwm yam kev pab",
+  "ui.quick_exit": "Tawm sai",
+  "ui.tab_chat": "Sib tham",
+  "ui.tab_plan": "Phiaj xwm ua",
+  "ui.get_help": "Nrhiav kev pab tam sim no",
+  "ui.privacy_1": "Koj tsis qhia npe: lub browser no tuav ib qho login random, thiab tsis muaj leej twg nug tias koj yog leej twg.",
+  "ui.privacy_2": "Koj cov lus raug nyeem saum lub server no kom nrhiav tau cov kev pab. Nws tsis raug khaws cia: peb tsuas khaws yam uas lub system to taub xwb (hom kev pab, ceev npaum li cas, tsev neeg muaj pes tsawg leej, nyiaj tau los).",
+  "ui.privacy_3": "Koj cov lus tsis raug xa mus rau ib tug AI model. Cov ntsiab lus luv thiab kev txhais lus uas xaiv tau yog sau los ntawm lub system cov lus teb (npe kev pab, xov tooj, kauj ruam tom ntej), tsis yog los ntawm yam koj ntaus.",
+  "ui.privacy_4": "Cov lus muaj kev kub ntxhov (ua mob rau tus kheej, kev tsim txom) yog teb los ntawm code ruaj khov.",
+  "ui.privacy_5": "Koj rooj plaub raug khaws cia mus txog thaum koj rho tawm, lossis 30 hnub tom qab koj cov lus kawg. Tsis muaj tshaj tawm, tsis muaj taug qab, tsis muag."
 }

@@ -147,5 +147,14 @@
   "opt.s_hurt": "Ktoś mnie krzywdzi",
   "opt.s_suicide": "Myślę o samobójstwie",
   "opt.s_child": "Ktoś krzywdzi dziecko",
-  "opt.s_safe": "Jestem bezpieczny/bezpieczna — potrzebuję innej pomocy"
+  "opt.s_safe": "Jestem bezpieczny/bezpieczna — potrzebuję innej pomocy",
+  "ui.quick_exit": "Szybkie wyjście",
+  "ui.tab_chat": "Czat",
+  "ui.tab_plan": "Plan działania",
+  "ui.get_help": "Uzyskaj pomoc teraz",
+  "ui.privacy_1": "Jesteś anonimowy: ta przeglądarka przechowuje losowe logowanie i nikt nie pyta, kim jesteś.",
+  "ui.privacy_2": "Twoja wiadomość jest czytana na tym serwerze, aby znaleźć programy. Nie jest zapisywana: przechowujemy tylko to, co zrozumiał system (rodzaj pomocy, pilność, wielkość gospodarstwa domowego, dochód).",
+  "ui.privacy_3": "Twoje słowa nie są wysyłane do żadnego modelu AI. Opcjonalne podsumowanie i tłumaczenie powstają z odpowiedzi systemu (nazwy programów, numery telefonów, następny krok), a nie z tego, co napisałeś.",
+  "ui.privacy_4": "Na wiadomości kryzysowe (samookaleczenie, przemoc) odpowiada stały kod.",
+  "ui.privacy_5": "Twoja sprawa jest przechowywana, dopóki jej nie usuniesz, lub 30 dni po Twojej ostatniej wiadomości. Bez reklam, bez śledzenia, bez sprzedaży."
 }

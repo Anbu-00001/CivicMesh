@@ -147,5 +147,14 @@
   "opt.s_hurt": "May nananakit sa akin",
   "opt.s_suicide": "Iniisip kong magpakamatay",
   "opt.s_child": "May batang sinasaktan",
-  "opt.s_safe": "Ligtas ako — kailangan ko ng ibang tulong"
+  "opt.s_safe": "Ligtas ako — kailangan ko ng ibang tulong",
+  "ui.quick_exit": "Mabilis na paglabas",
+  "ui.tab_chat": "Chat",
+  "ui.tab_plan": "Plano ng aksyon",
+  "ui.get_help": "Humingi ng tulong ngayon",
+  "ui.privacy_1": "Anonimo ka: may random na login ang browser na ito, at walang nagtatanong kung sino ka.",
+  "ui.privacy_2": "Binabasa ang mensahe mo sa server na ito para makahanap ng mga programa. Hindi ito sine-save: ang itinatago lang namin ay ang naintindihan ng sistema (uri ng tulong, gaano kaapurahan, laki ng sambahayan, kita).",
+  "ui.privacy_3": "Hindi ipinapadala ang mga salita mo sa anumang AI model. Ang opsyonal na buod at salin ay isinusulat mula sa sagot ng sistema (mga pangalan ng programa, numero ng telepono, susunod na hakbang), hindi mula sa tinype mo.",
+  "ui.privacy_4": "Ang mga mensahe ng krisis (pananakit sa sarili, pang-aabuso) ay sinasagot ng nakapirming code.",
+  "ui.privacy_5": "Itinatago ang kaso mo hanggang burahin mo ito, o 30 araw pagkatapos ng huli mong mensahe. Walang ads, walang pagsubaybay, walang pagbebenta."
 }
