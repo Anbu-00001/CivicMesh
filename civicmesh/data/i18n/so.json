@@ -147,5 +147,14 @@
   "opt.s_hurt": "Qof ayaa i dhibaya",
   "opt.s_suicide": "Waxaan ka fikirayaa is-dil",
   "opt.s_child": "Ilmo ayaa la dhibayaa",
-  "opt.s_safe": "Ammaan baan ahay — caawimo kale ayaan u baahanahay"
+  "opt.s_safe": "Ammaan baan ahay — caawimo kale ayaan u baahanahay",
+  "ui.quick_exit": "Ka bax degdeg ah",
+  "ui.tab_chat": "Wada sheekeysi",
+  "ui.tab_plan": "Qorshaha tallaabada",
+  "ui.get_help": "Hel caawimaad hadda",
+  "ui.privacy_1": "Waxaad tahay qof aan la aqoon: browser-kan wuxuu hayaa gal random ah, qofna kuma weydiinayo cidda aad tahay.",
+  "ui.privacy_2": "Fariintaada waxaa lagu akhriyaa server-kan si loo helo barnaamijyo. Lama kaydiyo: waxaan kaydinnaa oo keliya waxa nidaamku fahmay (nooca caawimada, inta ay degdeg tahay, tirada qoyska, dakhliga).",
+  "ui.privacy_3": "Ereyadaada looma diro wax AI model ah. Soo koobidda iyo turjumaadda ikhtiyaariga ah waxaa laga qoraa jawaabta nidaamka (magacyada barnaamijyada, lambarrada taleefanka, tallaabada xigta), ee lagama qoro waxaad qortay.",
+  "ui.privacy_4": "Fariimaha xiisadda (is-dhaawac, xadgudub) waxaa ka jawaaba code go'an.",
+  "ui.privacy_5": "Kiiskaaga waa la hayaa ilaa aad tirtirto, ama 30 maalmood ka dib fariintaada ugu dambeysa. Xayeysiis ma jiro, raadraac ma jiro, iib ma jiro."
 }

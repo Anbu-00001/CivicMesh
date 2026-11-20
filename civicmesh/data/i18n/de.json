@@ -147,5 +147,14 @@
   "opt.s_hurt": "Jemand tut mir weh",
   "opt.s_suicide": "Ich denke an Suizid",
   "opt.s_child": "Einem Kind wird wehgetan",
-  "opt.s_safe": "Ich bin sicher — ich brauche andere Hilfe"
+  "opt.s_safe": "Ich bin sicher — ich brauche andere Hilfe",
+  "ui.quick_exit": "Schnell verlassen",
+  "ui.tab_chat": "Chat",
+  "ui.tab_plan": "Aktionsplan",
+  "ui.get_help": "Jetzt Hilfe holen",
+  "ui.privacy_1": "Sie sind anonym: Dieser Browser hat eine zufällige Anmeldung, und niemand fragt, wer Sie sind.",
+  "ui.privacy_2": "Ihre Nachricht wird auf diesem Server gelesen, um Programme zu finden. Sie wird nicht gespeichert: Wir behalten nur, was das System verstanden hat (Art der Hilfe, Dringlichkeit, Haushaltsgröße, Einkommen).",
+  "ui.privacy_3": "Ihre Worte werden an kein KI-Modell geschickt. Die optionale Zusammenfassung und Übersetzung entstehen aus der Antwort des Systems (Programmnamen, Telefonnummern, nächster Schritt), nicht aus Ihrem Text.",
+  "ui.privacy_4": "Krisennachrichten (Selbstverletzung, Misshandlung) beantwortet fester Code.",
+  "ui.privacy_5": "Ihr Fall bleibt gespeichert, bis Sie ihn löschen, oder 30 Tage nach Ihrer letzten Nachricht. Keine Werbung, kein Tracking, kein Verkauf."
 }

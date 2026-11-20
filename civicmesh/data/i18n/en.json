@@ -152,5 +152,14 @@
   "opt.s_hurt": "Someone is hurting me",
   "opt.s_suicide": "I'm thinking about suicide",
   "opt.s_child": "A child is being hurt",
-  "opt.s_safe": "I'm safe — I need other help"
+  "opt.s_safe": "I'm safe — I need other help",
+  "ui.quick_exit": "Quick exit",
+  "ui.tab_chat": "Chat",
+  "ui.tab_plan": "Action Plan",
+  "ui.get_help": "Get help now",
+  "ui.privacy_1": "You're anonymous: this browser holds a random login, and nobody asks who you are.",
+  "ui.privacy_2": "Your message is read on this server to find programs. It is not saved: we keep only what the engine understood (the kind of help, how urgent, household size, income).",
+  "ui.privacy_3": "Your words are not sent to any AI model. The optional summary and translation are written from the engine's answer (program names, phone numbers, the next step), not from what you typed.",
+  "ui.privacy_4": "Crisis messages (self-harm, abuse) are answered by fixed code.",
+  "ui.privacy_5": "Your case is kept until you delete it, or 30 days after your last message. No advertising, no tracking, no selling."
 }

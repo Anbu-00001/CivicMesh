@@ -147,5 +147,14 @@
   "opt.s_hurt": "Alguém está me machucando",
   "opt.s_suicide": "Estou pensando em suicídio",
   "opt.s_child": "Uma criança está sendo machucada",
-  "opt.s_safe": "Estou em segurança — preciso de outra ajuda"
+  "opt.s_safe": "Estou em segurança — preciso de outra ajuda",
+  "ui.quick_exit": "Saída rápida",
+  "ui.tab_chat": "Conversa",
+  "ui.tab_plan": "Plano de ação",
+  "ui.get_help": "Obter ajuda agora",
+  "ui.privacy_1": "Você é anônimo: este navegador guarda um login aleatório, e ninguém pergunta quem você é.",
+  "ui.privacy_2": "Sua mensagem é lida neste servidor para encontrar programas. Ela não é salva: guardamos só o que o sistema entendeu (o tipo de ajuda, a urgência, o tamanho da família, a renda).",
+  "ui.privacy_3": "Suas palavras não são enviadas a nenhum modelo de IA. O resumo e a tradução opcionais são escritos a partir da resposta do sistema (nomes de programas, telefones, o próximo passo), não do que você digitou.",
+  "ui.privacy_4": "Mensagens de crise (autolesão, abuso) são respondidas por código fixo.",
+  "ui.privacy_5": "Seu caso fica guardado até você apagá-lo, ou 30 dias após sua última mensagem. Sem anúncios, sem rastreamento, sem venda."
 }

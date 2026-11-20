@@ -147,5 +147,14 @@
   "opt.s_hurt": "Cineva îmi face rău",
   "opt.s_suicide": "Mă gândesc la sinucidere",
   "opt.s_child": "Un copil este rănit",
-  "opt.s_safe": "Sunt în siguranță — am nevoie de alt ajutor"
+  "opt.s_safe": "Sunt în siguranță — am nevoie de alt ajutor",
+  "ui.quick_exit": "Ieșire rapidă",
+  "ui.tab_chat": "Chat",
+  "ui.tab_plan": "Plan de acțiune",
+  "ui.get_help": "Cereți ajutor acum",
+  "ui.privacy_1": "Sunteți anonim: acest browser păstrează o autentificare aleatorie și nimeni nu vă întreabă cine sunteți.",
+  "ui.privacy_2": "Mesajul dvs. este citit pe acest server pentru a găsi programe. Nu este salvat: păstrăm doar ce a înțeles sistemul (tipul de ajutor, cât de urgent, mărimea gospodăriei, venitul).",
+  "ui.privacy_3": "Cuvintele dvs. nu sunt trimise niciunui model de IA. Rezumatul și traducerea opționale sunt scrise din răspunsul sistemului (numele programelor, telefoane, pasul următor), nu din ce ați scris.",
+  "ui.privacy_4": "La mesajele de criză (autovătămare, abuz) răspunde un cod fix.",
+  "ui.privacy_5": "Cazul dvs. este păstrat până îl ștergeți sau 30 de zile după ultimul mesaj. Fără reclame, fără urmărire, fără vânzare."
 }

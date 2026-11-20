@@ -147,5 +147,14 @@
   "opt.s_hurt": "Iemand doet me pijn",
   "opt.s_suicide": "Ik denk aan zelfdoding",
   "opt.s_child": "Een kind wordt pijn gedaan",
-  "opt.s_safe": "Ik ben veilig — ik heb andere hulp nodig"
+  "opt.s_safe": "Ik ben veilig — ik heb andere hulp nodig",
+  "ui.quick_exit": "Snel weg",
+  "ui.tab_chat": "Chat",
+  "ui.tab_plan": "Actieplan",
+  "ui.get_help": "Nu hulp krijgen",
+  "ui.privacy_1": "U bent anoniem: deze browser bewaart een willekeurige login, en niemand vraagt wie u bent.",
+  "ui.privacy_2": "Uw bericht wordt op deze server gelezen om programma's te vinden. Het wordt niet bewaard: we bewaren alleen wat het systeem begreep (het soort hulp, hoe dringend, de grootte van het huishouden, het inkomen).",
+  "ui.privacy_3": "Uw woorden worden naar geen enkel AI-model gestuurd. De optionele samenvatting en vertaling worden geschreven uit het antwoord van het systeem (programmanamen, telefoonnummers, de volgende stap), niet uit wat u typte.",
+  "ui.privacy_4": "Op crisisberichten (zelfbeschadiging, mishandeling) antwoordt vaste code.",
+  "ui.privacy_5": "Uw dossier wordt bewaard tot u het verwijdert, of 30 dagen na uw laatste bericht. Geen reclame, geen tracking, geen verkoop."
 }

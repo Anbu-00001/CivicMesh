@@ -249,7 +249,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                 </div>}
             </section>
 
-            {show_about and <div>
+            {show_about and <section aria-label="About this project">
 
             <section
                 style={{
@@ -425,7 +425,7 @@ def:pub LandingPage(on_start: Any, platform: Any = None) -> JsxElement {
                     </div>
                 </div>
             </section>
-            </div>}
+            </section>}
 
             <footer
                 style={{

@@ -565,6 +565,10 @@ def check_page_language(app):
     check("10b the page says it is Arabic and right to left", tab.until("document.documentElement.lang==='ar' && document.documentElement.dir==='rtl'"))
     check("10c the message box changes", tab.until(f"document.querySelector('.cm-input').placeholder!=={json.dumps(en_hold)}"))
     check("10d the welcome changes", tab.until("!/Hi, I'm CivicMesh/.test(document.querySelector('.cm-thread').innerText)"))
+    # Blind audit C10, C9: Quick exit, the tabs and the privacy panel follow the picked language.
+    check("10d2 Quick exit and the Action Plan tab change", tab.until("[...document.querySelectorAll('.cm-quick-exit')].every(b=>b.innerText.trim()!=='Quick exit') && !/Action Plan/.test(document.querySelector('.cm-tab-plan').innerText)"),
+          tab.js("[document.querySelector('.cm-quick-exit').innerText, document.querySelector('.cm-tab-plan').innerText]"))
+    check("10d3 the privacy panel's text changes", tab.until("document.querySelectorAll('.cm-privacy li').length===5 && ![...document.querySelectorAll('.cm-privacy li')].some(l=>/anonymous|not saved|fixed code|30 days/.test(l.textContent))"))
     check("10e the safety lines keep their numbers", "988" in str(tab.js("document.body.innerText")))
     check("10f nothing is wider than the phone", tab.js("document.documentElement.scrollWidth<=window.innerWidth+1"), tab.js("[document.documentElement.scrollWidth,window.innerWidth]"))
     rows = tab.js("document.querySelectorAll('.cm-thread .cm-row').length")
@@ -581,6 +585,19 @@ def check_page_language(app):
         return !(t.right>m.left+1 && t.left<m.right-1 && t.bottom>m.top+1 && t.top<m.bottom-1)})()""")
     check("10i the title and the language menu don't overlap on a phone", gap)
     check("10j the page has no white stripe around it", tab.js("getComputedStyle(document.body).marginLeft==='0px'"), tab.js("getComputedStyle(document.body).marginLeft"))
+    tab.close()
+
+    # Blind audit G4, C10: nothing picked yet, a Spanish browser gets the landing
+    # crisis bar, Quick exit and the welcome in Spanish on the first screen.
+    tab = new_tab()
+    tab.call("Page.enable")
+    tab.call("Page.addScriptToEvaluateOnNewDocument", source="Object.defineProperty(navigator,'language',{get:()=>'es-MX'});try{localStorage.removeItem('cm_lang')}catch(e){}")
+    tab.call("Page.navigate", url=app)
+    tab.until("!!document.querySelector('.lp-safety')")
+    check("10k a Spanish browser gets the crisis bar and Quick exit in Spanish", tab.until("document.querySelector('.lp-safety-start').innerText.trim()==='Pedir ayuda ahora' && document.querySelector('.lp-safety .cm-quick-exit').innerText.trim()==='Salida rápida' && /En peligro/.test(document.querySelector('.lp-safety').innerText)"),
+          tab.js("document.querySelector('.lp-safety').innerText"))
+    check("10l and the welcome in Spanish", open_chat(tab, "") and tab.until("!/Hi, I'm CivicMesh/.test(document.querySelector('.cm-thread').innerText) && document.querySelector('.cm-tab-chat').innerText.trim().length>0"),
+          tab.js("document.querySelector('.cm-thread').innerText.slice(0,80)"))
     tab.close()
 
 

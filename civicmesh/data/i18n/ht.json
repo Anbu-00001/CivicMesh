@@ -147,5 +147,14 @@
   "opt.s_hurt": "Gen yon moun k ap fè m mal",
   "opt.s_suicide": "M ap panse a swisid",
   "opt.s_child": "Gen yon timoun y ap fè mal",
-  "opt.s_safe": "Mwen an sekirite — mwen bezwen lòt èd"
+  "opt.s_safe": "Mwen an sekirite — mwen bezwen lòt èd",
+  "ui.quick_exit": "Sòti rapid",
+  "ui.tab_chat": "Chat",
+  "ui.tab_plan": "Plan aksyon",
+  "ui.get_help": "Jwenn èd kounye a",
+  "ui.privacy_1": "Ou anonim: navigatè sa a kenbe yon login o aza, e pèsonn pa mande w ki moun ou ye.",
+  "ui.privacy_2": "Yo li mesaj ou sou sèvè sa a pou jwenn pwogram. Yo pa sere l: nou kenbe sèlman sa sistèm nan konprann (kalite èd, kijan li ijan, gwosè fanmi an, revni).",
+  "ui.privacy_3": "Yo pa voye pawòl ou bay okenn modèl AI. Rezime ak tradiksyon opsyonèl yo ekri apati repons sistèm nan (non pwogram, nimewo telefòn, pwochen etap la), pa apati sa ou te ekri.",
+  "ui.privacy_4": "Se kòd fiks ki reponn mesaj kriz (fè tèt ou mal, abi).",
+  "ui.privacy_5": "Yo kenbe dosye w jiskaske ou efase l, oswa 30 jou apre dènye mesaj ou. Pa gen piblisite, pa gen swivi, pa gen vant."
 }

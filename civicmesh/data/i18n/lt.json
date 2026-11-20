@@ -147,5 +147,14 @@
   "opt.s_hurt": "Kažkas mane skriaudžia",
   "opt.s_suicide": "Galvoju apie savižudybę",
   "opt.s_child": "Skriaudžiamas vaikas",
-  "opt.s_safe": "Esu saugus — man reikia kitos pagalbos"
+  "opt.s_safe": "Esu saugus — man reikia kitos pagalbos",
+  "ui.quick_exit": "Greitas išėjimas",
+  "ui.tab_chat": "Pokalbis",
+  "ui.tab_plan": "Veiksmų planas",
+  "ui.get_help": "Gauti pagalbą dabar",
+  "ui.privacy_1": "Esate anonimiški: ši naršyklė saugo atsitiktinį prisijungimą, ir niekas neklausia, kas esate.",
+  "ui.privacy_2": "Jūsų žinutė skaitoma šiame serveryje, kad būtų rastos programos. Ji neišsaugoma: saugome tik tai, ką suprato sistema (pagalbos rūšį, skubumą, namų ūkio dydį, pajamas).",
+  "ui.privacy_3": "Jūsų žodžiai nesiunčiami jokiam DI modeliui. Pasirenkama santrauka ir vertimas rašomi iš sistemos atsakymo (programų pavadinimai, telefonai, kitas žingsnis), o ne iš to, ką parašėte.",
+  "ui.privacy_4": "Į krizines žinutes (savęs žalojimas, smurtas) atsako nustatytas kodas.",
+  "ui.privacy_5": "Jūsų atvejis saugomas, kol jį ištrinsite, arba 30 dienų po paskutinės žinutės. Jokios reklamos, jokio sekimo, jokio pardavimo."
 }

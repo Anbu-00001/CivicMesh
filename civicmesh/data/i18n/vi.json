@@ -147,5 +147,14 @@
   "opt.s_hurt": "Có người đang làm hại tôi",
   "opt.s_suicide": "Tôi đang nghĩ đến chuyện tự tử",
   "opt.s_child": "Một đứa trẻ đang bị làm hại",
-  "opt.s_safe": "Tôi an toàn — tôi cần sự giúp đỡ khác"
+  "opt.s_safe": "Tôi an toàn — tôi cần sự giúp đỡ khác",
+  "ui.quick_exit": "Thoát nhanh",
+  "ui.tab_chat": "Trò chuyện",
+  "ui.tab_plan": "Kế hoạch hành động",
+  "ui.get_help": "Nhận trợ giúp ngay",
+  "ui.privacy_1": "Bạn ẩn danh: trình duyệt này giữ một đăng nhập ngẫu nhiên, và không ai hỏi bạn là ai.",
+  "ui.privacy_2": "Tin nhắn của bạn được đọc trên máy chủ này để tìm chương trình. Tin nhắn không được lưu: chúng tôi chỉ giữ những gì hệ thống hiểu (loại trợ giúp, mức khẩn cấp, số người trong hộ, thu nhập).",
+  "ui.privacy_3": "Lời của bạn không được gửi tới bất kỳ mô hình AI nào. Bản tóm tắt và bản dịch tùy chọn được viết từ câu trả lời của hệ thống (tên chương trình, số điện thoại, bước tiếp theo), không phải từ những gì bạn gõ.",
+  "ui.privacy_4": "Tin nhắn khủng hoảng (tự làm hại, bạo hành) được trả lời bằng mã cố định.",
+  "ui.privacy_5": "Hồ sơ của bạn được giữ cho tới khi bạn xóa, hoặc 30 ngày sau tin nhắn cuối cùng. Không quảng cáo, không theo dõi, không bán dữ liệu."
 }

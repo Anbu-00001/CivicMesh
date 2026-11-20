@@ -147,5 +147,14 @@
   "opt.s_hurt": "Dikush po më lëndon",
   "opt.s_suicide": "Po mendoj për vetëvrasje",
   "opt.s_child": "Një fëmijë po lëndohet",
-  "opt.s_safe": "Jam i sigurt — më duhet ndihmë tjetër"
+  "opt.s_safe": "Jam i sigurt — më duhet ndihmë tjetër",
+  "ui.quick_exit": "Dalje e shpejtë",
+  "ui.tab_chat": "Bisedë",
+  "ui.tab_plan": "Plani i veprimit",
+  "ui.get_help": "Merrni ndihmë tani",
+  "ui.privacy_1": "Jeni anonim: ky shfletues mban një hyrje të rastësishme dhe askush nuk ju pyet kush jeni.",
+  "ui.privacy_2": "Mesazhi juaj lexohet në këtë server për të gjetur programe. Nuk ruhet: ruajmë vetëm atë që kuptoi sistemi (llojin e ndihmës, sa urgjente është, madhësinë e familjes, të ardhurat).",
+  "ui.privacy_3": "Fjalët tuaja nuk dërgohen te asnjë model AI. Përmbledhja dhe përkthimi opsional shkruhen nga përgjigjja e sistemit (emrat e programeve, numrat e telefonit, hapi tjetër), jo nga ajo që shkruat.",
+  "ui.privacy_4": "Mesazheve të krizës (vetëlëndim, abuzim) u përgjigjet kod i fiksuar.",
+  "ui.privacy_5": "Rasti juaj ruhet derisa ta fshini, ose 30 ditë pas mesazhit tuaj të fundit. Pa reklama, pa gjurmim, pa shitje."
 }

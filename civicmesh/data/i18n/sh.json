@@ -147,5 +147,14 @@
   "opt.s_hurt": "Netko me povređuje",
   "opt.s_suicide": "Razmišljam o samoubistvu",
   "opt.s_child": "Netko povređuje dijete",
-  "opt.s_safe": "Na sigurnom sam — trebam drugu pomoć"
+  "opt.s_safe": "Na sigurnom sam — trebam drugu pomoć",
+  "ui.quick_exit": "Brzi izlaz",
+  "ui.tab_chat": "Razgovor",
+  "ui.tab_plan": "Plan akcije",
+  "ui.get_help": "Potražite pomoć sada",
+  "ui.privacy_1": "Anonimni ste: ovaj preglednik čuva nasumičnu prijavu i niko vas ne pita ko ste.",
+  "ui.privacy_2": "Vaša poruka se čita na ovom serveru da bi se pronašli programi. Ne čuva se: čuvamo samo ono što je sistem razumio (vrstu pomoći, hitnost, veličinu domaćinstva, prihod).",
+  "ui.privacy_3": "Vaše riječi se ne šalju nijednom AI modelu. Neobavezni sažetak i prijevod pišu se iz odgovora sistema (nazivi programa, telefoni, sljedeći korak), a ne iz onoga što ste napisali.",
+  "ui.privacy_4": "Na krizne poruke (samoozljeđivanje, zlostavljanje) odgovara fiksni kod.",
+  "ui.privacy_5": "Vaš slučaj se čuva dok ga ne izbrišete, ili 30 dana nakon vaše posljednje poruke. Bez reklama, bez praćenja, bez prodaje."
 }

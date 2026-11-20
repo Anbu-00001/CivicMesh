@@ -147,5 +147,14 @@
   "opt.s_hurt": "Někdo mi ubližuje",
   "opt.s_suicide": "Myslím na sebevraždu",
   "opt.s_child": "Někdo ubližuje dítěti",
-  "opt.s_safe": "Jsem v bezpečí — potřebuji jinou pomoc"
+  "opt.s_safe": "Jsem v bezpečí — potřebuji jinou pomoc",
+  "ui.quick_exit": "Rychlý odchod",
+  "ui.tab_chat": "Chat",
+  "ui.tab_plan": "Akční plán",
+  "ui.get_help": "Získat pomoc hned",
+  "ui.privacy_1": "Jste anonymní: tento prohlížeč drží náhodné přihlášení a nikdo se neptá, kdo jste.",
+  "ui.privacy_2": "Vaše zpráva se na tomto serveru čte, aby se našly programy. Neukládá se: uchováváme jen to, čemu systém porozuměl (druh pomoci, naléhavost, velikost domácnosti, příjem).",
+  "ui.privacy_3": "Vaše slova se neposílají žádnému modelu AI. Volitelné shrnutí a překlad vznikají z odpovědi systému (názvy programů, telefony, další krok), ne z toho, co jste napsali.",
+  "ui.privacy_4": "Na krizové zprávy (sebepoškozování, týrání) odpovídá pevný kód.",
+  "ui.privacy_5": "Váš případ se uchovává, dokud ho nesmažete, nebo 30 dní po vaší poslední zprávě. Žádná reklama, žádné sledování, žádný prodej."
 }

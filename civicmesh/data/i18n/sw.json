@@ -147,5 +147,14 @@
   "opt.s_hurt": "Kuna mtu ananiumiza",
   "opt.s_suicide": "Ninafikiria kujiua",
   "opt.s_child": "Mtoto anaumizwa",
-  "opt.s_safe": "Niko salama — nahitaji msaada mwingine"
+  "opt.s_safe": "Niko salama — nahitaji msaada mwingine",
+  "ui.quick_exit": "Toka haraka",
+  "ui.tab_chat": "Gumzo",
+  "ui.tab_plan": "Mpango wa hatua",
+  "ui.get_help": "Pata msaada sasa",
+  "ui.privacy_1": "Hujulikani: kivinjari hiki kinashikilia kuingia kwa nasibu, na hakuna anayeuliza wewe ni nani.",
+  "ui.privacy_2": "Ujumbe wako unasomwa kwenye seva hii ili kupata programu. Hauhifadhiwi: tunahifadhi tu kile mfumo ulichoelewa (aina ya msaada, uharaka, ukubwa wa kaya, mapato).",
+  "ui.privacy_3": "Maneno yako hayatumwi kwa modeli yoyote ya AI. Muhtasari na tafsiri za hiari huandikwa kutoka kwa jibu la mfumo (majina ya programu, nambari za simu, hatua inayofuata), si kutoka kwa ulichoandika.",
+  "ui.privacy_4": "Ujumbe wa dharura (kujidhuru, unyanyasaji) hujibiwa na msimbo uliowekwa.",
+  "ui.privacy_5": "Kesi yako huhifadhiwa hadi uifute, au siku 30 baada ya ujumbe wako wa mwisho. Hakuna matangazo, hakuna ufuatiliaji, hakuna uuzaji."
 }

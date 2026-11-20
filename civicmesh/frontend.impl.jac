@@ -398,3 +398,22 @@ impl ClientApp.quickExit -> None {
         window.location.replace(CM_EXIT_URL);
     }
 }
+
+impl ClientApp.SL(key: str, fallback: str) -> str {
+    return str(shell_ui[key]) if (shell_ui and shell_ui[key]) else fallback;
+}
+
+# A picked language, else the browser's, when it has a catalog; English otherwise.
+impl ClientApp.loadShellUi(code: str) -> None {
+    c: str = str(code or "");
+    if not c or c == "auto" {
+        bl = str(navigator.language or "").toLowerCase();
+        alias: dict = {"fil": "tl", "hr": "sh", "sr": "sh", "bs": "sh", "zh-hk": "yue", "zh-mo": "yue"};
+        c = alias[bl] if bl in alias else (alias[bl.split("-")[0]] if bl.split("-")[0] in alias else bl.split("-")[0]);
+    }
+    window.cm_shell_lang = c;
+    if not c or c == "en" { shell_ui = {}; return; }
+    fetch("/ui-strings/" + encodeURIComponent(c)).then(lambda r: Any { return r.json() if r.ok else {}; }).then(lambda j: Any {
+        if window.cm_shell_lang == c { shell_ui = j; }
+    }).catch(lambda _e: Any {});
+}

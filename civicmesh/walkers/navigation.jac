@@ -34,8 +34,13 @@ walker NavigationWalker {
             setattr(app, "updated_at", ts);
             archived += 1;
         }
+        # A crisis line in the plan stays on screen but isn't stored as an
+        # application (blind audit F5: "988 ... pending" in the graph says what
+        # the person disclosed).
+        crisis_names = [str(x["resource_name"]) for x in list(self.ranked) if x.get("pinned", False)];
         for step in plan["steps"] {
             agency = str(step["agency_name"]);
+            if agency in crisis_names { continue; }
             here +>: applied_to() :+> ApplicationNode(
                 application_id=agency + "::" + ts,
                 status="pending",

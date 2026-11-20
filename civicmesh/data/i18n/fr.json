@@ -147,5 +147,14 @@
   "opt.s_hurt": "Quelqu'un me fait du mal",
   "opt.s_suicide": "Je pense au suicide",
   "opt.s_child": "On fait du mal à un enfant",
-  "opt.s_safe": "Je suis en sécurité — j'ai besoin d'une autre aide"
+  "opt.s_safe": "Je suis en sécurité — j'ai besoin d'une autre aide",
+  "ui.quick_exit": "Sortie rapide",
+  "ui.tab_chat": "Discussion",
+  "ui.tab_plan": "Plan d'action",
+  "ui.get_help": "Obtenir de l'aide",
+  "ui.privacy_1": "Vous êtes anonyme : ce navigateur garde une connexion aléatoire, et personne ne vous demande qui vous êtes.",
+  "ui.privacy_2": "Votre message est lu sur ce serveur pour trouver des programmes. Il n'est pas enregistré : nous gardons seulement ce que le système a compris (le type d'aide, l'urgence, la taille du foyer, les revenus).",
+  "ui.privacy_3": "Vos mots ne sont envoyés à aucun modèle d'IA. Le résumé et la traduction facultatifs sont rédigés à partir de la réponse du système (noms de programmes, numéros de téléphone, prochaine étape), pas de ce que vous avez écrit.",
+  "ui.privacy_4": "Les messages de crise (automutilation, maltraitance) reçoivent une réponse de code fixe.",
+  "ui.privacy_5": "Votre dossier est gardé jusqu'à ce que vous le supprimiez, ou 30 jours après votre dernier message. Pas de publicité, pas de suivi, pas de vente."
 }
