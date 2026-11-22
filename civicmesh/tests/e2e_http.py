@@ -17,6 +17,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
+import uuid
 
 H = sys.argv[1].rstrip("/") if len(sys.argv) > 1 else "http://localhost:7860"
 RESULTS = []
@@ -43,12 +44,24 @@ def check(name, cond, detail=""):
 
 
 def login():
-    uid = "e2e_" + str(random.randint(10000, 99999))
-    pw = "pw" + str(random.random())
-    post("/user/register", {"identities": [{"type": "username", "value": uid}], "credential": {"type": "password", "password": pw}})
-    tok = post("/user/login", {"identity": {"type": "username", "value": uid}, "credential": {"type": "password", "password": pw}})[0]["data"]["token"]
-    post("/walker/SeedWalker", {"user_id": uid}, tok)
-    return uid, tok
+    """A fresh visitor. A sign-in once came back without a token on CI (main,
+    2026-11-20) and the reply was lost in a KeyError; now the reply is printed,
+    and a passing failure (rate limit, busy server, dropped connection) gets
+    one retry with a new name, so the run says what went wrong."""
+    seen = []
+    for attempt in range(2):
+        uid = "e2e_" + uuid.uuid4().hex[:12]
+        pw = "pw" + uuid.uuid4().hex
+        reg, _ = post("/user/register", {"identities": [{"type": "username", "value": uid}], "credential": {"type": "password", "password": pw}})
+        got, _ = post("/user/login", {"identity": {"type": "username", "value": uid}, "credential": {"type": "password", "password": pw}})
+        tok = ((got.get("data") or {}) if got.get("ok") else {}).get("token")
+        if tok:
+            post("/walker/SeedWalker", {"user_id": uid}, tok)
+            return uid, tok
+        seen.append({"register": reg if not reg.get("ok") else "ok", "login": got})
+        print("sign-in failed, attempt " + str(attempt + 1) + ": " + json.dumps(seen[-1])[:600])
+        time.sleep(5)
+    raise SystemExit("could not sign in a test visitor: " + json.dumps(seen)[:1200])
 
 
 def turn(uid, tok, msg, prior=None, ans="", pref=""):
